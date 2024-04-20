@@ -1,0 +1,1 @@
+from pyThermoDB.app import main, get_version
