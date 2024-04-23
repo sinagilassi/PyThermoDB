@@ -81,7 +81,7 @@ class SettingDatabook():
                         print(f"You chose option {userInput_2}.")
                         val = int(userInput_2)
                         # get the table
-                        self.selected_tb = self.available_tbs[val - 1][2]
+                        self.selected_tb = self.available_tbs[val - 1][1]
                         break
                 break
             else:

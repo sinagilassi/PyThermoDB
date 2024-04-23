@@ -12,10 +12,9 @@ print("type: ", type(tdb))
 print("dir: ", dir(tdb))
 
 # display databook reference
-# tdb.init()
+tdb.init()
 
 # display config
-# tdb.config()
-
+tdb.config()
 
 
