@@ -9,6 +9,8 @@ class SettingDatabook():
     '''
     # selected databook
     selected_db = None
+    # available tables 
+    available_tbs = []
     # selected table
     selected_tb = None
     
@@ -17,7 +19,7 @@ class SettingDatabook():
 
     def get_thermo_databook(self):
         '''
-        config pyThermoDB 
+        config pyThermoDB to use databook reference and table reference
         '''
         # load databook reference
         res = self.load_data()
@@ -32,34 +34,40 @@ class SettingDatabook():
             
         while True:
             # input
-            val = input("Please choose databook: ")
-            # check
-            if val.isdigit() == True:
-                # choose a table
-                if int(val) < databook_no+1 and int(val) > 0:
-                    print(f"You chose option {val}.")
-                    # load tables
-                    self.load_tables(res, int(val))
-                    # select a table
-                    while True:
-                        # input
-                        val2 = input("Please choose table: ")
-                        # check
-                        if val2.isdigit() == True:
-                            # choose a table
-                            if int(val) < len(self.selected_tb)+1 and int(val) > 0:
-                                print(f"You chose option {val}.")
-                                break
-                            else:
-                                print("Your choice is not valid. Please choose a valid option.")
-                        elif str(val).lower() == 'q':
-                            print("Goodbye!")
-                            break
-                        else:
-                            print("Your choice is not valid. Please choose a valid option.")
+            userInput_1 = input("Please choose databook: ")
+            if SettingDatabook.validate_input(userInput_1, 1, databook_no):
+                # log
+                print(f"You chose {userInput_1}.")
+                #* check options 
+                if str(userInput_1).lower() == 'q':
+                    print("Goodbye!")
                     break
-            elif str(val).lower() == 'q':
-                print("Goodbye!")
+                # get the value
+                val = int(userInput_1)
+                #* load tables
+                self.load_tables(res, int(val))
+                # number of tables
+                table_no = len(self.available_tbs)
+                # find the maximum length of each column
+                max_length_book = int(max([len(item[1]) for item in self.available_tbs]))
+                # column name
+                column_names = ['id', 'table']
+                # log databook
+                self.log_data(self.available_tbs, max_length_book, column_names)
+
+                # check table exists in the selected databook
+                if table_no == 0:
+                    print("There is no table in the selected databook.")
+                    break
+                #* choose a table
+                while True:
+                    # input
+                    userInput_2 = input("Please choose table id or q to quit: ")
+                    # check
+                    if SettingDatabook.validate_input(userInput_2, 1, table_no):
+                        # choose a table
+                        print(f"You chose option {userInput_2}.")
+                        break
                 break
             else:
                 print("Your choice is not valid. Please choose a valid option.")
@@ -67,27 +75,8 @@ class SettingDatabook():
     def load_data(self):
         res = [[str(item['id']), item['book'], item['tables']]
                for item in self.databook]
-
         return res
-        # find the maximum length of each column
-        # max_length_book = int(max([len(item[1]) for item in res]))
-        # max_length = max_length_book + 10
-        # # column names
-        # column_names = ['id', 'book']
-        # data = [column_names, *res]
-        # dash = '-' * max_length
-        # # print table
-        # # table head format
-        # table_head = f'{{:^5s}} {{:^{max_length_book}s}}'
-        # for i in range(len(data)):
-        #     if i == 0:
-        #         print(dash)
-        #         print(table_head.format(data[i][0], data[i][1]))
-        #         print(dash)
-        #     else:
-        #         print('{:^5s}{:>0s}'.format(data[i][0], data[i][1]))
-        # print(dash)
-        
+
     def log_data(self, res, max_length_header, column_names):
         # find the maximum length of each column
         max_length = max_length_header + 10
@@ -103,26 +92,44 @@ class SettingDatabook():
                 print(table_head.format(data[i][0], data[i][1]))
                 print(dash)
             else:
-                print('{:^5s}{:>0s}'.format(data[i][0], data[i][1]))
+                print('{:^5s}{:>0s}'.format(str(data[i][0]), data[i][1]))
         print(dash)
         
         
     def load_tables(self, res, val):
-        # choose databook tables
-        self.selected_db = [item[2]
-                            for item in res if item[0] == str(val-1)][0]
-        print("The tables in this databook are: ")
-
-        selected_tbs = [[str(item['id']), item['name']]
-                        for item in self.selected_db]
-        column_names2 = ['id', 'table']
-        data2 = [column_names2, *selected_tbs]
-        # display
-        for i in range(len(data2)):
-            if i == 0:
-                print(dash)
-                print(table_head.format(data2[i][0], data2[i][1]))
-                print(dash)
+        '''
+        set available tables from selected databook
+        
+        args:   
+            res: list of databook reference
+            val: id of selected databook
+            
+        returns:
+            None
+        '''
+        # choose databook 
+        self.selected_db = []
+        _selected_db = [item[2] for item in res if item[0] == str(val)][0]
+        self.selected_db = [*_selected_db]
+        
+        # get available tables
+        _available_tbs = [[item['id'], item['name']] for item in _selected_db]
+        self.available_tbs = []
+        self.available_tbs = [*_available_tbs]
+        
+    @staticmethod
+    def validate_input(input_str, min_value, max_value):
+        try:
+            # Convert input to integer
+            num = int(input_str)
+            # Check if the number is between 1 and 9
+            if min_value <= num <= max_value:
+                return True
             else:
-                print('{:^5s}{:>0s}'.format(data2[i][0], data2[i][1]))
-        print(dash)
+                return False
+        except ValueError:
+            # Check if the input is the letter 'q'
+            if input_str.lower() == 'q':
+                return True
+            else:
+                return False
