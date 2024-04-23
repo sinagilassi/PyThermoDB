@@ -12,9 +12,10 @@ print("type: ", type(tdb))
 print("dir: ", dir(tdb))
 
 # display databook reference
-tdb.get_thermo_databook()
+# tdb.init()
 
-# choose databook
+# display config
+# tdb.config()
 
 
 
