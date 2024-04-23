@@ -2,7 +2,7 @@
 # external
 
 # internal
-from pyThermoDB.config import __version__
+from pyThermoDB.config import __version__, SettingDatabook
 
 
 def main():
@@ -10,6 +10,15 @@ def main():
 
 def get_version():
     return __version__
+
+
+def thermo_databook():
+    '''
+    return thermodynamics databook reference
+    '''
+    SettingDatabookC = SettingDatabook()
+    return SettingDatabookC
+
 
 if __name__ == '__main__':
     main()

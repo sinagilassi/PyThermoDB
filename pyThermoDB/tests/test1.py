@@ -2,6 +2,19 @@
 import pyThermoDB as pt
 
 # dir
-print(dir(pt))
+# print(dir(pt))
 # get versions
-print(pt.get_version())
+# print(pt.get_version())
+
+# databook reference
+tdb = pt.thermo_databook()
+print("type: ", type(tdb))
+print("dir: ", dir(tdb))
+
+# display databook reference
+tdb.get_thermo_databook()
+
+# choose databook
+
+
+
