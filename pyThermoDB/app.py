@@ -2,7 +2,8 @@
 # external
 
 # internal
-from pyThermoDB.config import __version__, SettingDatabook
+from pyThermoDB.config import __version__
+from pyThermoDB.docs import SettingDatabook
 
 
 def main():
