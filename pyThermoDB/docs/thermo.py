@@ -1,6 +1,7 @@
 # import packages/modules
 # internal
-from pyThermoDB.config.setting import THERMODYNAMICS_DATABOOK
+from pyThermoDB.config.setting import THERMODYNAMICS_DATABOOK, API_URL
+from pyThermoDB.api import Manage
 
 
 class SettingDatabook():
@@ -21,11 +22,27 @@ class SettingDatabook():
         '''
         display config
         '''
+        # column names
+        column_names = ['id', 'selected databook']
+        # databook
+        _selected_db_id = str(self.selected_db[0])
         _selected_db = self.selected_db[1]
-        print(f"databook: {_selected_db}")
-        _selected_tb = self.selected_tb
-        print(f"table: {_selected_tb}")
-
+        # table
+        _selected_tb_id = str(self.selected_tb[0])
+        _selected_tb = self.selected_tb[1]
+        # data
+        data = [[_selected_db_id, _selected_db], [_selected_tb_id, _selected_tb]]
+        # max length
+        max_length = int(max(len(_selected_db), len(_selected_tb)))
+        # log databook
+        self.log_data(data, max_length, column_names)
+    
+    def get_databook(self):
+        return self.selected_db[0], self.selected_db[1]
+    
+    def get_table(self):
+        return self.selected_tb[0], self.selected_tb[1]
+    
     def init(self):
         '''
         config pyThermoDB to use databook reference and table reference
@@ -81,7 +98,7 @@ class SettingDatabook():
                         print(f"You chose option {userInput_2}.")
                         val = int(userInput_2)
                         # get the table
-                        self.selected_tb = self.available_tbs[val - 1][1]
+                        self.selected_tb = self.available_tbs[val - 1]
                         break
                 break
             else:
@@ -123,11 +140,14 @@ class SettingDatabook():
         '''
         # choose databook
         self.selected_db = []
-        _selected_db = [item[2] for item in res if item[0] == str(val)][0]
+        _selected_db = [item for item in res if item[0] == str(val)][0]
         self.selected_db = [*_selected_db]
+        
+        # tables
+        _tables = _selected_db[2]
 
         # get available tables
-        _available_tbs = [[item['id'], item['name']] for item in _selected_db]
+        _available_tbs = [[item['id'], item['name']] for item in _tables]
         self.available_tbs = []
         self.available_tbs = [*_available_tbs]
 
@@ -147,3 +167,10 @@ class SettingDatabook():
                 return True
             else:
                 return False
+
+    def set_component(self):
+        # set api
+        ManageC = Manage(API_URL, self.selected_db[0], self.selected_tb[0])
+        # search
+        ManageC.get_data()
+        
