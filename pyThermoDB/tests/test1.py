@@ -17,4 +17,10 @@ tdb.init()
 # display config
 tdb.config()
 
+# databook selected
+print(tdb.get_databook())
+# table selected
+print(tdb.get_table())
 
+# set component
+tdb.set_component()

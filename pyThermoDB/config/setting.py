@@ -1,7 +1,11 @@
 # import packages/modules
 # internal
-from pyThermoDB.utils import log2Col
 
+
+# api url
+API_URL = "https://script.google.com/macros/s/AKfycbzIYjpulfGUnZxUF_GsYIhgNaSpALMeA4e3lu-ANeZPO744aVFSTE9QK3Arx2QbjLjz/exec?"
+
+# thermodynamics databook
 THERMODYNAMICS_DATABOOK = [
     {
         "id": 1,
