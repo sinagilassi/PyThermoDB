@@ -3,7 +3,7 @@
 
 
 # api url
-API_URL = "https://script.google.com/macros/s/AKfycbzIYjpulfGUnZxUF_GsYIhgNaSpALMeA4e3lu-ANeZPO744aVFSTE9QK3Arx2QbjLjz/exec?"
+API_URL = "https://script.google.com/macros/s/AKfycbzA78GeYUGfwNq_9aeQyNeP3dG82T5NehqW_SJzWBDFXHQiD7DCQuZlGFmZ9kVuZvdX/exec"
 
 # thermodynamics databook
 THERMODYNAMICS_DATABOOK = [
@@ -206,12 +206,7 @@ THERMODYNAMICS_DATABOOK = [
             {
                 "id": 2,
                 "name": "Table A.2 Vapor pressure correlations for selected compounds",
-                "equation": [
-                    {
-                        "id": 1,
-                        "function": ""
-                    }
-                ]
+                "equation": ""
             },
             {
                 "id": 3,
@@ -252,5 +247,3 @@ THERMODYNAMICS_DATABOOK = [
         ]
     }
 ]
-
-

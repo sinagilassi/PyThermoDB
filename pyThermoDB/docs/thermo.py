@@ -168,9 +168,44 @@ class SettingDatabook():
             else:
                 return False
 
-    def set_component(self):
+    def check_component_availability(self, component_name):
+        '''
+        check component availability
+        
+        args:
+            component_name: string of component name (e.g. 'Carbon dioxide')
+            
+        '''
         # set api
         ManageC = Manage(API_URL, self.selected_db[0], self.selected_tb[0])
         # search
-        ManageC.get_data()
+        compList = ManageC.component_list()
+        # check availability
+        if len(compList) > 0:
+            if component_name in compList:
+                print(f"{component_name} is available.")
+            else:
+                print(f"{component_name} is not available.")
+        else:
+            print("API error. Please try again later.")
+            
+    def search(self, component_name):
+        '''
+        search component
         
+        args:
+            component_name: string of component name (e.g. 'Carbon dioxide')
+            
+        '''
+        # set api
+        ManageC = Manage(API_URL, self.selected_db[0], self.selected_tb[0])
+        # search
+        compList = ManageC.component_list()
+        # check availability
+        if len(compList) > 0:
+            if component_name in compList:
+                print(f"{component_name} is available.")
+            else:
+                print(f"{component_name} is not available.")
+        else:
+            print("API error. Please try again later.")
