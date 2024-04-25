@@ -23,4 +23,5 @@ print(tdb.get_databook())
 print(tdb.get_table())
 
 # set component
-tdb.set_component()
+comp1 = "Carbon dioxide"
+tdb.check_component_availability(comp1)
