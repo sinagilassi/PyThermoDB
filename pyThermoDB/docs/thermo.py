@@ -189,9 +189,11 @@ class SettingDatabook():
         else:
             print("API error. Please try again later.")
             
-    def search(self, component_name):
+    def get_data(self, component_name):
         '''
-        search component
+        step1: get thermo data for a component
+        
+        step2: get equation for the data (parameters)
         
         args:
             component_name: string of component name (e.g. 'Carbon dioxide')
@@ -200,12 +202,11 @@ class SettingDatabook():
         # set api
         ManageC = Manage(API_URL, self.selected_db[0], self.selected_tb[0])
         # search
-        compList = ManageC.component_list()
+        compInfo = ManageC.component_info(component_name)
         # check availability
-        if len(compList) > 0:
-            if component_name in compList:
-                print(f"{component_name} is available.")
-            else:
-                print(f"{component_name} is not available.")
+        if len(compInfo) > 0:
+            print(f"data for {component_name} is available.")
+            return compInfo
         else:
             print("API error. Please try again later.")
+            return []
