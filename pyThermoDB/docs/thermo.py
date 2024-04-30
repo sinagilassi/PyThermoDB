@@ -2,6 +2,7 @@
 # internal
 from pyThermoDB.config.setting import THERMODYNAMICS_DATABOOK, API_URL
 from pyThermoDB.api import Manage
+from pyThermoDB.utils import isNumber
 
 
 class SettingDatabook():
@@ -188,7 +189,37 @@ class SettingDatabook():
                 print(f"{component_name} is not available.")
         else:
             print("API error. Please try again later.")
+    
+    def check_component_availability_manual(self, component_name, databook_id, table_id):
+        '''
+        check component availability manually
+        
+        args:
+            component_name: string of component name (e.g. 'Carbon dioxide')
+            databook_id: databook id
+            table_id: table id
             
+        return:
+            comp_info: component information
+        '''
+        try:
+            # check databook_id and table_id are number or not
+            if isNumber(databook_id) and isNumber(table_id):
+                # set api
+                ManageC = Manage(API_URL, databook_id, table_id)
+                # search
+                compList = ManageC.component_list()
+                # check availability
+                if len(compList) > 0:
+                    if component_name in compList:
+                        print(f"{component_name} is available.")
+                    else:
+                        print(f"{component_name} is not available.")
+                else:
+                    print("API error. Please try again later.")
+        except Exception as e:
+            print(e)
+        
     def get_data(self, component_name):
         '''
         step1: get thermo data for a component

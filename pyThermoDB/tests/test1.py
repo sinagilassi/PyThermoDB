@@ -13,21 +13,24 @@ print("type: ", type(tdb))
 print("dir: ", dir(tdb))
 
 # display databook reference
-tdb.init()
+# tdb.init()
 
 # display config
-tdb.config()
+# tdb.config()
 
 # databook selected
-print(tdb.get_databook())
+# print(tdb.get_databook())
 # table selected
-print(tdb.get_table())
+# print(tdb.get_table())
 
 # set component
 comp1 = "Carbon dioxide"
-tdb.check_component_availability(comp1)
+# check component availability
+# tdb.check_component_availability(comp1)
+# check component availability manually
+tdb.check_component_availability_manual(comp1, 1, 1)
 
 # get data
-data = tdb.get_data(comp1)
-print(f"data for {comp1}:")
-pprint.pprint(data)
+# data = tdb.get_data(comp1)
+# print(f"data for {comp1}:")
+# pprint.pprint(data)
