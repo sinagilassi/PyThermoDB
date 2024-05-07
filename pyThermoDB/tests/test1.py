@@ -35,5 +35,5 @@ tdb.check_component_availability_manual(comp1, 1, 1)
 # manual
 data = tdb.get_data_manual(comp1, 1, 1)
 # print(f"data for {comp1}:")
-print(f"data for {comp1[0]}:")
+print(f"data for {data.view()}:")
 # pprint.pprint(data)

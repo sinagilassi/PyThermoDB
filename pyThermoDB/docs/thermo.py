@@ -264,7 +264,8 @@ class SettingDatabook():
         # check availability
         if len(compInfo) > 0:
             print(f"data for {component_name} is available.")
-            return TransData(compInfo)
+            tData = TransData(compInfo)
+            return tData
         else:
             print("API error. Please try again later.")
-            return []
+            return TransData([])
