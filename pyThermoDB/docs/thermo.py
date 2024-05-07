@@ -3,6 +3,7 @@
 from pyThermoDB.config.setting import THERMODYNAMICS_DATABOOK, API_URL
 from pyThermoDB.api import Manage
 from pyThermoDB.utils import isNumber
+from pyThermoDB.docs.transdata import TransData
 
 
 class SettingDatabook():
@@ -263,7 +264,7 @@ class SettingDatabook():
         # check availability
         if len(compInfo) > 0:
             print(f"data for {component_name} is available.")
-            return compInfo
+            return TransData(compInfo)
         else:
             print("API error. Please try again later.")
             return []
