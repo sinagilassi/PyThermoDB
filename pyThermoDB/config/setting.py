@@ -14,7 +14,7 @@ THERMODYNAMICS_DATABOOK = [
             {
                 "id": 1,
                 "name": "TABLE 2-8 Vapor Pressure of Inorganic and Organic Liquids",
-                "equation": [
+                "equations": [
                     {
                         "id": 1,
                         "function": "res = exp(C[0] + C[1]/T + C[2]*log(T) + C[3]*(T**C[4]))",
@@ -70,18 +70,18 @@ THERMODYNAMICS_DATABOOK = [
             {
                 "id": 2,
                 "name": "TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion",
-                "equation": []
+                "equations": []
 
             },
             {
                 "id": 3,
                 "name": "TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds",
-                "equation": []
+                "equations": []
             },
             {
                 "id": 4,
                 "name": "TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids",
-                "equation": [
+                "equations": [
                     {
                         "id": 1,
                         "functions": "res = C[0] + C[1]*T + C[2]*(T**2) + C[3]*(T**3) + C[4]*(T**4)",
@@ -201,12 +201,12 @@ THERMODYNAMICS_DATABOOK = [
             {
                 "id": 1,
                 "name": "Table A.1 General data for selected compounds",
-                "equation": ""
+                "equations": ""
             },
             {
                 "id": 2,
                 "name": "Table A.2 Vapor pressure correlations for selected compounds",
-                "equation": ""
+                "equations": ""
             },
             {
                 "id": 3,

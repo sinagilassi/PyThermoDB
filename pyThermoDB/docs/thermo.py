@@ -261,11 +261,37 @@ class SettingDatabook():
         ManageC = Manage(API_URL, databook_id, table_id)
         # search
         compInfo = ManageC.component_info(component_name)
+        # equation (if exist)
         # check availability
         if len(compInfo) > 0:
+            # check eq exists
+            eqs = self.findEq(compInfo, databook_id, table_id)
+            # src
+            src = {}
+            src['equations'] = eqs
             print(f"data for {component_name} is available.")
-            tData = TransData(compInfo)
+            tData = TransData(compInfo, src)
             return tData
         else:
             print("API error. Please try again later.")
-            return TransData([])
+            return TransData([], {})
+        
+    def findEq(self, api_data, databook_id, table_id):
+        '''
+        find equation from thermodynamics databook
+        
+        args:
+            api_data: api data - dict ['header'],['records'],['unit']
+            databook_id: thermodynamic databook id
+            table_id: table id
+        '''
+        # equation list
+        eqs = []
+        # api data structure
+        header = api_data['header']
+        # check equation exists in header
+        if "Eq" in header:
+            db = [item for item in THERMODYNAMICS_DATABOOK if item['id'] == databook_id][0]
+            tb = [item for item in db['tables'] if item['id'] == table_id][0]
+            eqs = tb['equations']
+        return eqs
