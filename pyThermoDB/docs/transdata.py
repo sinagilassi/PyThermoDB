@@ -1,13 +1,16 @@
 # import packages/modules
 # external
 import pandas as pd
+# internal
+from pyThermoDB.config import THERMODYNAMICS_DATABOOK 
 
 class TransData:
     '''
     transform data
     '''
-    def __init__(self, api_data):
+    def __init__(self, api_data, src):
         self.api_data = api_data
+        self.src = src
         
     def trans(self):
         '''
@@ -24,10 +27,15 @@ class TransData:
         data_trans['data'] = self.api_data
 
         return data_trans
-    
+
     def view(self):
         '''
         display data in a table (pandas dataframe)
         '''
         df = pd.DataFrame(self.api_data)
         print(df)
+        
+    def eq(self):
+        return self.src['equations']
+    
+    
