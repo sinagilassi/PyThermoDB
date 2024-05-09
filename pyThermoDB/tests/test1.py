@@ -2,10 +2,12 @@
 import pyThermoDB as pt
 import pprint
 
+
 # dir
 # print(dir(pt))
 # get versions
 # print(pt.get_version())
+print(pt.__version__)
 
 # databook reference
 tdb = pt.thermo_databook()
@@ -35,5 +37,6 @@ tdb.check_component_availability_manual(comp1, 1, 1)
 # manual
 data = tdb.get_data_manual(comp1, 1, 1)
 # print(f"data for {comp1}:")
-print(f"data for {data.view()}:")
+# print(f"data for {data.view()}:")
+print(f"data for {data.eq()}:")
 # pprint.pprint(data)

@@ -11,6 +11,8 @@ class TransData:
     def __init__(self, api_data, src):
         self.api_data = api_data
         self.src = src
+        # eq id
+        self.eq_id = -1
         
     def trans(self):
         '''
@@ -21,6 +23,9 @@ class TransData:
         data_trans = {}
 
         for x,y,z in zip(self.api_data['header'], self.api_data['records'], self.api_data['unit']):
+            # check eq exists
+            if x == "Eq":
+                self.eq_id = y
             data_trans[str(x)] = {"value": y, "unit": z}
             
         # data table
@@ -36,6 +41,12 @@ class TransData:
         print(df)
         
     def eq(self):
-        return self.src['equations']
-    
-    
+        '''
+        equation used for calculation
+        '''
+        # equation id
+        if self.eq_id == -1:
+            return 'no equation exists!'
+        else:
+            eq = [item for item in self.src['equations'] if item['id'] == self.eq_id][0]
+            return eq['function']
