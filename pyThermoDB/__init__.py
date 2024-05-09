@@ -1,1 +1,1 @@
-from pyThermoDB.app import main, get_version, thermo_databook
+from pyThermoDB.app import main, get_version, thermo_databook, __version__
