@@ -1,6 +1,7 @@
 # import packages/modules
 # external
 import pandas as pd
+import math
 # internal
 from pyThermoDB.config import THERMODYNAMICS_DATABOOK 
 
@@ -13,6 +14,10 @@ class TransData:
         self.src = src
         # eq id
         self.eq_id = -1
+        self.function = ''
+        self.parms = []
+        self.args = []
+        self.res = []
         
     def trans(self):
         '''
@@ -49,4 +54,21 @@ class TransData:
             return 'no equation exists!'
         else:
             eq = [item for item in self.src['equations'] if item['id'] == self.eq_id][0]
+            # extract data
+            self.function = eq['function']
+            self.parms = eq['parms']
+            self.args = eq['args']
+            self.res = eq['return']
+            # build eq
+            
             return eq['function']
+        
+    def eqExe(self, body, parms, args):
+        # Define a namespace dictionary for eval
+        namespace = {'args': args, "parms": parms}
+        # Import math module within the function
+        namespace['math'] = math
+        # Execute the body within the namespace
+        exec(body, namespace)
+        # Return the result
+        return namespace['res']
