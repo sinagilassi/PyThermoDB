@@ -17,8 +17,16 @@ THERMODYNAMICS_DATABOOK = [
                 "equations": [
                     {
                         "id": 1,
-                        "function": "res = exp(C[0] + C[1]/T + C[2]*log(T) + C[3]*(T**C[4]))",
+                        "function": "res = math.exp(params['C1'] + params['C2']/vars['T'] + params['C3']*math.log(vars['T']) + params['C4']*(vars['T']**params['C5']))",
                         "args": [
+                            {
+                                "id": 1,
+                                "name": "temperature",
+                                "parameter": "T",
+                                "unit": "K"
+                            }
+                        ],
+                        "params": [
                             {
                                 "id": 1,
                                 "name": "C1",
@@ -48,12 +56,6 @@ THERMODYNAMICS_DATABOOK = [
                                 "name": "C5",
                                 "parameter": "C5",
                                 "unit": ""
-                            },
-                            {
-                                "id": 6,
-                                "name": "temperature",
-                                "parameter": "T",
-                                "unit": "K"
                             }
                         ],
                         "return": [
