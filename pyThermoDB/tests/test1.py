@@ -35,7 +35,7 @@ tdb.check_component_availability_manual(comp1, 1, 1)
 # get data
 # data = tdb.get_data(comp1)
 # manual
-data = tdb.get_data_manual(comp1, 1, 1)
+data = tdb.get_data_manual(comp1, 1, 2)
 # print(f"data for {comp1}:")
 print(f"data for {data.view()}:")
 # print(f"equation body for {data.equation_body()}:")
