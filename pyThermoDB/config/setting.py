@@ -17,7 +17,7 @@ THERMODYNAMICS_DATABOOK = [
                 "equations": [
                     {
                         "id": 1,
-                        "function": "res = math.exp(params['C1'] + params['C2']/vars['T'] + params['C3']*math.log(vars['T']) + params['C4']*(vars['T']**params['C5']))",
+                        "function": "res = math.exp(parms['C1'] + parms['C2']/args['T'] + parms['C3']*math.log(args['T']) + parms['C4']*(args['T']**parms['C5']))",
                         "args": [
                             {
                                 "id": 1,
@@ -26,36 +26,36 @@ THERMODYNAMICS_DATABOOK = [
                                 "unit": "K"
                             }
                         ],
-                        "params": [
+                        "parms": [
                             {
                                 "id": 1,
                                 "name": "C1",
                                 "parameter": "C1",
-                                "unit": ""
+                                "unit": "-"
                             },
                             {
                                 "id": 2,
                                 "name": "C2",
                                 "parameter": "C2",
-                                "unit": ""
+                                "unit": "-"
                             },
                             {
                                 "id": 3,
                                 "name": "C3",
                                 "parameter": "C3",
-                                "unit": ""
+                                "unit": "-"
                             },
                             {
                                 "id": 4,
                                 "name": "C4",
                                 "parameter": "C4",
-                                "unit": ""
+                                "unit": "-"
                             },
                             {
                                 "id": 5,
                                 "name": "C5",
                                 "parameter": "C5",
-                                "unit": ""
+                                "unit": "-"
                             }
                         ],
                         "return": [
