@@ -53,11 +53,14 @@ class TransData:
             **args: a dictionary contains variable names and values
                 args = {"T": 120, "P": 1}
         '''
-        # build parms dict
-        _parms = self.load_parms()
-        # execute equation
-        res = self.eqExe(self.body, _parms, args=args)
-        return res
+        if self.eq_id != -1:
+            # build parms dict
+            _parms = self.load_parms()
+            # execute equation
+            res = self.eqExe(self.body, _parms, args=args)
+            return res
+        else:
+            print("This property has no equation.")
     
     def load_parms(self):
         '''
