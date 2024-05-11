@@ -269,10 +269,13 @@ class SettingDatabook():
             # src
             src = {}
             src['equations'] = eqs
+            src['component_name'] = component_name
             print(f"data for {component_name} is available.")
             tData = TransData(compInfo, src)
             # trans
             tData.trans()
+            # equation init
+            tData.eqSet()
             return tData
         else:
             print("API error. Please try again later.")

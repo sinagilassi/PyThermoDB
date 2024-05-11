@@ -11,10 +11,11 @@ class TransData:
     '''
     def __init__(self, api_data, src):
         self.api_data = api_data
+        self.data_trans = {}
         self.src = src
         # eq id
         self.eq_id = -1
-        self.function = ''
+        self.body = ''
         self.parms = []
         self.args = []
         self.res = []
@@ -25,18 +26,17 @@ class TransData:
             data['header'],['records'],['unit']
         step 2: transform to dict 
         '''
-        data_trans = {}
+        self.data_trans = {}
 
         for x,y,z in zip(self.api_data['header'], self.api_data['records'], self.api_data['unit']):
             # check eq exists
             if x == "Eq":
                 self.eq_id = y
-            data_trans[str(x)] = {"value": y, "unit": z}
+            self.data_trans[str(x)] = {"value": y, "unit": z}
             
         # data table
-        data_trans['data'] = self.api_data
-
-        return data_trans
+        self.data_trans['data'] = self.api_data
+        return self.data_trans
 
     def view(self):
         '''
@@ -44,25 +44,82 @@ class TransData:
         '''
         df = pd.DataFrame(self.api_data)
         print(df)
+    
+    def equation_exe(self, args):
+        '''
+        execute function
         
-    def eq(self):
+        args:
+            **args: a dictionary contains variable names and values
+                args = {"T": 120, "P": 1}
+        '''
+        # build parms dict
+        _parms = self.load_parms()
+        # execute equation
+        res = self.eqExe(self.body, _parms, args=args)
+        return res
+    
+    def load_parms(self):
+        '''
+        load parms values and store in a dict
+        '''
+        _parms_name = [item['name'] for item in self.parms]
+        _parms = {key: value['value'] for key, value in self.data_trans.items() if key in _parms_name}
+        return _parms
+        
+    def equation_body(self):
+        '''
+        display equation body
+        '''
+        if self.eq_id != -1:
+            print(self.body)
+        else:
+            print("This property has no equation.")
+        
+    def equation_parms(self):
+        '''
+        display equation parms
+        '''
+        if self.eq_id != -1:
+            df = pd.DataFrame(self.parms)
+            print(df)
+        else:
+            print("This property has no equation.")
+    
+    def equation_args(self):
+        '''
+        display equation args
+        '''
+        if self.eq_id != -1:
+            df = pd.DataFrame(self.args)
+            print(df)
+        else:
+            print("This property has no equation.")
+    
+    def equation_return(self):
+        '''
+        display equation return
+        '''
+        if self.eq_id != -1:
+            df = pd.DataFrame(self.res)
+            print(df)
+        else:
+            print("This property has no equation.")
+        
+    def eqSet(self):
         '''
         equation used for calculation
         '''
         # equation id
-        if self.eq_id == -1:
-            return 'no equation exists!'
-        else:
+        if self.eq_id != -1:
+            # extract equation
             eq = [item for item in self.src['equations'] if item['id'] == self.eq_id][0]
             # extract data
-            self.function = eq['function']
+            self.body = eq['function']
             self.parms = eq['parms']
             self.args = eq['args']
             self.res = eq['return']
-            # build eq
-            
-            return eq['function']
-        
+
     def eqExe(self, body, parms, args):
         # Define a namespace dictionary for eval
         namespace = {'args': args, "parms": parms}
