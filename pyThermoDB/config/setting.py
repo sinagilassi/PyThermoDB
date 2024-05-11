@@ -62,7 +62,7 @@ THERMODYNAMICS_DATABOOK = [
                             {
                                 "id": 1,
                                 "name": "vapor pressure",
-                                "parameter": "Ps",
+                                "parameter": "VaPr",
                                 "unit": "Pa"
                             }
                         ]
@@ -86,8 +86,16 @@ THERMODYNAMICS_DATABOOK = [
                 "equations": [
                     {
                         "id": 1,
-                        "functions": "res = C[0] + C[1]*T + C[2]*(T**2) + C[3]*(T**3) + C[4]*(T**4)",
+                        "function": "res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*(args['T']**2) + parms['C4']*(args['T']**3) + parms['C5']*(args['T']**4)",
                         "args": [
+                            {
+                                "id": 1,
+                                "name": "temperature",
+                                "parameter": "T",
+                                "unit": "K"
+                            }
+                        ],
+                        "parms": [
                             {
                                 "id": 1,
                                 "name": "C1",
@@ -117,29 +125,37 @@ THERMODYNAMICS_DATABOOK = [
                                 "name": "C5",
                                 "parameter": "C5",
                                 "unit": ""
-                            },
-                            {
-                                "id": 6,
-                                "name": "temperature",
-                                "parameter": "T",
-                                "unit": "K"
                             }
                         ],
                         "return": [
                             {
                                 "id": 1,
                                 "name": "heat capacity",
-                                "parameter": "Cp[l]",
+                                "parameter": "Cp_LIQ",
                                 "unit": "J/(kmol.K)"
                             }
                         ]
                     },
                     {
                         "id": 2,
-                        "function": "Tr = T/Tc \n \
+                        "function": "Tr = args['T']/args['Tc'] \n \
                         t = 1-Tr \n \
-                        res = (C[0]**2)/t + C[1] - 2*C[0]*C[2]*t - C[2]*C[3]*(t**2) - (C[2]**2)*(t**3)/3 - (C[2])*(C[3])*(t**4)/2 - (C[3]**2)*(t**5)/5",
+                        res = (parms['C1']**2)/t + parms['C2'] - 2*parms['C1']*C[2]*t - parms['C3']*parms['C4']*(t**2) - (parms['C3']**2)*(t**3)/3 - (parms['C3'])*(parms['C4'])*(t**4)/2 - (parms['C4']**2)*(t**5)/5",
                         "args": [
+                            {
+                                "id": 1,
+                                "name": "temperature",
+                                "parameter": "T",
+                                "unit": "K"
+                            },
+                            {
+                                "id": 2,
+                                "name": "critical temperature",
+                                "parameter": "Tc",
+                                "unit": "K"
+                            }
+                        ],
+                        "parms": [
                             {
                                 "id": 1,
                                 "name": "C1",
@@ -169,31 +185,77 @@ THERMODYNAMICS_DATABOOK = [
                                 "name": "C5",
                                 "parameter": "C5",
                                 "unit": ""
-                            },
-                            {
-                                "id": 6,
-                                "name": "temperature",
-                                "parameter": "T",
-                                "unit": "K"
-                            },
-                            {
-                                "id": 7,
-                                "name": "critical temperature",
-                                "parameter": "Tc",
-                                "unit": "K"
                             }
                         ],
                         "return": [
                             {
                                 "id": 1,
                                 "name": "heat capacity",
-                                "parameter": "Cp[l]",
+                                "parameter": "Cp_LIQ",
                                 "unit": "J/(kmol.K)"
                             }
                         ]
                     }
                 ]
-            }
+            },
+            {
+                "id": 5,
+                "name": "TABLE 2-155 Heat Capacity at Constant Pressure of Inorganic and Organic Compounds in the Ideal Gas Fit to a Polynomial",
+                "equations": [
+                     {
+                        "id": 1,
+                        "function": "res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) + parms['C4']*math.pow(args['T'],3) + parms['C5']*math.pow(args['T'],4)",
+                        "args": [
+                            {
+                                "id": 1,
+                                "name": "temperature",
+                                "parameter": "T",
+                                "unit": "K"
+                            }
+                        ],
+                        "parms": [
+                            {
+                                "id": 1,
+                                "name": "C1",
+                                "parameter": "C1",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 2,
+                                "name": "C2",
+                                "parameter": "C2",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 3,
+                                "name": "C3",
+                                "parameter": "C3",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 4,
+                                "name": "C4",
+                                "parameter": "C4",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 5,
+                                "name": "C5",
+                                "parameter": "C5",
+                                "unit": "-"
+                            }
+                        ],
+                        "return": [
+                            {
+                                "id": 1,
+                                "name": "heat capacity",
+                                "parameter": "Cp_IG",
+                                "unit": "J/kmol.K"
+                            }
+                        ]
+                    }
+                ]
+            },
         ]
     },
     {
