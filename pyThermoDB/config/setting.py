@@ -138,9 +138,7 @@ THERMODYNAMICS_DATABOOK = [
                     },
                     {
                         "id": 2,
-                        "function": "Tr = args['T']/args['Tc'] \n \
-                        t = 1-Tr \n \
-                        res = (parms['C1']**2)/t + parms['C2'] - 2*parms['C1']*C[2]*t - parms['C3']*parms['C4']*(t**2) - (parms['C3']**2)*(t**3)/3 - (parms['C3'])*(parms['C4'])*(t**4)/2 - (parms['C4']**2)*(t**5)/5",
+                        "function": "Tr = args['T']/args['Tc']\nt = 1-Tr\nres = (parms['C1']**2)/t + parms['C2'] - 2*parms['C1']*parms['C3']*t - parms['C1']*parms['C4']*(t**2) - (parms['C3']**2)*(t**3)/3 - (parms['C3'])*(parms['C4'])*(t**4)/2 - (parms['C4']**2)*(t**5)/5",
                         "args": [
                             {
                                 "id": 1,
