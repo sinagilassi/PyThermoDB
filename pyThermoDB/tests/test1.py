@@ -26,26 +26,26 @@ print("dir: ", dir(tdb))
 # print(tdb.get_table())
 
 # set component
-comp1 = "Hydrogen"
+comp1 = "ethane"
 # check component availability
 # tdb.check_component_availability(comp1)
 # check component availability manually
-# tdb.check_component_availability_manual(comp1, 1, 5)
+# tdb.check_component_availability_manual(comp1, 1, 4)
 
 # get data
 # data = tdb.get_data(comp1)
 # manual
-data = tdb.get_data_manual(comp1, 1, 5)
+data = tdb.get_data_manual(comp1, 1, 4)
 # print(f"data for {comp1}:")
 print(f"data for {data.view()}:")
 # print(f"equation body for {data.equation_body()}:")
 # print(f"equation parms for {data.equation_parms()}:")
-# print(f"equation args for {data.equation_args()}:")
+print(f"equation args for {data.equation_args()}:")
 # print(f"equation return for {data.equation_return()}:")
 # pprint.pprint(data)
 
 # define args for a function
-args = {"T": 50}
+args = {"T": 290, "Tc": 305.32}
 res = data.equation_exe(args=args)
 print(f"function exe value: {res}")
 

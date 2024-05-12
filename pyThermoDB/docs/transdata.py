@@ -89,7 +89,7 @@ class TransData:
         load parms values and store in a dict
         '''
         _parms_name = [item['name'] for item in self.parms]
-        _parms = {key: float(value['value'])/float(value['unit'])
+        _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
                   for key, value in self.data_trans.items() if key in _parms_name}
         return _parms
 

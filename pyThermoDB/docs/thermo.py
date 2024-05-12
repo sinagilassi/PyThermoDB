@@ -2,7 +2,7 @@
 # internal
 from pyThermoDB.config.setting import THERMODYNAMICS_DATABOOK, API_URL
 from pyThermoDB.api import Manage
-from pyThermoDB.utils import isNumber
+from pyThermoDB.utils import isNumber, uppercaseStringList
 from pyThermoDB.docs.transdata import TransData
 
 
@@ -211,8 +211,10 @@ class SettingDatabook():
                 # search
                 compList = ManageC.component_list()
                 # check availability
+                # uppercase list
+                compListUpper = uppercaseStringList(compList)
                 if len(compList) > 0:
-                    if component_name in compList:
+                    if component_name.upper() in compListUpper:
                         print(f"{component_name} is available.")
                     else:
                         print(f"{component_name} is not available.")
