@@ -8,7 +8,7 @@ from pyThermoDB.config import THERMODYNAMICS_DATABOOK
 
 class TransData:
     '''
-    transform data
+    Transform class
     '''
 
     def __init__(self, api_data, src):
@@ -24,9 +24,11 @@ class TransData:
 
     def trans(self):
         '''
-        step 1: display api data
-            data['header'],['records'],['unit']
-        step 2: transform to dict 
+        Transform the data loaded from API, 
+        It consists of:
+            step 1: display api data
+                data['header'],['records'],['unit']
+            step 2: transform to dict 
         '''
         self.data_trans = {}
 
@@ -42,10 +44,11 @@ class TransData:
 
     def get_prop(self, symbol):
         '''
-        choose a property, then get its value
+        Choose a property, then get its value,
+        This symbol is the one defined in the displayed data
 
         args:
-            symbol: property symbol (ideal gas enthalpy of formation: EnFo_IG)
+            symbol {str}: property symbol (ideal gas enthalpy of formation: EnFo_IG)
 
         return:
             property value
@@ -60,20 +63,31 @@ class TransData:
 
         return _value
 
-    def view(self):
+    def view(self, value=False):
         '''
-        display data in a table (pandas dataframe)
+        Display data in a table (pandas dataframe)
+        
+        args:
+            value: display value
         '''
         df = pd.DataFrame(self.api_data)
         print(df)
+        # check
+        if value:
+            return df
+        else:
+            return None
 
     def equation_exe(self, args):
         '''
-        execute function
+        Execute a function
 
         args:
-            **args: a dictionary contains variable names and values
+            **args {dict}: a dictionary contains variable names and values
                 args = {"T": 120, "P": 1}
+                
+        return:
+            res {float}: calculation result, return value is -1 in case of errors
         '''
         if self.eq_id != -1:
             # build parms dict
@@ -83,38 +97,68 @@ class TransData:
             return res
         else:
             print("This property has no equation.")
+            return -1
 
     def load_parms(self):
         '''
-        load parms values and store in a dict
+        Load parms values and store in a dict, 
+        These parameters are constant values defined in an equation.
         '''
         _parms_name = [item['name'] for item in self.parms]
         _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
                   for key, value in self.data_trans.items() if key in _parms_name}
         return _parms
 
-    def equation_body(self):
+    def equation_body(self, value=False):
         '''
-        display equation body
+        Display equation body,
+
+        args:
+            value {bool}: if it is True, returns data
+            
+        return:
+            equation body {str}
         '''
         if self.eq_id != -1:
             print(self.body)
         else:
             print("This property has no equation.")
+            
+        if value:
+            return self.body
+        else:
+            return None
 
-    def equation_parms(self):
+    def equation_parms(self, value=False):
         '''
-        display equation parms
+        Display equation parms,
+        
+        args:
+            value {bool}: if it is True, returns data
+            
+        return:
+            equation parms {dataframe}
         '''
         if self.eq_id != -1:
             df = pd.DataFrame(self.parms)
             print(df)
         else:
             print("This property has no equation.")
+            
+        if value:
+            return df
+        else:
+            return None
 
-    def equation_args(self):
+    def equation_args(self, value=False):
         '''
-        display equation args
+        Display equation args,
+        
+        args:
+            value {bool}: if it is True, returns data
+            
+        return:
+            equation args {dataframe}
         '''
         if self.eq_id != -1:
             df = pd.DataFrame(self.args)
@@ -122,9 +166,20 @@ class TransData:
         else:
             print("This property has no equation.")
 
-    def equation_return(self):
+        if value:
+            return df
+        else:
+            return None
+        
+    def equation_return(self, value=False):
         '''
-        display equation return
+        Display equation return,
+        
+        args:
+            value {bool}: if it is True, returns data
+            
+        return:
+            equation return {dataframe}
         '''
         if self.eq_id != -1:
             df = pd.DataFrame(self.res)
@@ -132,9 +187,14 @@ class TransData:
         else:
             print("This property has no equation.")
 
+        if value:
+            return df
+        else:
+            return None
+        
     def eqSet(self):
         '''
-        equation used for calculation
+        Set the equation used for calculation
         '''
         # equation id
         if self.eq_id != -1:
@@ -148,6 +208,17 @@ class TransData:
             self.res = eq['return']
 
     def eqExe(self, body, parms, args):
+        '''
+        Execute the function having args, parameters and body
+        
+        args:
+            body {str}: function body
+            parms {dict}: parameters
+            args {dict}: args 
+            
+        return:
+            res {float}: calculation result
+        '''
         # Define a namespace dictionary for eval
         namespace = {'args': args, "parms": parms}
         # Import math module within the function
