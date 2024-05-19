@@ -8,7 +8,7 @@ from pyThermoDB.docs.transdata import TransData
 
 class SettingDatabook():
     '''
-    load databook reference
+    Setting class
     '''
     # selected databook
     selected_db = []
@@ -22,7 +22,8 @@ class SettingDatabook():
 
     def config(self):
         '''
-        display config
+        Config the app
+        This function is used to set the selected values such as databook and table
         '''
         # column names
         column_names = ['id', 'selected databook']
@@ -40,14 +41,29 @@ class SettingDatabook():
         self.log_data(data, max_length, column_names)
     
     def get_databook(self):
+        '''
+        Return the selected databook info
+        
+        return:
+            selected_db[0]: id
+            selected_db[1]: name
+        '''
         return self.selected_db[0], self.selected_db[1]
     
     def get_table(self):
+        '''
+        Return the selected table info
+        
+        return:
+            selected_tb[0]: id
+            selected_tb[1]: name
+        '''
         return self.selected_tb[0], self.selected_tb[1]
     
     def init(self):
         '''
-        config pyThermoDB to use databook reference and table reference
+        Config pyThermoDB to use databook reference and table reference.
+        A list is displayed to select a databook and a table.
         '''
         # load databook reference
         res = self.load_data()
@@ -107,11 +123,17 @@ class SettingDatabook():
                 print("Your choice is not valid. Please choose a valid option.")
 
     def load_data(self):
+        '''
+        Extract data including id, book, and tables from a databook
+        '''
         res = [[str(item['id']), item['book'], item['tables']]
                for item in self.databook]
         return res
 
     def log_data(self, res, max_length_header, column_names):
+        '''
+        Print data
+        '''
         # find the maximum length of each column
         max_length = max_length_header + 10
         # update data
@@ -131,7 +153,7 @@ class SettingDatabook():
 
     def load_tables(self, res, val):
         '''
-        set available tables from selected databook
+        Set available tables from selected databook
 
         args:   
             res: list of databook reference
@@ -155,6 +177,9 @@ class SettingDatabook():
 
     @staticmethod
     def validate_input(input_str, min_value, max_value):
+        '''
+        Validate input
+        '''
         try:
             # Convert input to integer
             num = int(input_str)
@@ -172,11 +197,12 @@ class SettingDatabook():
 
     def check_component_availability(self, component_name):
         '''
-        check component availability
+        Check component availability
         
         args:
-            component_name: string of component name (e.g. 'Carbon dioxide')
-            
+            component_name {str}: string of component name (e.g. 'Carbon dioxide')
+        
+        A message shows whether data is available for a component in a selected databook.  
         '''
         # set api
         ManageC = Manage(API_URL, self.selected_db[0], self.selected_tb[0])
@@ -193,15 +219,18 @@ class SettingDatabook():
     
     def check_component_availability_manual(self, component_name, databook_id, table_id):
         '''
-        check component availability manually
+        Check component availability manually, 
+        The difference with `check_component_availability` function is to set manually databook and table ids.
         
         args:
-            component_name: string of component name (e.g. 'Carbon dioxide')
-            databook_id: databook id
-            table_id: table id
+            component_name {str}: string of component name (e.g. 'Carbon dioxide')
+            databook_id {int}: databook id
+            table_id {int}: table id
             
         return:
-            comp_info: component information
+            comp_info {str}: component information
+            
+        A message shows whether data is available for a component in a selected databook.  
         '''
         try:
             # check databook_id and table_id are number or not
@@ -225,12 +254,13 @@ class SettingDatabook():
         
     def get_data(self, component_name):
         '''
-        step1: get thermo data for a component
-        
-        step2: get equation for the data (parameters)
+        Get data, 
+        It consists of:
+            step1: get thermo data for a component,
+            step2: get equation for the data (parameters).
         
         args:
-            component_name: string of component name (e.g. 'Carbon dioxide')
+            component_name {str}: string of component name (e.g. 'Carbon dioxide')
             
         '''
         # set api
@@ -247,14 +277,16 @@ class SettingDatabook():
     
     def get_data_manual(self, component_name, databook_id, table_id):
         '''
-        step1: get thermo data for a component
-        
-        step2: get equation for the data (parameters)
+        Get data manually, 
+        The difference with `get_data` is to set databook and table ids manually.
+        It consists of:
+            step1: get thermo data for a component
+            step2: get equation for the data (parameters)
         
         args:
-            component_name: string of component name (e.g. 'Carbon dioxide')
-            databook_id: databook id
-            table_id: table id
+            component_name {str}: string of component name (e.g. 'Carbon dioxide')
+            databook_id {int}: databook id
+            table_id {int}: table id
         
         return:
             comp_info: component information
@@ -285,12 +317,12 @@ class SettingDatabook():
         
     def findEq(self, api_data, databook_id, table_id):
         '''
-        find equation from thermodynamics databook
+        Find an equation from thermodynamics databook
         
         args:
-            api_data: api data - dict ['header'],['records'],['unit']
-            databook_id: thermodynamic databook id
-            table_id: table id
+            api_data {dict}: api data - dict ['header'],['records'],['unit']
+            databook_id {int}: thermodynamic databook id
+            table_id {int}: table id
         '''
         # equation list
         eqs = []
