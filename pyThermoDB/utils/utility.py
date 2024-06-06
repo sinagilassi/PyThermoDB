@@ -9,3 +9,17 @@ def isNumber(value):
             return False
     except Exception:
         return False
+
+
+def uppercaseStringList(value):
+    '''
+    upercase string list
+
+    args: 
+        value: string list
+
+    returns:
+        uppercase string list
+    '''
+    uppercaseList = list(map(str.upper, value))
+    return uppercaseList
