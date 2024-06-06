@@ -202,7 +202,7 @@ THERMODYNAMICS_DATABOOK = [
                 "id": 5,
                 "name": "TABLE 2-155 Heat Capacity at Constant Pressure of Inorganic and Organic Compounds in the Ideal Gas Fit to a Polynomial",
                 "equations": [
-                     {
+                    {
                         "id": 1,
                         "function": "res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) + parms['C4']*math.pow(args['T'],3) + parms['C5']*math.pow(args['T'],4)",
                         "args": [
@@ -264,12 +264,78 @@ THERMODYNAMICS_DATABOOK = [
         "tables": [
             {
                 "id": 1,
-                "name": "Table A.1 General data for selected compounds",
-                "equations": ""
+                "name": "Table A.2 Vapor pressure correlations for selected compounds",
+                "equations": [
+                    {
+                        "id": 1,
+                        "function": "Tr = args['T']/args['Tc'] \n \
+                        A2 = parms['A']*(1-Tr) \n \
+                        A3 = parms['B']*math.pow(1-Tr, 1.5) \n \
+                        A4 = parms['C']*math.pow(1-Tr, 2.5) \n \
+                        A5 = parms['D']*math.pow(1-Tr, 5) \n \
+                        B1= A1*(A2+A3+A4+A5) \n \
+                        B2 = B1 - log(args['Pc']) \n \
+                        res = exp(B2)",
+                        "args": [
+                            {
+                                "id": 1,
+                                "name": "temperature",
+                                "parameter": "T",
+                                "unit": "K"
+                            },
+                            {
+                                "id": 2,
+                                "name": "critical-temperature",
+                                "parameter": "Tc",
+                                "unit": "K"
+                            },
+                            {
+                                "id": 3,
+                                "name": "critical-pressure",
+                                "parameter": "Pc",
+                                "unit": "bar"
+                            }
+                        ],
+                        "parms": [
+                            {
+                                "id": 1,
+                                "name": "A1",
+                                "parameter": "A1",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 2,
+                                "name": "B2",
+                                "parameter": "B2",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 3,
+                                "name": "C3",
+                                "parameter": "C3",
+                                "unit": "-"
+                            },
+                            {
+                                "id": 4,
+                                "name": "D4",
+                                "parameter": "D4",
+                                "unit": "-"
+                            }
+                        ],
+                        "return": [
+                            {
+                                "id": 1,
+                                "name": "vapor pressure",
+                                "parameter": "VaPr",
+                                "unit": "bar"
+                            }
+                        ]
+                    }
+                ]
             },
             {
                 "id": 2,
-                "name": "Table A.2 Vapor pressure correlations for selected compounds",
+                "name": "Table A.1 General data for selected compounds",
                 "equations": ""
             },
             {
