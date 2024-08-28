@@ -1,0 +1,215 @@
+# import packages/modules
+# internal
+
+
+# api url
+API_URL = "https://script.google.com/macros/s/AKfycbzA78GeYUGfwNq_9aeQyNeP3dG82T5NehqW_SJzWBDFXHQiD7DCQuZlGFmZ9kVuZvdX/exec"
+
+REFERENCES:
+    Perry's Chemical Engineers' Handbook
+        TABLES:
+            TABLE 2-8 Vapor Pressure of Inorganic and Organic Liquids
+                EQUATIONS:
+                    BODY: 
+                        res: math.exp(parms['C1'] + parms['C2']/args['T'] + parms['C3']*math.log(args['T']) + parms['C4']*(args['T']**parms['C5']))
+                    ARGS: 
+                        temperature:
+                            name: temperature
+                            symbol: T
+                            unit: K 
+                    PARMS:
+                        C1:
+                            name: C1
+                            symbol: C1
+                            unit: -
+                        C2:
+                            name: C2
+                            symbol: C2
+                            unit: -
+                        C3:
+                            name: C3
+                            symbol: C3
+                            unit: -
+                        C4:
+                            name: C4
+                            symbol: C4
+                            unit: -
+                        C5:
+                            name: C5
+                            symbol: C5
+                            unit: -
+                    RETURNS:
+                        vapor_pressure:
+                            name: vapor pressure
+                            symbol: P
+                            unit: Pa
+            TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion
+            TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds
+            TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids
+                EQUATIONS:
+                    BODY:
+                        res: parms['C1'] + parms['C2']*args['T'] + parms['C3']*(args['T']**2) + parms['C4']*(args['T']**3) + parms['C5']*(args['T']**4)
+                    ARGS:
+                        temperature:
+                            name: temperature
+                            symbol: T
+                            unit: K
+                    PARMS:
+                        C1:
+                            name: C1
+                            symbol: C1
+                            unit: -
+                        C2:
+                            name: C2
+                            symbol: C2
+                            unit: -
+                        C3:
+                            name: C3
+                            symbol: C3
+                            unit: -
+                        C4:
+                            name: C4
+                            symbol: C4
+                            unit: -
+                        C5:
+                            name: C5
+                            symbol: C5
+                            unit: -
+                    RETURNS:
+                        heat_capacity:
+                            name: heat capacity
+                            symbol: Cp
+                            unit: J/(kmol.K)
+                    BODY:
+                        Tr: args['T']/args['Tc']
+                        t: 1-Tr
+                        res: (parms['C1']**2)/t + parms['C2'] - 2*parms['C1']*parms['C3']*t - parms['C1']*parms['C4']*(t**2) - (parms['C3']**2)*(t**3)/3 - (parms['C3'])*(parms['C4'])*(t**4)/2 - (parms['C4']**2)*(t**5)/5
+                    ARGS:
+                        temperature:
+                            name: temperature
+                            symbol: T
+                            unit: K
+                        critical_temperature:
+                            name: critical temperature:
+                            symbol: Tc
+                            unit: K
+                    PARAMS:
+                        C1:
+                            name: C1
+                            symbol: C1
+                            unit: -
+                        C2:
+                            name: C2
+                            symbol: C2
+                            unit: -
+                        C3:
+                            name: C3
+                            symbol: C3
+                            unit: -
+                        C4:
+                            name: C4
+                            symbol: C4
+                            unit: -
+                        C5:
+                            name: C5
+                            symbol: C5
+                            unit: -
+                    RETURNS:
+                        heat_capacity:
+                            name: heat capacity
+                            symbol: Cp_LIQ
+                            unit: J/(kmol.K)
+            TABLE 2-155 Heat Capacity at Constant Pressure of Inorganic and Organic Compounds in the Ideal Gas Fit to a Polynomial
+                EQUATIONS:
+                    BODY:
+                        res: parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) + parms['C4']*math.pow(args['T'],3) + parms['C5']*math.pow(args['T'],4)
+                    ARGS:
+                        temperature:
+                            name: temperature
+                            symbol: T
+                            unit: K
+                    PARMS:
+                        C1:
+                            name: C1
+                            symbol: C1
+                            unit: -
+                        C2:
+                            name: C2
+                            symbol: C2
+                            unit: -
+                        C3:
+                            name: C3
+                            symbol: C3
+                            unit: -
+                        C4:
+                            name: C4
+                            symbol: C4
+                            unit: -
+                        C5:
+                            name: C5
+                            symbol: C5
+                            unit: -
+                    RETURNS:
+                        heat_capacity:
+                            name: heat capacity
+                            symbol: Cp_IG
+                            unit: J/kmol.K
+    Chemical Thermodynamics for Process Simulation
+        TABLES:
+            Table A.2 Vapor pressure correlations for selected compounds
+                EQUATIONS:
+                    BODY:
+                        Tr: args['T']/args['Tc']
+                        A2: parms['A']*(1-Tr)
+                        A3: parms['B']*math.pow(1-Tr, 1.5) 
+                        A4: parms['C']*math.pow(1-Tr, 2.5) 
+                        A5: parms['D']*math.pow(1-Tr, 5) 
+                        B1: A1*(A2+A3+A4+A5) 
+                        B2: B1 - log(args['Pc'])
+                        res: exp(B2)
+                    ARGS:
+                        temperature:
+                            name: temperature
+                            symbol: T
+                            unit: K
+                        critical_temperature:
+                            name: critical temperature
+                            symbol: Tc
+                            unit: K
+                        critical_pressure:
+                            name: critical pressure
+                            symbol: Pc
+                            unit: bar
+                    PARMS:
+                        A:
+                            name: A
+                            symbol: A
+                            unit: -
+                        B:
+                            name: B
+                            symbol: B
+                            unit: -
+                        C:
+                            name: C
+                            symbol: C
+                            unit: -
+                        D:
+                            name: D
+                            symbol: D
+                            unit: -
+                    RETURNS:
+                        vapor_pressure:
+                            name: vapor pressure
+                            symbol: VaPr
+                            unit: bar
+            Table A.1 General data for selected compounds
+            Table A.3 Liquid density correlations for selected compounds
+            Table A.4 Enthalpy of vaporization correlations for selected compounds
+            Table A.5 Liquid heat capacity correlations for selected compounds
+            Table A.6 Ideal gas heat capacity correlations for selected compounds
+            Table A.7 Liquid viscosity correlations for selected compounds
+            Table A.8 Vapor viscosity correlations for selected compounds at low pressures
+            Table A.9 Liquid thermal conductivity correlations for selected compounds
+            Table Table A.10 Vapor thermal conductivity correlations for selected compounds at low pressures
+            Table A.11 Surface tension correlations for selected compounds
+

@@ -6,8 +6,10 @@ from pyThermoDB.config import __version__
 from pyThermoDB.docs import SettingDatabook
 
 
-def main():
-    print(f'pyThermoDB version: {__version__} is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data.')
+def desc():
+    print(f'pyThermoDB v. {__version__} is a lightweight and user-friendly\
+          Python package designed to provide quick access to essential thermodynamic data.')
+
 
 def get_version():
     return __version__
@@ -22,4 +24,4 @@ def thermo_databook():
 
 
 if __name__ == '__main__':
-    main()
+    desc()
