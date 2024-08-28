@@ -1,5 +1,5 @@
 # import packages/modules
-import pyThermoDB as pt
+import pyThermoDB as ptdb
 import pprint
 
 
@@ -7,10 +7,10 @@ import pprint
 # print(dir(pt))
 # get versions
 # print(pt.get_version())
-print(pt.__version__)
+print(ptdb.__version__)
 
 # databook reference
-tdb = pt.thermo_databook()
+tdb = ptdb.thermo_databook()
 print("type: ", type(tdb))
 print("dir: ", dir(tdb))
 
