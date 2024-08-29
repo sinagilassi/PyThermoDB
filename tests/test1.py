@@ -16,12 +16,16 @@ tdb = ptdb.thermo_databook()
 # print("type: ", type(tdb))
 # print("dir: ", dir(tdb))
 
-# check reference loaded
-# ref = tdb.reference
-# pp(ref)
 # databook
-databook_list = tdb.get_databook_list()
-a = 1
+db = tdb.databook
+print(db)
+
+# select a database
+tdb.select_databook("Perry's Chemical Engineers' Handbook")
+
+# check selected database
+print(tdb.selected_databook)
+
 
 # ===============================
 # set component

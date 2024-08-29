@@ -11,10 +11,6 @@ class SettingDatabook(ManageData):
     '''
     Setting class
     '''
-    # databook list
-    __databook_list = []
-    # table list
-    __table_list = []
     # selected databook
     __selected_databook = ''
     # selected table
@@ -23,24 +19,6 @@ class SettingDatabook(ManageData):
     def __init__(self):
         # ManageData init
         ManageData.__init__(self)
-
-    @property
-    def databook_list(self):
-        return self.__databook_list
-
-    @databook_list.setter
-    def databook_list(self, value):
-        self.__databook_list = []
-        self.__databook_list = value
-
-    @property
-    def table_list(self):
-        return self.__table_list
-
-    @table_list.setter
-    def table_list(self, value):
-        self.__table_list = []
-        self.__table_list = value
 
     @property
     def selected_databook(self):
@@ -57,6 +35,37 @@ class SettingDatabook(ManageData):
     @selected_tb.setter
     def selected_tb(self, value):
         self.__selected_tb = value
+
+    def select_databook(self, databook:  int | str):
+        '''
+        Select a databook from databook_list
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+
+        Returns
+        -------
+        None
+        '''
+        try:
+            if isinstance(databook, int):
+                self.selected_databook = self.databook[databook]
+            elif isinstance(databook, str):
+                # find databook
+                self.selected_databook = next(
+                    (item for item in self.databook if item == databook.strip()), None)
+                if self.selected_databook is None:
+                    raise ValueError(
+                        f"No matching databook found for '{databook}'")
+            else:
+                raise ValueError("databook must be int or str")
+        except ValueError as e:
+            # Log or print the error for debugging purposes
+            print(f"An error occurred: {e}")
+            # Optionally, re-raise the exception if needed for higher-level error handling
+            # raise
 
     def check_component_availability(self, component_name):
         '''
