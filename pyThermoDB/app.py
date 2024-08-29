@@ -16,9 +16,9 @@ def get_version():
     return __version__
 
 
-def thermo_databook():
+def init():
     '''
-    return thermodynamics databook reference
+    initialize thermodynamics databook app
     '''
     SettingDatabookC = SettingDatabook()
     return SettingDatabookC

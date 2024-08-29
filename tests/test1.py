@@ -12,7 +12,7 @@ print(ptdb.__version__)
 # ===============================
 # databook reference initialization
 # ===============================
-tdb = ptdb.thermo_databook()
+tdb = ptdb.init()
 # print("type: ", type(tdb))
 # print("dir: ", dir(tdb))
 

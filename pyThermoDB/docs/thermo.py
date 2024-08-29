@@ -1,10 +1,12 @@
 # import packages/modules
+
 # internal
 from ..config import THERMODYNAMICS_DATABOOK, API_URL
 from ..api import Manage
 from ..utils import isNumber, uppercaseStringList
 from .transdata import TransData
 from .managedata import ManageData
+#
 
 
 class SettingDatabook(ManageData):
@@ -36,7 +38,7 @@ class SettingDatabook(ManageData):
     def selected_tb(self, value):
         self.__selected_tb = value
 
-    def select_databook(self, databook:  int | str):
+    def select_databook(self, databook):
         '''
         Select a databook from databook_list
 
@@ -66,6 +68,20 @@ class SettingDatabook(ManageData):
             print(f"An error occurred: {e}")
             # Optionally, re-raise the exception if needed for higher-level error handling
             # raise
+
+    def list_tables(self):
+        '''
+        List all tables in the selected databook
+
+        Returns
+        -------
+
+        '''
+        try:
+            # selected databook
+
+        except Exception as e:
+            raise Exception(e)
 
     def check_component_availability(self, component_name):
         '''
