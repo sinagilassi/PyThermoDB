@@ -2,19 +2,20 @@
 # externals
 import requests
 # internal
-from pyThermoDB.config import API_URL
+from ..config import API_URL
+
 
 class Manage:
     def __init__(self, api_url, databook_id, table_id):
         self.api_url = api_url
         self.databook_id = databook_id
         self.table_id = table_id
-        
+
     def component_list(self) -> list:
         # parameters
         reqtype = 'read'
         id = str(self.databook_id).strip()
-        fid = str(self.table_id).strip() 
+        fid = str(self.table_id).strip()
         parameters = f"?reqtype={reqtype}&id={id}&fid={fid}"
         # all data
         get_all = self.api_url + parameters
@@ -37,7 +38,7 @@ class Manage:
         else:
             print("error", response.status_code)
             return []
-    
+
     def component_info(self, component_name: str, search_col_name="Name"):
         '''
         get component info
@@ -45,7 +46,7 @@ class Manage:
         # parameters
         reqtype = 'search'
         id = str(self.databook_id).strip()
-        fid = str(self.table_id).strip() 
+        fid = str(self.table_id).strip()
         # query
         query = {
             "reqtype": reqtype,
@@ -54,9 +55,10 @@ class Manage:
             "search_col_name": search_col_name,
             "name": component_name
         }
-        
+
         # post
-        response = requests.post(self.api_url, json=query, headers={"Content-Type": "application/json"})
+        response = requests.post(self.api_url, json=query, headers={
+                                 "Content-Type": "application/json"})
 
         if response.status_code == 200:
             payload = response.json()

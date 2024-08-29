@@ -1,2 +1,2 @@
-from pyThermoDB.utils.logger import log2Col
-from pyThermoDB.utils.utility import isNumber, uppercaseStringList
+from .logger import log2Col
+from .utility import isNumber, uppercaseStringList

@@ -1,1 +1,1 @@
-from pyThermoDB.api.manage import Manage
+from .manage import Manage
