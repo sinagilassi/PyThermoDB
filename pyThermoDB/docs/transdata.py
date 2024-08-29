@@ -3,7 +3,7 @@
 import pandas as pd
 import math
 # internal
-from pyThermoDB.config import THERMODYNAMICS_DATABOOK
+from ..config import THERMODYNAMICS_DATABOOK
 
 
 class TransData:
@@ -66,7 +66,7 @@ class TransData:
     def view(self, value=False):
         '''
         Display data in a table (pandas dataframe)
-        
+
         args:
             value: display value
         '''
@@ -85,7 +85,7 @@ class TransData:
         args:
             **args {dict}: a dictionary contains variable names and values
                 args = {"T": 120, "P": 1}
-                
+
         return:
             res {float}: calculation result, return value is -1 in case of errors
         '''
@@ -115,7 +115,7 @@ class TransData:
 
         args:
             value {bool}: if it is True, returns data
-            
+
         return:
             equation body {str}
         '''
@@ -123,7 +123,7 @@ class TransData:
             print(self.body)
         else:
             print("This property has no equation.")
-            
+
         if value:
             return self.body
         else:
@@ -132,10 +132,10 @@ class TransData:
     def equation_parms(self, value=False):
         '''
         Display equation parms,
-        
+
         args:
             value {bool}: if it is True, returns data
-            
+
         return:
             equation parms {dataframe}
         '''
@@ -144,7 +144,7 @@ class TransData:
             print(df)
         else:
             print("This property has no equation.")
-            
+
         if value:
             return df
         else:
@@ -153,10 +153,10 @@ class TransData:
     def equation_args(self, value=False):
         '''
         Display equation args,
-        
+
         args:
             value {bool}: if it is True, returns data
-            
+
         return:
             equation args {dataframe}
         '''
@@ -170,14 +170,14 @@ class TransData:
             return df
         else:
             return None
-        
+
     def equation_return(self, value=False):
         '''
         Display equation return,
-        
+
         args:
             value {bool}: if it is True, returns data
-            
+
         return:
             equation return {dataframe}
         '''
@@ -191,7 +191,7 @@ class TransData:
             return df
         else:
             return None
-        
+
     def eqSet(self):
         '''
         Set the equation used for calculation
@@ -210,12 +210,12 @@ class TransData:
     def eqExe(self, body, parms, args):
         '''
         Execute the function having args, parameters and body
-        
+
         args:
             body {str}: function body
             parms {dict}: parameters
             args {dict}: args 
-            
+
         return:
             res {float}: calculation result
         '''

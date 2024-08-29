@@ -1,6 +1,6 @@
 # import packages/modules
 import pyThermoDB as ptdb
-import pprint
+from pprint import pprint as pp
 
 
 # dir
@@ -9,45 +9,47 @@ import pprint
 # print(pt.get_version())
 print(ptdb.__version__)
 
-# databook reference
+# ===============================
+# databook reference initialization
+# ===============================
 tdb = ptdb.thermo_databook()
-print("type: ", type(tdb))
-print("dir: ", dir(tdb))
+# print("type: ", type(tdb))
+# print("dir: ", dir(tdb))
 
-# display databook reference
-# tdb.init()
+# check reference loaded
+# ref = tdb.reference
+# pp(ref)
+# databook
+databook_list = tdb.get_databook_list()
+a = 1
 
-# display config
-# tdb.config()
-
-# databook selected
-# print(tdb.get_databook())
-# table selected
-# print(tdb.get_table())
-
+# ===============================
 # set component
-comp1 = "ethane"
+# ===============================
+# comp1 = "ethane"
 # check component availability
 # tdb.check_component_availability(comp1)
 # check component availability manually
 # tdb.check_component_availability_manual(comp1, 1, 4)
 
+# ===============================
 # get data
+# ===============================
 # data = tdb.get_data(comp1)
 # manual
-data = tdb.get_data_manual(comp1, 1, 4)
+# data = tdb.get_data_manual(comp1, 1, 4)
 # print(f"data for {comp1}:")
-print(f"data for {data.view()}:")
+# print(f"data for {data.view()}:")
 # print(f"equation body for {data.equation_body()}:")
 # print(f"equation parms for {data.equation_parms()}:")
-print(f"equation args for {data.equation_args()}:")
+# print(f"equation args for {data.equation_args()}:")
 # print(f"equation return for {data.equation_return()}:")
 # pprint.pprint(data)
 
 # define args for a function
-args = {"T": 290, "Tc": 305.32}
-res = data.equation_exe(args=args)
-print(f"function exe value: {res}")
+# args = {"T": 290, "Tc": 305.32}
+# res = data.equation_exe(args=args)
+# print(f"function exe value: {res}")
 
 # get a prop value
 # prop = data.get_prop("GiEn_IG")
