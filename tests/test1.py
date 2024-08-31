@@ -12,19 +12,25 @@ print(ptdb.__version__)
 # ===============================
 # databook reference initialization
 # ===============================
-tdb = ptdb.init()
+# tdb = ptdb.init()
 # print("type: ", type(tdb))
 # print("dir: ", dir(tdb))
 
 # databook
-db = tdb.databook
-print(db)
+# db = tdb.databooks()
+# print(db)
 
 # select a database
-tdb.select_databook("Perry's Chemical Engineers' Handbook")
+# tdb.select_databook("Perry's Chemical Engineers' Handbook")
+# tdb.select_databook(1)
 
 # check selected database
-print(tdb.selected_databook)
+# print(tdb.selected_databook)
+# list table available
+# print(tdb.tables())
+
+# manually
+print(tdb.tables(databook=1))
 
 
 # ===============================
