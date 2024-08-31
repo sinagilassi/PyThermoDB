@@ -38,6 +38,25 @@ class SettingDatabook(ManageData):
     def selected_tb(self, value):
         self.__selected_tb = value
 
+    def databooks(self, dataframe=True):
+        '''
+        List all databooks
+
+        Returns
+        -------
+
+        '''
+        try:
+            # databook list
+            res = self.get_databooks()
+            # check
+            if dataframe:
+                return res[1]
+            else:
+                return res[0]
+        except Exception as e:
+            raise Exception(f"databooks loading error! {e}")
+
     def select_databook(self, databook):
         '''
         Select a databook from databook_list
@@ -53,7 +72,7 @@ class SettingDatabook(ManageData):
         '''
         try:
             if isinstance(databook, int):
-                self.selected_databook = self.databook[databook]
+                self.selected_databook = self.databook[databook-1]
             elif isinstance(databook, str):
                 # find databook
                 self.selected_databook = next(
@@ -63,23 +82,50 @@ class SettingDatabook(ManageData):
                         f"No matching databook found for '{databook}'")
             else:
                 raise ValueError("databook must be int or str")
+            # log
+            print(f"Selected databook: {self.selected_databook}")
         except ValueError as e:
             # Log or print the error for debugging purposes
             print(f"An error occurred: {e}")
             # Optionally, re-raise the exception if needed for higher-level error handling
             # raise
 
-    def list_tables(self):
+    def tables(self, databook=None, dataframe=True):
         '''
         List all tables in the selected databook
 
+        Parameters
+        ----------
+        databook : str
+            databook name
+        dataframe: book
+            if True, return a dataframe
+
         Returns
         -------
-
+        table list : list
+            list of tables
         '''
         try:
-            # selected databook
-
+            # table list
+            if databook is None:
+                res = self.get_tables(self.selected_databook)
+            else:
+                # manual databook setting
+                if isinstance(databook, int):
+                    selected_databook = self.databook[databook-1]
+                elif isinstance(databook, str):
+                    selected_databook = next(
+                        (item for item in self.databook if item == databook.strip()), None)
+                else:
+                    selected_databook = -1
+                # table list
+                res = self.get_tables(selected_databook)
+            # check
+            if dataframe:
+                return res[1]
+            else:
+                return res[0]
         except Exception as e:
             raise Exception(e)
 
@@ -99,7 +145,7 @@ class SettingDatabook(ManageData):
         '''
         # set api
         ManageC = Manage(
-            API_URL, self.selected_databook[0], self.selected_tb[0])
+            API_URL, self.selected_databook, self.selected_tb)
         # search
         compList = ManageC.component_list()
         # check availability
@@ -143,8 +189,16 @@ class SettingDatabook(ManageData):
                 # uppercase list
                 compListUpper = uppercaseStringList(compList)
                 if len(compList) > 0:
+                    # get databook
+                    databook_name = self.databooks(dataframe=False)[
+                        databook_id-1]
+                    # get table
+                    table_name, id = self.tables(databook=databook_id, dataframe=False)[
+                        table_id-1]
+                    # check
                     if component_name.upper() in compListUpper:
-                        print(f"{component_name} is available.")
+                        print(
+                            f"{component_name} available in [{table_name}] | [{databook_name}]")
                     else:
                         print(f"{component_name} is not available.")
                 else:

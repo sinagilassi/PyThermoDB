@@ -4,6 +4,7 @@
 # import packages/modules
 import os
 import yaml
+import pandas as pd
 
 
 class ManageData:
@@ -78,16 +79,27 @@ class ManageData:
                 for table, table_data in databook_data.get('TABLES', {}).items():
                     # check EQUATIONS exists
                     if 'EQUATIONS' in table_data:
+                        # eq
+                        _eq = []
                         for eq, eq_data in table_data['EQUATIONS'].items():
                             # save
-                            tables.append({
-                                'table': table,
-                                'equations': [eq_data]
-                            })
-                    else:
+                            _eq.append(eq_data)
+
+                        # save
                         tables.append({
                             'table': table,
-                            'equations': None
+                            'equations': _eq,
+                            'data': None
+                        })
+                        # reset
+                        _eq = []
+                    # check DATA
+                    elif 'DATA' in table_data:
+                        # save
+                        tables.append({
+                            'table': table,
+                            'equations': None,
+                            'data': table_data['DATA']
                         })
                 databook_list[databook] = tables
             # return
@@ -95,7 +107,67 @@ class ManageData:
         except Exception as e:
             raise Exception(e)
 
+    def get_databooks(self):
+        '''
+        Get a list of databook
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        databook : list
+            list of databook
+        '''
+        try:
+            # databook list
+            _db = list(self.__databook_bulk.keys())
+            # add id
+            res = [(db, f"[{i+1}]") for i, db in enumerate(_db)]
+            # dataframe
+            # column name
+            column_name = "Databooks"
+            databook_df = pd.DataFrame(res, columns=[column_name, "id"])
+            # return
+            return _db, databook_df
+
+        except Exception as e:
+            raise Exception(f"databook loading error! {e}")
+
     def get_tables(self, databook):
         '''
-        Get 
+        Get a table list of selected databook
+
+        Parameters
+        ----------
+        databook : str
+            databook name
+
+        Returns
+        -------
+        tables : list
+            table list of selected databook 
+
         '''
+        try:
+            # list tables
+            _tbs = self.__databook_bulk[databook]
+            # list
+            # tables = [(tb['table'], i+1) for i, tb in enumerate(_tbs)]
+            tables = []
+            # check table and equations
+            for i, tb in enumerate(_tbs):
+                if tb['equations'] is not None:
+                    tables.append([tb['table'], "equation", f"[{i+1}]"])
+                else:
+                    tables.append([tb['table'], "data", f"[{i+1}]"])
+            # dataframe
+            # column name
+            column_name = f"Tables in {databook}"
+            tables_df = pd.DataFrame(
+                tables, columns=[column_name, "Type", "Id"])
+            # return
+            return tables, tables_df
+        except Exception as e:
+            raise Exception(f"table loading err! {e}")

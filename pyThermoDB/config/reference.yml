@@ -2,45 +2,129 @@ REFERENCES:
     Perry's Chemical Engineers' Handbook:
       TABLES:
         TABLE 2-8 Vapor Pressure of Inorganic and Organic Liquids:
-            EQUATIONS:
-              EQ-1:
-                BODY:
-                  res: math.exp(parms['C1'] + parms['C2']/args['T'] +
-                    parms['C3']*math.log(args['T']) +
-                    parms['C4']*(args['T']**parms['C5']))
-                ARGS:
-                  temperature:
-                    name: temperature
-                    symbol: T
-                    unit: K
-                PARMS:
-                  C1:
-                    name: C1
-                    symbol: C1
-                    unit: None
-                  C2:
-                    name: C2
-                    symbol: C2
-                    unit: None
-                  C3:
-                    name: C3
-                    symbol: C3
-                    unit: None
-                  C4:
-                    name: C4
-                    symbol: C4
-                    unit: None
-                  C5:
-                    name: C5
-                    symbol: C5
-                    unit: None
-                RETURNS:
-                  vapor_pressure:
-                    name: vapor pressure
-                    symbol: P
-                    unit: Pa
-        TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion: None
-        TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds: None
+          EQUATIONS:
+            EQ-1:
+              BODY:
+                res: math.exp(parms['C1'] + parms['C2']/args['T'] +
+                  parms['C3']*math.log(args['T']) +
+                  parms['C4']*(args['T']**parms['C5']))
+              ARGS:
+                temperature:
+                  name: temperature
+                  symbol: T
+                  unit: K
+              PARMS:
+                C1:
+                  name: C1
+                  symbol: C1
+                  unit: None
+                C2:
+                  name: C2
+                  symbol: C2
+                  unit: None
+                C3:
+                  name: C3
+                  symbol: C3
+                  unit: None
+                C4:
+                  name: C4
+                  symbol: C4
+                  unit: None
+                C5:
+                  name: C5
+                  symbol: C5
+                  unit: None
+              RETURNS:
+                vapor_pressure:
+                  name: vapor pressure
+                  symbol: P
+                  unit: Pa
+        TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion: 
+          DATA:
+            COLUMNS: 
+              - no.
+              - Name
+              - Formula
+              - CAS no
+              - Mol wt
+              - Ideal gas enthalpy of formation 
+              - Ideal gas Gibbs energy of formation 
+              - Ideal gas entropy
+              - Standard net enthalpy of combustion 
+            SYMBOL:
+              - None
+              - None
+              - None
+              - None
+              - MW
+              - EnFo_IG
+              - GiFo_IG
+              - S_IG
+              - EnCo_STD
+            UNIT:
+              - None
+              - None
+              - None
+              - None
+              - K
+              - J/kmol
+              - J/kmol
+              - J/kmol.K
+              - J/kmol
+            CONVERSION:
+              - None
+              - None
+              - None
+              - None
+              - None
+              - 1E-07
+              - 1E-07
+              - 1E-05
+              - 1E-09
+        TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds: 
+          DATA: 
+            COLUMNS:
+              - no.
+              - Name
+              - Formula
+              - CAS no
+              - Mol wt 
+              - Critical temperature 
+              - Critical pressure 
+              - Critical molar volume
+              - Critical compressibility factor
+              - Acentric factor
+            SYMBOL:
+              - None
+              - None
+              - None
+              - None
+              - MW
+              - Tc
+              - Pc
+              - Vc
+              - Zc
+              - AcFa
+            UNIT:
+              - None
+              - None
+              - None
+              - None
+              - K
+              - MPa
+              - m3/kmol
+              - None
+              - None
+            CONVERSION:
+              - None
+              - None
+              - None
+              - None
+              - None
+              - None
+              - None
+              - None
+              - None
         TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids:
             EQUATIONS:
               EQ-1:
