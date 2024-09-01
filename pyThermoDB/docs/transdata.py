@@ -3,7 +3,6 @@
 import pandas as pd
 import math
 # internal
-from ..config import THERMODYNAMICS_DATABOOK
 
 
 class TransData:

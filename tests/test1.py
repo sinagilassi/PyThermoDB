@@ -33,8 +33,14 @@ tdb = ptdb.init()
 # print(tdb.tables(databook=1))
 
 # display a table
-vapor_pressure_tb = tdb.table(1, 1)
-print(vapor_pressure_tb)
+tb_info = tdb.table_info(1, 1)
+print(tb_info)
+
+# load table
+vapor_pressure_tb = tdb.table_load(1, 1)
+pp(vapor_pressure_tb.eq_info(0))
+
+# test equation with sample data
 
 
 # ===============================
