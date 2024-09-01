@@ -1,11 +1,13 @@
 # import packages/modules
-
+import pandas as pd
 # internal
 from ..config import THERMODYNAMICS_DATABOOK, API_URL
 from ..api import Manage
 from ..utils import isNumber, uppercaseStringList
 from .transdata import TransData
 from .managedata import ManageData
+from .tableequation import TableEquation
+from .tabledata import TableData
 #
 
 
@@ -163,9 +165,9 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(e)
 
-    def table(self, databook, table, dataframe=True):
+    def table(self, databook, table):
         '''
-        Select a table from table_list
+        Get a table 
 
         Parameters
         ----------
@@ -207,6 +209,124 @@ class SettingDatabook(ManageData):
         except Exception as e:
             # Log or print the error for debugging purposes
             print(f"An error occurred: {e}")
+
+    def table_info(self, databook, table, dataframe=True):
+        '''
+        Display table header columns and other info
+
+        Parameters
+        ----------
+        tb : object
+            table object
+
+        Returns
+        -------
+        None.
+        '''
+        try:
+            # table type
+            tb_type = ''
+            # table name
+            table_name = ''
+            # table equations
+            table_equations = []
+            # table data
+            table_data = []
+            # equation no
+            equation_no = 0
+            # data no
+            data_no = 0
+            # get the tb
+            tb = self.table(databook, table)
+
+            # check
+            if tb:
+                # table name
+                table_name = tb['table']
+                # check data/equations
+                tb_type = 'Equation' if tb['equations'] is not None else 'Data'
+
+                # check equations
+                if tb_type == 'Equation':
+                    for item in tb['equations']:
+                        table_equations.append(item)
+
+                    # equation no
+                    equation_no = len(table_equations)
+                # check data
+                if tb_type == 'Data':
+                    table_data = [*tb['data']]
+
+                    # data no
+                    data_no = len(table_data)
+
+                # data
+                _tb_summary = {
+                    "Table Name": table_name,
+                    "Type": tb_type,
+                    "Equations": equation_no,
+                    "Data": data_no
+                }
+
+            if dataframe:
+                # column names
+                column_names = ['Table Name', 'Type', 'Equations', 'Data']
+                # dataframe
+                df = pd.DataFrame([_tb_summary], columns=column_names)
+                return df
+            else:
+                return _tb_summary
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
+
+    def table_load(self, databook, table, dataframe=True):
+        '''
+        Display table header columns and other info
+
+        Parameters
+        ----------
+        tb : object
+            table object
+
+        Returns
+        -------
+        object
+        '''
+        try:
+            # table type
+            tb_type = ''
+            # table name
+            table_name = ''
+            # table equations
+            table_equations = []
+            # table data
+            table_data = []
+            # get the tb
+            tb = self.table(databook, table)
+
+            # check
+            if tb:
+                # table name
+                table_name = tb['table']
+                # check data/equations
+                tb_type = 'Equation' if tb['equations'] is not None else 'Data'
+
+                # check equations
+                if tb_type == 'Equation':
+                    for item in tb['equations']:
+                        table_equations.append(item)
+
+                    # create table equation
+                    return TableEquation(table_name, table_equations)
+                # check data
+                if tb_type == 'Data':
+                    table_data = [*tb['data']]
+
+                    # data no
+                    return TableData(table_name, table_data)
+
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
 
     def check_component_availability(self, component_name):
         '''
@@ -298,7 +418,7 @@ class SettingDatabook(ManageData):
         '''
         # set api
         ManageC = Manage(
-            API_URL, self.selected_databook[0], self.selected_tb[0])
+            API_URL, self.selected_databook, self.selected_tb)
         # search
         compInfo = ManageC.component_info(component_name)
         # check availability
@@ -339,6 +459,7 @@ class SettingDatabook(ManageData):
             src['equations'] = eqs
             src['component_name'] = component_name
             print(f"data for {component_name} is available.")
+            # ! trans data
             tData = TransData(compInfo, src)
             # trans
             tData.trans()
@@ -371,10 +492,10 @@ class SettingDatabook(ManageData):
         eqs = []
         # api data structure
         header = api_data['header']
+
         # check equation exists in header
         if "Eq" in header:
-            db = [item for item in THERMODYNAMICS_DATABOOK if item['id']
-                  == databook_id][0]
-            tb = [item for item in db['tables'] if item['id'] == table_id][0]
-            eqs = tb['equations']
+            # find equation
+            eqs = self.table_load(databook_id, table_id)
+
         return eqs
