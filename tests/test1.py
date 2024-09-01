@@ -12,7 +12,7 @@ print(ptdb.__version__)
 # ===============================
 # databook reference initialization
 # ===============================
-# tdb = ptdb.init()
+tdb = ptdb.init()
 # print("type: ", type(tdb))
 # print("dir: ", dir(tdb))
 
@@ -30,7 +30,11 @@ print(ptdb.__version__)
 # print(tdb.tables())
 
 # manually
-print(tdb.tables(databook=1))
+# print(tdb.tables(databook=1))
+
+# display a table
+vapor_pressure_tb = tdb.table(1, 1)
+print(vapor_pressure_tb)
 
 
 # ===============================
