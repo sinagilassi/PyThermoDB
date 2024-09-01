@@ -57,6 +57,46 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
+    def find_databook(self, databook):
+        '''
+        Find a databook
+
+        Parameters
+        ----------
+        databook : str | int
+            databook name/id
+
+        Returns
+        -------
+        selected_databook: object
+            selected databook
+        databook_name: str
+            databook name
+        databook_id: int
+            databook id
+        '''
+        try:
+            if isinstance(databook, int):
+                # databook id
+                databook_id = databook-1
+                databook_name = self.databook[databook_id]
+            elif isinstance(databook, str):
+                # find databook
+                for i, item in enumerate(self.databook):
+                    if item == databook.strip():
+                        databook_id = i
+                        databook_name = item
+                        break
+            else:
+                raise ValueError("databook must be int or str")
+
+            # set databook
+            selected_databook = self.databook_bulk[databook_name]
+            # res
+            return selected_databook, databook_name, databook_id
+        except Exception as e:
+            raise Exception(e)
+
     def select_databook(self, databook):
         '''
         Select a databook from databook_list
@@ -86,7 +126,7 @@ class SettingDatabook(ManageData):
             print(f"Selected databook: {self.selected_databook}")
         except ValueError as e:
             # Log or print the error for debugging purposes
-            print(f"An error occurred: {e}")
+            raise Exception(e)
             # Optionally, re-raise the exception if needed for higher-level error handling
             # raise
 
@@ -96,8 +136,8 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        databook : str
-            databook name
+        databook : int
+            databook id
         dataframe: book
             if True, return a dataframe
 
@@ -112,15 +152,9 @@ class SettingDatabook(ManageData):
                 res = self.get_tables(self.selected_databook)
             else:
                 # manual databook setting
-                if isinstance(databook, int):
-                    selected_databook = self.databook[databook-1]
-                elif isinstance(databook, str):
-                    selected_databook = next(
-                        (item for item in self.databook if item == databook.strip()), None)
-                else:
-                    selected_databook = -1
+                db, db_name, db_id = self.find_databook(databook)
                 # table list
-                res = self.get_tables(selected_databook)
+                res = self.get_tables(db_name)
             # check
             if dataframe:
                 return res[1]
@@ -128,6 +162,51 @@ class SettingDatabook(ManageData):
                 return res[0]
         except Exception as e:
             raise Exception(e)
+
+    def table(self, databook, table, dataframe=True):
+        '''
+        Select a table from table_list
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+        dataframe: book
+            if True, return a dataframe
+
+        Returns
+        -------
+        None
+        '''
+        try:
+            # find databook
+            db, db_name, db_id = self.find_databook(databook)
+            # find table
+            if isinstance(table, int):
+                # tb
+                tb = self.get_table(db_name, table-1)
+            elif isinstance(table, str):
+                # get tables
+                tables = self.tables(databook=db_name, dataframe=False)
+                # looping
+                for i, item in enumerate(tables):
+                    if item == table.strip():
+                        tb_id = i
+                        break
+                # tb
+                tb = self.get_table(db, tb_id-1)
+            else:
+                raise ValueError("table must be int or str")
+
+            # dataframe
+            # res
+            return tb
+
+        except Exception as e:
+            # Log or print the error for debugging purposes
+            print(f"An error occurred: {e}")
 
     def check_component_availability(self, component_name):
         '''

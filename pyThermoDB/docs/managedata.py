@@ -11,7 +11,7 @@ class ManageData:
     # main data
     __reference = {}
     # databook bulk
-    __databook_bulk = []
+    __databook_bulk = {}
     # databook
     __databook = []
     # table
@@ -41,6 +41,15 @@ class ManageData:
         self.__databook = value
 
     @property
+    def databook_bulk(self):
+        return self.__databook_bulk
+
+    @databook_bulk.setter
+    def databook_bulk(self, value):
+        self.__databook_bulk = {}
+        self.__databook_bulk = value
+
+    @property
     def tables(self):
         return self.__tables
 
@@ -67,8 +76,8 @@ class ManageData:
 
         Returns
         -------
-        databook_list : list
-            databook list
+        databook_list : dict
+            databook dict
         '''
         try:
             databook_list = {}
@@ -147,21 +156,22 @@ class ManageData:
         Returns
         -------
         tables : list
-            table list of selected databook 
+            table list of selected databook
 
         '''
         try:
             # list tables
-            _tbs = self.__databook_bulk[databook]
+            _dbs = self.__databook_bulk[databook]
             # list
-            # tables = [(tb['table'], i+1) for i, tb in enumerate(_tbs)]
             tables = []
             # check table and equations
-            for i, tb in enumerate(_tbs):
+            for i, tb in enumerate(_dbs):
                 if tb['equations'] is not None:
-                    tables.append([tb['table'], "equation", f"[{i+1}]"])
+                    tables.append([tb['table'], "equation",
+                                  f"[{i+1}]"])
                 else:
-                    tables.append([tb['table'], "data", f"[{i+1}]"])
+                    tables.append(
+                        [tb['table'], "data", f"[{i+1}]"])
             # dataframe
             # column name
             column_name = f"Tables in {databook}"
@@ -169,5 +179,41 @@ class ManageData:
                 tables, columns=[column_name, "Type", "Id"])
             # return
             return tables, tables_df
+        except Exception as e:
+            raise Exception(f"table loading err! {e}")
+
+    def get_table(self, databook, table_id):
+        '''
+        Get a table list of selected databook
+
+        Parameters
+        ----------
+        databook : str
+            databook name
+        table_id : int
+            table id
+
+        Returns
+        -------
+        tables : list
+            table list of selected databook
+
+        '''
+        try:
+            # check table
+            tb_id = int(table_id)
+            # select databook
+            databook = self.databook_bulk[databook]
+            # list
+            selected_tb = {}
+            # check table and equations
+            for i, tb in enumerate(databook):
+                if tb['equations'] is not None:
+                    # check table id
+                    if tb_id == i:
+                        selected_tb = tb
+
+            # return
+            return selected_tb
         except Exception as e:
             raise Exception(f"table loading err! {e}")
