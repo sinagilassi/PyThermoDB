@@ -356,11 +356,9 @@ class SettingDatabook(ManageData):
         else:
             print("API error. Please try again later.")
 
-    def check_component_availability_manual(self, component_name, databook_id, table_id):
+    def table_check_component(self, component_name, databook_id, table_id):
         '''
-        Check component availability manually, 
-        The difference with `check_component_availability` function is to set 
-        manually databook and table ids.
+        Check component availability in the selected databook and table
 
         Parameters
         ----------
@@ -370,7 +368,6 @@ class SettingDatabook(ManageData):
             databook id
         table_id : int
             table id
-
 
         Returns
         -------
@@ -392,8 +389,8 @@ class SettingDatabook(ManageData):
                     databook_name = self.databooks(dataframe=False)[
                         databook_id-1]
                     # get table
-                    table_name, id = self.tables(databook=databook_id, dataframe=False)[
-                        table_id-1]
+                    table_name = self.tables(databook=databook_id, dataframe=False)[
+                        table_id-1][0]
                     # check
                     if component_name.upper() in compListUpper:
                         print(
@@ -405,28 +402,34 @@ class SettingDatabook(ManageData):
         except Exception as e:
             print(e)
 
-    def get_data(self, component_name):
+    def load_component_data(self, component_name, databook_id, table_id):
         '''
-        Get data, 
+        Load component data from database
         It consists of:
             step1: get thermo data for a component,
             step2: get equation for the data (parameters).
 
-        args:
-            component_name {str}: string of component name (e.g. 'Carbon dioxide')
+        Parameters
+        component_name : str
+            string of component name (e.g. 'Carbon dioxide')
+        databook_id : int
+            databook id
+        table_id : int
+            table id
+
+        Returns
+        -------
 
         '''
         # set api
-        ManageC = Manage(
-            API_URL, self.selected_databook, self.selected_tb)
+        ManageC = Manage(API_URL, databook_id, table_id)
         # search
-        compInfo = ManageC.component_info(component_name)
+        component_data = ManageC.component_info(component_name)
         # check availability
-        if len(compInfo) > 0:
-            print(f"data for {component_name} is available.")
-            return compInfo
+        if len(component_data) > 0:
+            return component_data
         else:
-            print("API error. Please try again later.")
+            print(f"Data for {component_name} not available!")
             return []
 
     def get_data_manual(self, component_name, databook_id, table_id):

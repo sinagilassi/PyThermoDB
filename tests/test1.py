@@ -34,14 +34,19 @@ tdb = ptdb.init()
 
 # display a table
 tb_info = tdb.table_info(1, 1)
-print(tb_info)
+# print(tb_info)
 
 # load table
 vapor_pressure_tb = tdb.table_load(1, 1)
-pp(vapor_pressure_tb.eq_info(0))
+# pp(vapor_pressure_tb.eq_info(0))
 
-# test equation with sample data
+# check component availability in the databook and table
+comp1 = "water"
+CO2_check_availability = tdb.table_check_component(comp1, 1, 1)
 
+# load comp data
+comp_data = tdb.load_component_data(comp1, 1, 1)
+pp(comp_data)
 
 # ===============================
 # set component
