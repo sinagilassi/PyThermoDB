@@ -5,9 +5,12 @@ REFERENCES:
           EQUATIONS:
             EQ-1:
               BODY:
-                res: math.exp(parms['C1'] + parms['C2']/args['T'] +
-                  parms['C3']*math.log(args['T']) +
-                  parms['C4']*(args['T']**parms['C5']))
+                - parms['C1'] = parms['C1']/1
+                - parms['C2'] = parms['C2']/1
+                - parms['C3'] = parms['C3']/1
+                - parms['C4'] = parms['C4']/1
+                - parms['C5'] = parms['C5']/1
+                - res = math.exp(parms['C1'] + parms['C2']/args['T'] + parms['C3']*math.log(args['T']) + parms['C4']*(args['T']**parms['C5']))
               ARGS:
                 temperature:
                   name: temperature
@@ -18,22 +21,27 @@ REFERENCES:
                   name: C1
                   symbol: C1
                   unit: None
+                  conversion: 1
                 C2:
                   name: C2
                   symbol: C2
                   unit: None
+                  conversion: 1
                 C3:
                   name: C3
                   symbol: C3
                   unit: None
+                  conversion: 1
                 C4:
                   name: C4
                   symbol: C4
                   unit: None
+                  conversion: 1
                 C5:
                   name: C5
                   symbol: C5
                   unit: None
+                  conversion: 1
               RETURNS:
                 vapor_pressure:
                   name: vapor pressure
@@ -129,8 +137,12 @@ REFERENCES:
             EQUATIONS:
               EQ-1:
                 BODY:
-                  res: parms['C1'] + parms['C2']*args['T'] + parms['C3']*(args['T']**2) +
-                    parms['C4']*(args['T']**3) + parms['C5']*(args['T']**4)
+                  - parms['C1'] = parms['C1']/1
+                  - parms['C2'] = parms['C2']/1
+                  - parms['C3'] = parms['C3']/1
+                  - parms['C4'] = parms['C4']/1
+                  - parms['C5'] = parms['C5']/1
+                  - res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*(args['T']**2) + parms['C4']*(args['T']**3) + parms['C5']*(args['T']**4)
                 ARGS:
                   temperature:
                     name: temperature
@@ -141,22 +153,27 @@ REFERENCES:
                     name: C1
                     symbol: C1
                     unit: None
+                    conversion: 1
                   C2:
                     name: C2
                     symbol: C2
                     unit: None
+                    conversion: 1
                   C3:
                     name: C3
                     symbol: C3
                     unit: None
+                    conversion: 1
                   C4:
                     name: C4
                     symbol: C4
                     unit: None
+                    conversion: 1
                   C5:
                     name: C5
                     symbol: C5
                     unit: None
+                    conversion: 1
                 RETURNS:
                   heat_capacity:
                     name: heat capacity
@@ -164,9 +181,14 @@ REFERENCES:
                     unit: J/(kmol.K)
               EQ-2:
                 BODY:
-                  Tr: args['T']/args['Tc']
-                  t: 1-Tr
-                  res: (parms['C1']**2)/t + parms['C2'] - 2*parms['C1']*parms['C3']*t -
+                  - parms['C1'] = parms['C1']/1
+                  - parms['C2'] = parms['C2']/1
+                  - parms['C3'] = parms['C3']/1
+                  - parms['C4'] = parms['C4']/1
+                  - parms['C5'] = parms['C5']/1
+                  - Tr = args['T']/args['Tc']
+                  - t = 1-Tr
+                  - res = (parms['C1']**2)/t + parms['C2'] - 2*parms['C1']*parms['C3']*t -
                     parms['C1']*parms['C4']*(t**2) - (parms['C3']**2)*(t**3)/3 -
                     (parms['C3'])*(parms['C4'])*(t**4)/2 -
                     (parms['C4']**2)*(t**5)/5
@@ -184,22 +206,27 @@ REFERENCES:
                     name: C1
                     symbol: C1
                     unit: None
+                    conversion: 1
                   C2:
                     name: C2
                     symbol: C2
                     unit: None
+                    conversion: 1
                   C3:
                     name: C3
                     symbol: C3
                     unit: None
+                    conversion: 1
                   C4:
                     name: C4
                     symbol: C4
                     unit: None
+                    conversion: 1
                   C5:
                     name: C5
                     symbol: C5
                     unit: None
+                    conversion: 1
                 RETURNS:
                   heat_capacity:
                     name: heat capacity
@@ -209,7 +236,12 @@ REFERENCES:
             EQUATIONS:
               EQ-1:
                 BODY:
-                  res: parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) +
+                  - parms['C1'] = parms['C1']/1
+                  - parms['C2'] = parms['C2']/1
+                  - parms['C3'] = parms['C3']/1
+                  - parms['C4'] = parms['C4']/1E+5
+                  - parms['C5'] = parms['C5']/1E+10
+                  - res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) +
                     parms['C4']*math.pow(args['T'],3) +
                     parms['C5']*math.pow(args['T'],4)
                 ARGS:
@@ -222,22 +254,27 @@ REFERENCES:
                     name: C1
                     symbol: C1
                     unit: None
+                    conversion: 1
                   C2:
                     name: C2
                     symbol: C2
                     unit: None
+                    conversion: 1
                   C3:
                     name: C3
                     symbol: C3
                     unit: None
+                    conversion: 1
                   C4:
                     name: C4
                     symbol: C4
                     unit: None
+                    conversion: 1E+5
                   C5:
                     name: C5
                     symbol: C5
                     unit: None
+                    conversion: 1E+10
                 RETURNS:
                   heat_capacity:
                     name: heat capacity
@@ -249,14 +286,14 @@ REFERENCES:
             EQUATIONS:
               EQ-1:
                 BODY:
-                  Tr: args['T']/args['Tc']
-                  A2: parms['A']*(1-Tr)
-                  A3: parms['B']*math.pow(1-Tr, 1.5)
-                  A4: parms['C']*math.pow(1-Tr, 2.5)
-                  A5: parms['D']*math.pow(1-Tr, 5)
-                  B1: A1*(A2+A3+A4+A5)
-                  B2: B1 - log(args['Pc'])
-                  res: exp(B2)
+                  - Tr = args['T']/args['Tc']
+                  - A2 = parms['A']*(1-Tr)
+                  - A3 = parms['B']*math.pow(1-Tr, 1.5)
+                  - A4 = parms['C']*math.pow(1-Tr, 2.5)
+                  - A5 = parms['D']*math.pow(1-Tr, 5)
+                  - B1 = A1*(A2+A3+A4+A5)
+                  - B2 = B1 - log(args['Pc'])
+                  - res = exp(B2)
                 ARGS:
                   temperature:
                     name: temperature
@@ -275,18 +312,22 @@ REFERENCES:
                     name: A
                     symbol: A
                     unit: None
+                    conversion: 1
                   B:
                     name: B
                     symbol: B
                     unit: None
+                    conversion: 1
                   C:
                     name: C
                     symbol: C
                     unit: None
+                    conversion: 1
                   D:
                     name: D
                     symbol: D
                     unit: None
+                    conversion: 1
                 RETURNS:
                   vapor_pressure:
                     name: vapor pressure
