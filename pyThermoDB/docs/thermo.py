@@ -1,9 +1,10 @@
 # import packages/modules
 import pandas as pd
 # internal
-from ..config import THERMODYNAMICS_DATABOOK, API_URL
+from ..config import API_URL
 from ..api import Manage
 from ..utils import isNumber, uppercaseStringList
+from ..data import TableReference
 from .transdata import TransData
 from .managedata import ManageData
 from .tableequation import TableEquation
@@ -20,7 +21,8 @@ class SettingDatabook(ManageData):
     # selected table
     __selected_tb = ''
 
-    def __init__(self):
+    def __init__(self, data_source='api'):
+        self.data_source = data_source
         # ManageData init
         ManageData.__init__(self)
 
@@ -343,6 +345,7 @@ class SettingDatabook(ManageData):
             step2: get equation for the data (parameters).
 
         Parameters
+        ----------
         component_name : str
             string of component name (e.g. 'Carbon dioxide')
         databook_id : int
@@ -352,7 +355,8 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-
+        component_data : object | pandas dataframe
+            component data
         '''
         # set api
         ManageC = Manage(API_URL, databook_id, table_id)
@@ -363,7 +367,7 @@ class SettingDatabook(ManageData):
             # check
             if dataframe:
                 df = pd.DataFrame(component_data, columns=[
-                                  'header', 'symbol', 'records', 'unit'])
+                    'header', 'symbol', 'records', 'unit'])
                 return df
             else:
                 return component_data
@@ -463,9 +467,11 @@ class SettingDatabook(ManageData):
                 dts.trans_data = transform_api_data
                 # prop data
                 dts.prop_data = transform_api_data
+            else:
+                raise Exception('Building data failed!')
 
             # res
             return dts
         else:
             print("API error. Please try again later.")
-            raise Exception("Building equation failed!")
+            raise Exception("Building data failed!")
