@@ -43,7 +43,20 @@ class TableData:
         '''
         Get a component property from data table structure
 
+        Parameters
+        ----------
+        property_name : str | int
+            string/int of property name
+        dataframe : bool, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        df : dataframe
+            component property
+
         '''
+        # dataframe
         df = pd.DataFrame(self.prop_data)
 
         # choose a column

@@ -4,6 +4,7 @@
 # internal
 from .config import __version__
 from .docs import SettingDatabook
+from .docs import TableReference
 
 
 def desc():
@@ -18,10 +19,25 @@ def get_version():
 
 def init():
     '''
-    initialize thermodynamics databook app
+    Initialize thermodb app
     '''
-    SettingDatabookC = SettingDatabook()
-    return SettingDatabookC
+    try:
+        SettingDatabookC = SettingDatabook()
+        return SettingDatabookC
+    except Exception as e:
+        raise Exception(f"Initializing app failed! {e}")
+
+
+def ref():
+    '''
+    Building references object including databook and tables to display data
+    '''
+    try:
+        # init
+        TableReferenceC = TableReference()
+        return TableReferenceC
+    except Exception as e:
+        raise Exception(f'Building reference failed! {e}')
 
 
 if __name__ == '__main__':

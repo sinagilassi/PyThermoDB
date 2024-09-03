@@ -2,7 +2,6 @@
 # externals
 import requests
 # internal
-from ..config import API_URL
 
 
 class Manage:

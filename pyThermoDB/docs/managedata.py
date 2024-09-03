@@ -5,9 +5,10 @@
 import os
 import yaml
 import pandas as pd
+# local
 
 
-class ManageData:
+class ManageData():
     # main data
     __reference = {}
     # databook bulk
@@ -161,7 +162,10 @@ class ManageData:
         '''
         try:
             # list tables
-            _dbs = self.__databook_bulk[databook]
+            if isinstance(databook, str):
+                _dbs = self.__databook_bulk[databook]
+            elif isinstance(databook, int):
+                _dbs = self.__databook_bulk[self.__databook[databook]]
             # list
             tables = []
             # check table and equations
@@ -200,7 +204,11 @@ class ManageData:
         '''
         try:
             # select databook
-            databook = self.databook_bulk[databook]
+            if isinstance(databook, str):
+                databook = self.databook_bulk[databook]
+            elif isinstance(databook, int):
+                databook = self.databook_bulk[self.__databook[databook]]
+
             # list
             selected_tb = {}
             # check table and equations
