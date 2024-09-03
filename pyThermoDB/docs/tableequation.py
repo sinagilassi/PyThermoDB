@@ -4,11 +4,27 @@ import math
 
 
 class TableEquation:
+    # vars
+    body = ''
+    parms = []
+    args = []
+    res = []
+    __trans_data = {}
+
     def __init__(self, table_name, equations):
         self.table_name = table_name
         self.equations = equations
 
-    def eq_info(self, id):
+    @property
+    def trans_data(self):
+        return self.__trans_data
+
+    @trans_data.setter
+    def trans_data(self, value):
+        self.__trans_data = {}
+        self.__trans_data = value
+
+    def eq_structure(self, id):
         '''
         Display equation details
 
@@ -19,57 +35,177 @@ class TableEquation:
 
         Returns
         -------
-        None.
-
+        eq_summary : dict
+            equation summary
         '''
-        # equation id
-        equation = self.equations[id]
-        # equation body
-        _body = equation['BODY']
-        # equation args
-        _args = equation['ARGS']
-        # equation params
-        _parms = equation['PARMS']
-        # equation src
-        _return = equation['RETURNS']
+        try:
+            # equation id
+            equation = self.equations[id]
+            # equation body
+            _body = equation['BODY']
+            # equation args
+            _args = equation['ARGS']
+            # equation params
+            _parms = equation['PARMS']
+            # equation src
+            _return = equation['RETURNS']
 
-        # eq summary
-        eq_summary = {
-            'id': id,
-            'body': _body,
-            'args': _args,
-            'parms': _parms,
-            'return': _return
-        }
+            # eq summary
+            eq_summary = {
+                'id': id,
+                'body': _body,
+                'args': _args,
+                'parms': _parms,
+                'return': _return
+            }
+            return eq_summary
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
 
-        return eq_summary
-
-    def eq(self, id, parms, args):
+    def cal(self, args):
         '''
-        Build an equation
+        Execute a function
 
         Parameters
         ----------
-        id : int
-            equation id
+        args : dict
+            a dictionary contains variable names and values as: args = {"T": 120, "P": 1}
+
 
         Returns
         -------
-        Eq : object
-            executable equation as: eq(parms,args)
+        res : float
+            calculation result
         '''
-        try:
-            # select the equation
-            selected_eq = self.eq_info(id)
-            # function body
-            body = selected_eq['body']
-            # build equation
-            res = self.eq_exe(body, parms=parms, args=args)
-            return res
-        except Exception as e:
-            raise Exception(f'building equation error {e}')
+        # build parms dict
+        _parms = self.load_parms()
+        # execute equation
+        res = self.eqExe(self.body, _parms, args=args)
+        return res
 
-    def eq_exe(self, body, parms, args):
+    def load_parms(self):
+        '''
+        Load parms values and store in a dict, 
+        These parameters are constant values defined in an equation.
+        '''
+        # trans data
+        trans_data = self.trans_data
+        # looping through self.parms
+        _parms_name = list(self.parms.keys())
+        _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
+                  for key, value in trans_data.items() if key in _parms_name}
+        return _parms
+
+    def equation_body(self):
+        '''
+        Display equation body
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        body : str
+            equation body
+        '''
+        return self.body
+
+    def equation_parms(self, dataframe=False):
+        '''
+        Display equation parms
+
+        Parameters
+        ----------
+        value : bool, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        df : dataframe
+            equation parms
+        '''
+        df = pd.DataFrame(self.parms)
+
+        if dataframe:
+            return df
+        else:
+            return None
+
+    def equation_args(self, dataframe=False):
+        '''
+        Display equation args,
+
+        Parameters
+        ----------
+        value : bool, optional
+            DESCRIPTION. The default is False.
+
+        Returns
+        -------
+        df : dataframe
+            equation args
+        '''
+        df = pd.DataFrame(self.args)
+
+        if dataframe:
+            return df
+        else:
+            return None
+
+    def equation_return(self, dataframe=True):
+        '''
+        Display equation return,
+
+        Parameters
+        ----------
+        value : bool, optional
+            DESCRIPTION. The default is True.
+
+
+        Returns
+        -------
+        df : dataframe
+            equation return
+        '''
+        df = pd.DataFrame(self.res)
+
+        if dataframe:
+            return df
+        else:
+            return None
+
+    def eqSet(self):
+        '''
+        Set the equation used for calculation
+
+        Parameters
+        ----------
+        transform_api_data : dict
+            transform api data
+
+        Returns
+        -------
+        None.
+        '''
+        # set
+        transform_api_data = self.trans_data
+
+        # eq
+        Eq_data = 0
+        Eq_data = int(transform_api_data['Eq']['value'])-1
+
+        # load equation
+        eq_summary = self.eq_structure(Eq_data)
+
+        # extract data
+        _body = eq_summary['body']
+        self.body = ';'.join(_body)
+        self.parms = eq_summary['parms']
+        self.args = eq_summary['args']
+        self.res = eq_summary['return']
+
+    def eqExe(self, body, parms, args):
         '''
         Execute the function having args, parameters and body
 

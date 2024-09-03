@@ -40,13 +40,14 @@ class SettingDatabook(ManageData):
     def selected_tb(self, value):
         self.__selected_tb = value
 
-    def databooks(self, dataframe=True):
+    def list_databooks(self, dataframe=True):
         '''
         List all databooks
 
         Returns
         -------
-
+        res: dict | pandas dataframe
+            databook list
         '''
         try:
             # databook list
@@ -59,87 +60,14 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def find_databook(self, databook):
-        '''
-        Find a databook
-
-        Parameters
-        ----------
-        databook : str | int
-            databook name/id
-
-        Returns
-        -------
-        selected_databook: object
-            selected databook
-        databook_name: str
-            databook name
-        databook_id: int
-            databook id
-        '''
-        try:
-            if isinstance(databook, int):
-                # databook id
-                databook_id = databook-1
-                databook_name = self.databook[databook_id]
-            elif isinstance(databook, str):
-                # find databook
-                for i, item in enumerate(self.databook):
-                    if item == databook.strip():
-                        databook_id = i
-                        databook_name = item
-                        break
-            else:
-                raise ValueError("databook must be int or str")
-
-            # set databook
-            selected_databook = self.databook_bulk[databook_name]
-            # res
-            return selected_databook, databook_name, databook_id
-        except Exception as e:
-            raise Exception(e)
-
-    def select_databook(self, databook):
-        '''
-        Select a databook from databook_list
-
-        Parameters
-        ----------
-        databook : int | str
-            databook id or name
-
-        Returns
-        -------
-        None
-        '''
-        try:
-            if isinstance(databook, int):
-                self.selected_databook = self.databook[databook-1]
-            elif isinstance(databook, str):
-                # find databook
-                self.selected_databook = next(
-                    (item for item in self.databook if item == databook.strip()), None)
-                if self.selected_databook is None:
-                    raise ValueError(
-                        f"No matching databook found for '{databook}'")
-            else:
-                raise ValueError("databook must be int or str")
-            # log
-            print(f"Selected databook: {self.selected_databook}")
-        except ValueError as e:
-            # Log or print the error for debugging purposes
-            raise Exception(e)
-            # Optionally, re-raise the exception if needed for higher-level error handling
-            # raise
-
-    def tables(self, databook=None, dataframe=True):
+    def list_tables(self, databook, dataframe=True):
         '''
         List all tables in the selected databook
 
         Parameters
         ----------
-        databook : int
-            databook id
+        databook : int | str
+            databook id or name
         dataframe: book
             if True, return a dataframe
 
@@ -149,14 +77,10 @@ class SettingDatabook(ManageData):
             list of tables
         '''
         try:
+            # manual databook setting
+            db, db_name, db_id = self.find_databook(databook)
             # table list
-            if databook is None:
-                res = self.get_tables(self.selected_databook)
-            else:
-                # manual databook setting
-                db, db_name, db_id = self.find_databook(databook)
-                # table list
-                res = self.get_tables(db_name)
+            res = self.get_tables(db_name)
             # check
             if dataframe:
                 return res[1]
@@ -165,9 +89,9 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(e)
 
-    def table(self, databook, table):
+    def select_table(self, databook, table):
         '''
-        Get a table 
+        select a table
 
         Parameters
         ----------
@@ -191,7 +115,7 @@ class SettingDatabook(ManageData):
                 tb = self.get_table(db_name, table-1)
             elif isinstance(table, str):
                 # get tables
-                tables = self.tables(databook=db_name, dataframe=False)
+                tables = self.list_tables(databook=db_name, dataframe=False)
                 # looping
                 for i, item in enumerate(tables):
                     if item == table.strip():
@@ -237,7 +161,7 @@ class SettingDatabook(ManageData):
             # data no
             data_no = 0
             # get the tb
-            tb = self.table(databook, table)
+            tb = self.select_table(databook, table)
 
             # check
             if tb:
@@ -258,7 +182,7 @@ class SettingDatabook(ManageData):
                     table_data = [*tb['data']]
 
                     # data no
-                    data_no = len(table_data)
+                    data_no = 1
 
                 # data
                 _tb_summary = {
@@ -279,7 +203,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def table_load(self, databook, table, dataframe=True):
+    def equation_load(self, databook, table):
         '''
         Display table header columns and other info
 
@@ -299,10 +223,8 @@ class SettingDatabook(ManageData):
             table_name = ''
             # table equations
             table_equations = []
-            # table data
-            table_data = []
             # get the tb
-            tb = self.table(databook, table)
+            tb = self.select_table(databook, table)
 
             # check
             if tb:
@@ -318,45 +240,56 @@ class SettingDatabook(ManageData):
 
                     # create table equation
                     return TableEquation(table_name, table_equations)
-                # check data
-                if tb_type == 'Data':
-                    table_data = [*tb['data']]
-
-                    # data no
-                    return TableData(table_name, table_data)
+                else:
+                    raise Exception('Table loading error!')
+            else:
+                raise Exception('Table loading error!')
 
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component_availability(self, component_name):
+    def data_load(self, databook, table):
         '''
-        Check a component exists in a databook and table
+        Display table header columns and other info
 
         Parameters
         ----------
-        component_name : str
-            string of component name (e.g. 'Carbon dioxide')
-
+        tb : object
+            table object
 
         Returns
         -------
-        None.
+        object
         '''
-        # set api
-        ManageC = Manage(
-            API_URL, self.selected_databook, self.selected_tb)
-        # search
-        compList = ManageC.component_list()
-        # check availability
-        if len(compList) > 0:
-            if component_name in compList:
-                print(f"{component_name} is available.")
-            else:
-                print(f"{component_name} is not available.")
-        else:
-            print("API error. Please try again later.")
+        try:
+            # table type
+            tb_type = ''
+            # table name
+            table_name = ''
+            # table data
+            table_data = []
+            # get the tb
+            tb = self.select_table(databook, table)
 
-    def table_check_component(self, component_name, databook_id, table_id):
+            # check
+            if tb:
+                # table name
+                table_name = tb['table']
+                # check data/equations
+                tb_type = 'Equation' if tb['equations'] is not None else 'Data'
+
+                # check data
+                if tb_type == 'Data':
+                    table_data = tb['data']
+
+                    # data no
+                    return TableData(table_name, table_data)
+                else:
+                    raise Exception('Table loading error!')
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
+
+    def check_component(self, component_name, databook_id, table_id):
         '''
         Check component availability in the selected databook and table
 
@@ -372,7 +305,7 @@ class SettingDatabook(ManageData):
         Returns
         -------
         comp_info : str
-            component information 
+            component information
         '''
         try:
             # check databook_id and table_id are number or not
@@ -386,15 +319,15 @@ class SettingDatabook(ManageData):
                 compListUpper = uppercaseStringList(compList)
                 if len(compList) > 0:
                     # get databook
-                    databook_name = self.databooks(dataframe=False)[
+                    databook_name = self.list_databooks(dataframe=False)[
                         databook_id-1]
                     # get table
-                    table_name = self.tables(databook=databook_id, dataframe=False)[
+                    table_name = self.list_tables(databook=databook_id, dataframe=False)[
                         table_id-1][0]
                     # check
                     if component_name.upper() in compListUpper:
                         print(
-                            f"{component_name} available in [{table_name}] | [{databook_name}]")
+                            f"[{component_name}] available in [{table_name}] | [{databook_name}]")
                     else:
                         print(f"{component_name} is not available.")
                 else:
@@ -402,9 +335,9 @@ class SettingDatabook(ManageData):
         except Exception as e:
             print(e)
 
-    def load_component_data(self, component_name, databook_id, table_id):
+    def get_component_data(self, component_name, databook_id, table_id, dataframe=False):
         '''
-        Load component data from database
+        Get component data from database (api)
         It consists of:
             step1: get thermo data for a component,
             step2: get equation for the data (parameters).
@@ -427,78 +360,112 @@ class SettingDatabook(ManageData):
         component_data = ManageC.component_info(component_name)
         # check availability
         if len(component_data) > 0:
-            return component_data
+            # check
+            if dataframe:
+                df = pd.DataFrame(component_data, columns=[
+                                  'header', 'symbol', 'records', 'unit'])
+                return df
+            else:
+                return component_data
         else:
             print(f"Data for {component_name} not available!")
             return []
 
-    def get_data_manual(self, component_name, databook_id, table_id):
+    def build_equation(self, component_name, databook_id, table_id):
         '''
-        Get data manually, 
-        The difference with `get_data` is to set databook and table ids manually.
-        It consists of:
+        Build equation for as:
             step1: get thermo data for a component
             step2: get equation for the data (parameters)
 
-        args:
-            component_name {str}: string of component name (e.g. 'Carbon dioxide')
-            databook_id {int}: databook id
-            table_id {int}: table id
-
-        return:
-            comp_info: component information
-        '''
-        # set api
-        ManageC = Manage(API_URL, databook_id, table_id)
-        # search
-        compInfo = ManageC.component_info(component_name)
-        # equation (if exist)
-        # check availability
-        if len(compInfo) > 0:
-            # check eq exists
-            eqs = self.find_equation(compInfo, databook_id, table_id)
-            # src
-            src = {}
-            src['equations'] = eqs
-            src['component_name'] = component_name
-            print(f"data for {component_name} is available.")
-            # ! trans data
-            tData = TransData(compInfo, src)
-            # trans
-            tData.trans()
-            # equation init
-            tData.eqSet()
-            return tData
-        else:
-            print("API error. Please try again later.")
-            return TransData([], {})
-
-    def find_equation(self, api_data, databook_id, table_id):
-        '''
-        Find an equation from a thermodynamics databook
-
         Parameters
         ----------
-        api_data : dict
-            api data - dict ['header'],['records'],['unit'],['symbol']
+        component_name : str
+            string of component name (e.g. 'Carbon dioxide')
         databook_id : int
-            thermodynamic databook id
+            databook id
         table_id : int
             table id
 
         Returns
         -------
-        eqs : list
-            equation list
+        eqs: object
+            equation object
         '''
-        # equation list
-        eqs = []
-        # api data structure
-        header = api_data['header']
+        # get data from api
+        component_data = self.get_component_data(
+            component_name, databook_id, table_id)
 
-        # check equation exists in header
-        if "Eq" in header:
-            # find equation
-            eqs = self.table_load(databook_id, table_id)
+        # check availability
+        if len(component_data) > 0:
+            # ! trans data
+            TransDataC = TransData(component_data)
+            # transform api data
+            TransDataC.trans()
+            # transformed api data
+            transform_api_data = TransDataC.data_trans
 
-        return eqs
+            # ! build equation
+            # check eq exists
+            eqs = self.equation_load(
+                databook_id, table_id)
+
+            # update trans_data
+            eqs.trans_data = transform_api_data
+
+            # equation init
+            eqs.eqSet()
+            # res
+            return eqs
+        else:
+            print("API error. Please try again later.")
+            raise Exception("Building equation failed!")
+
+    def build_data(self, component_name, databook_id, table_id):
+        '''
+        Build data as:
+            step1: get thermo data for a component
+
+        Parameters
+        ----------
+        component_name : str
+            string of component name (e.g. 'Carbon dioxide')
+        databook_id : int
+            databook id
+        table_id : int
+            table id
+
+        Returns
+        -------
+        dt: object
+            data object
+        '''
+        # get data from api
+        component_data = self.get_component_data(
+            component_name, databook_id, table_id)
+
+        # check availability
+        if len(component_data) > 0:
+            # ! trans data
+            TransDataC = TransData(component_data)
+            # transform api data
+            TransDataC.trans()
+            # transformed api data
+            transform_api_data = TransDataC.data_trans
+
+            # ! build data
+            # check eq exists
+            dts = self.data_load(
+                databook_id, table_id)
+
+            # check
+            if dts is not None:
+                # update trans_data
+                dts.trans_data = transform_api_data
+                # prop data
+                dts.prop_data = transform_api_data
+
+            # res
+            return dts
+        else:
+            print("API error. Please try again later.")
+            raise Exception("Building equation failed!")
