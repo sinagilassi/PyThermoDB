@@ -197,23 +197,59 @@ class ManageData:
         -------
         tables : list
             table list of selected databook
-
         '''
         try:
-            # check table
-            tb_id = int(table_id)
             # select databook
             databook = self.databook_bulk[databook]
             # list
             selected_tb = {}
             # check table and equations
             for i, tb in enumerate(databook):
-                if tb['equations'] is not None:
-                    # check table id
-                    if tb_id == i:
-                        selected_tb = tb
+                # check table id
+                if i == table_id:
+                    selected_tb = tb
 
             # return
             return selected_tb
         except Exception as e:
             raise Exception(f"table loading err! {e}")
+
+    def find_databook(self, databook):
+        '''
+        Find a databook
+
+        Parameters
+        ----------
+        databook : str | int
+            databook name/id
+
+        Returns
+        -------
+        selected_databook: object
+            selected databook
+        databook_name: str
+            databook name
+        databook_id: int
+            databook id
+        '''
+        try:
+            if isinstance(databook, int):
+                # databook id
+                databook_id = databook-1
+                databook_name = self.databook[databook_id]
+            elif isinstance(databook, str):
+                # find databook
+                for i, item in enumerate(self.databook):
+                    if item == databook.strip():
+                        databook_id = i
+                        databook_name = item
+                        break
+            else:
+                raise ValueError("databook must be int or str")
+
+            # set databook
+            selected_databook = self.databook_bulk[databook_name]
+            # res
+            return selected_databook, databook_name, databook_id
+        except Exception as e:
+            raise Exception(e)

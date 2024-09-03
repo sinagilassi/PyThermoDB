@@ -201,7 +201,7 @@ REFERENCES:
                     name: critical temperature
                     symbol: Tc
                     unit: K
-                PARAMS:
+                PARMS:
                   C1:
                     name: C1
                     symbol: C1
