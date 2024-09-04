@@ -36,7 +36,16 @@ class TableData:
         Display data table structure
 
         '''
+        # dataframe
         df = pd.DataFrame(self.table_data)
+        # add ID column
+        df.insert(0, 'ID', range(1, len(df) + 1))
+        # arrange columns
+        # change the position of ID column to the last
+        cols = df.columns.tolist()
+        cols.insert(len(cols), cols.pop(cols.index('ID')))
+        df = df[cols]
+
         return df
 
     def get_property(self, property_name, dataframe=False):
@@ -63,7 +72,7 @@ class TableData:
         if isinstance(property_name, str):
             df = df[property_name]
         elif isinstance(property_name, int):
-            df = df.iloc[:, property_name]
+            df = df.iloc[:, property_name-1]
         else:
             raise ValueError("loading error!")
         # check

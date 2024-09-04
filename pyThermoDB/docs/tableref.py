@@ -84,7 +84,7 @@ class TableReference(ManageData):
         # tb
         df = self.load_table(databook_id, table_id)
         # take first three rows
-        df_info = df.iloc[:2]
+        df_info = df.iloc[:2, :]
         # filter
         df_filter = df[df[column_name].str.lower() == lookup.lower()]
         # combine dfs
@@ -116,12 +116,16 @@ class TableReference(ManageData):
         '''
         # dataframe
         df = self.search_table(databook_id, table_id, column_name, lookup)
-        # payload
-        payload = {
-            "header": df.columns.to_list(),
-            "symbol": df.iloc[1, :],
-            "unit": df.iloc[2, :],
-            "records": df.iloc[3, :],
-        }
-
+        # check
+        if len(df) > 0:
+            # payload
+            payload = {
+                "header": df.columns.to_list(),
+                "symbol": df.iloc[0, :].to_list(),
+                "unit": df.iloc[1, :].to_list(),
+                "records": df.iloc[2, :].to_list(),
+            }
+        else:
+            payload = {}
+        # res
         return payload
