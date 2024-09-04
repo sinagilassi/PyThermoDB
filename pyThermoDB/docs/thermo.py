@@ -21,10 +21,11 @@ class SettingDatabook(ManageData):
     # selected table
     __selected_tb = ''
 
-    def __init__(self, data_source='local'):
+    def __init__(self, custom_ref=None, data_source='local'):
         self.data_source = data_source
+        self.custom_ref = custom_ref
         # ManageData init
-        ManageData.__init__(self)
+        ManageData.__init__(self, custom_ref=custom_ref)
 
     @property
     def selected_databook(self):
@@ -399,7 +400,7 @@ class SettingDatabook(ManageData):
             # check databook_id and table_id are number or not
             if isNumber(databook_id) and isNumber(table_id):
                 # set api
-                TableReferenceC = TableReference()
+                TableReferenceC = TableReference(custom_ref=self.custom_ref)
                 # search
                 df = TableReferenceC.search_table(
                     databook_id, table_id, column_name, component_name)
@@ -526,7 +527,7 @@ class SettingDatabook(ManageData):
             # check databook_id and table_id are number or not
             if isNumber(databook_id) and isNumber(table_id):
                 # set api
-                TableReferenceC = TableReference()
+                TableReferenceC = TableReference(custom_ref=self.custom_ref)
                 # search
                 payload = TableReferenceC.make_payload(
                     databook_id, table_id, column_name, component_name)

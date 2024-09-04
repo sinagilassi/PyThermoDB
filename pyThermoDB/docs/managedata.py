@@ -18,9 +18,11 @@ class ManageData():
     # table
     __tables = []
 
-    def __init__(self):
+    def __init__(self, custom_ref=None):
+        # external reference
+        self.custom_ref = custom_ref
         # load reference
-        self.__reference = self.load_reference()
+        self.__reference = self.load_reference(custom_ref)
 
         # databook bulk
         self.__databook_bulk = self.get_databook_bulk()
@@ -59,7 +61,7 @@ class ManageData():
         self.__tables = []
         self.__tables = value
 
-    def load_reference(self):
+    def load_reference(self, custom_ref):
         '''
         load reference data from file
         '''
@@ -68,6 +70,13 @@ class ManageData():
 
         with open(config_path, 'r') as f:
             reference = yaml.load(f, Loader=yaml.FullLoader)
+
+        # check custom reference
+        if custom_ref:
+            # get data
+            custom_reference = custom_ref.load_ref()
+            # merge data
+            reference['REFERENCES'].update(custom_reference)
 
         return reference
 

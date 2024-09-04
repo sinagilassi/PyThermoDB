@@ -10,9 +10,9 @@ class TableReference(ManageData):
     Class to load excel files in this directory
     """
 
-    def __init__(self):
-        # super
-        # self.path = os.path.dirname(os.path.abspath(__file__))
+    def __init__(self, custom_ref=None):
+        # custom ref
+        self.custom_ref = custom_ref
 
         # Get the absolute path of the current file
         current_file_path = os.path.abspath(__file__)
@@ -23,7 +23,19 @@ class TableReference(ManageData):
         # Set the path to the "data" folder
         self.path = os.path.join(current_dir, '..', 'data')
         # super
-        ManageData.__init__(self)
+        ManageData.__init__(self, custom_ref=custom_ref)
+
+    def load_external_csv(self, custom_ref):
+        '''
+        Load external csv file paths
+
+        Parameters
+        ----------
+        custom_ref : CustomRef
+            custom ref
+        '''
+        path_external = custom_ref.csv_paths
+        return path_external
 
     def list_databooks(self):
 
@@ -57,7 +69,23 @@ class TableReference(ManageData):
         # table file
         file_name = table_name + '.csv'
         # table file path
-        file_path = os.path.join(self.path, file_name)
+        # check
+        if self.custom_ref is None:
+            file_path = os.path.join(self.path, file_name)
+        else:
+            # load external path
+            path_external = self.load_external_csv(self.custom_ref)
+            # check file exists
+            for path in path_external:
+                if os.path.exists(path):
+                    file_path = path
+                    break
+            # check
+            if file_path is None:
+                raise Exception(f"{file_name} does not exist.")
+            # csv external file path
+            file_path = os.path.join(self.custom_ref, file_name)
+        # create dataframe
         df = pd.read_csv(file_path)
         return df
 
