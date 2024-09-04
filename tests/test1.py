@@ -48,25 +48,26 @@ comp1 = "carbon Dioxide"
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
 
 # load comp data
-comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
-pp(comp_data)
+# comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
+# pp(comp_data)
 
 # build data
 # CO2_data = tdb.build_data(comp1, 1, 2)
 # pp(CO2_data.data_structure())
 
 # pp(CO2_data.get_property(4))
+
 # build an equation
-# eq = tdb.build_equation(comp1, 1, 4)
+eq = tdb.build_equation(comp1, 1, 4)
 
-# args = {
-#     "T": 290,
-# }
-# # pp(eq.args)
+args = {
+    "T": 290,
+}
+pp(eq.args)
 
-# res = eq.cal(args)
+res = eq.cal(args)
 
-# pp(res*1e-5)
+pp(res*1e-5)
 # ===============================
 # set component
 # ===============================
