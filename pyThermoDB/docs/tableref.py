@@ -38,11 +38,16 @@ class TableReference(ManageData):
         return path_external
 
     def list_databooks(self):
-
+        '''
+        list databooks
+        '''
         _, df = self.get_databooks()
         return df
 
     def list_tables(self, databook_id):
+        '''
+        List tables
+        '''
         _, df = self.get_tables(databook_id-1)
         return df
 
@@ -75,16 +80,16 @@ class TableReference(ManageData):
         else:
             # load external path
             path_external = self.load_external_csv(self.custom_ref)
-            # check file exists
-            for path in path_external:
-                if os.path.exists(path):
-                    file_path = path
+            # csv file names
+            file_names = [os.path.basename(path) for path in path_external]
+            # check csv file
+            for item in file_names:
+                if item == file_name:
+                    file_path = path_external[file_names.index(item)]
                     break
             # check
             if file_path is None:
                 raise Exception(f"{file_name} does not exist.")
-            # csv external file path
-            file_path = os.path.join(self.custom_ref, file_name)
         # create dataframe
         df = pd.read_csv(file_path)
         return df
@@ -114,7 +119,17 @@ class TableReference(ManageData):
         # take first three rows
         df_info = df.iloc[:2, :]
         # filter
-        df_filter = df[df[column_name].str.lower() == lookup.lower()]
+        if isinstance(column_name, str):
+            df_filter = df[df[column_name].str.lower() == lookup.lower()]
+        elif isinstance(column_name, list) and isinstance(lookup, list):
+            # use query
+            _querys = []
+            for i in range(len(column_name)):
+                _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+            # make query
+            _query_set = ' & '.join(_querys)
+            # query
+            df_filter = df.query(_query_set)
         # combine dfs
         result = pd.concat([df_info, df_filter])
         if not df_filter.empty:
