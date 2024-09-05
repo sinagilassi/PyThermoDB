@@ -27,6 +27,11 @@ def init(ref=None):
     ref : dict
         set-up external reference dict for databook and tables
         format ref_external = {'yml':[yml files], 'csv':[csv files]}
+
+    Returns
+    -------
+    SettingDatabookC : object
+        SettingDatabook object used for checking and building data and equation objects
     '''
     try:
         # check new custom ref
@@ -46,13 +51,35 @@ def init(ref=None):
         raise Exception(f"Initializing app failed! {e}")
 
 
-def ref():
+def ref(ref=None):
     '''
     Building references object including databook and tables to display data
+
+    Parameters
+    ----------
+    ref : dict
+        set-up external reference dict for databook and tables
+        format ref_external = {'yml':[yml files], 'csv':[csv files]}
+
+    Returns
+    -------
+    TableReferenceC : object
+        TableReference object used for checking references
     '''
     try:
-        # init
-        TableReferenceC = TableReference()
+        # check new custom ref
+        check_ref = False
+        if ref:
+            CustomRefC = CustomRef(ref)
+            # check ref
+            check_ref = CustomRefC.init_ref()
+
+        # check
+        if check_ref:
+            TableReferenceC = TableReference(custom_ref=CustomRefC)
+        else:
+            # init
+            TableReferenceC = TableReference()
         return TableReferenceC
     except Exception as e:
         raise Exception(f'Building reference failed! {e}')

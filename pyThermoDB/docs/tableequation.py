@@ -31,7 +31,7 @@ class TableEquation:
         Parameters
         ----------
         id : int
-            equation id
+            equation id (fromm 0 to ...)
 
         Returns
         -------
@@ -91,9 +91,13 @@ class TableEquation:
         # trans data
         trans_data = self.trans_data
         # looping through self.parms
-        _parms_name = list(self.parms.keys())
-        _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
-                  for key, value in trans_data.items() if key in _parms_name}
+        # check parms
+        if isinstance(self.parms, dict):
+            _parms_name = list(self.parms.keys())
+            _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
+                      for key, value in trans_data.items() if key in _parms_name}
+        else:
+            _parms = {}
         return _parms
 
     def equation_body(self):

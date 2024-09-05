@@ -1,91 +1,88 @@
 REFERENCES:
-    My Own Handbook:
+    Chemical, Biochemical, and Engineering Thermodynamics:
       TABLES:
-        TABLE 1-1 Vapor Pressure of Inorganic and Organic Liquids:
+        Table A.II The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State:
           EQUATIONS:
             EQ-1:
               BODY:
-                - parms['C1'] = parms['C1']/1
-                - parms['C2'] = parms['C2']/1
-                - parms['C3'] = parms['C3']/1
-                - parms['C4'] = parms['C4']/1
-                - parms['C5'] = parms['C5']/1
-                - res = math.exp(parms['C1'] + parms['C2']/args['T'] + parms['C3']*math.log(args['T']) + parms['C4']*(args['T']**parms['C5']))
+                - parms['a'] = parms['a']/1
+                - parms['b'] = parms['b']/1
+                - parms['c'] = parms['c']/1
+                - parms['d'] = parms['d']/1
+                - res = parms['a'] + parms['b']*args['T'] + parms['c']*math.pow(args['T'],2) + parms['d']*math.pow(args['T'],3)
               ARGS:
                 temperature:
                   name: temperature
                   symbol: T
                   unit: K
               PARMS:
-                C1:
-                  name: C1
-                  symbol: C1
+                a:
+                  name: a
+                  symbol: a
                   unit: None
                   conversion: 1
-                C2:
-                  name: C2
-                  symbol: C2
+                b:
+                  name: b
+                  symbol: b
                   unit: None
-                  conversion: 1
-                C3:
-                  name: C3
-                  symbol: C3
+                  conversion: 1E2
+                c:
+                  name: c
+                  symbol: c
                   unit: None
-                  conversion: 1
-                C4:
-                  name: C4
-                  symbol: C4
+                  conversion: 1E5
+                d:
+                  name: d
+                  symbol: d
                   unit: None
-                  conversion: 1
-                C5:
-                  name: C5
-                  symbol: C5
-                  unit: None
-                  conversion: 1
+                  conversion: 1E9
               RETURNS:
-                vapor_pressure:
-                  name: vapor pressure
-                  symbol: P
-                  unit: Pa
-        TABLE 1-2 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion: 
+                heat_capacity_ideal_gas:
+                  name: heat capacity of ideal gas
+                  symbol: HeCa_IG
+                  unit: J/mol.K
+            EQ-2:
+              BODY:
+                - res = 75.464 - 1.872*1e-4*args['T'] - 661.42/math.sqrt(args['T'])
+              ARGS:
+                temperature:
+                  name: temperature
+                  symbol: T
+                  unit: K
+              PARMS: 
+                None
+              RETURNS:
+                heat_capacity_ideal_gas:
+                  name: heat capacity of ideal gas
+                  symbol: HeCa_IG
+                  unit: J/mol.K
+        Table A.IV Enthalpies and Gibbs Energies of Formation: 
           DATA:
             COLUMNS: 
-              - no.
+              - No.
               - Name
               - Formula
-              - CAS no
-              - Mol wt
-              - Ideal gas enthalpy of formation 
-              - Ideal gas Gibbs energy of formation 
-              - Ideal gas entropy
-              - Standard net enthalpy of combustion 
+              - State
+              - Standard Enthalpy of Formation
+              - Standard Gibbs Energy of Formation
             SYMBOL:
               - None
               - None
               - None
               - None
-              - MW
-              - EnFo_IG
-              - GiFo_IG
-              - S_IG
-              - EnCo_STD
+              - dHf_IG
+              - dGf_IG
             UNIT:
               - None
               - None
               - None
               - None
-              - K
               - J/kmol
-              - J/kmol
-              - J/kmol.K
               - J/kmol
             CONVERSION:
               - None
               - None
               - None
               - None
-              - None
-              - 1E-07
-              - 1E-07
-              - 1E-05
-              - 1E-09
+              - 1
+              - 1

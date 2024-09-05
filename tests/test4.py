@@ -10,22 +10,6 @@ from pprint import pprint as pp
 print(ptdb.__version__)
 
 # ===============================
-# REFERENCE
-# ===============================
-# init
-ref = ptdb.ref()
-
-# extract information
-# list databooks
-print(ref.list_databooks())
-# list tables
-print(ref.list_tables(1))
-# load table
-print(ref.load_table(1, 1))
-# search table
-print(ref.search_table(1, 1, "Formula", "CO2"))
-
-# ===============================
 # CREATE CUSTOM REFERENCE
 # ===============================
 # files
@@ -38,4 +22,22 @@ csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2]}
+custom_ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2]}
+
+# ===============================
+# CHECKING THE REFERENCE
+# ===============================
+# init
+ref = ptdb.ref(ref=custom_ref)
+
+# extract information
+# list databooks
+print(ref.list_databooks())
+# list tables
+print(ref.list_tables(3))
+# load table
+print(ref.load_table(3, 2))
+# search table
+print(ref.search_table(3, 2, "Formula", "CO2"))
+# search table (query)
+print(ref.search_table(3, 2, ["Formula", "State"], ["CO2", "g"]))

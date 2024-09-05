@@ -298,14 +298,14 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        component_name : str
-            string of component name (e.g. 'Carbon dioxide')
+        component_name : str | list
+            string of component name (e.g. 'Carbon dioxide') | list as ['Carbon dioxide','g']
         databook_id : int
             databook id
         table_id : int
             table id
-        column_name : str
-            column name (e.g. 'Name')
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
 
         Returns
         -------
@@ -334,14 +334,14 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        component_name : str
-            string of component name (e.g. 'Carbon dioxide')
+        component_name : str | list
+            string of component name (e.g. 'Carbon dioxide') | list as ['Carbon dioxide','g']
         databook_id : int
             databook id
         table_id : int
             table id
-        column_name : str
-            column name (e.g. 'Name')
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
 
         Returns
         -------
@@ -382,14 +382,14 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        component_name : str
-            string of component name (e.g. 'Carbon dioxide')
+        component_name : str | list
+            string of component name (e.g. 'Carbon dioxide') | list as ['Carbon dioxide','g']
         databook_id : int
             databook id
         table_id : int
             table id
-        column_name : str, optional
-            column name
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
 
         Returns
         -------
@@ -548,7 +548,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def build_equation(self, component_name, databook_id, table_id):
+    def build_equation(self, component_name, databook_id, table_id, column_name='Name'):
         '''
         Build equation for as:
             step1: get thermo data for a component
@@ -562,6 +562,8 @@ class SettingDatabook(ManageData):
             databook id
         table_id : int
             table id
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
 
         Returns
         -------
@@ -570,7 +572,7 @@ class SettingDatabook(ManageData):
         '''
         # get data from api
         component_data = self.get_component_data(
-            component_name, databook_id, table_id, dataframe=False)
+            component_name, databook_id, table_id, dataframe=False, column_name=column_name)
 
         # check loading state
         if component_data:
@@ -601,7 +603,7 @@ class SettingDatabook(ManageData):
             print("API error. Please try again later.")
             raise Exception("Building equation failed!")
 
-    def build_data(self, component_name, databook_id, table_id):
+    def build_data(self, component_name, databook_id, table_id, column_name='Name'):
         '''
         Build data as:
             step1: get thermo data for a component
@@ -614,6 +616,8 @@ class SettingDatabook(ManageData):
             databook id
         table_id : int
             table id
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
 
         Returns
         -------
@@ -622,7 +626,7 @@ class SettingDatabook(ManageData):
         '''
         # get data from api
         component_data = self.get_component_data(
-            component_name, databook_id, table_id)
+            component_name, databook_id, table_id, column_name=column_name)
 
         # check loading state
         if component_data:
