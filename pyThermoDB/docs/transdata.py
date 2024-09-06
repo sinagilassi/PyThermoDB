@@ -9,10 +9,19 @@ class TransData:
     '''
     Transform class
     '''
+    __data_type = ''
 
     def __init__(self, api_data):
         self.api_data = api_data
         self.data_trans = {}
+
+    @property
+    def data_type(self):
+        return self.__data_type
+
+    @data_type.setter
+    def data_type(self, value):
+        self.__data_type = value
 
     def trans(self):
         '''
@@ -28,6 +37,11 @@ class TransData:
             # check eq exists
             if x == "Eq":
                 self.eq_id = y
+                # set data type
+                self.__data_type = 'equation'
+            else:
+                self.__data_type = 'data'
+            # set values
             self.data_trans[str(x)] = {"value": y, "unit": z, "symbol": w}
 
         # data table

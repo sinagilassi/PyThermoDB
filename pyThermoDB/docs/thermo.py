@@ -292,7 +292,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self, component_name, databook_id, table_id, column_name='Name'):
+    def check_component(self, component_name, databook_id, table_id, column_name=None, query=False):
         '''
         Check component availability in the selected databook and table
 
@@ -306,6 +306,8 @@ class SettingDatabook(ManageData):
             table id
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
+        query : str
+            query to search a dataframe
 
         Returns
         -------
@@ -313,22 +315,36 @@ class SettingDatabook(ManageData):
             component information
         '''
         try:
+            # check search option
+            if column_name is None:
+                column_name = 'Name'
+
+            # check
+            if query:
+                column_name = column_name
+
+            # res
+            res = False
+
             # check databook_id and table_id are number or not
             if isNumber(databook_id) and isNumber(table_id):
                 # check
                 if self.data_source == 'api':
-                    self.check_component_api(
+                    res = self.check_component_api(
                         component_name, databook_id, table_id)
                 elif self.data_source == 'local':
-                    self.check_component_local(
-                        component_name, databook_id, table_id, column_name)
+                    res = self.check_component_local(
+                        component_name, databook_id, table_id,
+                        column_name, query=query)
                 else:
                     raise Exception('Data source error!')
 
+            # res
+            return res
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
-    def check_component_api(self, component_name, databook_id, table_id, column_name='Name'):
+    def check_component_api(self, component_name, databook_id, table_id):
         '''
         Check component availability in the selected databook and table
 
@@ -376,7 +392,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             print(e)
 
-    def check_component_local(self, component_name, databook_id, table_id, column_name='Name'):
+    def check_component_local(self, component_name, databook_id, table_id,
+                              column_name, query=False):
         '''
         Check component availability in the selected databook and table
 
@@ -388,8 +405,8 @@ class SettingDatabook(ManageData):
             databook id
         table_id : int
             table id
-        column_name : str | list
-            column name (e.g. 'Name') | list as ['Name','state']
+        column_name : str
+            column name (e.g. 'Name') | list
 
         Returns
         -------
@@ -403,7 +420,8 @@ class SettingDatabook(ManageData):
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
                 # search
                 df = TableReferenceC.search_table(
-                    databook_id, table_id, column_name, component_name)
+                    databook_id, table_id, column_name, component_name,
+                    query=query)
                 # check availability
                 if len(df) > 0:
                     # get databook
@@ -415,14 +433,22 @@ class SettingDatabook(ManageData):
                     # log
                     print(
                         f"[{component_name}] available in [{table_name}] | [{databook_name}]")
+
+                    # res
+                    return True
                 else:
                     print(f"{component_name} is not available.")
+                    # res
+                    return False
             else:
                 print("databook and table id required!")
+                # res
+                return False
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def get_component_data(self, component_name, databook_id, table_id, column_name='Name', dataframe=False):
+    def get_component_data(self, component_name, databook_id, table_id,
+                           column_name=None, dataframe=False, query=False):
         '''
         Get component data from database (api|local csvs)
 
@@ -438,6 +464,8 @@ class SettingDatabook(ManageData):
             column name
         dataframe : bool
             return dataframe or not
+        query : bool
+            query or not 
 
         Returns
         -------
@@ -445,15 +473,21 @@ class SettingDatabook(ManageData):
             component data
         '''
         try:
+            # check search option
+            if column_name is None:
+                column_name = 'Name'
+
             # set
             component_name = str(component_name).strip()
             # check datasource
             if self.data_source == 'api':
                 component_data = self.get_component_data_api(
-                    component_name, databook_id, table_id, column_name, dataframe)
+                    component_name, databook_id, table_id, column_name,
+                    dataframe=dataframe)
             elif self.data_source == 'local':
                 component_data = self.get_component_data_local(
-                    component_name, databook_id, table_id, column_name, dataframe)
+                    component_name, databook_id, table_id, column_name,
+                    dataframe=dataframe, query=query)
             else:
                 raise Exception('Data source error!')
             # res
@@ -461,7 +495,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Loading data failed {e}")
 
-    def get_component_data_api(self, component_name, databook_id, table_id, column_name='Name', dataframe=False):
+    def get_component_data_api(self, component_name, databook_id, table_id,
+                               dataframe=False):
         '''
         Get component data from database (api)
         It consists of:
@@ -503,7 +538,8 @@ class SettingDatabook(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
-    def get_component_data_local(self, component_name, databook_id, table_id, column_name='Name', dataframe=False):
+    def get_component_data_local(self, component_name, databook_id, table_id,
+                                 column_name, dataframe=False, query=False):
         '''
         Get component data from database (local csv files)
 
@@ -516,7 +552,7 @@ class SettingDatabook(ManageData):
         table_id : int
             table id
         column_name : str
-            column name
+            column name | query to find a record from a dataframe
 
         Returns
         -------
@@ -530,7 +566,8 @@ class SettingDatabook(ManageData):
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
                 # search
                 payload = TableReferenceC.make_payload(
-                    databook_id, table_id, column_name, component_name)
+                    databook_id, table_id, column_name, component_name,
+                    query=query)
                 # check availability
                 if len(payload) > 0:
                     # check
@@ -548,7 +585,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def build_equation(self, component_name, databook_id, table_id, column_name='Name'):
+    def build_equation(self, component_name, databook_id, table_id,
+                       column_name=None, query=False):
         '''
         Build equation for as:
             step1: get thermo data for a component
@@ -570,9 +608,14 @@ class SettingDatabook(ManageData):
         eqs: object
             equation object
         '''
+        # check search option
+        if column_name is None:
+            column_name = 'Name'
+
         # get data from api
         component_data = self.get_component_data(
-            component_name, databook_id, table_id, dataframe=False, column_name=column_name)
+            component_name, databook_id, table_id, column_name=column_name,
+            query=query)
 
         # check loading state
         if component_data:
@@ -584,6 +627,14 @@ class SettingDatabook(ManageData):
                 TransDataC.trans()
                 # transformed api data
                 transform_api_data = TransDataC.data_trans
+                # check data type
+                _data_type = TransDataC.data_type
+
+                # ! check datatype compatibility
+                if _data_type != 'equation':
+                    print("The selected table contains no data for building\
+                          equation! check table id and try again.")
+                    return None
 
                 # ! build equation
                 # check eq exists
@@ -603,7 +654,8 @@ class SettingDatabook(ManageData):
             print("API error. Please try again later.")
             raise Exception("Building equation failed!")
 
-    def build_data(self, component_name, databook_id, table_id, column_name='Name'):
+    def build_data(self, component_name, databook_id, table_id,
+                   column_name=None, query=False):
         '''
         Build data as:
             step1: get thermo data for a component
@@ -624,9 +676,14 @@ class SettingDatabook(ManageData):
         dt: object
             data object
         '''
+        # check search option
+        if column_name is None:
+            column_name = 'Name'
+
         # get data from api
         component_data = self.get_component_data(
-            component_name, databook_id, table_id, column_name=column_name)
+            component_name, databook_id, table_id, column_name=column_name,
+            query=query)
 
         # check loading state
         if component_data:
@@ -639,6 +696,14 @@ class SettingDatabook(ManageData):
                 # transformed api data
                 transform_api_data = TransDataC.data_trans
 
+                # ! check data type
+                _data_type = TransDataC.data_type
+                if _data_type != 'data':
+                    print(
+                        "The selected table contains no data for building data!\
+                        check table id and try again.")
+
+                    return None
                 # ! build data
                 # check eq exists
                 dts = self.data_load(
