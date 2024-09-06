@@ -94,7 +94,7 @@ class TableReference(ManageData):
         df = pd.read_csv(file_path)
         return df
 
-    def search_table(self, databook_id, table_id, column_name, lookup):
+    def search_table(self, databook_id, table_id, column_name, lookup, query=False):
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -119,8 +119,14 @@ class TableReference(ManageData):
         # take first three rows
         df_info = df.iloc[:2, :]
         # filter
-        if isinstance(column_name, str):
+        if isinstance(column_name, str) and query is False:
+            # create filter
             df_filter = df[df[column_name].str.lower() == lookup.lower()]
+        # query
+        elif isinstance(column_name, str) and query is True:
+            # create filter
+            df_filter = df.query(column_name)
+        # list
         elif isinstance(column_name, list) and isinstance(lookup, list):
             # use query
             _querys = []
@@ -130,14 +136,16 @@ class TableReference(ManageData):
             _query_set = ' & '.join(_querys)
             # query
             df_filter = df.query(_query_set)
-        # combine dfs
+
+            # combine dfs
         result = pd.concat([df_info, df_filter])
         if not df_filter.empty:
             return result
         else:
             return pd.DataFrame()
 
-    def make_payload(self, databook_id, table_id, column_name, lookup):
+    def make_payload(self, databook_id, table_id, column_name, lookup,
+                     query=False):
         '''
         Make standard data
 
@@ -158,7 +166,8 @@ class TableReference(ManageData):
             standard data
         '''
         # dataframe
-        df = self.search_table(databook_id, table_id, column_name, lookup)
+        df = self.search_table(databook_id, table_id,
+                               column_name, lookup, query=query)
         # check
         if len(df) > 0:
             # payload
