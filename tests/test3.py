@@ -32,15 +32,15 @@ thermo_db = ptdb.init(ref)
 # ====================================
 # GET DATABOOK LIST
 # ====================================
-# db_list = thermo_db.list_databooks()
-# print(db_list)
+db_list = thermo_db.list_databooks()
+print(db_list)
 
 # ====================================
 # SELECT A DATABOOK
 # ====================================
 # table list
-# tb_list = thermo_db.list_tables(3)
-# print(tb_list)
+tb_list = thermo_db.list_tables(1)
+print(tb_list)
 
 # ====================================
 # DISPLAY TABLE INFO
@@ -53,16 +53,17 @@ thermo_db = ptdb.init(ref)
 # LOAD TABLE
 # ====================================
 # load equation
-# tb_eq = thermo_db.equation_load(3, 1)
+tb_eq = thermo_db.equation_load(1, 1)
 # equation structure
-# tb_eq_structure = tb_eq.eq_structure(1)
-# pp(tb_eq_structure)
+tb_eq_structure = tb_eq.eq_structure(1)
+pp(tb_eq_structure)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-comp1 = "Carbon Dioxide"
+# comp1 = "Carbon Dioxide"
+comp1 = "Acetaldehyde"
 # COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query
@@ -84,25 +85,50 @@ comp1 = "Carbon Dioxide"
 # BUILD EQUATION
 # ====================================
 # build equation
+comp1_eq = thermo_db.build_equation(comp1, 1, 4)
+
+# search a component using query
+# comp1_eq = thermo_db.build_equation(
+#     comp1, 3, 1)
+
+# equation details
+pp(comp1_eq.equation_parms())
+pp(comp1_eq.equation_args())
+pp(comp1_eq.equation_body())
+pp(comp1_eq.equation_return())
+
+# cal
+Cp_cal = comp1_eq.cal(T=290)
+pp(Cp_cal)
+
+# first derivative
+Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
+pp(Cp_cal_first)
+
+# second derivative
+Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
+pp(Cp_cal_second)
+
+# integral
+Cp_cal_integral = comp1_eq.cal_integral(T1=273.15, T2=373.15)
+pp(Cp_cal_integral)
+
+# ====================================
+# BUILD EQUATION
+# ====================================
+# build equation
 # comp1_eq = thermo_db.build_equation(comp1, 3, 1)
 
 # search a component using query
-comp1_eq = thermo_db.build_equation(
-    comp1, 3, 1)
+# comp1_eq = thermo_db.build_equation(
+#     comp1, 3, 1)
 
-# args
-pp(comp1_eq.args)
+# equation details
+# pp(comp1_eq.equation_parms())
+# pp(comp1_eq.equation_args())
+# pp(comp1_eq.equation_body())
+# pp(comp1_eq.equation_return())
 
-# variables
-args = {
-    "T": 290,
-    "Tmin": 273.15,
-    "Tmax": 373.15
-}
-# cal
-# Cp_cal = comp1_eq.cal(args)
+# cal (using sympy)
+# Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
 # pp(Cp_cal)
-
-# integral
-Cp_cal_integral = comp1_eq.cal_integral(args)
-pp(Cp_cal_integral)
