@@ -11,10 +11,14 @@ import pandas as pd
 class ManageData():
     # main data
     __reference = {}
+    # reference local
+    __reference_local_no = 0
     # databook bulk
     __databook_bulk = {}
     # databook
     __databook = []
+    # databook local
+    __databook_local = []
     # table
     __tables = []
 
@@ -33,6 +37,14 @@ class ManageData():
     @property
     def reference(self):
         return self.__reference
+
+    @property
+    def reference_local_no(self):
+        return self.__reference_local_no
+
+    @reference_local_no.setter
+    def reference_local_no(self, value):
+        self.__reference_local_no = value
 
     @property
     def databook(self):
@@ -70,6 +82,9 @@ class ManageData():
 
         with open(config_path, 'r') as f:
             reference = yaml.load(f, Loader=yaml.FullLoader)
+
+        # update reference local
+        self.__reference_local_no = len(reference['REFERENCES'])
 
         # check custom reference
         if custom_ref:

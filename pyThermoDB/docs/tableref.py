@@ -73,9 +73,13 @@ class TableReference(ManageData):
         table_name = tb['table']
         # table file
         file_name = table_name + '.csv'
+
+        # check table exists in local or external references
+        reference_local_no = self.reference_local_no
+
         # table file path
-        # check
-        if self.custom_ref is None:
+        # local
+        if databook_id <= reference_local_no:
             file_path = os.path.join(self.path, file_name)
         else:
             # load external path
@@ -164,6 +168,17 @@ class TableReference(ManageData):
         -------
         payload : dict
             standard data
+
+        Notes
+        -----
+        header: list
+            header
+        symbol: list
+            symbol
+        unit: list
+            unit
+        records: list
+            records, if nan exists then converted to 0
         '''
         # dataframe
         df = self.search_table(databook_id, table_id,
@@ -171,11 +186,13 @@ class TableReference(ManageData):
         # check
         if len(df) > 0:
             # payload
+            # records
+            records_clean = df.iloc[2, :].fillna(0).to_list()
             payload = {
                 "header": df.columns.to_list(),
                 "symbol": df.iloc[0, :].to_list(),
                 "unit": df.iloc[1, :].to_list(),
-                "records": df.iloc[2, :].to_list(),
+                "records": records_clean,
             }
         else:
             payload = {}

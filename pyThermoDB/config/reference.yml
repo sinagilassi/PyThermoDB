@@ -47,6 +47,12 @@ REFERENCES:
                   name: vapor pressure
                   symbol: P
                   unit: Pa
+              BODY-INTEGRAL:
+                None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None
         TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion: 
           DATA:
             COLUMNS: 
@@ -179,6 +185,24 @@ REFERENCES:
                     name: heat capacity
                     symbol: Cp
                     unit: J/(kmol.K)
+                BODY-INTEGRAL:
+                  - A1 = parms['C1']*args['T1']
+                  - B1 = (parms['C2']/2)*(args['T1']**2)
+                  - C1 = (parms['C3']/3)*(args['T1']**3)
+                  - D1 = (parms['C4']/4)*(args['T1']**4)
+                  - E1 = (parms['C5']/5)*(args['T1']**5)
+                  - res1 =  A1 + B1 + C1 + D1 + E1
+                  - A2 = parms['C1']*args['T2']
+                  - B2 = (parms['C2']/2)*(args['T2']**2)
+                  - C2 = (parms['C3']/3)*(args['T2']**3)
+                  - D2 = (parms['C4']/4)*(args['T2']**4)
+                  - E2 = (parms['C5']/5)*(args['T2']**5)
+                  - res2 =  A2 + B2 + C2 + D2 + E2
+                  - res = res2 - res1
+                BODY-FIRST-DERIVATIVE:
+                  - res = parms['C2'] + 2*parms['C3']*args['T'] + 3*parms['C4']*(args['T']**2) + 4*parms['C5']*(args['T']**3)
+                BODY-SECOND-DERIVATIVE:
+                  - res = 2*parms['C3'] + 6*parms['C4']*args['T'] + 12*parms['C5']*(args['T']**2)
               EQ-2:
                 BODY:
                   - parms['C1'] = parms['C1']/1
@@ -232,6 +256,12 @@ REFERENCES:
                     name: heat capacity
                     symbol: Cp_LIQ
                     unit: J/(kmol.K)
+                BODY-INTEGRAL:
+                  None
+                BODY-FIRST-DERIVATIVE:
+                  None
+                BODY-SECOND-DERIVATIVE:
+                  None
         TABLE 2-155 Heat Capacity at Constant Pressure of Inorganic and Organic Compounds in the Ideal Gas Fit to a Polynomial:
             EQUATIONS:
               EQ-1:
@@ -239,8 +269,8 @@ REFERENCES:
                   - parms['C1'] = parms['C1']/1
                   - parms['C2'] = parms['C2']/1
                   - parms['C3'] = parms['C3']/1
-                  - parms['C4'] = parms['C4']/1E+5
-                  - parms['C5'] = parms['C5']/1E+10
+                  - parms['C4'] = parms['C4']/1
+                  - parms['C5'] = parms['C5']/1
                   - res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) +
                     parms['C4']*math.pow(args['T'],3) +
                     parms['C5']*math.pow(args['T'],4)
@@ -253,33 +283,39 @@ REFERENCES:
                   C1:
                     name: C1
                     symbol: C1
-                    unit: None
+                    unit: 1
                     conversion: 1
                   C2:
                     name: C2
                     symbol: C2
-                    unit: None
+                    unit: 1
                     conversion: 1
                   C3:
                     name: C3
                     symbol: C3
-                    unit: None
+                    unit: 1
                     conversion: 1
                   C4:
                     name: C4
                     symbol: C4
-                    unit: None
+                    unit: 1E+5
                     conversion: 1E+5
                   C5:
                     name: C5
                     symbol: C5
-                    unit: None
+                    unit: 1E+10
                     conversion: 1E+10
                 RETURNS:
                   heat_capacity:
                     name: heat capacity
                     symbol: Cp_IG
                     unit: J/kmol.K
+                BODY-INTEGRAL:
+                  None
+                BODY-FIRST-DERIVATIVE:
+                  None
+                BODY-SECOND-DERIVATIVE:
+                  None
     Chemical Thermodynamics for Process Simulation:
       TABLES:
         Table A.2 Vapor pressure correlations for selected compounds:
@@ -333,13 +369,9 @@ REFERENCES:
                     name: vapor pressure
                     symbol: VaPr
                     unit: bar
-        Table A.1 General data for selected compounds: None
-        Table A.3 Liquid density correlations for selected compounds: None
-        Table A.4 Enthalpy of vaporization correlations for selected compounds: None
-        Table A.5 Liquid heat capacity correlations for selected compounds: None
-        Table A.6 Ideal gas heat capacity correlations for selected compounds: None
-        Table A.7 Liquid viscosity correlations for selected compounds: None
-        Table A.8 Vapor viscosity correlations for selected compounds at low pressures: None
-        Table A.9 Liquid thermal conductivity correlations for selected compounds: None
-        Table A.10 Vapor thermal conductivity correlations for selected compounds at low pressures: None
-        Table A.11 Surface tension correlations for selected compounds: None
+                BODY-INTEGRAL:
+                  None
+                BODY-FIRST-DERIVATIVE:
+                  None
+                BODY-SECOND-DERIVATIVE:
+                  None

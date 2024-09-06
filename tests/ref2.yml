@@ -1,55 +1,14 @@
 REFERENCES:
-  Chemical Thermodynamics:
+  Chemical Thermodynamics for Process Simulation:
     TABLES:
-      Table A.2 Vapor pressure correlations for selected compounds:
-        EQUATIONS:
-          EQ-1:
-            ARGS:
-              critical_pressure:
-                name: critical pressure
-                symbol: Pc
-                unit: bar
-              critical_temperature:
-                name: critical temperature
-                symbol: Tc
-                unit: K
-              temperature:
-                name: temperature
-                symbol: T
-                unit: K
-            BODY:
-            - Tr = args['T']/args['Tc']
-            - A2 = parms['A']*(1-Tr)
-            - A3 = parms['B']*math.pow(1-Tr, 1.5)
-            - A4 = parms['C']*math.pow(1-Tr, 2.5)
-            - A5 = parms['D']*math.pow(1-Tr, 5)
-            - B1 = A1*(A2+A3+A4+A5)
-            - B2 = B1 - log(args['Pc'])
-            - res = exp(B2)
-            PARMS:
-              A:
-                conversion: 1
-                name: A
-                symbol: A
-                unit: None
-              B:
-                conversion: 1
-                name: B
-                symbol: B
-                unit: None
-              C:
-                conversion: 1
-                name: C
-                symbol: C
-                unit: None
-              D:
-                conversion: 1
-                name: D
-                symbol: D
-                unit: None
-            RETURNS:
-              vapor_pressure:
-                name: vapor pressure
-                symbol: VaPr
-                unit: bar
+        Table A.1 General data for selected compounds: None
+        Table A.3 Liquid density correlations for selected compounds: None
+        Table A.4 Enthalpy of vaporization correlations for selected compounds: None
+        Table A.5 Liquid heat capacity correlations for selected compounds: None
+        Table A.6 Ideal gas heat capacity correlations for selected compounds: None
+        Table A.7 Liquid viscosity correlations for selected compounds: None
+        Table A.8 Vapor viscosity correlations for selected compounds at low pressures: None
+        Table A.9 Liquid thermal conductivity correlations for selected compounds: None
+        Table A.10 Vapor thermal conductivity correlations for selected compounds at low pressures: None
+        Table A.11 Surface tension correlations for selected compounds: None
 
