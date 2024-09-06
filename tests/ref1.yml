@@ -5,11 +5,11 @@ REFERENCES:
           EQUATIONS:
             EQ-1:
               BODY:
-                - parms['a'] = parms['a']/1
-                - parms['b'] = parms['b']/1
-                - parms['c'] = parms['c']/1
-                - parms['d'] = parms['d']/1
-                - res = parms['a'] + parms['b']*args['T'] + parms['c']*math.pow(args['T'],2) + parms['d']*math.pow(args['T'],3)
+                - a = a/1
+                - b = b/1
+                - c = c/1
+                - d = d/1
+                - res = a + b*T + c*(T**2) + d*(T**3)
               ARGS:
                 temperature:
                   name: temperature

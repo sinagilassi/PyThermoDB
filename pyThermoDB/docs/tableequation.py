@@ -1,7 +1,8 @@
 # import packages/modules
 import pandas as pd
 import math
-import sympy as sp
+# local
+from .equationbuilder import EquationBuilder
 
 
 class TableEquation:
@@ -257,9 +258,9 @@ class TableEquation:
         # Return the result
         return namespace['res']
 
-    def eqExe_integral(self, body, parms, args):
+    def eqExe_cal(self, body, parms, args):
         '''
-        Execute the integral of a function having args, parameters and body
+        Execute the function having args, parameters and body
 
         Parameters
         ----------
@@ -275,25 +276,4 @@ class TableEquation:
         res : float
             calculation result
         '''
-        # Define a namespace dictionary for eval
-        namespace = {'args': args, "parms": parms}
-        # Import math module within the function
-        namespace['math'] = math
-        # Execute the body within the namespace
-        exec(body, namespace)
-        # Return the result
-        res = namespace['res']
-
-        # Convert the result to a sympy expression
-        T = sp.symbols('T')  # Define a symbolic variable
-        expr = sp.sympify(res)  # Convert the result to a sympy expression
-
-        # lower bound
-        Tmin = args['Tmin']
-        # upper bound
-        Tmax = args['Tmax']
-        # Calculate the definite integral
-        integral = sp.integrate(expr, (T, Tmin, Tmax))
-
-        # return
-        return integral
+        pass
