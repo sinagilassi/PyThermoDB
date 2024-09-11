@@ -1,7 +1,10 @@
 {
     "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
+        "compexporter",
         "Databooks",
+        "tabledata",
+        "tableequation",
         "thermodb"
     ]
 }

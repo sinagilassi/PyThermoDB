@@ -3,9 +3,7 @@
 import os
 # internal
 from .config import __version__
-from .docs import SettingDatabook
-from .docs import TableReference
-from .docs import CustomRef
+from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
 
 
 def desc():
@@ -83,6 +81,18 @@ def ref(ref=None):
         return TableReferenceC
     except Exception as e:
         raise Exception(f'Building reference failed! {e}')
+
+
+def build_thermodb():
+    '''
+    Build thermodb
+    '''
+    try:
+        # init class
+        CompBuilderC = CompBuilder()
+        return CompBuilderC
+    except Exception as e:
+        raise Exception("Building thermodb failed!, ", e)
 
 
 if __name__ == '__main__':

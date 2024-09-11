@@ -132,3 +132,26 @@ pp(Cp_cal_integral)
 # cal (using sympy)
 # Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
 # pp(Cp_cal)
+
+
+# ====================================
+# BUILD THERMODB
+# ====================================
+# build a thermodb
+thermo_db = ptdb.build_thermodb()
+pp(type(thermo_db))
+
+# add TableData
+thermo_db.add_data('general', comp1_data)
+# add TableEquation
+thermo_db.add_data('heat capacity', comp1_eq)
+
+# build
+thermo_db.build()
+# export
+thermo_db.export(comp1)
+
+# check
+thermo_db.check_functions()
+thermo_db.check_properties()
+a = 1

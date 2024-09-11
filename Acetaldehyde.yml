@@ -1,0 +1,75 @@
+Acetaldehyde:
+  DATA:
+  - Formula:
+      symbol: '-'
+      unit: '-'
+      value: C2H4O
+    Name:
+      symbol: '-'
+      unit: '-'
+      value: Acetaldehyde
+    No.:
+      symbol: '-'
+      unit: '-'
+      value: '32'
+    Standard Enthalpy of Formation:
+      symbol: dHf_IG
+      unit: kJ/mol
+      value: '-166.20'
+    Standard Gibbs Energy of Formation:
+      symbol: dGf_IG
+      unit: kJ/mol
+      value: '-128.90'
+    State:
+      symbol: '-'
+      unit: '-'
+      value: g
+  EQUATIONS:
+  - ARGS:
+      temperature:
+        name: temperature
+        symbol: T
+        unit: K
+    BODY: parms['C1'] = parms['C1']/1;parms['C2'] = parms['C2']/1;parms['C3'] = parms['C3']/1;parms['C4']
+      = parms['C4']/1;parms['C5'] = parms['C5']/1;res = parms['C1'] + parms['C2']*args['T']
+      + parms['C3']*(args['T']**2) + parms['C4']*(args['T']**3) + parms['C5']*(args['T']**4)
+    BODY-FIRST-DERIVATIVE: res = parms['C2'] + 2*parms['C3']*args['T'] + 3*parms['C4']*(args['T']**2)
+      + 4*parms['C5']*(args['T']**3)
+    BODY-INTEGRAL: A1 = parms['C1']*args['T1'];B1 = (parms['C2']/2)*(args['T1']**2);C1
+      = (parms['C3']/3)*(args['T1']**3);D1 = (parms['C4']/4)*(args['T1']**4);E1 =
+      (parms['C5']/5)*(args['T1']**5);res1 =  A1 + B1 + C1 + D1 + E1;A2 = parms['C1']*args['T2'];B2
+      = (parms['C2']/2)*(args['T2']**2);C2 = (parms['C3']/3)*(args['T2']**3);D2 =
+      (parms['C4']/4)*(args['T2']**4);E2 = (parms['C5']/5)*(args['T2']**5);res2 =  A2
+      + B2 + C2 + D2 + E2;res = res2 - res1
+    BODY-SECOND-DERIVATIVE: res = 2*parms['C3'] + 6*parms['C4']*args['T'] + 12*parms['C5']*(args['T']**2)
+    PARMS:
+      C1:
+        conversion: 1
+        name: C1
+        symbol: C1
+        unit: None
+      C2:
+        conversion: 1
+        name: C2
+        symbol: C2
+        unit: None
+      C3:
+        conversion: 1
+        name: C3
+        symbol: C3
+        unit: None
+      C4:
+        conversion: 1
+        name: C4
+        symbol: C4
+        unit: None
+      C5:
+        conversion: 1
+        name: C5
+        symbol: C5
+        unit: None
+    RETURNS:
+      heat_capacity:
+        name: heat capacity
+        symbol: Cp
+        unit: J/(kmol.K)

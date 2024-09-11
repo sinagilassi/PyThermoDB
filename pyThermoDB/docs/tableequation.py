@@ -2,6 +2,7 @@
 import pandas as pd
 import math
 import sympy as sp
+import yaml
 # local
 from .equationbuilder import EquationBuilder
 
@@ -16,6 +17,7 @@ class TableEquation:
     body_first_derivative = ''
     body_second_derivative = ''
     __trans_data = {}
+    __prop_equation = {}
 
     def __init__(self, table_name, equations):
         self.table_name = table_name
@@ -29,6 +31,10 @@ class TableEquation:
     def trans_data(self, value):
         self.__trans_data = {}
         self.__trans_data = value
+
+    @property
+    def prop_equation(self):
+        return self.__prop_equation
 
     def eq_structure(self, id):
         '''
@@ -330,6 +336,17 @@ class TableEquation:
         second_derivative = eq_summary['body_second_derivative']
         self.body_second_derivative = ";".join(second_derivative)
 
+        # update __prop_equation
+        self.__prop_equation = {
+            'BODY': self.body,
+            'PARMS': self.parms,
+            'ARGS': self.args,
+            'RETURNS': self.returns,
+            'BODY-INTEGRAL': self.body_integral,
+            'BODY-FIRST-DERIVATIVE': self.body_first_derivative,
+            'BODY-SECOND-DERIVATIVE': self.body_second_derivative
+        }
+
     def eqExe(self, body, parms, args):
         '''
         Execute the function having args, parameters and body
@@ -403,4 +420,26 @@ class TableEquation:
         all_parms = {**parms, **args}
         # execute equation
         res = eq_builder.evaluate_expression(body, **all_parms)
+        return res
+
+    def to_yml(self):
+        '''
+        Convert equation to yml
+
+        Parameters
+        ----------
+        None.
+
+        Returns
+        -------
+        res : str
+            equation in yml
+        '''
+        # create dict
+        res = self.__prop_equation
+        # yml
+        # _eq_yml = _eq
+        # convert to yml
+        # res = yaml.dump(_eq_yml)
+
         return res

@@ -1,5 +1,6 @@
 # import packages/modules
 import pandas as pd
+import yaml
 
 
 class TableData:
@@ -82,3 +83,25 @@ class TableData:
             # convert to dict
             df = df.to_dict()
             return df
+
+    def to_yml(self):
+        '''
+        Convert prop to yml
+
+        Parameters
+        ----------
+        component_name : str
+            component name
+
+        Returns
+        -------
+        res : dict
+            yml dict
+        '''
+        try:
+            # comp data
+            res = self.prop_data
+
+            return res
+        except Exception as e:
+            raise Exception("Conversion failed!, ", e)
