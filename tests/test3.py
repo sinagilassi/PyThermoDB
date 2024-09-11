@@ -76,10 +76,10 @@ comp1 = "Acetaldehyde"
 # BUILD DATA
 # ====================================
 # build data
-# comp1_data = thermo_db.build_data(comp1, 3, 2)
-# pp(comp1_data.data_structure())
+comp1_data = thermo_db.build_data(comp1, 3, 2)
+pp(comp1_data.data_structure())
 
-# pp(comp1_data.get_property(6))
+pp(comp1_data.get_property(6))
 
 # ====================================
 # BUILD EQUATION
