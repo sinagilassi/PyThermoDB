@@ -1,4 +1,4 @@
-﻿No. ,Name,Formula,a,b,c,d,T(min),T(max),Eq
+﻿No.,Name,Formula,a,b,c,d,T(min),T(max),Eq
 -,-,-,a,b,c,d,T(min),T(max),HeCa_IG
 -,-,-,1,1.00E+02,1.00E+05,1.00E+09,K,K,J/mol.K
 1,Methane,CH4,19.875,5.021,1.268,-11.004,273,1500,1
