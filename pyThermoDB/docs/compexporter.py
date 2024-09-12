@@ -144,19 +144,3 @@ class CompExporter:
                 raise Exception(f"{name} not found!")
         except Exception as e:
             raise Exception("Renaming a property failed!, ", e)
-
-    def _build(self):
-        '''
-        Build
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        res : dict
-            dict
-        '''
-        # component dict
-        return {**self.__properties, **self.__functions}

@@ -59,8 +59,8 @@ REFERENCES:
               - Name
               - Formula
               - State
-              - Standard Enthalpy of Formation
-              - Standard Gibbs Energy of Formation
+              - dHf_IG
+              - dGf_IG
             SYMBOL:
               - None
               - None

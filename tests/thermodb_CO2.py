@@ -39,7 +39,7 @@ print(db_list)
 # SELECT A DATABOOK
 # ====================================
 # table list
-tb_list = thermo_db.list_tables(1)
+tb_list = thermo_db.list_tables(3)
 print(tb_list)
 
 # ====================================
@@ -52,18 +52,17 @@ print(tb_info)
 # ====================================
 # LOAD TABLE
 # ====================================
-# load equation
-tb_eq = thermo_db.equation_load(1, 1)
-# equation structure
-tb_eq_structure = tb_eq.eq_structure(1)
-pp(tb_eq_structure)
+# # load equation
+# tb_eq = thermo_db.equation_load(3, 1)
+# # equation structure
+# tb_eq_structure = tb_eq.eq_structure(1)
+# pp(tb_eq_structure)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-# comp1 = "Carbon Dioxide"
-comp1 = "Acetaldehyde"
+comp1 = "Carbon Dioxide"
 # COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query
@@ -80,6 +79,8 @@ comp1_data = thermo_db.build_data(comp1, 3, 2)
 pp(comp1_data.data_structure())
 
 pp(comp1_data.get_property(6))
+# by symbol
+pp(float(comp1_data.get_property('dHf_IG')['value']))
 
 
 # ====================================
@@ -147,8 +148,11 @@ thermo_db.add_data('general', comp1_data)
 # add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq)
 # add string
-thermo_db.add_data('dHf', {'dHf_IG': 152})
+# thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
 # thermo_db.export_data_structure(comp1)
 # save
-thermo_db.save(f'{comp1}-2.pkl')
+thermo_db.save(f'{comp1}.pkl')
+
+# check properties
+pp(thermo_db.check_properties())
