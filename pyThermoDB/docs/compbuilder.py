@@ -111,6 +111,7 @@ class CompBuilder(CompExporter):
             # build library
             for name, value in self.__data.items():
                 self._add(name, value)
+
             return True
         except Exception as e:
             raise Exception('Building library failed!, ', e)
