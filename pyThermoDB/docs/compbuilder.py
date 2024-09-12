@@ -1,5 +1,5 @@
 # import packages/modules
-import pandas as pd
+import pickle
 import yaml
 # local
 from .compexporter import CompExporter
@@ -16,7 +16,7 @@ class CompBuilder(CompExporter):
         # init class
         super().__init__()
 
-    def add_data(self, name, value):
+    def add_data(self, name: str, value):
         '''
         Add TableData/TableEquation
 
@@ -24,7 +24,7 @@ class CompBuilder(CompExporter):
         ----------
         name : str
             data name
-        value : TableData | TableEquation
+        value : TableData | TableEquation | dict
             value of the property/function
 
         Returns
@@ -42,7 +42,7 @@ class CompBuilder(CompExporter):
                 raise Exception('Name is required')
 
             # check TableData | TableEquation
-            if isinstance(value, TableData) or isinstance(value, TableEquation):
+            if isinstance(value, TableData) or isinstance(value, TableEquation) or isinstance(value, dict):
                 self.__data[name] = value
                 return True
             else:
@@ -115,7 +115,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Building library failed!, ', e)
 
-    def export(self, component_name):
+    def export_yml(self, component_name):
         '''
         Export thermodb
 
@@ -134,20 +134,22 @@ class CompBuilder(CompExporter):
             _to_comp = {}
 
             _data_yml = {
-                'DATA': [],
-                'EQUATIONS': []
+                'DATA': {},
+                'EQUATIONS': {}
             }
             # get TableData
-            for name, value in self.properties.items():
+            for i, (name, value) in enumerate(self.properties.items()):
                 if isinstance(value, TableData):
-                    _yml = value.to_yml()
-                    _data_yml['DATA'].append(_yml)
+                    _yml = value.to_dict()
+                    # add chunk
+                    _data_yml['DATA'][str(name)] = _yml
 
             # get TableEquation
-            for name, value in self.functions.items():
+            for i, (name, value) in enumerate(self.functions.items()):
                 if isinstance(value, TableEquation):
-                    _yml = value.to_yml()
-                    _data_yml['EQUATIONS'].append(_yml)
+                    _yml = value.to_dict()
+                    # add chunk
+                    _data_yml['EQUATIONS'][str(name)] = _yml
 
             # for component
             _to_comp[component_name] = _data_yml
@@ -162,6 +164,29 @@ class CompBuilder(CompExporter):
             # return
             return True
 
+        except Exception as e:
+            raise Exception('Exporting library failed!, ', e)
+
+    def export_data_structure(self, component_name):
+        '''
+        Export yml of thermodb containing TableData and TableEquation objects
+
+        Parameters
+        ----------
+        component_name : str
+            component name
+
+        Returns
+        -------
+        res : bool
+            True if success
+        '''
+        try:
+            # build
+            self.build()
+
+            # yml
+            return self.export_yml(component_name)
         except Exception as e:
             raise Exception('Exporting library failed!, ', e)
 
@@ -180,6 +205,21 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
+    def check_property(self, name) -> TableData:
+        '''
+        Check properties
+
+        Returns
+        -------
+        res : bool
+            True if success
+        '''
+        try:
+            # check library
+            return self.properties[name]
+        except Exception as e:
+            raise Exception('Checking properties failed!, ', e)
+
     def check_functions(self):
         '''
         Check functions
@@ -194,3 +234,38 @@ class CompBuilder(CompExporter):
             return self.functions
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
+
+    def check_function(self, name) -> TableEquation:
+        '''
+        Check functions
+
+        Returns
+        -------
+        res : bool
+            True if success
+        '''
+        try:
+            # check library
+            return self.functions[name]
+        except Exception as e:
+            raise Exception('Checking functions failed!, ', e)
+
+    def save(self, filename):
+        """Save the instance to a file using pickle"""
+        try:
+            # build
+            self.build()
+            # save
+            with open(filename, 'wb') as f:
+                pickle.dump(self, f)
+        except Exception as e:
+            raise Exception("Saving CompBuilder instance failed!", e)
+
+    @classmethod
+    def load(cls, filename):
+        """Load a saved instance from a file using pickle"""
+        try:
+            with open(filename, 'rb') as f:
+                return pickle.load(f)
+        except Exception as e:
+            raise Exception("Loading CompBuilder instance failed!", e)
