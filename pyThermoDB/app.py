@@ -83,7 +83,7 @@ def ref(ref=None):
         raise Exception(f'Building reference failed! {e}')
 
 
-def build_thermodb():
+def build_thermodb() -> CompBuilder:
     '''
     Build thermodb
     '''
@@ -93,6 +93,18 @@ def build_thermodb():
         return CompBuilderC
     except Exception as e:
         raise Exception("Building thermodb failed!, ", e)
+
+
+def load_thermodb(thermodb_file) -> CompBuilder:
+    '''
+    Load thermodb
+    '''
+    try:
+        # init class
+        CompBuilderC = CompBuilder.load(thermodb_file)
+        return CompBuilderC
+    except Exception as e:
+        raise Exception("Loading thermodb failed!, ", e)
 
 
 if __name__ == '__main__':

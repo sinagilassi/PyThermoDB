@@ -422,9 +422,9 @@ class TableEquation:
         res = eq_builder.evaluate_expression(body, **all_parms)
         return res
 
-    def to_yml(self):
+    def to_dict(self):
         '''
-        Convert equation to yml
+        Convert equation to dict
 
         Parameters
         ----------
@@ -433,7 +433,7 @@ class TableEquation:
         Returns
         -------
         res : str
-            equation in yml
+            equation in dict
         '''
         # create dict
         res = self.__prop_equation

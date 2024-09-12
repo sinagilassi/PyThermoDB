@@ -144,14 +144,10 @@ pp(type(thermo_db))
 # add TableData
 thermo_db.add_data('general', comp1_data)
 # add TableEquation
-thermo_db.add_data('heat capacity', comp1_eq)
-
-# build
-thermo_db.build()
+thermo_db.add_data('heat-capacity', comp1_eq)
+# add string
+thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
-thermo_db.export(comp1)
-
-# check
-thermo_db.check_functions()
-thermo_db.check_properties()
-a = 1
+# thermo_db.export_data_structure(comp1)
+# save
+thermo_db.save(f'{comp1}-2.pkl')

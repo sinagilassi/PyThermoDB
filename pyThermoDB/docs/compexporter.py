@@ -45,12 +45,10 @@ class CompExporter:
                 raise Exception("Value is required")
 
             # check TableData | TableEquation
-            if isinstance(value, TableData):
+            if isinstance(value, TableData) or isinstance(value, dict):
                 self.__properties[name] = value
-                return True
             elif isinstance(value, TableEquation):
                 self.__functions[name] = value
-                return True
             else:
                 raise Exception("Value must be TableData or TableEquation")
         except Exception as e:
@@ -101,7 +99,7 @@ class CompExporter:
         '''
         try:
             # check TableData | TableEquation
-            if isinstance(value, TableData):
+            if isinstance(value, TableData) or isinstance(value, dict):
                 if name in self.__properties:
                     self.__properties[name] = value
                     return True
@@ -146,3 +144,19 @@ class CompExporter:
                 raise Exception(f"{name} not found!")
         except Exception as e:
             raise Exception("Renaming a property failed!, ", e)
+
+    def _build(self):
+        '''
+        Build
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        res : dict
+            dict
+        '''
+        # component dict
+        return {**self.__properties, **self.__functions}

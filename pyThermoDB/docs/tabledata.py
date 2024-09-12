@@ -84,9 +84,9 @@ class TableData:
             df = df.to_dict()
             return df
 
-    def to_yml(self):
+    def to_dict(self):
         '''
-        Convert prop to yml
+        Convert prop to dict
 
         Parameters
         ----------
@@ -96,7 +96,7 @@ class TableData:
         Returns
         -------
         res : dict
-            yml dict
+            dict
         '''
         try:
             # comp data
