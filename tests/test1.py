@@ -13,36 +13,42 @@ print(ptdb.__version__)
 # databook reference initialization
 # ===============================
 tdb = ptdb.init()
-# print("type: ", type(tdb))
-# print("dir: ", dir(tdb))
 
+# ===============================
+# DATABOOK LIST
+# ===============================
 # databook
-# db = tdb.databooks()
-# print(db)
+db_list = tdb.list_databooks()
+print(db_list)
 
-# select a database
-# tdb.select_databook("Perry's Chemical Engineers' Handbook")
-# tdb.select_databook(1)
+# ===============================
+# TABLE LIST
+# ===============================
+# table list
+tb_lists = tdb.list_tables(1)
+print(tb_lists)
 
-# check selected database
-# print(tdb.selected_databook)
-# list table available
-# print(tdb.tables())
 
-# manually
-# print(tdb.tables(databook=1))
-
+# ===============================
+# TABLE INFO
+# ===============================
 # display a table
 tb_info = tdb.table_info(1, 2)
 print(tb_info)
 
-# load table
-# vapor_pressure_tb = tdb.equation_load(1, 4)
-# pp(vapor_pressure_tb.eq_structure(1))
+# ===============================
+# LOAD TABLES
+# ===============================
+# load equation to check
+vapor_pressure_tb = tdb.equation_load(1, 4)
+pp(vapor_pressure_tb.eq_structure(1))
+# load data to check
+data_table = tdb.data_load(1, 2)
+pp(data_table.data_structure())
 
-# data_table = tdb.data_load(1, 2)
-# pp(data_table.data_structure())
-
+# ====================================
+# CHECK COMPONENT AVAILABILITY IN A TABLE
+# ====================================
 # check component availability in the databook and table
 comp1 = "carbon Dioxide"
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
@@ -51,20 +57,23 @@ comp1 = "carbon Dioxide"
 # comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
 # pp(comp_data)
 
+# ====================================
+# BUILD DATA
+# ====================================
 # build data
-# CO2_data = tdb.build_data(comp1, 1, 2)
-# pp(CO2_data.data_structure())
+CO2_data = tdb.build_data(comp1, 1, 2)
+pp(CO2_data.data_structure())
 
-# pp(CO2_data.get_property(4))
+pp(CO2_data.get_property(4))
 
+# ====================================
+# BUILD EQUATION
+# ====================================
 # build an equation
 eq = tdb.build_equation(comp1, 1, 4)
 
-args = {
-    "T": 290,
-}
 pp(eq.args)
 
-res = eq.cal(args)
+res = eq.cal(T=298.15)
 
 pp(res*1e-5)

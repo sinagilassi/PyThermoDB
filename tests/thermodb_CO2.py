@@ -15,14 +15,16 @@ print(ptdb.__version__)
 # files
 yml_file = 'tests\\CO2 Hydrogenation.yml'
 yml_path = os.path.join(os.getcwd(), yml_file)
-
+# csv files (data/equation tables)
 csv_file_1 = 'tests\\The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State.csv'
 csv_file_2 = 'tests\\General Data.csv'
+csv_file_3 = 'tests\\Vapor Pressure.csv'
 csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
+csv_path_3 = os.path.join(os.getcwd(), csv_file_3)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2]}
+ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2, csv_path_3]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -86,6 +88,7 @@ pp(float(comp1_data.get_property('dHf_IG')['value']))
 # ====================================
 # BUILD EQUATION
 # ====================================
+# ! equation 1
 # build equation
 comp1_eq = thermo_db.build_equation(comp1, 3, 1)
 
@@ -118,6 +121,15 @@ pp(Cp_cal_second)
 Cp_cal_integral = comp1_eq.cal_integral(T1=298.15, T2=320)
 pp(Cp_cal_integral)
 
+# ! equation 2
+# build equation
+vapor_pressure_eq = thermo_db.build_equation(comp1, 3, 3)
+
+pp(vapor_pressure_eq.equation_args())
+pp(vapor_pressure_eq.equation_return())
+VaPr = vapor_pressure_eq.cal(T=304.21)
+pp(VaPr)
+
 # ====================================
 # BUILD EQUATION
 # ====================================
@@ -146,16 +158,22 @@ pp(Cp_cal_integral)
 thermo_db = ptdb.build_thermodb()
 pp(type(thermo_db))
 
-# add TableData
+# * add TableData
 thermo_db.add_data('general', comp1_data)
-# add TableEquation
+# * add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq)
+thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
-# export
-# thermo_db.export_data_structure(comp1)
+# file name
+# thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
 # save
-thermo_db.save(f'{comp1}.pkl')
+thermo_db.save(
+    f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
 
-# check properties
+# ====================================
+# CHECK THERMODB
+# ====================================
+# check all properties and functions registered
 pp(thermo_db.check_properties())
+pp(thermo_db.check_functions())
