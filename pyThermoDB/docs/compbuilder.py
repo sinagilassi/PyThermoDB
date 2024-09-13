@@ -1,6 +1,7 @@
 # import packages/modules
 import pickle
 import yaml
+import os
 # local
 from .compexporter import CompExporter
 from .tabledata import TableData
@@ -191,14 +192,32 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Exporting library failed!, ', e)
 
-    def check_properties(self):
+    def check(self) -> dict:
+        '''
+        Check library
+
+        Returns
+        -------
+        res : dict
+            list of all properties and functions registered 
+        '''
+        try:
+            # res
+            res = {}
+            # check properties
+            res = {**self.check_properties(), **self.check_functions()}
+            return res
+        except Exception as e:
+            raise Exception('Checking library failed!, ', e)
+
+    def check_properties(self) -> dict:
         '''
         Check properties
 
         Returns
         -------
-        res : bool
-            True if success
+        res : list
+            list of all properties registered
         '''
         try:
             # check library
@@ -221,14 +240,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def check_functions(self):
+    def check_functions(self) -> dict:
         '''
         Check functions
 
         Returns
         -------
-        res : bool
-            True if success
+        res : list
+            list of all functions registered
         '''
         try:
             # check library
@@ -251,13 +270,19 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def save(self, filename):
+    def save(self, filename, file_path=None):
         """Save the instance to a file using pickle"""
         try:
             # build
             self.build()
+            # file path setting
+            if file_path is None:
+                file_path = os.getcwd()
+            # file full name
+            filename = os.path.join(file_path, filename)
+
             # save
-            with open(filename, 'wb') as f:
+            with open(f'{filename}.pkl', 'wb') as f:
                 pickle.dump(self, f)
         except Exception as e:
             raise Exception("Saving CompBuilder instance failed!", e)

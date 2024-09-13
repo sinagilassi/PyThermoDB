@@ -143,8 +143,12 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        tb : object
-            table object
+        databook : str
+            databook name
+        table : str
+            table name
+        dataframe: book
+            if True, return a dataframe
 
         Returns
         -------
