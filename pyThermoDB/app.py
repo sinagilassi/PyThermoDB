@@ -1,6 +1,6 @@
 # import packages/modules
 # external
-import os
+
 # internal
 from .config import __version__
 from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
