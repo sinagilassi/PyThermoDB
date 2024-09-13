@@ -93,6 +93,9 @@ comp1_eq = thermo_db.build_equation(comp1, 3, 1)
 # comp1_eq = thermo_db.build_equation(
 #     comp1, 3, 1)
 
+# load parms
+pp(comp1_eq.parms)
+pp(comp1_eq.parms_values)
 # equation details
 pp(comp1_eq.equation_parms())
 pp(comp1_eq.equation_args())

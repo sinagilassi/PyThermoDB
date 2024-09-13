@@ -36,6 +36,8 @@ CO2_Cp_eq = CO2_thermodb.check_function('heat-capacity')
 pp(CO2_Cp_eq.args)
 # return
 pp(CO2_Cp_eq.returns)
+# parms values
+pp(CO2_Cp_eq.parms_values)
 # cal
 CO2_Cp_cal = CO2_Cp_eq.cal(T=298.15)
 pp(f'CO2_Cp_cal = {CO2_Cp_cal}')

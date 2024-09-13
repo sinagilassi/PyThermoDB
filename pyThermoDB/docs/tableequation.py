@@ -18,6 +18,7 @@ class TableEquation:
     body_second_derivative = ''
     __trans_data = {}
     __prop_equation = {}
+    __parms_values = {}
 
     def __init__(self, table_name, equations):
         self.table_name = table_name
@@ -35,6 +36,10 @@ class TableEquation:
     @property
     def prop_equation(self):
         return self.__prop_equation
+
+    @property
+    def parms_values(self):
+        return self.__parms_values
 
     def eq_structure(self, id):
         '''
@@ -346,6 +351,16 @@ class TableEquation:
             'BODY-FIRST-DERIVATIVE': self.body_first_derivative,
             'BODY-SECOND-DERIVATIVE': self.body_second_derivative
         }
+
+        # check params
+        if len(self.parms) > 0:
+            self.__parms_values = self.load_parms()
+            # # get keys
+            # _keys = list(self.parms.keys())
+            # # check
+            # if len(_keys) > 0:
+            #     for item in _keys:
+            #         self.__parms_values[item] = transform_api_data[item]['value']
 
     def eqExe(self, body, parms, args):
         '''
