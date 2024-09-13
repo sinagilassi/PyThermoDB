@@ -6,17 +6,17 @@ from .config import __version__
 from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
 
 
-def desc():
+def desc() -> None:
     print(f'pyThermoDB v-{__version__} is a lightweight and user-friendly\
           Python package designed to provide quick access to essential \
           thermodynamic data.')
 
 
-def get_version():
+def get_version() -> str:
     return __version__
 
 
-def init(ref=None):
+def init(ref=None) -> SettingDatabook:
     '''
     Initialize thermodb app
 
@@ -49,7 +49,7 @@ def init(ref=None):
         raise Exception(f"Initializing app failed! {e}")
 
 
-def ref(ref=None):
+def ref(ref=None) -> TableReference:
     '''
     Building references object including databook and tables to display data
 
