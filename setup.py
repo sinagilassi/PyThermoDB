@@ -22,6 +22,9 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
+    include_package_data=True,  # Make sure to include non-Python files
+    # Add both config and data files
+    package_data={'': ['config/*.yml', 'data/*.csv']},
     license='MIT',
     install_requires=['pandas', 'pillow', 'requests',
                       'urllib3', 'matplotlib', 'numpy', 'PyYAML', 'sympy'],
