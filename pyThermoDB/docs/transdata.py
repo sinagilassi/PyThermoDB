@@ -52,8 +52,15 @@ class TransData:
         '''
         Display data in a table (pandas dataframe)
 
-        args:
-            value: display value
+        Parameters
+        ----------
+        value: bool
+            display value
+
+        Returns
+        -------
+        df: dataframe
+            data table
         '''
         df = pd.DataFrame(self.api_data)
         print(df)
