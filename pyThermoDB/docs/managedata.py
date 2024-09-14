@@ -77,8 +77,17 @@ class ManageData():
         '''
         load reference data from file
         '''
-        config_path = os.path.join(os.path.abspath(
-            os.path.dirname(__file__)), '..', 'config', 'reference.yml')
+        # Get the directory of the current script
+        # script_dir = os.path.dirname(os.path.realpath(__file__))
+
+        # Construct the path to the YAML file
+        # config_path = os.path.join(script_dir, '..', 'config', 'reference.yml')
+
+        # config_path = os.path.join(os.path.abspath(
+        #     os.path.dirname(__file__)), '..', 'config', 'reference.yml')
+
+        config_path = os.path.join(os.path.dirname(
+            os.path.realpath(__file__)), '..\\config', 'reference.yml')
 
         with open(config_path, 'r') as f:
             reference = yaml.load(f, Loader=yaml.FullLoader)
