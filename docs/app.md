@@ -1,3 +1,3 @@
 # App
 
-::: pythermodb.app
+::: pyThermoDB.app
