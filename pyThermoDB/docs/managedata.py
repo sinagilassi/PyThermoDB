@@ -86,8 +86,21 @@ class ManageData():
         # config_path = os.path.join(os.path.abspath(
         #     os.path.dirname(__file__)), '..', 'config', 'reference.yml')
 
-        config_path = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), '..\\config', 'reference.yml')
+        # relative
+        # config_path = os.path.join(os.path.dirname(
+        #     os.path.realpath(__file__)), '..', 'config', 'reference.yml')
+
+        # current dir
+        current_path = os.path.join(os.path.dirname(__file__))
+
+        # Go back to the parent directory (pyThermoDB)
+        parent_path = os.path.abspath(os.path.join(current_path, '..'))
+
+        # Now navigate to the data folder
+        data_path = os.path.join(parent_path, 'config')
+
+        # relative
+        config_path = os.path.join(data_path, 'reference.yml')
 
         with open(config_path, 'r') as f:
             reference = yaml.load(f, Loader=yaml.FullLoader)

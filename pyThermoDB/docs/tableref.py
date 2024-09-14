@@ -15,13 +15,22 @@ class TableReference(ManageData):
         self.custom_ref = custom_ref
 
         # Get the absolute path of the current file
-        current_file_path = os.path.abspath(__file__)
+        # current_file_path = os.path.realpath(__file__)
 
         # Get the directory of the current file
-        current_dir = os.path.dirname(current_file_path)
+        # current_dir = os.path.dirname(current_file_path)
+
+        # current path
+        current_path = os.path.dirname(__file__)
+
+        # Go back to the parent directory (pyThermoDB)
+        parent_path = os.path.abspath(os.path.join(current_path, '..'))
+
+        # Now navigate to the data folder
+        data_path = os.path.join(parent_path, 'data')
 
         # Set the path to the "data" folder
-        self.path = os.path.join(current_dir, '..', 'data')
+        self.path = data_path
         # super
         ManageData.__init__(self, custom_ref=custom_ref)
 
