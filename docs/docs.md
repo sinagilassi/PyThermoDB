@@ -2,40 +2,40 @@
 
 ## thermo
 
-::: pythermodb.docs.thermo
+::: pyThermoDB.docs.thermo
 
 ## transdata
 
-::: pythermodb.docs.transdata
+::: pyThermoDB.docs.transdata
 
 ## tableref
 
-::: pythermodb.docs.tableref
+::: pyThermoDB.docs.tableref
 
 ## tableequation
 
-::: pythermodb.docs.tableequation
+::: pyThermoDB.docs.tableequation
 
 ## tabledata
 
-::: pythermodb.docs.tabledata
+::: pyThermoDB.docs.tabledata
 
 ## managedata
 
-::: pythermodb.docs.managedata
+::: pyThermoDB.docs.managedata
 
 ## equationbuilder
 
-::: pythermodb.docs.equationbuilder
+::: pyThermoDB.docs.equationbuilder
 
 ## customref
 
-::: pythermodb.docs.customref
+::: pyThermoDB.docs.customref
 
 ## compexporter
 
-::: pythermodb.docs.compexporter
+::: pyThermoDB.docs.compexporter
 
 ## compbuilder
 
-::: pythermodb.docs.compbuilder
+::: pyThermoDB.docs.compbuilder
