@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 APP_NAME = 'PyThermoDB'
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 DESCRIPTION = 'PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data.'
 LONG_DESCRIPTION = "The Python Thermodynamics Databook (PyThermoDB) is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants."
 
