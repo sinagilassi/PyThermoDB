@@ -69,11 +69,11 @@ class TableEquation:
             # equation src
             _return = equation['RETURNS']
             # check if exist
-            _body_integral = equation.get('BODY-INTEGRAL', None)
+            _body_integral = equation.get('BODY-INTEGRAL')
             _body_first_derivative = equation.get(
-                'BODY-FIRST-DERIVATIVE', None)
+                'BODY-FIRST-DERIVATIVE')
             _body_second_derivative = equation.get(
-                'BODY-SECOND-DERIVATIVE', None)
+                'BODY-SECOND-DERIVATIVE')
 
             # eq summary
             eq_summary = {
@@ -333,13 +333,25 @@ class TableEquation:
             self.returns = []
         # integral
         body_integral = eq_summary['body_integral']
-        self.body_integral = ";".join(body_integral)
+        # check
+        if body_integral is not None and body_integral != 'None':
+            self.body_integral = ";".join(body_integral)
+        else:
+            self.body_integral = None
         # first derivative
         first_derivative = eq_summary['body_first_derivative']
-        self.body_first_derivative = ";".join(first_derivative)
+        # check
+        if first_derivative is not None and first_derivative != 'None':
+            self.body_first_derivative = ";".join(first_derivative)
+        else:
+            self.body_first_derivative = None
         # second derivative
         second_derivative = eq_summary['body_second_derivative']
-        self.body_second_derivative = ";".join(second_derivative)
+        # check
+        if second_derivative is not None and second_derivative != 'None':
+            self.body_second_derivative = ";".join(second_derivative)
+        else:
+            self.body_second_derivative = None
 
         # update __prop_equation
         self.__prop_equation = {
@@ -380,6 +392,10 @@ class TableEquation:
         res : float
             calculation result
         '''
+        # check body
+        if body is None:
+            raise Exception('Function body not defined!')
+
         # Define a namespace dictionary for eval
         namespace = {'args': args, "parms": parms}
         # Import math module within the function
