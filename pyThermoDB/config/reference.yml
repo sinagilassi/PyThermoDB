@@ -417,6 +417,12 @@ REFERENCES:
                   name: heat capacity of ideal gas
                   symbol: HeCa_IG
                   unit: J/mol.K
+              BODY-INTEGRAL:
+                  None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None
             EQ-2:
               BODY:
                 - res = 75.464 - 1.872*1e-4*args['T'] - 661.42/math.sqrt(args['T'])
@@ -432,6 +438,12 @@ REFERENCES:
                   name: heat capacity of ideal gas
                   symbol: HeCa_IG
                   unit: J/mol.K
+              BODY-INTEGRAL:
+                  None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None
         Table A.IV Enthalpies and Gibbs Energies of Formation: 
           DATA:
             COLUMNS: 
