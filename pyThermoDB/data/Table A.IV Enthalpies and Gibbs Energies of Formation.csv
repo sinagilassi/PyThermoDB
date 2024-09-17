@@ -1,0 +1,130 @@
+﻿No.,Name,Formula,State,dHf_IG,dGf_IG
+-,-,-,-,dHf_IG,dGf_IG
+-,-,-,-,kJ/mol,kJ/mol
+1,Methane,CH4,g,-74.50,-50.50
+2,Ethane,C2H6,g,-83.80,-31.90
+3,Propane,C3H8,g,-104.70,-24.30
+4,n-Butane,C4H10,g,-125.80,-16.60
+5,n-Pentane,C5H12,g,-146.80,-8.70
+6,n-Pentane,C5H12,l,-173.10,-9.20
+7,n-Hexane,C6H14,g,-166.90,0.20
+8,n-Heptane,C7H16,g,-187.80,8.30
+9,n-Octane,C8H18,g,-208.80,16.30
+10,n-Octane,C3H18,l,-255.10,0.00
+11,Acetylene,C2H2,g,227.50,210.00
+12,Ethylene,C2H4,g,52.50,68.50
+13,Propylene,C3H6,g,19.70,62.20
+14,1-Butene,C4H8,g,1.20,70.30
+15,1-Pentene,C5H10,g,-21.30,78.40
+16,1-Hexene,C6H12,g,-42.00,86.80
+17,1-Heptene,C7H14,g,-62.80,0.00
+18,"1,3-Butadiene",C4H6,g,109.20,149.80
+19,Benzene,C6H6,g,82.90,129.70
+20,Benzene,C6H6,l,49.10,124.50
+21,Ethylbenzene,C8H10,g,29.90,130.90
+22,Naphthalene,C10H8,s,78.50,0.00
+23,Styrene,C8H8,g,147.40,213.90
+24,Toluene,C7Hg,g,50.20,122.10
+25,Toluene,C7H8,l,12.20,113.60
+26,Cyclohexane,C6H12,g,-123.10,31.90
+27,Cyclohexane,C6H12,l,-156.20,26.90
+28,Cyclopropane,C3H6,g,53.30,104.50
+29,Methylcyclohexane,C7H14,g,-154.80,27.50
+30,Methylcyclohexane,C7H14,l,-190.20,20.60
+31,Cyclohexene,C5H10,l,0.00,106.90
+32,Acetaldehyde,C2H4O,g,-166.20,-128.90
+33,Acetic Acid,CH3COOH,l,-484.50,-389.90
+34,Acetic Acid,CH3COOH,aq,-486.10,-396.50
+35,1.2-Ethanediol,C2H6O2,l,-454.80,-323.10
+36,Ethanol,C2H6O,g,-235.10,-168.50
+37,Ethanol,C2H6O,l,-277.70,-174.80
+38,Ethyl acetate,CH3COOC2H3,l,-463.30,-318.40
+39,Ethylene oxide,C2H4O,g,-52.60,-13.00
+40,Formaldehyde,CH2O,g,-108.60,-102.50
+41,Formic acid,HCOOH,l,-424.70,-361.40
+42,Methanol,CH4O,g,-200.70,-162.00
+43,Methanol,CH4O,l,238.70,-166.30
+44,Phenol,C6H5OH,s,-165.00,-50.90
+45,Aluminum oxide,Al2O3,"s,a",-1675.70,-1582.30
+46,Aluminum chloride,AICl3,s,-704.20,-628.80
+47,Ammonia,NH3,g,-46.10,-16.50
+48,Ammonia,NH3,aq,0.00,-26.50
+49,Ammonium nitrate,NH4NO3,s,-365.60,-183.90
+50,Ammonium chloride,NH4CI,s,-314.40,-202.90
+51,Barium oxide,BaO,s,-553.50,-525.10
+52,Barium chloride,BaCl2,s,-858.60,-810.40
+53,Bromine,Br2,l,0.00,0.00
+54,Bromine,Br2,g,30.90,3.10
+55,Calcium carbide,CaC2,s,-59.80,-64.90
+56,Calcium carbonate,CaCO3,s,-1206.90,-1128.80
+57,Calcium chloride,CaCl2,s,-795.80,-748.10
+58,Calcium chloride,CaCl2,aq,0.00,-8101.90
+59,Calcium chloride,CaCl2-6H2O,s,-2607.90,0.00
+60,Calcium hydroxide,Ca(OH)2,s,-986.10,-898.50
+61,Calcium hydroxide,Ca(OH)2,aq,0.00,-868.10
+62,Calcium oxide,CaO,s,-635.10,-604.00
+63,Carbon dioxide,CO2,g,-393.50,-394.40
+64,Carbon dioxide,CO2,aq,-413.80,-386.00
+65,Carbon disulfide,CS2,l,89.70,65.30
+66,Carbon monoxide,CO,g,-110.50,-137.20
+67,Carbon tetrachloride,CCl4,l,-135.40,-65.20
+68,Carbonic acid,H2CO3,aq,-699.70,-623.10
+69,Hydrochloric acid,HCI,g,-92.30,-95.30
+70,Hydrochloric acid,HCI,aq,-167.20,-131.20
+71,Hydrogen bromide,HBr,g,-36.40,-53.50
+72,Hydrogen cyanide,HCN,g,135.10,124.70
+73,Hydrogen cyanide,HCN,l,108.90,125.00
+74,Hydrogen flouride,HF,g,-271.10,-273.20
+75,Hydrogen iodide,HI,g,26.50,1.70
+76,Hydrogen peroxide,H2O2,l,-187.80,-120.40
+77,Hydrogen sulfide,H2S,g,-20.60,-33.60
+78,Hydrogen sulfide,H2S,aq,-39.70,-27.80
+79,Iodine,I2,g,62.30,19.80
+80,Iodine,I2,s,0.00,0.00
+81,Iron (II),FeO,s,-272.00,0.00
+82,Iron (III) oxide (hematite),Fe2O3,s,-824.20,-742.20
+83,Iron (II) sulfide,FeS,"s,a",-100,-100.4
+84,Iron sulfide (pyrite),FeS2,s,-178.2,-166.9
+85,Lead oxide,PbO,"s, yellow",-217.3,-187.9
+86,Lead oxide,PbO,"s, red",-219,-188.9
+87,Lead dioxide,PbO2,s,-277.4,-217.3
+88,Lithium chloride,LiCI,s,-408.6,0
+89,Lithium chloride,LiCIH2O,s,-712.6,0
+90,Lithium chloride,LiCI-2H2O,s,-1012.7,0
+91,Lithium chloride,LiCI-3H2O,s,-1311.3,0
+92,Magnesium oxide,MgO,s,-601.7,-569.4
+93,Magnesium carbonate,MgCO3,s,-1095.8,-1012.1
+94,Magnesium chloride,MgCl2,s,-641.3,-591.8
+95,Mercury l chloride,Hg2Cl2,s,-265.2,-210.8
+96,Mercury (II) chloride,HgCl2,s,-224.3,-178.6
+97,Nitric acid,HNO3,l,-174.1,-80.7
+98,Nitric acid,HNO3,aq,0,-111.3
+99,Nitric oxide,NO,g,90.3,86.6
+100,Nitrogen dioxide,NO2,g,33.2,51.3
+101,Nitrous oxide,N2O,g,82.1,104.2
+102,Nitrogen tetroxide,N2O4,g,9.2,97.9
+103,Potassium chloride,KCI,s,-436.8,-409.1
+104,Silicon dioxide,SiO2,"s,a",-910.9,-856.6
+105,Silver bromide,AgBr,s,-100.4,-96.9
+106,Silver chloride,AgCl,s,-127.1,-109.8
+107,Silver nitrate,AgNO3,s,-124.4,-33.4
+108,Sodium bicarbonate,NaHCO3,s,-945.6,-847.9
+109,Sodium carbonate,Na2CO3,s,-1130.7,-1044.4
+110,Sodium carbonate,Na2CO3-10H2O,s,-4081.3,0
+111,Sodium chloride,NaCl,s,-411.2,-384.1
+112,Sodium chloride,NaCl,aq,0,-393.1
+113,Sodium hydroxide,NaOH,s,-425.6,-379.5
+114,Sodium hydroxide,NaOH,aq,0,-419.2
+115,Sodium sulfate,Na2SO4,s,-1382.8,-1265.2
+116,Sodium sulfate-decahydrate,Na2SO4-10H2O,s,-4322.5,-3642.3
+117,Sulfur,S2,g,129.8,81
+118,Sulfur,S2,l,1.1,0.3
+119,Sulfur,S2,s,0,0
+120,Sulfur dioxide,SO2,g,-296.8,-300.2
+121,Sulfur trioxide,SO3,g,-395.7,-371.1
+122,Sulfur trioxide,SO3,l,-441,0
+123,Sulfuric acid,H2SO4,l,814,-690
+124,Sulfuric acid,H2SO4,aq,0,-744.5
+125,Water,H2O,g,-241.8,-228.6
+126,Water,H2O,l,-285.8,-237.1
+127,Zinc oxide,ZnO,s,-348.3,-318.3
