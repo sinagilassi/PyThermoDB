@@ -35,9 +35,7 @@ print(ptdb.__version__)
 * databook reference initialization:
 
 ```python
-# ===============================
 # databook reference initialization
-# ===============================
 tdb = ptdb.init()
 ```
 
