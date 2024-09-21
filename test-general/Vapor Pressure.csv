@@ -1,5 +1,5 @@
 No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq
--,-,-,-,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPrLi
+-,-,-,-,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr
 -,-,-,-,1,1,1,1,1,K,Pa,K,Pa,Pa
 1,carbon dioxide,CO2,g,140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1
 2,carbon monoxide,CO,g,45.698,-1076.6,-4.8814,7.57E-05,2,68.15,1.54E+04,132.92,3.49E+06,1
@@ -8,3 +8,4 @@ No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq
 5,water,H2O,g,73.649,-7258.2,-7.3037,4.17E-06,2,273.16,6.11E+02,647.096,2.19E+07,1
 6,acetylene,C2H2,g,39.63,-2552.2,-2.78,2.39E-16,6,192.4,1.27E+05,308.3,6.11E+06,1
 7,ethanol,C2H6O,l,73.304,-7122.3,-7.1424,2.89E-06,2,159.05,4.96E-04,514,6.11E+06,1
+8,n-butane,C4H10,g,66.343,-4363.2,-7.046,9.45E-06,2,134.86,6.74E-01,425.12,3.77E+06,1
