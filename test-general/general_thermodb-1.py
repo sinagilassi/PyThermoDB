@@ -141,13 +141,18 @@ pp(Cp_cal_custom_integral_Cp__R)
 
 # ! equation 2
 # build equation
-# vapor_pressure_eq = thermo_db.build_equation(comp1, 3, 3)
+vapor_pressure_eq = thermo_db.build_equation(comp1, 4, 3)
 
-# pp(vapor_pressure_eq.equation_args())
-# pp(vapor_pressure_eq.equation_return())
-# VaPr = vapor_pressure_eq.cal(T=304.21)
-# pp(VaPr)
+pp(vapor_pressure_eq.equation_args())
+pp(vapor_pressure_eq.equation_return())
+VaPr = vapor_pressure_eq.cal(T=304.21)
+pp(VaPr)
+# integral
+VaPr_cal_integral = vapor_pressure_eq.cal_integral(T1=298.15, T2=320)
+pp(VaPr_cal_integral)
 
+# custom
+pp(vapor_pressure_eq.custom_integral)
 # ====================================
 # BUILD EQUATION
 # ====================================
