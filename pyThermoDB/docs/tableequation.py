@@ -19,6 +19,8 @@ class TableEquation:
     __trans_data = {}
     __prop_equation = {}
     __parms_values = {}
+    # custom integral
+    _custom_integral = {}
 
     def __init__(self, table_name, equations):
         self.table_name = table_name
@@ -40,6 +42,10 @@ class TableEquation:
     @property
     def parms_values(self):
         return self.__parms_values
+
+    @property
+    def custom_integral(self):
+        return self._custom_integral
 
     def eq_structure(self, id):
         '''
@@ -74,6 +80,8 @@ class TableEquation:
                 'BODY-FIRST-DERIVATIVE')
             _body_second_derivative = equation.get(
                 'BODY-SECOND-DERIVATIVE')
+            # custom integral
+            _custom_integral = equation.get('CUSTOM-INTEGRAL')
 
             # eq summary
             eq_summary = {
@@ -84,7 +92,8 @@ class TableEquation:
                 'return': _return,
                 'body_integral': _body_integral,
                 'body_first_derivative': _body_first_derivative,
-                'body_second_derivative': _body_second_derivative
+                'body_second_derivative': _body_second_derivative,
+                'custom_integral': _custom_integral
             }
             return eq_summary
         except Exception as e:
@@ -135,7 +144,8 @@ class TableEquation:
 
         Examples
         --------
-        >>> res = cal_integral(T=120,P=1)
+        >>> # heat capacity integral
+        >>> res = cal_integral(T1=120,T2=150)
         >>> print(res)
         '''
         # build parms dict
@@ -143,6 +153,53 @@ class TableEquation:
         # execute equation
         res = self.eqExe(self.body_integral, _parms, args=args)
         return res
+
+    def cal_custom_integral(self, equation_name: str, **args):
+        '''
+        Calculate custom integral
+
+        Parameters
+        ----------
+        equation_name : str
+            equation name
+        args : dict
+            a dictionary contains variable names and values
+
+        Returns
+        -------
+        res : float
+            calculation result
+
+        Examples
+        --------
+        >>> res = cal_custom_integral('Cp/RT',T1=120,T2=150)
+        >>> print(res)
+        '''
+        try:
+            # check
+            if equation_name is None:
+                raise Exception('Equation name not defined!')
+
+            # check equation name exists
+            if equation_name not in self._custom_integral:
+                raise Exception('Equation name not found!')
+
+            # build parms dict
+            _parms = self.load_parms()
+
+            # check
+            if len(self._custom_integral) > 0:
+                # body
+                _body_lines = self._custom_integral[equation_name]
+                # stringify
+                _body = ";".join(_body_lines)
+            else:
+                _body = None
+            # execute equation
+            res = self.eqExe(_body, _parms, args=args)
+            return res
+        except Exception as e:
+            raise Exception('Loading custom integral failed!, ', e)
 
     def cal_first_derivative(self, **args):
         '''
@@ -163,11 +220,18 @@ class TableEquation:
         >>> res = cal_first_derivative(T=120,P=1)
         >>> print(res)
         '''
-        # build parms dict
-        _parms = self.load_parms()
-        # execute equation
-        res = self.eqExe(self.body_first_derivative, _parms, args=args)
-        return res
+        try:
+            # check
+            if self.body_first_derivative is None or self.body_first_derivative == 'None':
+                print('The first derivative not defined!')
+
+            # build parms dict
+            _parms = self.load_parms()
+            # execute equation
+            res = self.eqExe(self.body_first_derivative, _parms, args=args)
+            return res
+        except Exception as e:
+            raise Exception("Derivation calculation failed!, ", e)
 
     def cal_second_derivative(self, **args):
         '''
@@ -188,28 +252,38 @@ class TableEquation:
         >>> res = cal_second_derivative(T=120,P=1)
         >>> print(res)
         '''
-        # build parms dict
-        _parms = self.load_parms()
-        # execute equation
-        res = self.eqExe(self.body_second_derivative, _parms, args=args)
-        return res
+        try:
+            # check
+            if self.body_second_derivative is None or self.body_second_derivative == 'None':
+                print('The second derivative not defined!')
+
+            # build parms dict
+            _parms = self.load_parms()
+            # execute equation
+            res = self.eqExe(self.body_second_derivative, _parms, args=args)
+            return res
+        except Exception as e:
+            raise Exception('Derivation calculation failed!, ', e)
 
     def load_parms(self):
         '''
         Load parms values and store in a dict, 
         These parameters are constant values defined in an equation.
         '''
-        # trans data
-        trans_data = self.trans_data
-        # looping through self.parms
-        # check parms
-        if isinstance(self.parms, dict):
-            _parms_name = list(self.parms.keys())
-            _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
-                      for key, value in trans_data.items() if key in _parms_name}
-        else:
-            _parms = {}
-        return _parms
+        try:
+            # trans data
+            trans_data = self.trans_data
+            # looping through self.parms
+            # check parms
+            if isinstance(self.parms, dict):
+                _parms_name = list(self.parms.keys())
+                _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
+                          for key, value in trans_data.items() if key in _parms_name}
+            else:
+                _parms = {}
+            return _parms
+        except Exception as e:
+            raise Exception("Loading equation parameters failed!, ", e)
 
     def equation_body(self):
         '''
@@ -352,6 +426,13 @@ class TableEquation:
             self.body_second_derivative = ";".join(second_derivative)
         else:
             self.body_second_derivative = None
+        # custom integral
+        custom_integral = eq_summary['custom_integral']
+        # check
+        if custom_integral is not None and custom_integral != 'None':
+            self._custom_integral = custom_integral
+        else:
+            self._custom_integral = {}
 
         # update __prop_equation
         self.__prop_equation = {
@@ -361,18 +442,13 @@ class TableEquation:
             'RETURNS': self.returns,
             'BODY-INTEGRAL': self.body_integral,
             'BODY-FIRST-DERIVATIVE': self.body_first_derivative,
-            'BODY-SECOND-DERIVATIVE': self.body_second_derivative
+            'BODY-SECOND-DERIVATIVE': self.body_second_derivative,
+            'CUSTOM-INTEGRAL': self._custom_integral
         }
 
         # check params
         if len(self.parms) > 0:
             self.__parms_values = self.load_parms()
-            # # get keys
-            # _keys = list(self.parms.keys())
-            # # check
-            # if len(_keys) > 0:
-            #     for item in _keys:
-            #         self.__parms_values[item] = transform_api_data[item]['value']
 
     def eqExe(self, body, parms, args):
         '''
@@ -394,7 +470,8 @@ class TableEquation:
         '''
         # check body
         if body is None:
-            raise Exception('Function body not defined!')
+            print('Function body not defined!')
+            return None
 
         # Define a namespace dictionary for eval
         namespace = {'args': args, "parms": parms}
@@ -474,3 +551,37 @@ class TableEquation:
         # res = yaml.dump(_eq_yml)
 
         return res
+
+    def check_custom_integral_equation_body(self, equation_name) -> str:
+        '''
+        Displays the equation body of custom integral by equation name
+
+        Parameters
+        ----------
+        equation_name : str
+            equation name
+
+        Returns
+        -------
+        body : str
+            equation body
+
+        Examples
+        --------
+        >>> body = custom_integral_equation_body('Cp/RT')
+        '''
+        try:
+            # check
+            if self._custom_integral is None:
+                raise Exception('Custom integral not defined!')
+
+            if equation_name is None:
+                raise Exception('Equation name not defined!')
+
+            if equation_name not in self._custom_integral:
+                raise Exception('Equation name not found!')
+            # get equation body
+            body = self._custom_integral.get(equation_name, 'None')
+            return body
+        except Exception as e:
+            raise Exception("Loading custom integral body failed!, ", e)
