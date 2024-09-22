@@ -1,6 +1,6 @@
 # PyThermoDB
 
-![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) 
+![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) ![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
 
 Python Thermodynamics Databook
 
@@ -164,6 +164,52 @@ pp(type(CO2_thermodb))
 ```python
 # check all properties and functions registered
 pp(CO2_thermodb.check())
+```
+
+### Custom Integral
+
+* Step 1:
+
+Modify `yml file` by adding `CUSTOM-INTEGRAL`.
+
+* Step 2:
+
+Add a name for the new integral body.
+
+* Step 3:
+
+Add a list containing the integral body.
+
+```yml
+CUSTOM-INTEGRAL:
+    Cp/R:
+        - A1 = parms['a0']*args['T1']
+        - B1 = (parms['a1']/2)*(args['T1']**2)
+        - C1 = (parms['a2']/3)*(args['T1']**3)
+        - D1 = (parms['a3']/4)*(args['T1']**4)
+        - E1 = (parms['a4']/5)*(args['T1']**5)
+        - res1 =  A1 + B1 + C1 + D1 + E1
+        - A2 = parms['a0']*args['T2']
+        - B2 = (parms['a1']/2)*(args['T2']**2)
+        - C2 = (parms['a2']/3)*(args['T2']**3)
+        - D2 = (parms['a3']/4)*(args['T2']**4)
+        - E2 = (parms['a4']/5)*(args['T2']**5)
+        - res2 =  A2 + B2 + C2 + D2 + E2
+        - res = res2 - res1
+```
+
+* CHECK AS:
+
+```python
+# check custom integral
+pp(comp1_eq.custom_integral)
+# check body
+pp(comp1_eq.check_custom_integral_equation_body('Cp/R'))
+
+# Cp/R
+Cp_cal_custom_integral_Cp__R = comp1_eq.cal_custom_integral(
+    'Cp/R', T1=298.15, T2=320)
+pp(Cp_cal_custom_integral_Cp__R)
 ```
 
 ## FAQ
