@@ -64,7 +64,7 @@ print(tb_info)
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-comp1 = "acetylene"
+comp1 = "carbon dioxide"
 # COMP1_check_availability = thermo_db.check_component(comp1, 4, 1)
 # COMP1_check_availability = thermo_db.check_component(comp1, 4, 2)
 COMP1_check_availability = thermo_db.check_component(comp1, 4, 3)
@@ -132,11 +132,11 @@ pp(Cp_cal_integral)
 # custom integral
 # Cp/RT
 Cp_cal_custom_integral_Cp__RT = comp1_eq.cal_custom_integral(
-    'Cp/RT', T1=298.15, T2=320)
+    'Cp/RT', T1=298.15, T2=373.15)
 pp(Cp_cal_custom_integral_Cp__RT)
 # Cp/R
 Cp_cal_custom_integral_Cp__R = comp1_eq.cal_custom_integral(
-    'Cp/R', T1=298.15, T2=320)
+    'Cp/R', T1=298.15, T2=373.15)
 pp(Cp_cal_custom_integral_Cp__R)
 
 # ! equation 2
