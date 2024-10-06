@@ -321,7 +321,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self, component_name, databook_id, table_id, column_name=None, query=False):
+    def check_component(self, component_name, databook, table, column_name=None, query=False):
         '''
         Check component availability in the selected databook and table
 
@@ -329,10 +329,10 @@ class SettingDatabook(ManageData):
         ----------
         component_name : str | list
             string of component name (e.g. 'Carbon dioxide') | list as ['Carbon dioxide','g']
-        databook_id : int
-            databook id
-        table_id : int
-            table id
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
         query : str
@@ -351,6 +351,16 @@ class SettingDatabook(ManageData):
             # check
             if query:
                 column_name = column_name
+
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id
+            databook_id = db_rid + 1
+
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id
+            table_id = tb_id + 1
 
             # res
             res = False
