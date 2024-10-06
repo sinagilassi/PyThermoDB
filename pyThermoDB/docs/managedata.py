@@ -285,10 +285,14 @@ class ManageData():
             databook name
         databook_id: int
             databook id
+
+        Notes
+        -----
+        if databook is int, the zero-based id is returned
         '''
         try:
             if isinstance(databook, int):
-                # databook id
+                # convert to zero-based id
                 databook_id = databook-1
                 databook_name = self.databook[databook_id]
             elif isinstance(databook, str):
@@ -307,3 +311,53 @@ class ManageData():
             return selected_databook, databook_name, databook_id
         except Exception as e:
             raise Exception(e)
+
+    def find_table(self, databook, table):
+        '''
+        Finds table id through searching databook id and table name
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : id | str
+            table name
+
+        Returns
+        -------
+        table_id : int
+            table id (zero-based)
+        table_name : str
+            table name
+
+        Notes
+        -----
+        if table is int, the zero-based id is returned
+        '''
+        try:
+            # find databook zero-base id (real)
+            selected_databook, databook_name, databook_id = self.find_databook(
+                databook)
+
+            # check table
+            if isinstance(table, int):
+                # convert to zero-based id
+                table_id = table-1
+                # table name
+                table_name = selected_databook[table_id]['table']
+            elif isinstance(table, str):
+                # find table id
+                for i, tb in enumerate(selected_databook):
+                    if tb['table'] == table.strip():
+                        table_id = i
+                        # table name
+                        table_name = tb['table']
+                        break
+            else:
+                raise ValueError("table must be int or str")
+
+            # return
+            return table_id, table_name
+
+        except Exception as e:
+            raise Exception('Finding table id failed!, ', e)
