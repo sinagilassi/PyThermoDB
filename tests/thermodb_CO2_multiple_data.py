@@ -77,7 +77,7 @@ comp1 = "Carbon Dioxide"
 # BUILD DATA
 # ====================================
 # build data
-comp1_data = thermo_db.build_data(comp1, 'CO2 Hydrogenation', 2)
+comp1_data = thermo_db.build_data(comp1, 'CO2 Hydrogenation', 'General Data')
 pp(comp1_data.data_structure())
 
 pp(comp1_data.get_property(6))
@@ -90,7 +90,7 @@ pp(float(comp1_data.get_property('dHf_IG')['value']))
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_equation(comp1, 3, 1)
+comp1_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 1)
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
@@ -123,7 +123,7 @@ pp(Cp_cal_integral)
 
 # ! equation 2
 # build equation
-vapor_pressure_eq = thermo_db.build_equation(comp1, 3, 3)
+vapor_pressure_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 3)
 
 pp(vapor_pressure_eq.equation_args())
 pp(vapor_pressure_eq.equation_return())
@@ -159,7 +159,9 @@ thermo_db = ptdb.build_thermodb()
 pp(type(thermo_db))
 
 # * add TableData
-thermo_db.add_data('general', comp1_data)
+thermo_db.add_data('GENERAL', comp1_data)
+# second data
+thermo_db.add_data('GENERAL-2', comp1_data)
 # * add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq)
 thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
@@ -169,7 +171,7 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
 # save
 thermo_db.save(
-    f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{comp1}-multiple', file_path='C:\\My Drive\\apps\\pyThermoDB\\tests')
 
 # ====================================
 # CHECK THERMODB

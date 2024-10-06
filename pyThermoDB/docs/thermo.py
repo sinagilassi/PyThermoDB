@@ -589,7 +589,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def build_equation(self, component_name, databook_id, table_id,
+    def build_equation(self, component_name, databook, table,
                        column_name=None, query=False):
         '''
         Build equation for as:
@@ -600,10 +600,10 @@ class SettingDatabook(ManageData):
         ----------
         component_name : str
             string of component name (e.g. 'Carbon dioxide')
-        databook_id : int
-            databook id
-        table_id : int
-            table id
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
 
@@ -615,6 +615,16 @@ class SettingDatabook(ManageData):
         # check search option
         if column_name is None:
             column_name = 'Name'
+
+        # find databook zero-based id (real)
+        db, db_name, db_rid = self.find_databook(databook)
+        # databook id
+        databook_id = db_rid + 1
+
+        # find table zero-based id
+        tb_id, tb_name = self.find_table(databook, table)
+        # table id
+        table_id = tb_id + 1
 
         # get data from api
         component_data = self.get_component_data(
@@ -658,7 +668,7 @@ class SettingDatabook(ManageData):
             print("API error. Please try again later.")
             raise Exception("Building equation failed!")
 
-    def build_data(self, component_name, databook_id, table_id,
+    def build_data(self, component_name, databook, table,
                    column_name=None, query=False):
         '''
         Build data as:
@@ -668,10 +678,10 @@ class SettingDatabook(ManageData):
         ----------
         component_name : str
             string of component name (e.g. 'Carbon dioxide')
-        databook_id : int
-            databook id
-        table_id : int
-            table id
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
 
@@ -683,6 +693,16 @@ class SettingDatabook(ManageData):
         # check search option
         if column_name is None:
             column_name = 'Name'
+
+        # find databook zero-based id (real)
+        db, db_name, db_rid = self.find_databook(databook)
+        # databook id
+        databook_id = db_rid + 1
+
+        # find table zero-based id
+        tb_id, tb_name = self.find_table(databook, table)
+        # table id
+        table_id = tb_id + 1
 
         # get data from api
         component_data = self.get_component_data(
