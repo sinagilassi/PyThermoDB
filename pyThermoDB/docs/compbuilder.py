@@ -295,3 +295,22 @@ class CompBuilder(CompExporter):
                 return pickle.load(f)
         except Exception as e:
             raise Exception("Loading CompBuilder instance failed!", e)
+
+    def clean(self):
+        '''
+        Clean all data including properties/functions
+
+        Returns
+        -------
+        res : bool
+            True if success
+        '''
+        try:
+            # clean
+            # data
+            self.__data = {}
+            # properties/functions
+            self._clean()
+            return True
+        except Exception as e:
+            raise Exception("Cleaning properties/functions failed!", e)

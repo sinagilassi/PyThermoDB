@@ -144,3 +144,19 @@ class CompExporter:
                 raise Exception(f"{name} not found!")
         except Exception as e:
             raise Exception("Renaming a property failed!, ", e)
+
+    def _clean(self):
+        '''
+        Clean properties/functions
+
+        Returns
+        -------
+        res : bool
+            True if success
+        '''
+        try:
+            self.__properties = {}
+            self.__functions = {}
+            return True
+        except Exception as e:
+            raise Exception("Cleaning properties/functions failed!, ", e)
