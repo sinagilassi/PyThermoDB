@@ -271,7 +271,21 @@ class CompBuilder(CompExporter):
             raise Exception('Checking functions failed!, ', e)
 
     def save(self, filename, file_path=None):
-        """Save the instance to a file using pickle"""
+        """
+        Saves the instance to a file using pickle
+
+        Parameters
+        ----------
+        filename : str
+            filename
+        file_path : str
+            file path
+
+        Returns
+        -------
+        res : bool
+            True if success
+        """
         try:
             # build
             self.build()
@@ -284,12 +298,26 @@ class CompBuilder(CompExporter):
             # save
             with open(f'{filename}.pkl', 'wb') as f:
                 pickle.dump(self, f)
+            # res
+            return True
         except Exception as e:
             raise Exception("Saving CompBuilder instance failed!", e)
 
     @classmethod
     def load(cls, filename):
-        """Load a saved instance from a file using pickle"""
+        """
+        Loads a saved instance from a file using pickle
+
+        Parameters
+        ----------
+        filename : str
+            filename
+
+        Returns
+        -------
+        thermodb : object
+            thermodb instance
+        """
         try:
             with open(filename, 'rb') as f:
                 return pickle.load(f)
