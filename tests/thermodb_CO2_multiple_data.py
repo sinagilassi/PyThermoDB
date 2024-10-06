@@ -71,7 +71,8 @@ pp(tb_eq_structure)
 # ====================================
 # check component availability in the databook and table
 comp1 = "Carbon Dioxide"
-# COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
+COMP1_check_availability = thermo_db.check_component(
+    comp1, 'CO2 Hydrogenation', 'General Data')
 
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"

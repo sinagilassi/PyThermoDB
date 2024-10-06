@@ -57,6 +57,12 @@ comp1 = "carbon Dioxide"
 # comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
 # pp(comp_data)
 
+# check component
+CO2_check_availability = tdb.check_component(comp1,
+                                             "Perry's Chemical Engineers' Handbook",
+                                             "TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids")
+pp(CO2_check_availability)
+
 # ====================================
 # BUILD DATA
 # ====================================
