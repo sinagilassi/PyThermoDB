@@ -241,7 +241,7 @@ class ManageData():
         databook : str
             databook name
         table_id : int
-            table id
+            table id (zero-based id)
 
         Returns
         -------
@@ -254,6 +254,8 @@ class ManageData():
                 databook = self.databook_bulk[databook]
             elif isinstance(databook, int):
                 databook = self.databook_bulk[self.__databook[databook]]
+
+            # ! if databook list
 
             # list
             selected_tb = {}
