@@ -178,9 +178,22 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # file name
 # thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
+
 # save
 thermo_db.save(
-    f'{comp1}-multiple', file_path='C:\\My Drive\\apps\\pyThermoDB\\tests')
+    f'{comp1}-multiple-2', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+
+# ====================================
+# CHECK THERMODB
+# ====================================
+# check all properties and functions registered
+pp(thermo_db.check_properties())
+pp(thermo_db.check_functions())
+
+# ====================================
+# CLEAN
+# ====================================
+pp(thermo_db.clean())
 
 # ====================================
 # CHECK THERMODB
