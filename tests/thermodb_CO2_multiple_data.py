@@ -48,17 +48,23 @@ print(tb_list)
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-tb_info = thermo_db.table_info('CO2 Hydrogenation', 2)
+# tb_info = thermo_db.table_info('CO2 Hydrogenation', 2)
+# print(tb_info)
+
+tb_info = thermo_db.table_info('CO2 Hydrogenation', 'General Data')
 print(tb_info)
 
 # ====================================
 # LOAD TABLE
 # ====================================
-# # load equation
-# tb_eq = thermo_db.equation_load(3, 1)
-# # equation structure
-# tb_eq_structure = tb_eq.eq_structure(1)
-# pp(tb_eq_structure)
+# load equation
+# tb_eq = thermo_db.equation_load('CO2 Hydrogenation', 'Vapor Pressure')
+# load equation
+tb_eq = thermo_db.equation_load(
+    'CO2 Hydrogenation', 'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State')
+# equation structure
+tb_eq_structure = tb_eq.eq_structure(1)
+pp(tb_eq_structure)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -90,7 +96,8 @@ pp(float(comp1_data.get_property('dHf_IG')['value']))
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 1)
+comp1_eq = thermo_db.build_equation(
+    comp1, 'CO2 Hydrogenation', 'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State')
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
@@ -123,7 +130,8 @@ pp(Cp_cal_integral)
 
 # ! equation 2
 # build equation
-vapor_pressure_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 3)
+vapor_pressure_eq = thermo_db.build_equation(
+    comp1, 'CO2 Hydrogenation', 'Vapor Pressure')
 
 pp(vapor_pressure_eq.equation_args())
 pp(vapor_pressure_eq.equation_return())

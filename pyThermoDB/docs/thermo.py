@@ -119,15 +119,26 @@ class SettingDatabook(ManageData):
             elif isinstance(table, str):
                 # get tables
                 tables = self.list_tables(databook=db_name, dataframe=False)
-                # looping
-                for i, item in enumerate(tables):
-                    if item == table.strip():
-                        tb_id = i
-                        break
-                # tb
-                tb = self.get_table(db, tb_id-1)
+                # check
+                if isinstance(tables, list):
+                    # looping
+                    for i, item in enumerate(tables):
+                        # check
+                        if isinstance(item, list):
+                            # table name
+                            tb_name = item[0]
+                            if tb_name == table.strip():
+                                # zero-based id
+                                tb_id = i
+                                break
+                        else:
+                            raise ValueError(f"list {item} not found.")
+                    # tb
+                    tb = self.get_table(db, tb_id)
+                else:
+                    raise ValueError(f"table {table} not found.")
             else:
-                raise ValueError("table must be int or str")
+                raise ValueError("table must be int or str.")
 
             # dataframe
             # res
@@ -143,16 +154,21 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        databook : str
-            databook name
-        table : str
-            table name
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
         dataframe: book
             if True, return a dataframe
 
         Returns
         -------
-        None.
+        tb_summary : dict
+            table summary
+
+        Notes
+        -----
+        1. The default value of dataframe is True, the return value (tb_summary) is Pandas Dataframe  
         '''
         try:
             # table type
@@ -192,21 +208,24 @@ class SettingDatabook(ManageData):
                     data_no = 1
 
                 # data
-                _tb_summary = {
+                tb_summary = {
                     "Table Name": table_name,
                     "Type": tb_type,
                     "Equations": equation_no,
                     "Data": data_no
                 }
 
+            else:
+                raise ValueError("No such table")
+
             if dataframe:
                 # column names
                 column_names = ['Table Name', 'Type', 'Equations', 'Data']
                 # dataframe
-                df = pd.DataFrame([_tb_summary], columns=column_names)
+                df = pd.DataFrame([tb_summary], columns=column_names)
                 return df
             else:
-                return _tb_summary
+                return tb_summary
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
@@ -216,12 +235,18 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        tb : object
-            table object
+        databook : int | str
+            databook id or name
+        table : str
+            table name
 
         Returns
         -------
-        object
+        object: TableEquation
+
+        Notes
+        -----
+        1. table should be a string
         '''
         try:
             # table type
