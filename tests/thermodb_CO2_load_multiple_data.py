@@ -7,7 +7,7 @@ import os
 # LOAD THERMODB
 # ====================================
 # ref
-thermodb_file = 'Carbon Dioxide-multiple.pkl'
+thermodb_file = 'Carbon Dioxide-multiple-3.pkl'
 # current dir
 current_path = os.getcwd()
 thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
@@ -33,7 +33,7 @@ pp(CO2_thermodb.check())
 pp(CO2_thermodb.check_properties())
 
 # ! load data
-CO2_general = CO2_thermodb.check_property('GENERAL-2')
+CO2_general = CO2_thermodb.check_property('GENERAL')
 pp(type(CO2_general))
 # heat of formation at 298.15K
 CO2_dHf_IG = float(CO2_general.get_property('dHf_IG')['value'])

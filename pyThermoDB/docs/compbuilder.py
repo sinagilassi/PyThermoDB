@@ -68,6 +68,7 @@ class CompBuilder(CompExporter):
         try:
             if name in self.__data:
                 del self.__data[name]
+                #
                 return True
             else:
                 raise Exception('Data not found')
@@ -98,6 +99,31 @@ class CompBuilder(CompExporter):
                 raise Exception('Data not found')
         except Exception as e:
             raise Exception('Renaming data failed!, ', e)
+
+    def list_data(self):
+        '''
+        List the thermo data added `before saving`
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        data : dict
+            data dictionary
+
+        Notes
+        -----
+        The thermo objects are created by
+
+        1. thermo_db.build_data()
+        2. thermo_db.build_equations()
+        '''
+        try:
+            return self.__data
+        except Exception as e:
+            raise Exception('Listing data failed!, ', e)
 
     def build(self):
         '''
