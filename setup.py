@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 APP_NAME = 'PyThermoDB'
-VERSION = '1.6.3'
+VERSION = '1.6.4'
 DESCRIPTION = 'PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data.'
 LONG_DESCRIPTION = "The Python Thermodynamics Databook (PyThermoDB) is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants."
 
@@ -27,7 +27,7 @@ setup(
     package_data={'': ['config/*.yml', 'data/*.csv']},
     license='MIT',
     install_requires=['pandas', 'pillow', 'requests',
-                      'urllib3', 'matplotlib', 'numpy', 'PyYAML', 'sympy'],
+                      'urllib3', 'matplotlib', 'numpy', 'PyYAML', 'sympy', 'flask'],
     keywords=['python', 'chemical engineering', 'thermodynamics',
               'PyThermoDB'],
     classifiers=[
