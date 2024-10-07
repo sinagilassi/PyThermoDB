@@ -179,21 +179,31 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # file name
 # thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
 
-# save
-thermo_db.save(
-    f'{comp1}-multiple-2', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+# ====================================
+# LIST THERMO DATA (DATA,EQUATIONS)
+# ====================================
+pp(thermo_db.list_data())
 
 # ====================================
-# CHECK THERMODB
+# REMOVE A RECORD
 # ====================================
-# check all properties and functions registered
-pp(thermo_db.check_properties())
-pp(thermo_db.check_functions())
+# remove a record
+# pp(thermo_db.delete_data('GENERAL-2'))
+# check data after change (remove data)
+# pp(thermo_db.list_data())
 
 # ====================================
 # CLEAN
 # ====================================
-pp(thermo_db.clean())
+# pp(thermo_db.clean())
+
+
+# ====================================
+# SAVE
+# ====================================
+# save
+thermo_db.save(
+    f'{comp1}-multiple-3', file_path='E:\\Python Projects\\pyThermoDB\\tests')
 
 # ====================================
 # CHECK THERMODB
