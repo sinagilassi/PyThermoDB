@@ -99,6 +99,16 @@ def build_thermodb() -> CompBuilder:
 def load_thermodb(thermodb_file) -> CompBuilder:
     '''
     Load thermodb
+
+    Parameters
+    ----------
+    thermodb_file : str
+        filename path
+
+    Returns
+    -------
+    CompBuilderC : object
+        CompBuilder object
     '''
     try:
         # init class

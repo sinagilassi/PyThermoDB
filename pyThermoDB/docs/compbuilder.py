@@ -337,7 +337,7 @@ class CompBuilder(CompExporter):
         Parameters
         ----------
         filename : str
-            filename
+            filename path
 
         Returns
         -------
