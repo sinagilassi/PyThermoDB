@@ -1,6 +1,6 @@
 # PyThermoDB
 
-![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) 
+![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) ![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
 
 Python Thermodynamics Databook
 
@@ -13,12 +13,20 @@ Key Features:
 - **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
+## Check ThermoDB Files
+
+You can check the thermoDB files in the following link:
+
+- [⏩thermodb-demo](https://pythermodb-demo.streamlit.app/)
+
 ## Google Colab
 
 You can use the following code to run `PyThermoDB` in Google Colab:
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing)
-
+| Version | Scripts |
+|---------|---------|
+| 1.6.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
+| 1.5.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
 
 ## Installation
 
@@ -35,51 +43,37 @@ print(ptdb.__version__)
 * databook reference initialization:
 
 ```python
-# ===============================
 # databook reference initialization
-# ===============================
 tdb = ptdb.init()
 ```
 
-* list databooks:
+* DATABOOK LIST:
 
 ```python
-# ===============================
-# DATABOOK LIST
-# ===============================
 # databook
 db_list = tdb.list_databooks()
 print(db_list)
 ```
 
-* list tables:
+* TABLE LIST:
 
 ```python
-# ===============================
-# TABLE LIST
-# ===============================
 # table list
 tb_lists = tdb.list_tables(1)
 print(tb_lists)
 ```
 
-* Display table info:
+* TABLE INFO:
 
 ```python
-# ===============================
-# TABLE INFO
-# ===============================
 # display a table
 tb_info = tdb.table_info(1, 2)
 print(tb_info)
 ```
 
-* Load an equation (before building):
+* LOAD TABLES (before building):
 
 ```python
-# ===============================
-# LOAD TABLES
-# ===============================
 # load equation to check
 vapor_pressure_tb = tdb.equation_load(1, 4)
 pp(vapor_pressure_tb.eq_structure(1))
@@ -88,12 +82,9 @@ data_table = tdb.data_load(1, 2)
 pp(data_table.data_structure())
 ```
 
-* Check component availability:
+* CHECK COMPONENT AVAILABILITY IN A TABLE:
 
 ```python
-# ====================================
-# CHECK COMPONENT AVAILABILITY IN A TABLE
-# ====================================
 # check component availability in the databook and table
 comp1 = "carbon Dioxide"
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
@@ -103,24 +94,18 @@ comp1 = "carbon Dioxide"
 # pp(comp_data)
 ```
 
-* Build data object:
+* BUILD DATA OBJECT:
 
 ```python
-# ====================================
-# BUILD DATA
-# ====================================
 # build data
 CO2_data = tdb.build_data(comp1, 1, 2)
 pp(CO2_data.data_structure())
 pp(CO2_data.get_property(4))
 ```
 
-* Build an equation object:
+* BUILD EQUATION OBJECT:
 
 ```python
-# ====================================
-# BUILD EQUATION
-# ====================================
 # build an equation
 eq = tdb.build_equation(comp1, 1, 4)
 pp(eq.args)
@@ -132,10 +117,9 @@ pp(res*1e-5)
 
 DataTable & EquationTable saved as an object in `Carbon Dioxide.pkl`
 
+* BUILD THERMODB:
+
 ```python
-# ====================================
-# BUILD THERMODB
-# ====================================
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
 pp(type(thermo_db))
@@ -152,10 +136,11 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # save
 thermo_db.save(
     f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+```
 
-# ====================================
-# CHECK THERMODB
-# ====================================
+* CHECK THERMODB:
+
+```python
 # check all properties and functions registered
 pp(thermo_db.check_properties())
 pp(thermo_db.check_functions())
@@ -165,25 +150,26 @@ pp(thermo_db.check_functions())
 
 `Carbon Dioxide.pkl` can be loaded as:
 
+* LOAD THERMODB
+
 ```python
-# ====================================
-# LOAD THERMODB
-# ====================================
 # ref
 thermodb_file = 'Carbon Dioxide.pkl'
 thermodb_path = os.path.join(os.getcwd(), thermodb_file)
 pp(thermodb_path)
+```
 
-# ====================================
-# LOAD THERMODB
-# ====================================
+* LOAD THERMODB
+
+```python
 # load thermodb
 CO2_thermodb = ptdb.load_thermodb(thermodb_path)
 pp(type(CO2_thermodb))
+```
 
-# ====================================
-# CHECK THERMODB
-# ====================================
+* CHECK THERMODB
+
+```python
 # check all properties and functions registered
 pp(CO2_thermodb.check())
 ```
