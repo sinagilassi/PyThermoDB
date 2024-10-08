@@ -8,7 +8,7 @@ import os
 # ====================================
 # ref
 thermodb_file = 'Carbon Dioxide.pkl'
-thermodb_path = os.path.join(os.getcwd(), thermodb_file)
+thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
 pp(thermodb_path)
 
 # ====================================
