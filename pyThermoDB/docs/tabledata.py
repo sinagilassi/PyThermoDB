@@ -49,40 +49,48 @@ class TableData:
 
         return df
 
-    def get_property(self, property_name, dataframe=False):
+    def get_property(self, property):
         '''
         Get a component property from data table structure
 
         Parameters
         ----------
-        property_name : str | int
-            string/int of property name
-        dataframe : bool, optional
-            DESCRIPTION. The default is False.
+        property : str | int
+            property name or id
 
         Returns
         -------
-        df : dataframe
+        dict
             component property
-
         '''
         # dataframe
         df = pd.DataFrame(self.prop_data)
 
         # choose a column
-        if isinstance(property_name, str):
-            df = df[property_name]
-        elif isinstance(property_name, int):
-            df = df.iloc[:, property_name-1]
+        if isinstance(property, str):
+            # df = df[property_name]
+            # look up prop_data dict
+            # check key exists
+            if property in self.prop_data.keys():
+                get_data = self.prop_data[property]
+            else:
+                # check symbol value in each item
+                for key, value in self.prop_data.items():
+                    if property == value['symbol']:
+                        get_data = self.prop_data[key]
+                        break
+            # series
+            sr = pd.Series(get_data)
+
+        elif isinstance(property, int):
+            # get column index
+            column_index = df.columns[property-1]
+            sr = df.loc[:, column_index]
+
         else:
             raise ValueError("loading error!")
-        # check
-        if dataframe:
-            return df
-        else:
-            # convert to dict
-            df = df.to_dict()
-            return df
+
+        return sr.to_dict()
 
     def to_dict(self):
         '''

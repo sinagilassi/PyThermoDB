@@ -34,6 +34,11 @@ pp(CO2_thermodb.check_properties())
 CO2_general = CO2_thermodb.check_property('general')
 pp(type(CO2_general))
 # heat of formation at 298.15K
+pp(CO2_general.data_structure())
+# pp(CO2_general.get_property(11, dataframe=True))
+CO2_dHf_IG = float(CO2_general.get_property(11)['value'])
+# by name
+# pp(CO2_general.get_property('dHf_IG', dataframe=True))
 CO2_dHf_IG = float(CO2_general.get_property('dHf_IG')['value'])
 CO2_dHf_IG_unit = CO2_general.get_property('dHf_IG')['unit']
 CO2_dHf_IG_J__mol = CO2_dHf_IG*1000
