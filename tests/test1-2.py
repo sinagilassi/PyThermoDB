@@ -92,14 +92,24 @@ CO2_Pc = float(CO2_data.get_property('Pc')['value'])
 # BUILD EQUATION
 # ====================================
 # build an equation
-eq = tdb.build_equation(
-    comp1, "Chemical Thermodynamics for Process Simulation", "Table A.2 Vapor pressure correlations for selected compounds")
+# * vapor pressure
+# eq = tdb.build_equation(
+#     comp1, "Chemical Thermodynamics for Process Simulation", "Table A.2 Vapor pressure correlations for selected compounds")
 
-# args
-pp(eq.args)
+# # args
+# pp(eq.args)
+# pp(eq.parms)
 
-res = eq.cal(T=253.15, Tc=CO2_Tc, Pc=CO2_Pc)
+# res = eq.cal(T=253.15, Tc=CO2_Tc, Pc=CO2_Pc)
 
-# return
-pp(eq.returns)
-pp(res)
+# # return
+# pp(eq.returns)
+# pp(res)
+
+# liquid density
+rho_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
+                            "Table A.3 Liquid density correlations for selected compounds")
+# parms
+pp(rho_eq.parms)
+pp(rho_eq.returns)
+pp(rho_eq.cal(T=253.15, Tc=CO2_Tc))

@@ -430,6 +430,62 @@ REFERENCES:
                   None
                 BODY-SECOND-DERIVATIVE:
                   None
+        Table A.3 Liquid density correlations for selected compounds:
+          EQUATIONS:
+            EQ-1:
+              BODY:
+                - Tr = args['T']/args['Tc']
+                - A = parms['A']*math.pow(1-Tr,0.35)
+                - B = parms['B']*math.pow(1-Tr,2/3)
+                - C = parms['C']*(1-Tr)
+                - D = parms['D']*math.pow(1-Tr,4/3)
+                - res = parms['rho_c'] + (A+B+C+D)
+              ARGS:
+                temperature:
+                  name: temperature
+                  symbol: T
+                  unit: K
+                critical_temperature:
+                  name: critical temperature
+                  symbol: Tc
+                  unit: K
+              PARMS:
+                rho_c:
+                  name: density constant
+                  symbol: rho_c
+                  unit: None
+                  conversion: 1
+                A:
+                  name: A
+                  symbol: A
+                  unit: None
+                  conversion: 1
+                B:
+                  name: B
+                  symbol: B
+                  unit: None
+                  conversion: 1
+                C:
+                  name: C
+                  symbol: C
+                  unit: None
+                  conversion: 1
+                D:
+                  name: D
+                  symbol: D
+                  unit: None
+                  conversion: 1
+              RETURNS:
+                liquid_density:
+                  name: liquid density
+                  symbol: rho_LIQ
+                  unit: kg/m3
+              BODY-INTEGRAL:
+                None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None
     Chemical and Engineering Thermodynamics:
       TABLES:
         Table A.II The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State:

@@ -271,14 +271,15 @@ class TableEquation:
         These parameters are constant values defined in an equation.
         '''
         try:
-            # trans data
+            # trans data (taken from csv)
             trans_data = self.trans_data
             # looping through self.parms
             # check parms
             if isinstance(self.parms, dict):
+                # loaded parms (taken from reference)
                 _parms_name = list(self.parms.keys())
-                _parms = {key: float(value['value'] or 0)/float(value['unit'] or 1)
-                          for key, value in trans_data.items() if key in _parms_name}
+                _parms = {value['symbol']: float(value['value'] or 0)/float(value['unit'] or 1)
+                          for key, value in trans_data.items() if value['symbol'] in _parms_name}
             else:
                 _parms = {}
             return _parms
