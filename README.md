@@ -28,6 +28,12 @@ You can use the following code to run `PyThermoDB` in Google Colab:
 | 1.6.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
 | 1.5.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
 
+**Examples on Google Colab**
+
+| Example | Scripts |
+|---------|---------|
+| CO₂ Thermodynamic Data | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mzu70kACdvoB_jO6gTGVegGtK_ssOOHq?usp=sharing) |
+
 ## Installation
 
 Install PyThermoDB with pip
