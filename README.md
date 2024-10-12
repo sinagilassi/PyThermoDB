@@ -33,6 +33,7 @@ You can use the following code to run `PyThermoDB` in Google Colab:
 | Example | Scripts |
 |---------|---------|
 | CO₂ Thermodynamic Data | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mzu70kACdvoB_jO6gTGVegGtK_ssOOHq?usp=sharing) |
+| Check Component Availability | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HdGHS_uypEf_yzsq7fZyLZH3dWnjYVSg?usp=sharing) |
 
 ## Installation
 
