@@ -56,13 +56,18 @@ class TableReference(ManageData):
     def list_tables(self, databook_id):
         '''
         List tables
+
+        Parameters
+        ----------
+        databook_id : int
+            databook id
         '''
         _, df = self.get_tables(databook_id-1)
         return df
 
     def load_table(self, databook_id, table_id):
         """
-        Load a csv file in this directory
+        Load a `csv file` in this directory
 
         Parameters
         ----------

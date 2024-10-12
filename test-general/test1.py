@@ -61,9 +61,12 @@ CO2_check_availability = tdb.check_component(comp1, 1, 2)
 # CHECK COMPONENT AVAILABILITY IN A TABLE BY QUERY
 # ====================================
 # query
-# query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
-# COMP1_check_availability = tdb.check_component(
-#     comp1, 3, 2, query, query=True)
+query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
+COMP1_check_availability = tdb.check_component(
+    comp1, 3, 2, query, query=True)
+
+COMP1_check_availability = tdb.check_component(
+    comp1, "Chemical and Engineering Thermodynamics", "Table A.IV Enthalpies and Gibbs Energies of Formation", query, query=True)
 
 # ====================================
 # BUILD DATA

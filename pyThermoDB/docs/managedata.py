@@ -184,7 +184,7 @@ class ManageData():
             # dataframe
             # column name
             column_name = "Databooks"
-            databook_df = pd.DataFrame(res, columns=[column_name, "id"])
+            databook_df = pd.DataFrame(res, columns=[column_name, "Id"])
             # return
             return _db, databook_df
 

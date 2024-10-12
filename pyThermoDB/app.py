@@ -2,14 +2,14 @@
 # external
 
 # internal
-from .config import __version__
+from .config import __version__, __author__
 from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
 from .web import check_lib
 
 
 def desc() -> None:
     print(f'pyThermoDB v-{__version__} is a lightweight and user-friendly\
-          Python package designed to provide quick access to essential \
+          Python package developed by {__author__} designed to provide quick access to essential \
           thermodynamic data.')
 
 
