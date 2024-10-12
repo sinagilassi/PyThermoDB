@@ -486,6 +486,140 @@ REFERENCES:
                 None
               BODY-SECOND-DERIVATIVE:
                 None
+        Table A.4 Enthalpy of vaporization correlations for selected compounds:
+          EQUATIONS:
+            EQ-1:
+              BODY:
+                - tau = 1 - args['T']/args['Tc']
+                - A = parms['A']*math.pow(tau, 1/3)
+                - B = parms['B']*math.pow(tau, 2/3)
+                - C = parms['C']*tau
+                - D = parms['D']*math.pow(tau, 2)
+                - E = parms['E']*math.pow(tau, 6)
+                - res = (parms['R']*args['Tc']*(A + B + C + D + E))/args['MW']
+              ARGS:
+                temperature:
+                  name: temperature
+                  symbol: T
+                  unit: K
+                critical_temperature:
+                  name: critical temperature
+                  symbol: Tc
+                  unit: K
+                molecular_weight:
+                  name: molecular weight
+                  symbol: MW
+                  unit: g/mol
+              PARMS:
+                A:
+                  name: A
+                  symbol: A
+                  unit: None
+                  conversion: 1
+                B:
+                  name: B
+                  symbol: B
+                  unit: None
+                  conversion: 1
+                C:
+                  name: C
+                  symbol: C
+                  unit: None
+                  conversion: 1
+                D:
+                  name: D
+                  symbol: D
+                  unit: None
+                  conversion: 1
+                E:
+                  name: E
+                  symbol: E
+                  unit: None
+                  conversion: 1
+                R:
+                  name: universal gas constant
+                  symbol: R
+                  unit: None
+                  conversion: 1
+              RETURNS:
+                enthalpy_of_vaporization:
+                  name: enthalpy of vaporization
+                  symbol: dHv
+                  unit: J/g
+              BODY-INTEGRAL:
+                None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None
+        Table A.5 Liquid heat capacity correlations for selected compounds:
+          EQUATIONS:
+            EQ-1:
+              BODY:
+                - Tau = 1 - (args['T']/args['Tc'])
+                - A = parms['A']/Tau
+                - B = parms['B']
+                - C = parms['C']*Tau
+                - D = parms['D']*math.pow(Tau,2)
+                - E = parms['E']*math.pow(Tau,3)
+                - F = parms['F']*math.pow(Tau,4)
+                - res = (parms['R']*(A+B+C+D+E+F))/args['MW']
+              ARGS:
+                temperature:
+                  name: temperature
+                  symbol: T
+                  unit: K
+                critical_temperature:
+                  name: critical temperature
+                  symbol: Tc
+                  unit: K
+              PARMS:
+                A:
+                  name: A
+                  symbol: A
+                  unit: None
+                  conversion: 1
+                B:
+                  name: B
+                  symbol: B
+                  unit: None
+                  conversion: 1
+                C:
+                  name: C
+                  symbol: C
+                  unit: None
+                  conversion: 1
+                D:
+                  name: D
+                  symbol: D
+                  unit: None
+                  conversion: 1
+                E:
+                  name: E
+                  symbol: E
+                  unit: None
+                  conversion: 1
+                F:
+                  name: F
+                  symbol: F
+                  unit: None
+                  conversion: 1
+                R:
+                  name: universal gas constant
+                  symbol: R
+                  unit: None
+                  conversion: 1
+              RETURNS:
+                liquid_heat_capacity:
+                  name: liquid heat capacity
+                  symbol: Cp_LIQ
+                  unit: J/g.K
+              BODY-INTEGRAL:
+                None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None
     Chemical and Engineering Thermodynamics:
       TABLES:
         Table A.II The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State:
