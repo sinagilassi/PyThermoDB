@@ -53,6 +53,8 @@ pp(data_table.data_structure())
 # ====================================
 # check component availability in the databook and table
 comp1 = "carbon Dioxide"
+#  CO
+# comp1 = "carbon monoxide"
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
 
 # load comp data
@@ -86,6 +88,8 @@ pp(CO2_data.get_property('dGf_std'))
 CO2_Tc = float(CO2_data.get_property('Tc')['value'])
 # CO2 Pc [bar]
 CO2_Pc = float(CO2_data.get_property('Pc')['value'])
+# CO2 MW [g/mol]
+CO2_MW = float(CO2_data.get_property('MW')['value'])
 
 
 # ====================================
@@ -107,9 +111,25 @@ CO2_Pc = float(CO2_data.get_property('Pc')['value'])
 # pp(res)
 
 # liquid density
-rho_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
-                            "Table A.3 Liquid density correlations for selected compounds")
+# rho_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
+#                             "Table A.3 Liquid density correlations for selected compounds")
+# # parms
+# pp(rho_eq.parms)
+# pp(rho_eq.returns)
+# pp(rho_eq.cal(T=253.15, Tc=CO2_Tc))
+
+# enthalpy of vaporization
+# Hvap_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
+#                              "Table A.4 Enthalpy of vaporization correlations for selected compounds")
+# # parms
+# pp(Hvap_eq.parms)
+# pp(Hvap_eq.returns)
+# print('enthalpy of vaporization', Hvap_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
+
+# liquid heat capacity
+Cp_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
+                           "Table A.5 Liquid heat capacity correlations for selected compounds")
 # parms
-pp(rho_eq.parms)
-pp(rho_eq.returns)
-pp(rho_eq.cal(T=253.15, Tc=CO2_Tc))
+pp(Cp_eq.parms)
+pp(Cp_eq.returns)
+print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
