@@ -1,0 +1,5 @@
+No.,Name,Formula,A_ij,B_ij,C_ij,D_ij,E_ij,Eq
+-,-,-,A_ij,B_ij,C_ij,D_ij,E_ij,tau_ij
+-,-,-,1,1,1,1,1,Pa
+4,methanol,CH3OH,,,,,,1
+5,water,H2O,,,,,,1
