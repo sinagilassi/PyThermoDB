@@ -133,7 +133,8 @@ class ManageData():
             for databook, databook_data in references.items():
                 tables = []
                 for table, table_data in databook_data.get('TABLES', {}).items():
-                    # check EQUATIONS exists
+                    # * check
+                    # ! check EQUATIONS exists
                     if 'EQUATIONS' in table_data:
                         # eq
                         _eq = []
@@ -145,18 +146,52 @@ class ManageData():
                         tables.append({
                             'table': table,
                             'equations': _eq,
-                            'data': None
+                            'data': None,
+                            'matrix-equations': None,
+                            'matrix-data': None,
                         })
                         # reset
                         _eq = []
-                    # check DATA
+                    # ! check MATRIX-EQUATION
+                    elif 'MATRIX-EQUATIONS' in table_data:
+                        # eq
+                        _eq = []
+                        for eq, eq_data in table_data['MATRIX-EQUATIONS'].items():
+                            # save
+                            _eq.append(eq_data)
+
+                        # save
+                        tables.append({
+                            'table': table,
+                            'equations': None,
+                            'data': None,
+                            'matrix-equations': _eq,
+                            'matrix-data': None,
+                        })
+                        # reset
+                        _eq = []
+                    # ! check DATA
                     elif 'DATA' in table_data:
                         # save
                         tables.append({
                             'table': table,
                             'equations': None,
-                            'data': table_data['DATA']
+                            'data': table_data['DATA'],
+                            'matrix-equations': None,
+                            'matrix-data': None,
                         })
+                    # ! check MATRIX-DATA
+                    elif 'MATRIX-DATA' in table_data:
+                        # save
+                        tables.append({
+                            'table': table,
+                            'equations': None,
+                            'data': None,
+                            'matrix-equations': None,
+                            'matrix-data': table_data['MATRIX-DATA']
+                        })
+
+                # save
                 databook_list[databook] = tables
             # return
             return databook_list
@@ -216,15 +251,29 @@ class ManageData():
             tables = []
             # check table and equations
             for i, tb in enumerate(_dbs):
+                # check
+                # ! equation
                 if tb['equations'] is not None:
                     tables.append([tb['table'], "equation",
                                   f"[{i+1}]"])
-                else:
+                # ! data
+                elif tb['data'] is not None:
+                    tables.append([tb['table'], "data", f"[{i+1}]"])
+                # ! matrix-data
+                elif tb['matrix-data'] is not None:
                     tables.append(
-                        [tb['table'], "data", f"[{i+1}]"])
+                        [tb['table'], "matrix-data", f"[{i+1}]"])
+                # ! matrix-equation
+                elif tb['matrix-equations'] is not None:
+                    tables.append(
+                        [tb['table'], "matrix-equation", f"[{i+1}]"])
+                else:
+                    raise Exception("data type unknown!")
+
             # dataframe
             # column name
             column_name = f"Tables in {databook}"
+            # ! set table dataframe
             tables_df = pd.DataFrame(
                 tables, columns=[column_name, "Type", "Id"])
             # return

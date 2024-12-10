@@ -156,8 +156,60 @@ class TableReference(ManageData):
         else:
             return pd.DataFrame()
 
+    def search_matrix_table(self, databook_id, table_id, column_name, lookup, query=False):
+        '''
+        Search inside csv file which is converted to pandas dataframe
+
+        Parameters
+        ----------
+        databook_id : int
+            databook id
+        table_id : int
+            table id
+        column_name : str
+            column name
+        lookup : str
+            value to look up for
+
+        Returns
+        -------
+        result : pandas Series
+            result of search
+        '''
+        # tb
+        df = self.load_table(databook_id, table_id)
+        # take first three rows
+        df_info = df.iloc[:6, :]
+
+        # search matrix table
+        # filter
+        if isinstance(column_name, str) and query is False:
+            # create filter
+            df_filter = df[df[column_name].str.lower() == lookup.lower()]
+        # query
+        elif isinstance(column_name, str) and query is True:
+            # create filter
+            df_filter = df.query(column_name)
+        # list
+        elif isinstance(column_name, list) and isinstance(lookup, list):
+            # use query
+            _querys = []
+            for i in range(len(column_name)):
+                _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+            # make query
+            _query_set = ' & '.join(_querys)
+            # query
+            df_filter = df.query(_query_set)
+
+            # combine dfs
+        result = pd.concat([df_info, df_filter])
+        if not df_filter.empty:
+            return result
+        else:
+            return pd.DataFrame()
+
     def make_payload(self, databook_id, table_id, column_name, lookup,
-                     query=False, matrix_data=False):
+                     query=False, matrix_tb=False):
         '''
         Make standard data
 
@@ -188,14 +240,25 @@ class TableReference(ManageData):
         records: list
             records, if nan exists then converted to 0
         '''
-        # dataframe
-        df = self.search_table(databook_id, table_id,
-                               column_name, lookup, query=query)
+        # check table type
+        if matrix_tb:
+            # dataframe
+            df = self.search_matrix_table(databook_id, table_id,
+                                          column_name, lookup=lookup, query=query)
+        else:
+            # dataframe
+            df = self.search_table(databook_id, table_id,
+                                   column_name, lookup=lookup, query=query)
         # check
         if len(df) > 0:
             # payload
-            # records
-            records_clean = df.iloc[2, :].fillna(0).to_list()
+            # check for matrix table
+            if matrix_tb:
+                records_clean = df.iloc[2:, :].fillna(0).to_dict()
+            else:
+                records_clean = df.iloc[2, :].fillna(0).to_list()
+
+            # payload
             payload = {
                 "header": df.columns.to_list(),
                 "symbol": df.iloc[0, :].to_list(),
