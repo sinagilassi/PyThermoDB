@@ -181,8 +181,10 @@ class SettingDatabook(ManageData):
             table_data = []
             # equation no
             equation_no = 0
+            matrix_equation_no = 0
             # data no
             data_no = 0
+            matrix_data_no = 0
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -190,29 +192,56 @@ class SettingDatabook(ManageData):
             if tb:
                 # table name
                 table_name = tb['table']
-                # check data/equations
-                tb_type = 'Equation' if tb['equations'] is not None else 'Data'
+                # check data/equations and matrix-data/matrix-equation
+                # tb_type = 'Equation' if tb['equations'] is not None else 'Data'
 
-                # check equations
+                if tb['data'] is not None:
+                    tb_type = 'Data'
+                if tb['equations'] is not None:
+                    tb_type = 'Equation'
+                if tb['matrix-equation'] is not None:
+                    tb_type = 'Matrix-Equation'
+                if tb['matrix-data'] is not None:
+                    tb_type = 'Matrix-Data'
+
+                # ! check equations
                 if tb_type == 'Equation':
                     for item in tb['equations']:
                         table_equations.append(item)
 
                     # equation no
                     equation_no = len(table_equations)
-                # check data
+
+                # ! check data
                 if tb_type == 'Data':
                     table_data = [*tb['data']]
 
                     # data no
                     data_no = 1
 
+                # ! check matrix-equation
+                if tb_type == 'Matrix-Equation':
+                    for item in tb['matrix-equation']:
+                        table_equations.append(item)
+
+                    # equation no
+                    matrix_equation_no = len(table_equations)
+
+                # ! check matrix-data
+                if tb_type == 'Matrix-Data':
+                    table_data = [*tb['matrix-data']]
+
+                    # data no
+                    matrix_data_no = 1
+
                 # data
                 tb_summary = {
                     "Table Name": table_name,
                     "Type": tb_type,
                     "Equations": equation_no,
-                    "Data": data_no
+                    "Data": data_no,
+                    "Matrix-Equations": matrix_equation_no,
+                    "Matrix-Data": matrix_data_no
                 }
 
             else:
@@ -220,7 +249,8 @@ class SettingDatabook(ManageData):
 
             if dataframe:
                 # column names
-                column_names = ['Table Name', 'Type', 'Equations', 'Data']
+                column_names = ['Table Name', 'Type', 'Equations',
+                                'Data', 'Matrix-Equations', 'Matrix-Data']
                 # dataframe
                 df = pd.DataFrame([tb_summary], columns=column_names)
                 return df
@@ -578,7 +608,7 @@ class SettingDatabook(ManageData):
             return {}
 
     def get_component_data_local(self, component_name, databook_id, table_id,
-                                 column_name, dataframe=False, query=False):
+                                 column_name, dataframe=False, query=False, matrix_tb=False):
         '''
         Get component data from database (local csv files)
 
@@ -592,6 +622,12 @@ class SettingDatabook(ManageData):
             table id
         column_name : str
             column name | query to find a record from a dataframe
+        dataframe : bool
+            return dataframe or not
+        query : bool
+            query or not
+        matrix_tb : bool
+            matrix table or not
 
         Returns
         -------
@@ -606,7 +642,7 @@ class SettingDatabook(ManageData):
                 # search
                 payload = TableReferenceC.make_payload(
                     databook_id, table_id, column_name, component_name,
-                    query=query)
+                    query=query, matrix_tb=matrix_tb)
                 # check availability
                 if len(payload) > 0:
                     # check
@@ -809,6 +845,9 @@ class SettingDatabook(ManageData):
         if column_name is None:
             column_name = 'Name'
 
+        # component name
+        component_name = 'matrix'
+
         # find databook zero-based id (real)
         db, db_name, db_rid = self.find_databook(databook)
         # databook id
@@ -820,9 +859,10 @@ class SettingDatabook(ManageData):
         table_id = tb_id + 1
 
         # get data from api
-        component_data = self.get_component_data(
-            component_name, databook_id, table_id, column_name=column_name,
-            query=query)
+        component_data = self.get_component_data(component_name,
+                                                 databook_id, table_id,
+                                                 column_name=column_name,
+                                                 query=query)
 
         # check loading state
         if component_data:
