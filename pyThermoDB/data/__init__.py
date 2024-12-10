@@ -1,1 +1,1 @@
-from ..docs.tableref import TableReference
+from .ref import TableTypes

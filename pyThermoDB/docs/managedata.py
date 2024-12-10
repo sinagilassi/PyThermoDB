@@ -6,6 +6,7 @@ import os
 import yaml
 import pandas as pd
 # local
+from ..data import TableTypes
 
 
 class ManageData():
@@ -77,19 +78,6 @@ class ManageData():
         '''
         load reference data from file
         '''
-        # Get the directory of the current script
-        # script_dir = os.path.dirname(os.path.realpath(__file__))
-
-        # Construct the path to the YAML file
-        # config_path = os.path.join(script_dir, '..', 'config', 'reference.yml')
-
-        # config_path = os.path.join(os.path.abspath(
-        #     os.path.dirname(__file__)), '..', 'config', 'reference.yml')
-
-        # relative
-        # config_path = os.path.join(os.path.dirname(
-        #     os.path.realpath(__file__)), '..', 'config', 'reference.yml')
-
         # current dir
         current_path = os.path.join(os.path.dirname(__file__))
 
@@ -280,6 +268,48 @@ class ManageData():
             return tables, tables_df
         except Exception as e:
             raise Exception(f"table loading err! {e}")
+
+    def get_table_type(self, databook, table_id):
+        '''
+        Get a table type
+
+        Parameters
+        ----------
+        databook : str or int
+            databook name or id
+        table_id : int
+            table id
+
+        Returns
+        -------
+        table_type : str
+            table type
+        '''
+        try:
+            # get table
+            tb = self.get_table(databook-1, table_id-1)
+
+            # filter
+            filter_keys = [enum.value for enum in TableTypes]
+
+            # table data type
+            tb_bulk = {key: value for key, value in tb.items(
+            ) if key in filter_keys and value is not None}
+
+            # table type
+            tb_type = ''
+
+            # check
+            if len(tb_bulk) == 1:
+                tb_type, _ = tb_bulk.popitem()
+            else:
+                raise Exception("table type unknown!")
+
+            # return
+            return tb_type
+
+        except Exception as e:
+            raise Exception(f"table info loading err! {e}")
 
     def get_table(self, databook, table_id):
         '''

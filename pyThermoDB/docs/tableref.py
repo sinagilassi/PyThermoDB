@@ -3,6 +3,7 @@ import os
 import pandas as pd
 # local
 from .managedata import ManageData
+from ..data import TableTypes
 
 
 class TableReference(ManageData):
@@ -106,6 +107,51 @@ class TableReference(ManageData):
         df = pd.read_csv(file_path)
         return df
 
+    def search_tables(self, databook_id, table_id, column_name, lookup, query=False):
+        """
+        Search tables in this directory
+
+        Parameters
+        ----------
+        databook_id : int
+            databook id
+        Parameters
+        ----------
+        databook_id : int
+            databook id
+        table_id : int
+            table id
+        column_name : str
+            column name
+        lookup : str
+            value to look up for
+
+        Returns
+        -------
+        result : pandas Series
+            result of search
+        """
+        try:
+            # table type
+            tb_type = self.get_table_type(databook_id, table_id)
+
+            # dataframe
+            df = None
+
+            # check tb_type
+            if tb_type == TableTypes.DATA.value or tb_type == TableTypes.EQUATIONS.value:
+                df = self.search_table(databook_id, table_id,
+                                       column_name, lookup, query=query)
+            elif tb_type == TableTypes.MATRIX_DATA.value or tb_type == TableTypes.MATRIX_EQUATIONS.value:
+                df = self.search_matrix_table(databook_id, table_id,
+                                              column_name, lookup, query=query)
+            else:
+                raise Exception(f"Table type {tb_type} is not supported.")
+
+            return df
+        except Exception as e:
+            raise Exception(f"Table searching error {e}")
+
     def search_table(self, databook_id, table_id, column_name, lookup, query=False):
         '''
         Search inside csv file which is converted to pandas dataframe
@@ -123,7 +169,7 @@ class TableReference(ManageData):
 
         Returns
         -------
-        result : pandas Series
+        result : pandas DataFrame
             result of search
         '''
         # tb
