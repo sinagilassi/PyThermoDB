@@ -1,7 +1,5 @@
-No.,Name,Formula,alpha_ij,alpha_ji
--,-,-,alpha_ij,alpha_ji
+No.,Name,Formula,alpha_i1,alpha_i2
+-,-,-,Alpha_i1,Alpha_i2
 -,-,-,1,1
--,-,-,methanol,ethanol
--,-,-,CH3OH,C2H5OH
 1,methanol,CH3OH,0,0.3
 2,ethanol,C2H5OH,0.3,0

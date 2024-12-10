@@ -1,0 +1,61 @@
+REFERENCES:
+    NRTL:
+      TABLES:
+        Non-randomness parameters of the NRTL equation: 
+          MATRIX-DATA:
+            COLUMNS: 
+              - No.
+              - Name
+              - Formula
+              - Alpha_i1
+              - Alpha_i2
+            SYMBOL:
+              - None
+              - None
+              - None
+              - Alpha_i1
+              - Alpha_i2
+            UNIT:
+              - None
+              - None
+              - None
+              - 1
+              - 1 
+            CONVERSION:
+              - None
+              - None
+              - None
+              - 1
+              - 1 
+        Interaction parameters of the NRTL equation:
+          MATRIX-EQUATIONS:
+            EQ-1:
+              BODY:
+                - res = parms['A_ij'] + parms['B_ij']*(args['T']**(-1))
+              ARGS:
+                temperature:
+                  name: temperature
+                  symbol: T
+                  unit: K
+              PARMS:
+                A_ij:
+                  name: A_ij
+                  symbol: A_ij
+                  unit: 1
+                  conversion: 1
+                B_ij:
+                  name: B_ij
+                  symbol: B_ij
+                  unit: 1
+                  conversion: 1
+              RETURNS:
+                tau_ij:
+                  name: tau_ij
+                  symbol: tau_ij
+                  unit: 1
+              BODY-INTEGRAL:
+                None
+              BODY-FIRST-DERIVATIVE:
+                None
+              BODY-SECOND-DERIVATIVE:
+                None

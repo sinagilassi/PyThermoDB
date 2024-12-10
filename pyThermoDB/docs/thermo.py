@@ -768,7 +768,87 @@ class SettingDatabook(ManageData):
                 dts = self.data_load(
                     databook_id, table_id)
 
-                # check
+                # ! check
+                if dts is not None:
+                    # update trans_data
+                    dts.trans_data = transform_api_data
+                    # prop data
+                    dts.prop_data = transform_api_data
+                else:
+                    raise Exception('Building data failed!')
+
+                # res
+                return dts
+            else:
+                print("Data for {} not available!".format(component_name))
+        else:
+            print("API error. Please try again later.")
+            raise Exception("Building data failed!")
+
+    def build_matrix_data(self, databook, table,
+                          column_name=None, query=False):
+        '''
+        Build matrix data as:
+            step1: get thermo matrix data
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
+
+        Returns
+        -------
+        dt: object
+            data object
+        '''
+        # check search option
+        if column_name is None:
+            column_name = 'Name'
+
+        # find databook zero-based id (real)
+        db, db_name, db_rid = self.find_databook(databook)
+        # databook id
+        databook_id = db_rid + 1
+
+        # find table zero-based id
+        tb_id, tb_name = self.find_table(databook, table)
+        # table id
+        table_id = tb_id + 1
+
+        # get data from api
+        component_data = self.get_component_data(
+            component_name, databook_id, table_id, column_name=column_name,
+            query=query)
+
+        # check loading state
+        if component_data:
+            # check availability
+            if len(component_data) > 0:
+                # ! trans data
+                TransDataC = TransData(component_data)
+                # transform api data
+                TransDataC.trans()
+                # transformed api data
+                transform_api_data = TransDataC.data_trans
+
+                # ! check data type
+                _data_type = TransDataC.data_type
+                if _data_type != 'data':
+                    print(
+                        "The selected table contains no data for building data!\
+                        check table id and try again.")
+
+                    return None
+                # ! build data
+                # check eq exists
+                dts = self.data_load(
+                    databook_id, table_id)
+
+                # ! check
                 if dts is not None:
                     # update trans_data
                     dts.trans_data = transform_api_data

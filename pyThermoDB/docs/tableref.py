@@ -14,12 +14,6 @@ class TableReference(ManageData):
         # custom ref
         self.custom_ref = custom_ref
 
-        # Get the absolute path of the current file
-        # current_file_path = os.path.realpath(__file__)
-
-        # Get the directory of the current file
-        # current_dir = os.path.dirname(current_file_path)
-
         # current path
         current_path = os.path.dirname(__file__)
 
@@ -163,7 +157,7 @@ class TableReference(ManageData):
             return pd.DataFrame()
 
     def make_payload(self, databook_id, table_id, column_name, lookup,
-                     query=False):
+                     query=False, matrix_data=False):
         '''
         Make standard data
 
