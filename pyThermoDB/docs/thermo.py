@@ -4,7 +4,8 @@ import pandas as pd
 from ..config import API_URL
 from ..api import Manage
 from ..utils import isNumber, uppercaseStringList
-from ..data import TableReference
+# from ..data import TableReference
+from .tableref import TableReference
 from .transdata import TransData
 from .managedata import ManageData
 from .tableequation import TableEquation
@@ -199,7 +200,7 @@ class SettingDatabook(ManageData):
                     tb_type = 'Data'
                 if tb['equations'] is not None:
                     tb_type = 'Equation'
-                if tb['matrix-equation'] is not None:
+                if tb['matrix-equations'] is not None:
                     tb_type = 'Matrix-Equation'
                 if tb['matrix-data'] is not None:
                     tb_type = 'Matrix-Data'
@@ -221,7 +222,7 @@ class SettingDatabook(ManageData):
 
                 # ! check matrix-equation
                 if tb_type == 'Matrix-Equation':
-                    for item in tb['matrix-equation']:
+                    for item in tb['matrix-equations']:
                         table_equations.append(item)
 
                     # equation no
@@ -476,6 +477,8 @@ class SettingDatabook(ManageData):
             table id
         column_name : str
             column name (e.g. 'Name') | list
+        query : str
+            query string (e.g. 'Name == "Carbon dioxide"')
 
         Returns
         -------
@@ -488,7 +491,7 @@ class SettingDatabook(ManageData):
                 # set api
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
                 # search
-                df = TableReferenceC.search_table(
+                df = TableReferenceC.search_tables(
                     databook_id, table_id, column_name, component_name,
                     query=query)
                 # check availability

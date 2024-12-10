@@ -16,8 +16,8 @@ print(ptdb.__version__)
 yml_file = 'tests\\nrtl.yml'
 yml_path = os.path.join(os.getcwd(), yml_file)
 # csv files (data/equation tables)
-csv_file_1 = 'tests\\nrtl parameters constant.csv'
-csv_file_2 = 'tests\\nrtl parameters equations.csv'
+csv_file_1 = 'tests\\Non-randomness parameters of the NRTL equation.csv'
+csv_file_2 = 'tests\\Interaction parameters of the NRTL equation.csv'
 csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
@@ -46,7 +46,8 @@ print(tb_list)
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-tb_info = thermo_db.table_info('NRTL', 1)
+tb_info = thermo_db.table_info(
+    'NRTL', "Non-randomness parameters of the NRTL equation")
 print(tb_info)
 
 # ====================================
@@ -62,8 +63,9 @@ print(tb_info)
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-comp1 = "Carbon Dioxide"
-# COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
+comp1 = "methanol"
+COMP1_check_availability = thermo_db.check_component(
+    comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
 
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
