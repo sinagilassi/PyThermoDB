@@ -1,5 +1,8 @@
 No.,Name,Formula,A_i1,A_i2,B_i1,B_i2,Eq
 -,-,-,A_i1,A_i2,B_i1,B_i2,tau_ij
 -,-,-,1,1,1,1,1
+-,-,-,1,2,1,2,1
+-,-,-,methanol,ethanol,methanol,ethanol,1
+-,-,-,CH3OH,C2H5OH,CH3OH,C2H5OH,1
 1,methanol,CH3OH,0,4.712,0,-1162.3,1
 2,ethanol,C2H5OH,-2.313,0,483.8,0,1

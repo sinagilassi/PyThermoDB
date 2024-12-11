@@ -22,7 +22,7 @@ csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2]}
+ref = {'reference': [yml_path], 'tables': [csv_path_1, csv_path_2]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -67,17 +67,30 @@ comp1 = "methanol"
 COMP1_check_availability = thermo_db.check_component(
     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
 
+comp2 = "ethanol"
+COMP1_check_availability = thermo_db.check_component(
+    comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
+
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
 # COMP1_check_availability = thermo_db.check_component(
 #     comp1, 3, 2, query, query=True)
+
+# ====================================
+# LOAD MATRIX DATA
+# ====================================
+tb_data_df = thermo_db.table_data(
+    'NRTL', 2)
+print(type(tb_data_df))
+pp(tb_data_df)
 
 
 # ====================================
 # BUILD DATA
 # ====================================
 # build data
-comp1_data = thermo_db.build_data(comp1, 'CO2 Hydrogenation', 2)
+comp1_data = thermo_db.build_matrix_data(
+    [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
 pp(comp1_data.data_structure())
 
 pp(comp1_data.get_property(6))

@@ -225,7 +225,7 @@ class TableReference(ManageData):
         # tb
         df = self.load_table(databook_id, table_id)
         # take first three rows
-        df_info = df.iloc[:6, :]
+        df_info = df.iloc[:4, :]
 
         # search matrix table
         # filter
@@ -286,32 +286,32 @@ class TableReference(ManageData):
         records: list
             records, if nan exists then converted to 0
         '''
-        # check table type
-        if matrix_tb:
-            # dataframe
-            df = self.search_matrix_table(databook_id, table_id,
-                                          column_name, lookup=lookup, query=query)
-        else:
-            # dataframe
-            df = self.search_table(databook_id, table_id,
-                                   column_name, lookup=lookup, query=query)
-        # check
-        if len(df) > 0:
-            # payload
-            # check for matrix table
+        try:
+            # check
             if matrix_tb:
-                records_clean = df.iloc[2:, :].fillna(0).to_dict()
+                df = self.search_matrix_table(databook_id, table_id,
+                                              column_name, lookup=lookup, query=query)
             else:
-                records_clean = df.iloc[2, :].fillna(0).to_list()
+                df = self.search_table(databook_id, table_id,
+                                       column_name, lookup=lookup, query=query)
+            # check
+            if len(df) > 0:
+                # payload
+                if matrix_tb:
+                    records_clean = df.iloc[4, :].fillna(0).to_list()
+                else:
+                    records_clean = df.iloc[2, :].fillna(0).to_list()
 
-            # payload
-            payload = {
-                "header": df.columns.to_list(),
-                "symbol": df.iloc[0, :].to_list(),
-                "unit": df.iloc[1, :].to_list(),
-                "records": records_clean,
-            }
-        else:
-            payload = {}
-        # res
-        return payload
+                # payload
+                payload = {
+                    "header": df.columns.to_list(),
+                    "symbol": df.iloc[0, :].to_list(),
+                    "unit": df.iloc[1, :].to_list(),
+                    "records": records_clean,
+                }
+            else:
+                payload = {}
+            # res
+            return payload
+        except Exception as e:
+            raise Exception(f"Making payload error {e}")
