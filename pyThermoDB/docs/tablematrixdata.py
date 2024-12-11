@@ -31,7 +31,7 @@ class TableMatrixData:
         self.__prop_data = {key: value for key,
                             value in value.items() if key != exclude_key}
 
-    def data_structure(self):
+    def matrix_data_structure(self):
         '''
         Display data table structure
 
@@ -48,7 +48,7 @@ class TableMatrixData:
 
         return df
 
-    def get_property(self, property):
+    def get_property(self, property: str, component_name: str):
         '''
         Get a component property from data table structure
 

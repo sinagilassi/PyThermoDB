@@ -29,8 +29,8 @@ class CustomRef:
         '''
         try:
             # extract data
-            yml_files = self.ref['yml']
-            csv_files = self.ref['csv']
+            yml_files = self.ref.get('yml') or self.ref.get('reference') or []
+            csv_files = self.ref.get('csv') or self.ref.get('tables') or []
 
             # check files exist
             if len(yml_files) == 0:
