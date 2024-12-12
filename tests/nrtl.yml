@@ -7,14 +7,14 @@ REFERENCES:
               - No.
               - Name
               - Formula
-              - Alpha_i1
-              - Alpha_i2
+              - Alpha_i_1
+              - Alpha_i_2
             SYMBOL:
               - None
               - None
               - None
-              - Alpha_i1
-              - Alpha_i2
+              - Alpha_i_1
+              - Alpha_i_2
             UNIT:
               - None
               - None
@@ -31,27 +31,27 @@ REFERENCES:
           MATRIX-EQUATIONS:
             EQ-1:
               BODY:
-                - res = parms['A_ij'] + parms['B_ij']*(args['T']**(-1))
+                - res = parms['A_i_j'] + parms['B_i_j']*(args['T']**(-1))
               ARGS:
                 temperature:
                   name: temperature
                   symbol: T
                   unit: K
               PARMS:
-                A_ij:
-                  name: A_ij
-                  symbol: A_ij
+                A_i_j:
+                  name: A_i_j
+                  symbol: A_i_j
                   unit: 1
                   conversion: 1
-                B_ij:
-                  name: B_ij
-                  symbol: B_ij
+                B_i_j:
+                  name: B_i_j
+                  symbol: B_i_j
                   unit: 1
                   conversion: 1
               RETURNS:
-                tau_ij:
-                  name: tau_ij
-                  symbol: tau_ij
+                tau_i_j:
+                  name: tau_i_j
+                  symbol: tau_i_j
                   unit: 1
               BODY-INTEGRAL:
                 None
