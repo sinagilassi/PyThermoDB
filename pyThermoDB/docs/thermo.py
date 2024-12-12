@@ -13,6 +13,7 @@ from .tablematrixequation import TableMatrixEquation
 from .tabledata import TableData
 from .tablematrixdata import TableMatrixData
 from ..data import TableTypes
+from ..models import DataBookTableTypes
 
 
 class SettingDatabook(ManageData):
@@ -66,7 +67,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self, databook, dataframe=True) -> pd.DataFrame:
+    def list_tables(self, databook, dataframe=True) -> pd.DataFrame | list:
         '''
         List all tables in the selected databook
 
@@ -95,7 +96,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception("Table loading error!,", e)
 
-    def select_table(self, databook, table):
+    def select_table(self, databook, table) -> DataBookTableTypes:
         '''
         select a table
 
@@ -110,11 +111,13 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        None
+        tb : DataBookTableTypes
+            table object
         '''
         try:
             # find databook
             db, db_name, db_id = self.find_databook(databook)
+
             # find table
             if isinstance(table, int):
                 # tb
@@ -137,21 +140,21 @@ class SettingDatabook(ManageData):
                         else:
                             raise ValueError(f"list {item} not found.")
                     # tb
+                    # FIXME
                     tb = self.get_table(db, tb_id)
                 else:
                     raise ValueError(f"table {table} not found.")
             else:
                 raise ValueError("table must be int or str.")
 
-            # dataframe
             # res
             return tb
-
         except Exception as e:
             # Log or print the error for debugging purposes
-            print(f"An error occurred: {e}")
+            raise Exception(
+                f"An error occurred while selecting the table: {e}")
 
-    def table_info(self, databook, table, dataframe=True) -> pd.DataFrame:
+    def table_info(self, databook: int | str, table, dataframe=True) -> pd.DataFrame:
         '''
         Display table header columns and other info
 
@@ -194,7 +197,11 @@ class SettingDatabook(ManageData):
             # check
             if tb:
                 # table name
-                table_name = tb['table']
+                table_name: str = tb['table']
+                # check
+                if table_name is None:
+                    raise Exception(f"table name {table_name} not found!")
+
                 # check data/equations and matrix-data/matrix-equation
                 # tb_type = 'Equation' if tb['equations'] is not None else 'Data'
 
@@ -202,13 +209,13 @@ class SettingDatabook(ManageData):
                     tb_type = 'Data'
                 if tb['equations'] is not None:
                     tb_type = 'Equation'
-                if tb['matrix-equations'] is not None:
+                if tb['matrix_equations'] is not None:
                     tb_type = 'Matrix-Equation'
-                if tb['matrix-data'] is not None:
+                if tb['matrix_data'] is not None:
                     tb_type = 'Matrix-Data'
 
                 # ! check equations
-                if tb_type == 'Equation':
+                if tb_type == 'Equation' and tb['equations'] is not None:
                     for item in tb['equations']:
                         table_equations.append(item)
 
@@ -216,23 +223,23 @@ class SettingDatabook(ManageData):
                     equation_no = len(table_equations)
 
                 # ! check data
-                if tb_type == 'Data':
+                if tb_type == 'Data' and tb['data'] is not None:
                     table_data = [*tb['data']]
 
                     # data no
                     data_no = 1
 
                 # ! check matrix-equation
-                if tb_type == 'Matrix-Equation':
-                    for item in tb['matrix-equations']:
+                if tb_type == 'Matrix-Equation' and tb['matrix_equations'] is not None:
+                    for item in tb['matrix_equations']:
                         table_equations.append(item)
 
                     # equation no
                     matrix_equation_no = len(table_equations)
 
                 # ! check matrix-data
-                if tb_type == 'Matrix-Data':
-                    table_data = [*tb['matrix-data']]
+                if tb_type == 'Matrix-Data' and tb['matrix_data'] is not None:
+                    table_data = [*tb['matrix_data']]
 
                     # data no
                     matrix_data_no = 1

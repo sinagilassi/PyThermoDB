@@ -35,8 +35,8 @@ thermo_db = ptdb.init(ref)
 # ====================================
 # GET DATABOOK LIST
 # ====================================
-# db_list = thermo_db.list_databooks()
-# print(db_list)
+db_list = thermo_db.list_databooks()
+print(db_list)
 
 # ====================================
 # SELECT A DATABOOK

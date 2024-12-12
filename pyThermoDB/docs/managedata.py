@@ -7,6 +7,7 @@ import yaml
 import pandas as pd
 # local
 from ..data import TableTypes
+from ..models import DataBookTableTypes
 
 
 class ManageData():
@@ -74,9 +75,19 @@ class ManageData():
         self.__tables = []
         self.__tables = value
 
-    def load_reference(self, custom_ref):
+    def load_reference(self, custom_ref) -> dict:
         '''
         load reference data from file
+
+        Parameters
+        ----------
+        custom_ref : str
+            custom reference file path to reference file
+
+        Returns
+        -------
+        reference : dict
+            reference data
         '''
         # current dir
         current_path = os.path.join(os.path.dirname(__file__))
@@ -105,9 +116,13 @@ class ManageData():
 
         return reference
 
-    def get_databook_bulk(self):
+    def get_databook_bulk(self) -> dict[str, list[DataBookTableTypes]]:
         '''
         Get databook bulk
+
+        Parameters
+        ----------
+        None
 
         Returns
         -------
@@ -119,8 +134,14 @@ class ManageData():
             references = self.__reference['REFERENCES']
 
             for databook, databook_data in references.items():
+                # log
+                # <class 'str'> <class 'dict'>
+                # print(type(databook), type(databook_data))
                 tables = []
                 for table, table_data in databook_data.get('TABLES', {}).items():
+                    # log
+                    # <class 'str' > <class 'dict' >
+                    # print(type(table), type(table_data))
                     # * check
                     # ! check EQUATIONS exists
                     if 'EQUATIONS' in table_data:
@@ -135,8 +156,8 @@ class ManageData():
                             'table': table,
                             'equations': _eq,
                             'data': None,
-                            'matrix-equations': None,
-                            'matrix-data': None,
+                            'matrix_equations': None,
+                            'matrix_data': None,
                         })
                         # reset
                         _eq = []
@@ -153,40 +174,46 @@ class ManageData():
                             'table': table,
                             'equations': None,
                             'data': None,
-                            'matrix-equations': _eq,
-                            'matrix-data': None,
+                            'matrix_equations': _eq,
+                            'matrix_data': None,
                         })
                         # reset
                         _eq = []
                     # ! check DATA
                     elif 'DATA' in table_data:
+                        # data
+                        data = table_data['DATA']
                         # save
                         tables.append({
                             'table': table,
                             'equations': None,
-                            'data': table_data['DATA'],
-                            'matrix-equations': None,
-                            'matrix-data': None,
+                            'data': data,
+                            'matrix_equations': None,
+                            'matrix_data': None,
                         })
                     # ! check MATRIX-DATA
                     elif 'MATRIX-DATA' in table_data:
+                        # matrix-data
+                        matrix_data = table_data['MATRIX-DATA']
                         # save
                         tables.append({
                             'table': table,
                             'equations': None,
                             'data': None,
-                            'matrix-equations': None,
-                            'matrix-data': table_data['MATRIX-DATA']
+                            'matrix_equations': None,
+                            'matrix_data': matrix_data
                         })
 
                 # save
                 databook_list[databook] = tables
+                # log
+                # print(type(databook_list))
             # return
             return databook_list
         except Exception as e:
-            raise Exception(e)
+            raise Exception(f"databook loading error! {e}")
 
-    def get_databooks(self):
+    def get_databooks(self) -> tuple[list[str], pd.DataFrame]:
         '''
         Get a list of databook
 
@@ -196,8 +223,14 @@ class ManageData():
 
         Returns
         -------
-        databook : list
-            list of databook
+        _db : list
+            databook list
+        databook_df : pd.DataFrame
+            databook dataframe
+
+        Notes
+        ------
+        1. _db is the name of all books (databooks)
         '''
         try:
             # databook list
@@ -214,7 +247,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_tables(self, databook) -> tuple[list[str], pd.DataFrame]:
+    def get_tables(self, databook) -> tuple[list, pd.DataFrame]:
         '''
         Get a table list of selected databook
 
@@ -227,7 +260,6 @@ class ManageData():
         -------
         tables : list
             table list of selected databook
-
         '''
         try:
             # list tables
@@ -248,11 +280,11 @@ class ManageData():
                 elif tb['data'] is not None:
                     tables.append([tb['table'], "data", f"[{i+1}]"])
                 # ! matrix-data
-                elif tb['matrix-data'] is not None:
+                elif tb['matrix_data'] is not None:
                     tables.append(
                         [tb['table'], "matrix-data", f"[{i+1}]"])
                 # ! matrix-equation
-                elif tb['matrix-equations'] is not None:
+                elif tb['matrix_equations'] is not None:
                     tables.append(
                         [tb['table'], "matrix-equation", f"[{i+1}]"])
                 else:
@@ -269,16 +301,16 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
-    def get_table_type(self, databook, table_id):
+    def get_table_type(self, databook: int, table_id: int) -> str:
         '''
         Get a table type
 
         Parameters
         ----------
-        databook : str or int
-            databook name or id
+        databook : int
+            databook id (non-zero-based)
         table_id : int
-            table id
+            table id (non-zero-based)
 
         Returns
         -------
@@ -311,14 +343,14 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table info loading err! {e}")
 
-    def get_table(self, databook, table_id):
+    def get_table(self, databook: str | int | list[DataBookTableTypes], table_id: int) -> DataBookTableTypes:
         '''
         Get a table list of selected databook
 
         Parameters
         ----------
-        databook : str
-            databook name
+        databook : str | int | list
+            databook name or id (zero-based id)
         table_id : int
             table id (zero-based id)
 
@@ -330,16 +362,17 @@ class ManageData():
         try:
             # select databook
             if isinstance(databook, str):
-                databook = self.databook_bulk[databook]
+                databook_set = self.databook_bulk[databook]
             elif isinstance(databook, int):
-                databook = self.databook_bulk[self.__databook[databook]]
+                databook_set = self.databook_bulk[self.__databook[databook]]
+            else:
+                databook_set = databook
 
             # ! if databook list
-
             # list
             selected_tb = {}
             # check table and equations
-            for i, tb in enumerate(databook):
+            for i, tb in enumerate(databook_set):
                 # check table id
                 if i == table_id:
                     selected_tb = tb
@@ -349,7 +382,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
-    def find_databook(self, databook):
+    def find_databook(self, databook: str | int) -> tuple[list[DataBookTableTypes], str, int]:
         '''
         Find a databook
 
@@ -372,6 +405,10 @@ class ManageData():
         if databook is int, the zero-based id is returned
         '''
         try:
+            # set
+            databook_name = ''
+
+            # check
             if isinstance(databook, int):
                 # convert to zero-based id
                 databook_id = databook-1
@@ -391,9 +428,9 @@ class ManageData():
             # res
             return selected_databook, databook_name, databook_id
         except Exception as e:
-            raise Exception(e)
+            raise Exception(f"databook finding err! {e}")
 
-    def find_table(self, databook, table):
+    def find_table(self, databook: str | int, table: str | int) -> tuple[int, str]:
         '''
         Finds table id through searching databook id and table name
 
@@ -416,6 +453,9 @@ class ManageData():
         if table is int, the zero-based id is returned
         '''
         try:
+            # set
+            table_id, table_name = 0, ''
+
             # find databook zero-base id (real)
             selected_databook, databook_name, databook_id = self.find_databook(
                 databook)
