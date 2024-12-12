@@ -22,7 +22,10 @@ csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
 # custom ref
-ref = {'reference': [yml_path], 'tables': [csv_path_1, csv_path_2]}
+ref = {
+    'reference': [yml_path],
+    'tables': [csv_path_1, csv_path_2]
+}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -39,16 +42,16 @@ thermo_db = ptdb.init(ref)
 # SELECT A DATABOOK
 # ====================================
 # table list
-# tb_list = thermo_db.list_tables('NRTL')
-# print(tb_list)
+tb_list = thermo_db.list_tables('NRTL')
+print(tb_list)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-# tb_info = thermo_db.table_info(
-#     'NRTL', "Non-randomness parameters of the NRTL equation")
-# print(tb_info)
+tb_info = thermo_db.table_info(
+    'NRTL', "Non-randomness parameters of the NRTL equation")
+print(tb_info)
 
 # ====================================
 # LOAD TABLE

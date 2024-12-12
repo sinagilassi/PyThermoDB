@@ -66,7 +66,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self, databook, dataframe=True):
+    def list_tables(self, databook, dataframe=True) -> pd.DataFrame:
         '''
         List all tables in the selected databook
 
@@ -93,7 +93,7 @@ class SettingDatabook(ManageData):
             else:
                 return res[0]
         except Exception as e:
-            raise Exception(e)
+            raise Exception("Table loading error!,", e)
 
     def select_table(self, databook, table):
         '''
@@ -151,7 +151,7 @@ class SettingDatabook(ManageData):
             # Log or print the error for debugging purposes
             print(f"An error occurred: {e}")
 
-    def table_info(self, databook, table, dataframe=True):
+    def table_info(self, databook, table, dataframe=True) -> pd.DataFrame:
         '''
         Display table header columns and other info
 
@@ -166,7 +166,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        tb_summary : dict
+        tb_summary : Pandas.DataFrame
             table summary
 
         Notes
@@ -262,7 +262,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def table_data(self, databook, table):
+    def table_data(self, databook, table) -> pd.DataFrame:
         '''
         Get all table elements (display a table)
 
@@ -298,7 +298,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
-    def equation_load(self, databook, table):
+    def equation_load(self, databook, table) -> TableEquation:
         '''
         Display table header columns and other info
 
@@ -349,7 +349,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def data_load(self, databook, table):
+    def data_load(self, databook, table) -> TableData:
         '''
         Display table header columns and other info
 
@@ -362,7 +362,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        res : TableData
+        object : TableData
             table object with data loaded
         '''
         try:
@@ -380,30 +380,28 @@ class SettingDatabook(ManageData):
                 # table name
                 table_name = tb['table']
 
-                # check data/equations and matrix-data/matrix-equation
+                # check data/equations
                 if tb['data'] is not None:
                     tb_type = TableTypes.DATA.value
-                if tb['equations'] is not None:
+                elif tb['equations'] is not None:
                     tb_type = TableTypes.EQUATIONS.value
-                if tb['matrix-equations'] is not None:
-                    tb_type = TableTypes.MATRIX_EQUATIONS.value
-                if tb['matrix-data'] is not None:
-                    tb_type = TableTypes.MATRIX_DATA.value
+                else:
+                    raise Exception('Table loading error!')
 
                 # check data
                 if tb_type == 'data':
                     table_data = tb['data']
 
                     # data no
-                    res = TableData(table_name, table_data)
+                    return TableData(table_name, table_data)
                 else:
                     raise Exception('Table loading error!')
-
-                return res
+            else:
+                raise Exception('Table loading error!')
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_equation_load(self, databook, table):
+    def matrix_equation_load(self, databook, table) -> TableMatrixEquation:
         '''
         Display table header columns and other info
 
@@ -416,7 +414,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        object: TableEquation
+        object: TableMatrixEquation
 
         Notes
         -----
@@ -458,7 +456,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_data_load(self, databook, table):
+    def matrix_data_load(self, databook, table) -> TableMatrixData:
         '''
         Display table header columns and other info
 
@@ -471,7 +469,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        res : TableData | TableMatrixData
+        object : TableMatrixData
             table object with data loaded
         '''
         try:
@@ -501,12 +499,11 @@ class SettingDatabook(ManageData):
                     table_data = tb['matrix-data']
 
                     # data no
-                    res = TableMatrixData(table_name, table_data)
-
-                    return res
+                    return TableMatrixData(table_name, table_data)
                 else:
                     raise Exception('Table loading error!')
-
+            else:
+                raise Exception('Table not found!')
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
@@ -617,11 +614,14 @@ class SettingDatabook(ManageData):
                         print(f"{component_name} is not available.")
                 else:
                     print("API error. Please try again later.")
+            else:
+                raise Exception(
+                    "Invalid input. Please check the input type (databook_id and table_id).")
         except Exception as e:
-            print(e)
+            raise Exception(f'Checking data error {e}')
 
     def check_component_local(self, component_name, databook_id, table_id,
-                              column_name, query=False):
+                              column_name, query=False) -> bool:
         '''
         Check component availability in the selected databook and table
 
@@ -640,7 +640,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        comp_info : str
+        object : bool
             component information
         '''
         try:
@@ -671,9 +671,7 @@ class SettingDatabook(ManageData):
                     # res
                     return False
             else:
-                print("databook and table id required!")
-                # res
-                return False
+                raise Exception("databook and table id required!")
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
@@ -792,7 +790,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        comp_info : str
+        payload : dict | pandas dataframe
             component information
         '''
         try:
@@ -822,7 +820,7 @@ class SettingDatabook(ManageData):
             raise Exception(f'Reading data error {e}')
 
     def build_equation(self, component_name, databook, table,
-                       column_name=None, query=False):
+                       column_name=None, query=False) -> TableEquation:
         '''
         Build equation for as:
             step1: get thermo data for a component
@@ -841,67 +839,71 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        eqs: object
+        eqs: TableEquation
             equation object
         '''
-        # check search option
-        if column_name is None:
-            column_name = 'Name'
+        try:
+            # check search option
+            if column_name is None:
+                column_name = 'Name'
 
-        # find databook zero-based id (real)
-        db, db_name, db_rid = self.find_databook(databook)
-        # databook id
-        databook_id = db_rid + 1
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id
+            databook_id = db_rid + 1
 
-        # find table zero-based id
-        tb_id, tb_name = self.find_table(databook, table)
-        # table id
-        table_id = tb_id + 1
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id
+            table_id = tb_id + 1
 
-        # get data from api
-        component_data = self.get_component_data(
-            component_name, databook_id, table_id, column_name=column_name,
-            query=query)
+            # get data from api
+            component_data = self.get_component_data(
+                component_name, databook_id, table_id, column_name=column_name,
+                query=query)
 
-        # check loading state
-        if component_data:
-            # check availability
-            if len(component_data) > 0:
-                # ! trans data
-                TransDataC = TransData(component_data)
-                # transform api data
-                TransDataC.trans()
-                # transformed api data
-                transform_api_data = TransDataC.data_trans
-                # check data type
-                _data_type = TransDataC.data_type
+            # check loading state
+            if component_data:
+                # check availability
+                if len(component_data) > 0:
+                    # ! trans data
+                    TransDataC = TransData(component_data)
+                    # transform api data
+                    TransDataC.trans()
+                    # transformed api data
+                    transform_api_data = TransDataC.data_trans
+                    # check data type
+                    _data_type = TransDataC.data_type
 
-                # ! check datatype compatibility
-                if _data_type != 'equation':
-                    print("The selected table contains no data for building\
-                          equation! check table id and try again.")
-                    return None
+                    # ! check datatype compatibility
+                    if _data_type != 'equation':
+                        print("The selected table contains no data for building\
+                            equation! check table id and try again.")
 
-                # ! build equation
-                # check eq exists
-                eqs = self.equation_load(
-                    databook_id, table_id)
+                        raise Exception('Building equation failed!')
 
-                # update trans_data
-                eqs.trans_data = transform_api_data
+                    # ! build equation
+                    # check eq exists
+                    eqs = self.equation_load(
+                        databook_id, table_id)
 
-                # equation init
-                eqs.eqSet()
-                # res
-                return eqs
+                    # update trans_data
+                    eqs.trans_data = transform_api_data
+
+                    # equation init
+                    eqs.eqSet()
+                    # res
+                    return eqs
+                else:
+                    raise Exception(
+                        "Data for {} not available!".format(component_name))
             else:
-                print("Data for {} not available!".format(component_name))
-        else:
-            print("API error. Please try again later.")
-            raise Exception("Building equation failed!")
+                raise Exception("Building equation failed!")
+        except Exception as e:
+            raise Exception(f'Building equation error {e}')
 
     def build_data(self, component_name, databook, table,
-                   column_name=None, query=False):
+                   column_name=None, query=False) -> TableData:
         '''
         Build data as:
             step1: get thermo data for a component
@@ -922,68 +924,72 @@ class SettingDatabook(ManageData):
         dt: object
             data object
         '''
-        # check search option
-        if column_name is None:
-            column_name = 'Name'
+        try:
+            # check search option
+            if column_name is None:
+                column_name = 'Name'
 
-        # find databook zero-based id (real)
-        db, db_name, db_rid = self.find_databook(databook)
-        # databook id
-        databook_id = db_rid + 1
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id
+            databook_id = db_rid + 1
 
-        # find table zero-based id
-        tb_id, tb_name = self.find_table(databook, table)
-        # table id
-        table_id = tb_id + 1
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id
+            table_id = tb_id + 1
 
-        # get data from api
-        component_data = self.get_component_data(
-            component_name, databook_id, table_id, column_name=column_name,
-            query=query)
+            # get data from api
+            component_data = self.get_component_data(
+                component_name, databook_id, table_id, column_name=column_name,
+                query=query)
 
-        # check loading state
-        if component_data:
-            # check availability
-            if len(component_data) > 0:
-                # ! trans data
-                TransDataC = TransData(component_data)
-                # transform api data
-                TransDataC.trans()
-                # transformed api data
-                transform_api_data = TransDataC.data_trans
+            # check loading state
+            if component_data:
+                # check availability
+                if len(component_data) > 0:
+                    # ! trans data
+                    TransDataC = TransData(component_data)
+                    # transform api data
+                    TransDataC.trans()
+                    # transformed api data
+                    transform_api_data = TransDataC.data_trans
 
-                # ! check data type
-                _data_type = TransDataC.data_type
-                if _data_type != 'data':
-                    print(
-                        "The selected table contains no data for building data!\
-                        check table id and try again.")
+                    # ! check data type
+                    _data_type = TransDataC.data_type
+                    if _data_type != 'data':
+                        print(
+                            "The selected table contains no data for building data!\
+                            check table id and try again.")
 
-                    return None
-                # ! build data
-                # check eq exists
-                dts = self.data_load(
-                    databook_id, table_id)
+                        raise Exception('Building data failed!')
 
-                # ! check
-                if dts is not None:
-                    # update trans_data
-                    dts.trans_data = transform_api_data
-                    # prop data
-                    dts.prop_data = transform_api_data
+                    # ! build data
+                    # check eq exists
+                    dts = self.data_load(
+                        databook_id, table_id)
+
+                    # ! check
+                    if dts is not None:
+                        # update trans_data
+                        dts.trans_data = transform_api_data
+                        # prop data
+                        dts.prop_data = transform_api_data
+                    else:
+                        raise Exception('Building data failed!')
+
+                    # res
+                    return dts
                 else:
-                    raise Exception('Building data failed!')
-
-                # res
-                return dts
+                    raise Exception(
+                        "Data for {} not available!".format(component_name))
             else:
-                print("Data for {} not available!".format(component_name))
-        else:
-            print("API error. Please try again later.")
-            raise Exception("Building data failed!")
+                raise Exception("Building data failed!")
+        except Exception as e:
+            raise Exception(f'Building data error {e}')
 
     def build_matrix_equation(self, component_names, databook, table,
-                              column_name=None, query=False):
+                              column_name=None, query=False) -> TableMatrixEquation:
         '''
         Build matrix-equation for as:
             step1: get thermo data for a component
@@ -1002,80 +1008,84 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        eqs: object
-            equation object
+        eqs: TableMatrixEquation
+            matrix-equation object
         '''
-        # check search option
-        if column_name is None:
-            column_name = 'Name'
+        try:
+            # check search option
+            if column_name is None:
+                column_name = 'Name'
 
-        # find databook zero-based id (real)
-        db, db_name, db_rid = self.find_databook(databook)
-        # databook id
-        databook_id = db_rid + 1
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id
+            databook_id = db_rid + 1
 
-        # find table zero-based id
-        tb_id, tb_name = self.find_table(databook, table)
-        # table id
-        table_id = tb_id + 1
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id
+            table_id = tb_id + 1
 
-        # matrix table
-        matrix_table = self.table_data(databook, table)
+            # matrix table
+            matrix_table = self.table_data(databook, table)
 
-        # get data from api
-        component_data_pack = []
-        for component_name in component_names:
-            component_data = self.get_component_data(component_name.strip(),
-                                                     databook_id, table_id,
-                                                     column_name=column_name,
-                                                     query=query, matrix_tb=True)
-            # save
-            component_data_pack.append({
-                'component_name': str(component_name).strip(),
-                'data': component_data
-            })
+            # get data from api
+            component_data_pack = []
+            for component_name in component_names:
+                component_data = self.get_component_data(component_name.strip(),
+                                                         databook_id, table_id,
+                                                         column_name=column_name,
+                                                         query=query, matrix_tb=True)
+                # save
+                component_data_pack.append({
+                    'component_name': str(component_name).strip(),
+                    'data': component_data
+                })
 
-        # check loading state
-        if component_data_pack:
-            # check availability
-            if len(component_data_pack) > 0:
-                # ! trans data
-                TransDataC = TransMatrixData(component_data_pack)
-                # transform api data
-                TransDataC.trans()
-                # transformed api data
-                transform_api_data = TransDataC.data_trans_pack
-                # check data type
-                _data_type = TransDataC.data_type
+            # check loading state
+            if component_data_pack:
+                # check availability
+                if len(component_data_pack) > 0:
+                    # ! trans data
+                    TransDataC = TransMatrixData(component_data_pack)
+                    # transform api data
+                    TransDataC.trans()
+                    # transformed api data
+                    transform_api_data = TransDataC.data_trans_pack
+                    # check data type
+                    _data_type = TransDataC.data_type
 
-                # ! check datatype compatibility
-                if _data_type != 'matrix-equations':
-                    print("The selected table contains no data for building\
-                          equation! check table id and try again.")
-                    return None
+                    # ! check datatype compatibility
+                    if _data_type != 'matrix-equations':
+                        print("The selected table contains no data for building\
+                            equation! check table id and try again.")
 
-                # ! build equation
-                # check eq exists
-                eqs = self.matrix_equation_load(
-                    databook_id, table_id)
+                        raise Exception('Building matrix-equation failed!')
 
-                # update trans_data
-                eqs.trans_data_pack = transform_api_data
-                # matrix table
-                eqs.matrix_table = matrix_table
+                    # ! build equation
+                    # check eq exists
+                    eqs = self.matrix_equation_load(
+                        databook_id, table_id)
 
-                # equation init
-                eqs.eqSet()
-                # res
-                return eqs
+                    # update trans_data
+                    eqs.trans_data_pack = transform_api_data
+                    # matrix table
+                    eqs.matrix_table = matrix_table
+
+                    # equation init
+                    eqs.eqSet()
+                    # res
+                    return eqs
+                else:
+                    raise Exception("Data for {} not available!".format(
+                        ",".join(component_names)))
             else:
-                print("Data for {} not available!".format(
-                    ",".join(component_names)))
-        else:
-            raise Exception("Building matrix-equation failed!")
+                raise Exception("Building matrix-equation failed!")
+        except Exception as e:
+            raise Exception(f'Building matrix-equation error {e}')
 
     def build_matrix_data(self, component_names, databook, table,
-                          column_name=None, query=False):
+                          column_name=None, query=False) -> TableMatrixData:
         '''
         Build matrix data as:
             step1: get thermo matrix data
@@ -1096,90 +1106,93 @@ class SettingDatabook(ManageData):
         dt: object
             data object
         '''
-        # check component list
-        if not isinstance(component_names, list):
-            raise Exception('Component names must be a list')
+        try:
+            # check component list
+            if not isinstance(component_names, list):
+                raise Exception('Component names must be a list')
 
-        # check component name
-        if not all(isinstance(name, str) for name in component_names):
-            raise Exception('Component names must be strings')
+            # check component name
+            if not all(isinstance(name, str) for name in component_names):
+                raise Exception('Component names must be strings')
 
-        # check search option
-        if column_name is None:
-            column_name = 'Name'
+            # check search option
+            if column_name is None:
+                column_name = 'Name'
 
-        # find databook zero-based id (real)
-        db, db_name, db_rid = self.find_databook(databook)
-        # databook id
-        databook_id = db_rid + 1
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id
+            databook_id = db_rid + 1
 
-        # find table zero-based id
-        tb_id, tb_name = self.find_table(databook, table)
-        # table id
-        table_id = tb_id + 1
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id
+            table_id = tb_id + 1
 
-        # matrix table
-        matrix_table = self.table_data(databook, table)
+            # matrix table
+            matrix_table = self.table_data(databook, table)
 
-        # get data from api
-        component_data_pack = []
-        for component_name in component_names:
-            component_data = self.get_component_data(component_name.strip(),
-                                                     databook_id, table_id,
-                                                     column_name=column_name,
-                                                     query=query, matrix_tb=True)
-            # save
-            component_data_pack.append({
-                'component_name': str(component_name).strip(),
-                'data': component_data
-            })
+            # get data from api
+            component_data_pack = []
+            for component_name in component_names:
+                component_data = self.get_component_data(component_name.strip(),
+                                                         databook_id, table_id,
+                                                         column_name=column_name,
+                                                         query=query, matrix_tb=True)
+                # save
+                component_data_pack.append({
+                    'component_name': str(component_name).strip(),
+                    'data': component_data
+                })
 
-        # check loading state
-        if component_data_pack:
-            # check availability
-            if len(component_data_pack) > 0:
-                # ! trans data
-                TransMatrixDataC = TransMatrixData(component_data_pack)
-                # transform api data
-                TransMatrixDataC.trans()
-                # transformed api data
-                transform_api_data = TransMatrixDataC.data_trans_pack
+            # check loading state
+            if component_data_pack:
+                # check availability
+                if len(component_data_pack) > 0:
+                    # ! trans data
+                    TransMatrixDataC = TransMatrixData(component_data_pack)
+                    # transform api data
+                    TransMatrixDataC.trans()
+                    # transformed api data
+                    transform_api_data = TransMatrixDataC.data_trans_pack
 
-                # ! check data type
-                _data_type = TransMatrixDataC.data_type
-                if _data_type != 'matrix-data':
-                    print(
-                        "The selected table contains no data for building matrix-data! check table id and try again.")
+                    # ! check data type
+                    _data_type = TransMatrixDataC.data_type
+                    if _data_type != 'matrix-data':
+                        print(
+                            "The selected table contains no data for building matrix-data! check table id and try again.")
 
-                    raise Exception('Building data failed!')
+                        raise Exception('Building data failed!')
 
-                # ! build data
-                # check eq exists
-                dts = self.matrix_data_load(
-                    databook_id, table_id)
+                    # ! build data
+                    # check eq exists
+                    dts = self.matrix_data_load(
+                        databook_id, table_id)
 
-                # ! check
-                if dts is not None:
-                    # check type
-                    if isinstance(dts, TableMatrixData):
-                        if hasattr(dts, 'trans_data_pack') and hasattr(dts, 'prop_data_pack'):
-                            # update trans_data
-                            dts.trans_data_pack = transform_api_data
-                            # prop data
-                            dts.prop_data_pack = transform_api_data
-                            # matrix table
-                            dts.matrix_table = matrix_table
+                    # ! check
+                    if dts is not None:
+                        # check type
+                        if isinstance(dts, TableMatrixData):
+                            if hasattr(dts, 'trans_data_pack') and hasattr(dts, 'prop_data_pack'):
+                                # update trans_data
+                                dts.trans_data_pack = transform_api_data
+                                # prop data
+                                dts.prop_data_pack = transform_api_data
+                                # matrix table
+                                dts.matrix_table = matrix_table
 
-                            # res
-                            return dts
+                                # res
+                                return dts
+                            else:
+                                raise Exception('Building data failed!')
                         else:
                             raise Exception('Building data failed!')
                     else:
                         raise Exception('Building data failed!')
                 else:
-                    raise Exception('Building data failed!')
+                    raise Exception("Data for {} not available!".format(
+                        ', '.join(component_names)))
             else:
-                raise Exception("Data for {} not available!".format(
-                    ', '.join(component_names)))
-        else:
-            raise Exception("Building data failed!")
+                raise Exception("Building data failed!")
+        except Exception as e:
+            raise Exception(f'Building matrix data error {e}')
