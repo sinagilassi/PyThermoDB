@@ -26,6 +26,7 @@ def init(ref=None) -> SettingDatabook:
     ref : dict
         set-up external reference dict for databook and tables
         format ref_external = {'yml':[yml files], 'csv':[csv files]} or
+        format ref_external = {'reference':[yml files], 'tables':[csv files]} or
         format ref_external = {'json':[json files] for ref structure and data}
 
     Returns

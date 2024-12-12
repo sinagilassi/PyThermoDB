@@ -170,7 +170,7 @@ class SettingDatabook(ManageData):
 
         Notes
         -----
-        1. The default value of dataframe is True, the return value (tb_summary) is Pandas Dataframe  
+        1. The default value of dataframe is True, the return value (tb_summary) is Pandas Dataframe
         '''
         try:
             # table type
@@ -354,12 +354,15 @@ class SettingDatabook(ManageData):
 
         Parameters
         ----------
-        tb : object
-            table object
+        databook : int | str
+            databook id or name
+        table : str
+            table name
 
         Returns
         -------
-        object
+        res : TableData 
+            table object with data loaded
         '''
         try:
             # table type
@@ -391,14 +394,63 @@ class SettingDatabook(ManageData):
                     table_data = tb['data']
 
                     # data no
-                    return TableData(table_name, table_data)
-                elif tb_type == 'matrix-data':
+                    res = TableData(table_name, table_data)
+                else:
+                    raise Exception('Table loading error!')
+
+                return res
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
+
+    def matrix_data_load(self, databook, table):
+        '''
+        Display table header columns and other info
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : str
+            table name
+
+        Returns
+        -------
+        res : TableData | TableMatrixData
+            table object with data loaded
+        '''
+        try:
+            # table type
+            tb_type = ''
+            # table name
+            table_name = ''
+            # table data
+            table_data = []
+            # get the tb
+            tb = self.select_table(databook, table)
+
+            # check
+            if tb:
+                # table name
+                table_name = tb['table']
+
+                # matrix-data/matrix-equation
+                if tb['matrix-equations'] is not None:
+                    tb_type = TableTypes.MATRIX_EQUATIONS.value
+                if tb['matrix-data'] is not None:
+                    tb_type = TableTypes.MATRIX_DATA.value
+
+                # check data
+                if tb_type == 'matrix-data':
+                    # table data
                     table_data = tb['matrix-data']
 
                     # data no
-                    return TableMatrixData(table_name, table_data)
+                    res = TableMatrixData(table_name, table_data)
+
+                    return res
                 else:
                     raise Exception('Table loading error!')
+
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
@@ -587,7 +639,7 @@ class SettingDatabook(ManageData):
         dataframe : bool
             return dataframe or not
         query : bool
-            query or not 
+            query or not
 
         Returns
         -------
@@ -918,6 +970,9 @@ class SettingDatabook(ManageData):
         # table id
         table_id = tb_id + 1
 
+        # matrix table
+        matrix_table = self.table_data(databook, table)
+
         # get data from api
         component_data_pack = []
         for component_name in component_names:
@@ -926,46 +981,57 @@ class SettingDatabook(ManageData):
                                                      column_name=column_name,
                                                      query=query, matrix_tb=True)
             # save
-            component_data_pack.append(component_data)
+            component_data_pack.append({
+                'component_name': str(component_name).strip(),
+                'data': component_data
+            })
 
         # check loading state
         if component_data_pack:
             # check availability
             if len(component_data_pack) > 0:
                 # ! trans data
-                TransMatrixDataC = TransMatrixData(component_data)
+                TransMatrixDataC = TransMatrixData(component_data_pack)
                 # transform api data
                 TransMatrixDataC.trans()
                 # transformed api data
-                transform_api_data = TransMatrixDataC.data_trans
+                transform_api_data = TransMatrixDataC.data_trans_pack
 
                 # ! check data type
                 _data_type = TransMatrixDataC.data_type
                 if _data_type != 'matrix-data':
                     print(
-                        "The selected table contains no data for building matrix-data!\
-                        check table id and try again.")
+                        "The selected table contains no data for building matrix-data! check table id and try again.")
 
                     raise Exception('Building data failed!')
 
                 # ! build data
                 # check eq exists
-                dts = self.data_load(
+                dts = self.matrix_data_load(
                     databook_id, table_id)
 
                 # ! check
                 if dts is not None:
-                    # update trans_data
-                    dts.trans_data = transform_api_data
-                    # prop data
-                    dts.prop_data = transform_api_data
+                    # check type
+                    if isinstance(dts, TableMatrixData):
+                        if hasattr(dts, 'trans_data_pack') and hasattr(dts, 'prop_data_pack'):
+                            # update trans_data
+                            dts.trans_data_pack = transform_api_data
+                            # prop data
+                            dts.prop_data_pack = transform_api_data
+                            # matrix table
+                            dts.matrix_table = matrix_table
+
+                            # res
+                            return dts
+                        else:
+                            raise Exception('Building data failed!')
+                    else:
+                        raise Exception('Building data failed!')
                 else:
                     raise Exception('Building data failed!')
-
-                # res
-                return dts
             else:
-                print("Data for {} not available!".format(component_name))
+                raise Exception("Data for {} not available!".format(
+                    ', '.join(component_names)))
         else:
-            print("API error. Please try again later.")
             raise Exception("Building data failed!")

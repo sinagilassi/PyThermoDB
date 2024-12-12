@@ -1,8 +1,9 @@
-No.,Name,Formula,Alpha_i1,Alpha_i2
--,-,-,Alpha_i1,Alpha_i2
--,-,-,1,1
--,-,-,1,2
--,-,-,methanol,ethanol
--,-,-,CH3OH,C2H5OH
-1,methanol,CH3OH,0,0.3
-2,ethanol,C2H5OH,0.3,0
+No.,Name,Formula,Alpha_i1,Alpha_i2,Alpha_i3
+-,-,-,Alpha_i1,Alpha_i2,Alpha_i3
+-,-,-,1,1,1
+-,-,-,1,2,3
+-,-,-,methanol,ethanol,benzene
+-,-,-,CH3OH,C2H5OH,C6H6
+1,methanol,CH3OH,0,0.3,-1.709
+2,ethanol,C2H5OH,0.3,0,0.569
+3,benzene,C6H6,11.580,-0.916,0

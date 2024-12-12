@@ -32,23 +32,23 @@ thermo_db = ptdb.init(ref)
 # ====================================
 # GET DATABOOK LIST
 # ====================================
-db_list = thermo_db.list_databooks()
-print(db_list)
+# db_list = thermo_db.list_databooks()
+# print(db_list)
 
 # ====================================
 # SELECT A DATABOOK
 # ====================================
 # table list
-tb_list = thermo_db.list_tables('NRTL')
-print(tb_list)
+# tb_list = thermo_db.list_tables('NRTL')
+# print(tb_list)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-tb_info = thermo_db.table_info(
-    'NRTL', "Non-randomness parameters of the NRTL equation")
-print(tb_info)
+# tb_info = thermo_db.table_info(
+#     'NRTL', "Non-randomness parameters of the NRTL equation")
+# print(tb_info)
 
 # ====================================
 # LOAD TABLE
@@ -64,13 +64,15 @@ print(tb_info)
 # ====================================
 # check component availability in the databook and table
 comp1 = "methanol"
-COMP1_check_availability = thermo_db.check_component(
-    comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
+# COMP1_check_availability = thermo_db.check_component(
+#     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
 
 comp2 = "ethanol"
-COMP1_check_availability = thermo_db.check_component(
-    comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
+# COMP1_check_availability = thermo_db.check_component(
+#     comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
 
+# comp3
+comp3 = 'benzene'
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
 # COMP1_check_availability = thermo_db.check_component(
@@ -79,24 +81,32 @@ COMP1_check_availability = thermo_db.check_component(
 # ====================================
 # LOAD MATRIX DATA
 # ====================================
-tb_data_df = thermo_db.table_data(
-    'NRTL', 2)
-print(type(tb_data_df))
-pp(tb_data_df)
+# tb_data_df = thermo_db.table_data(
+#     'NRTL', 2)
+# print(type(tb_data_df))
+# pp(tb_data_df)
 
 
 # ====================================
-# BUILD DATA
+# BUILD MATRIX DATA
 # ====================================
 # build data
-comp1_data = thermo_db.build_matrix_data(
+nrtl_data = thermo_db.build_matrix_data(
     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
-pp(comp1_data.data_structure())
+# pp(nrtl_data.matrix_data_structure())
 
-pp(comp1_data.get_property(6))
+# pp(nrtl_data.get_property(0, comp1))
 # by symbol
-pp(float(comp1_data.get_property('dHf_IG')['value']))
+# pp(float(comp1_data.get_property('dHf_IG')['value']))
 
+pp(nrtl_data.get_matrix_property("Alpha_i_j",
+   [comp1, comp2], symbol_format='alphabetic'))
+
+# property name
+prop_name_lists = ["Alpha", comp1, comp3]
+prop_name = "_".join(prop_name_lists)
+print(prop_name)
+pp(nrtl_data.get_matrix_property_by_name(prop_name).get('value'))
 
 # ====================================
 # BUILD EQUATION

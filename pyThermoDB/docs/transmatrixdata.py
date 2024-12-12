@@ -1,19 +1,18 @@
 # import packages/modules
 # external
 import pandas as pd
-import math
 # internal
 
 
 class TransMatrixData:
     '''
-    Transform class
+    Transform class to analyze data from API
     '''
     __data_type = ''
 
-    def __init__(self, api_data):
-        self.api_data = api_data
-        self.data_trans = {}
+    def __init__(self, api_data_pack):
+        self.api_data_pack = api_data_pack
+        self.data_trans_pack = {}
 
     @property
     def data_type(self):
@@ -31,44 +30,55 @@ class TransMatrixData:
                 data['header'],['records'],['unit']
             step 2: transform to dict
         '''
-        self.data_trans = {}
+        self.data_trans_pack = {}
 
-        for x, y, z, w in zip(self.api_data['header'], self.api_data['records'], self.api_data['unit'], self.api_data['symbol']):
-            # check eq exists
-            if x == "Eq":
-                self.eq_id = y
-                # set data type
-                self.__data_type = 'matrix-equation'
-            else:
-                self.__data_type = 'matrix-data'
+        # looping through api_data_pack
+        for i, api_component_data in enumerate(self.api_data_pack):
+            # set
+            component_name = api_component_data['component_name']
+            api_data = api_component_data['data']
+            # data trans
+            data_trans = {}
+            # looping through api_data
+            for x, y, z, w in zip(api_data['header'], api_data['records'], api_data['unit'], api_data['symbol']):
+                # check eq exists
+                if x == "Eq":
+                    self.eq_id = y
+                    # set data type
+                    self.__data_type = 'matrix-equation'
+                else:
+                    self.__data_type = 'matrix-data'
 
-            # set values
-            self.data_trans[str(x)] = {"value": y, "unit": z, "symbol": w}
+                # set values
+                data_trans[str(x)] = {"value": y, "unit": z, "symbol": w}
 
-        # data table
-        self.data_trans['data'] = self.api_data
+            # data table
+            data_trans['matrix-data'] = api_data
+
+            # save data
+            self.data_trans_pack[str(component_name)] = data_trans
 
         # res
-        return self.data_trans
+        return self.data_trans_pack
 
-    def view(self, value=False):
-        '''
-        Display data in a table (pandas dataframe)
+    # def view(self, value=False):
+    #     '''
+    #     Display data in a table (pandas dataframe)
 
-        Parameters
-        ----------
-        value: bool
-            display value
+    #     Parameters
+    #     ----------
+    #     value: bool
+    #         display value
 
-        Returns
-        -------
-        df: dataframe
-            data table
-        '''
-        df = pd.DataFrame(self.api_data)
-        print(df)
-        # check
-        if value:
-            return df
-        else:
-            return None
+    #     Returns
+    #     -------
+    #     df: dataframe
+    #         data table
+    #     '''
+    #     df = pd.DataFrame(self.api_data_pack)
+    #     print(df)
+    #     # check
+    #     if value:
+    #         return df
+    #     else:
+    #         return None
