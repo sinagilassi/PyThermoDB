@@ -45,7 +45,7 @@ class TransMatrixData:
                 if x == "Eq":
                     self.eq_id = y
                     # set data type
-                    self.__data_type = 'matrix-equation'
+                    self.__data_type = 'matrix-equations'
                 else:
                     self.__data_type = 'matrix-data'
 

@@ -1,5 +1,5 @@
-No.,Name,Formula,A_i1,A_i2,B_i1,B_i2,Eq
--,-,-,A_i1,A_i2,B_i1,B_i2,tau_ij
+No.,Name,Formula,A_i_1,A_i_2,B_i_1,B_i_2,Eq
+-,-,-,A_i_1,A_i_2,B_i_1,B_i_2,tau_i_j
 -,-,-,1,1,1,1,1
 -,-,-,1,2,1,2,1
 -,-,-,methanol,ethanol,methanol,ethanol,1

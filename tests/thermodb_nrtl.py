@@ -99,21 +99,22 @@ nrtl_data = thermo_db.build_matrix_data(
 # by symbol
 # pp(float(comp1_data.get_property('dHf_IG')['value']))
 
-pp(nrtl_data.get_matrix_property("Alpha_i_j",
-   [comp1, comp2], symbol_format='alphabetic'))
+# pp(nrtl_data.get_matrix_property("Alpha_i_j",
+#    [comp1, comp2], symbol_format='alphabetic'))
 
-# property name
-prop_name_lists = ["Alpha", comp1, comp3]
-prop_name = "_".join(prop_name_lists)
-print(prop_name)
-pp(nrtl_data.get_matrix_property_by_name(prop_name).get('value'))
+# # property name
+# prop_name_lists = ["Alpha", comp1, comp3]
+# prop_name = "_".join(prop_name_lists)
+# print(prop_name)
+# pp(nrtl_data.get_matrix_property_by_name(prop_name).get('value'))
 
 # ====================================
-# BUILD EQUATION
+# BUILD MATRIX EQUATION
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_equation(comp1, 3, 1)
+comp1_eq = thermo_db.build_matrix_equation(
+    [comp1, comp2], 'NRTL', 'Interaction parameters of the NRTL equation')
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
