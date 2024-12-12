@@ -33,10 +33,10 @@ setup(
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Education",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.13",
         "Operating System :: Unix",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: Microsoft :: Windows",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.10',
 )
