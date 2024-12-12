@@ -47,14 +47,14 @@ class TableEquation:
     def custom_integral(self):
         return self._custom_integral
 
-    def eq_structure(self, id):
+    def eq_structure(self, id=1):
         '''
         Display equation details
 
         Parameters
         ----------
         id : int
-            equation id (from 1 to ...)
+            equation id (from 1 to ...), default is 1
 
         Returns
         -------
