@@ -214,7 +214,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_tables(self, databook):
+    def get_tables(self, databook) -> tuple[list[str], pd.DataFrame]:
         '''
         Get a table list of selected databook
 
