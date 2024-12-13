@@ -9,24 +9,28 @@ REFERENCES:
               - Formula
               - Alpha_i_1
               - Alpha_i_2
+              - Alpha_i_3
             SYMBOL:
               - None
               - None
               - None
               - Alpha_i_1
               - Alpha_i_2
+              - Alpha_i_3
             UNIT:
               - None
               - None
               - None
               - 1
               - 1 
+              - 1
             CONVERSION:
               - None
               - None
               - None
               - 1
               - 1 
+              - 1
         Interaction parameters of the NRTL equation:
           MATRIX-EQUATIONS:
             EQ-1:

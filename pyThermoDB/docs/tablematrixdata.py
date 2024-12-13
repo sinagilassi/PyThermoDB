@@ -1,6 +1,7 @@
 # import packages/modules
 import pandas as pd
-import numpy as np
+# local
+from ..models import DataResultType
 
 
 class TableMatrixData:
@@ -14,7 +15,7 @@ class TableMatrixData:
     def __init__(self, table_name, table_data, matrix_table=None):
         self.table_name = table_name
         self.table_data = table_data
-        self.matrix_table = matrix_table
+        self.matrix_table = matrix_table  # template
 
     @property
     def trans_data_pack(self):
@@ -104,7 +105,7 @@ class TableMatrixData:
 
         return df
 
-    def get_property(self, property: str, component_name: str):
+    def get_property(self, property: str | int, component_name: str) -> DataResultType | dict:
         '''
         Get a component property from data table structure
 
@@ -124,8 +125,9 @@ class TableMatrixData:
         if not isinstance(prop_data, dict):
             raise Exception("Component property data is not a dictionary!")
 
-        # dataframe
+        # dataframe (selected component data)
         df = pd.DataFrame(prop_data)
+        # print(df)
 
         # choose a column
         if isinstance(property, str):
@@ -133,27 +135,31 @@ class TableMatrixData:
             # look up prop_data dict
             # check key exists
             if property in prop_data.keys():
-                get_data = prop_data[property]
+                get_data = prop_data[property]  # return dict
             else:
                 # check symbol value in each item
                 for key, value in prop_data.items():
                     if property == value['symbol']:
                         get_data = prop_data[key]
                         break
-            # series
-            sr = pd.Series(get_data)
+
+            # print(type(get_data))
+            return get_data
 
         elif isinstance(property, int):
             # get column index
             column_index = df.columns[property-1]
-            sr = df.loc[:, column_index]
+            sr: pd.Series = df.loc[:, column_index]
+
+            # set
+            get_data = sr.to_dict()
+
+            return get_data
 
         else:
             raise ValueError("loading error!")
 
-        return sr.to_dict()
-
-    def get_matrix_property_by_name(self, property: str):
+    def get_matrix_property_by_name(self, property: str) -> dict:
         '''
         Get a component property from data table structure
 
@@ -190,16 +196,16 @@ class TableMatrixData:
             raise Exception("Getting matrix property failed!, ", e)
 
     def get_matrix_property(self, property: str, component_names: list[str],
-                            symbol_format: str = 'alphabetic'):
+                            symbol_format: str = 'alphabetic') -> dict:
         '''
         Get a component property from data table structure
 
         Parameters
         ----------
-        property : str | int
-            property name or id must be string as: Alpha_ij
+        property : str
+            property must be a string as: Alpha_ij
         component_names : list[str]
-            component names
+            component names such as ['ethanol', 'methanol']
         symbol_format : str
             symbol format alphabetic or numeric (default: alphabetic)
 
@@ -208,37 +214,64 @@ class TableMatrixData:
         dict
             component property
         '''
-        # matrix structure
+        # matrix structure (all data)
         matrix_table = self.matrix_table
+        print(matrix_table)
 
         # check dataframe
         if not isinstance(matrix_table, pd.DataFrame):
             raise Exception("Matrix data is not a dataframe!")
 
         # column name
-        column_name = list(matrix_table.columns)
+        matrix_table_column_name = list(matrix_table.columns)
 
         # component names
         comp_i = 1
         matrix_table_component = {}
-        for i, item in enumerate(matrix_table.iloc[:, 1].to_list()):
+        # looping through Name column
+        for i, item in enumerate(list(matrix_table['Name'])):
             # check item is a component name
             if item != "-" and len(item) > 1:
                 matrix_table_component[item] = comp_i
                 comp_i += 1
 
         # component names
-        comp_no = len(matrix_table_component)
+        matrix_table_component_no = len(matrix_table_component)
+
+        # matrix table component keys
+        matrix_table_component_names = list(matrix_table_component.keys())
 
         # get component data (row)
         matrix_table_comp_data = {}
-        for i in range(comp_no):
-            _data = matrix_table.iloc[5+i, :].to_dict()
+        # looping through component
+        for i in range(matrix_table_component_no):
+            # define filter for component
+            component_name_filter = matrix_table_component_names[i]
+
+            # get component data
+            _data_get = matrix_table[matrix_table['Name'].str.match(
+                component_name_filter, case=False, na=False)]
+
+            # set
+            _row_index = int(_data_get.index[0])
+            _data = _data_get.to_dict(orient='records')[0]
+
+            # update
+            _data['row_index'] = _row_index
+
+            # check
+            if len(_data) == 0:
+                raise Exception("No data for component: " +
+                                component_name_filter)
+
+            # get component data
             _component_name = _data['Name']
             matrix_table_comp_data[_component_name] = _data
 
-        res = 0
-        # choose a column
+        # res set
+        res = {}
+
+        # ! manage property
         if isinstance(property, str) and property.endswith('_i_j'):
             # find the columns
             _property = property.split('_')
@@ -250,24 +283,24 @@ class TableMatrixData:
             matrix_column_index = []
 
             # look for the property name in the column names
-            for column in column_name:
-                # column set
+            for column in matrix_table_column_name:
+                # column name set
                 column_set = column.split('_')[0]
                 # check
                 if property_name.upper() in column_set.upper():
                     # get the column index
-                    column_index = column_name.index(column)
+                    column_index = matrix_table_column_name.index(column)
                     # get the column
                     matrix_columns.append(column)
                     # get the column index
                     matrix_column_index.append(column_index)
 
             # check matrix columns
-            if len(matrix_columns) != comp_no:
+            if len(matrix_columns) != matrix_table_component_no:
                 raise Exception(
                     "Matrix columns do not match the number of components!")
             # check matrix column index
-            if len(matrix_column_index) != comp_no:
+            if len(matrix_column_index) != matrix_table_component_no:
                 raise Exception(
                     "Matrix column index does not match the number of components!")
 
@@ -275,13 +308,22 @@ class TableMatrixData:
             comp1_index = matrix_table_component[component_names[0]] - 1
             comp2_index = matrix_table_component[component_names[1]] - 1
 
+            # row index component 1
+            row_index_comp1 = matrix_table_comp_data[component_names[0]].get(
+                'row_index')
+            # row index component 2
+            row_index_comp2 = matrix_table_comp_data[component_names[1]].get(
+                'row_index')
+
             # property column
             property_column = matrix_columns[comp2_index]
             # get index
             property_column_index = matrix_column_index[comp2_index]
+
             # get property value
-            property_value = matrix_table.iloc[comp1_index +
-                                               5, property_column_index]
+            property_value = matrix_table.iat[row_index_comp1,
+                                              property_column_index]
+
             # get property symbol
             symbol_idx = str(matrix_table.iloc[0, property_column_index]).split('_')[
                 0]+'_'+str(comp1_index+1)+'_'+str(comp2_index+1)

@@ -27,7 +27,7 @@ setup(
     package_data={'': ['config/*.yml', 'data/*.csv']},
     license='MIT',
     install_requires=['pandas', 'pillow', 'requests',
-                      'urllib3', 'matplotlib', 'numpy', 'PyYAML', 'sympy', 'flask'],
+                      'urllib3', 'numpy', 'PyYAML', 'sympy', 'flask'],
     keywords=['python', 'chemical engineering', 'thermodynamics',
               'PyThermoDB'],
     classifiers=[

@@ -1,17 +1,20 @@
 # import packages/modules
 import os
 import pandas as pd
+from typing import Optional
 # local
 from .managedata import ManageData
 from ..data import TableTypes
+from ..models import PayLoadType
+from .customref import CustomRef
 
 
 class TableReference(ManageData):
     """
-    Class to load excel files in this directory
+    Class to load csv/yml/json files
     """
 
-    def __init__(self, custom_ref=None):
+    def __init__(self, custom_ref: Optional[CustomRef] = None):
         # custom ref
         self.custom_ref = custom_ref
 
@@ -29,7 +32,7 @@ class TableReference(ManageData):
         # super
         ManageData.__init__(self, custom_ref=custom_ref)
 
-    def load_external_csv(self, custom_ref):
+    def load_external_csv(self, custom_ref: CustomRef) -> list[str]:
         '''
         Load external csv file paths
 
@@ -48,7 +51,7 @@ class TableReference(ManageData):
         _, df = self.get_databooks()
         return df
 
-    def list_tables(self, databook_id):
+    def list_tables(self, databook_id: int) -> pd.DataFrame:
         '''
         List tables
 
@@ -60,16 +63,16 @@ class TableReference(ManageData):
         _, df = self.get_tables(databook_id-1)
         return df
 
-    def load_table(self, databook_id, table_id):
+    def load_table(self, databook_id: int, table_id: int) -> pd.DataFrame:
         """
         Load a `csv file` in this directory
 
         Parameters
         ----------
         databook_id : int
-            databook id
+            databook id (non-zero-based id)
         table_id : int
-            table id
+            table id (non-zero-based id)
 
         Returns
         -------
@@ -89,8 +92,12 @@ class TableReference(ManageData):
         # table file path
         # local
         if databook_id <= reference_local_no:
+            # set file path
             file_path = os.path.join(self.path, file_name)
         else:
+            # check
+            if self.custom_ref is None:
+                raise ValueError('No custom reference provided')
             # load external path
             path_external = self.load_external_csv(self.custom_ref)
             # csv file names
@@ -107,7 +114,7 @@ class TableReference(ManageData):
         df = pd.read_csv(file_path)
         return df
 
-    def search_tables(self, databook_id, table_id, column_name, lookup, query=False):
+    def search_tables(self, databook_id: int, table_id: int, column_name: str, lookup: str, query: bool = False) -> pd.DataFrame:
         """
         Search tables in this directory
 
@@ -152,7 +159,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table searching error {e}")
 
-    def search_table(self, databook_id, table_id, column_name, lookup, query=False):
+    def search_table(self, databook_id: int, table_id: int, column_name: str | list, lookup: str, query: bool = False) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -162,7 +169,7 @@ class TableReference(ManageData):
             databook id
         table_id : int
             table id
-        column_name : str
+        column_name : str | list
             column name
         lookup : str
             value to look up for
@@ -202,7 +209,7 @@ class TableReference(ManageData):
         else:
             return pd.DataFrame()
 
-    def search_matrix_table(self, databook_id, table_id, column_name, lookup, query=False):
+    def search_matrix_table(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str, query: bool = False) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -254,8 +261,8 @@ class TableReference(ManageData):
         else:
             return pd.DataFrame()
 
-    def make_payload(self, databook_id, table_id, column_name, lookup,
-                     query=False, matrix_tb=False):
+    def make_payload(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str,
+                     query: bool = False, matrix_tb: bool = False) -> PayLoadType | None:
         '''
         Make standard data
 
@@ -272,7 +279,7 @@ class TableReference(ManageData):
 
         Returns
         -------
-        payload : dict
+        payload : PayLoadType | None
             standard data
 
         Notes
@@ -303,15 +310,17 @@ class TableReference(ManageData):
                     records_clean = df.iloc[2, :].fillna(0).to_list()
 
                 # payload
-                payload = {
+                payload: PayLoadType = {
                     "header": df.columns.to_list(),
                     "symbol": df.iloc[0, :].to_list(),
                     "unit": df.iloc[1, :].to_list(),
                     "records": records_clean,
                 }
+
+                # res
+                return payload
             else:
-                payload = {}
-            # res
-            return payload
+                return None
+
         except Exception as e:
             raise Exception(f"Making payload error {e}")
