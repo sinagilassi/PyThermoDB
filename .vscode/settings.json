@@ -4,6 +4,7 @@
         "compexporter",
         "Databooks",
         "NRTL",
+        "ptdb",
         "tabledata",
         "tableequation",
         "thermodb"
