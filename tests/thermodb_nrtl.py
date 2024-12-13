@@ -2,6 +2,8 @@
 import pyThermoDB as ptdb
 from pprint import pprint as pp
 import os
+from rich import print
+
 
 # dir
 # print(dir(pt))
@@ -44,6 +46,11 @@ print(db_list)
 # table list
 tb_list = thermo_db.list_tables('NRTL')
 print(tb_list)
+
+# select a table
+tb = thermo_db.select_table(
+    'NRTL', 'Non-randomness parameters of the NRTL equation')
+print(tb)
 
 # ====================================
 # DISPLAY TABLE INFO
@@ -96,20 +103,21 @@ comp3 = 'benzene'
 # build data
 nrtl_data = thermo_db.build_matrix_data(
     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
-# pp(nrtl_data.matrix_data_structure())
+print(nrtl_data.matrix_data_structure())
 
-# pp(nrtl_data.get_property(0, comp1))
+print(nrtl_data.get_property('Alpha_i_1', comp1))
+print(nrtl_data.get_property(4, comp1))
 # by symbol
-# pp(float(comp1_data.get_property('dHf_IG')['value']))
+# pp(float(Alpha_i_j['value']))
 
-# pp(nrtl_data.get_matrix_property("Alpha_i_j",
-#    [comp1, comp2], symbol_format='alphabetic'))
+print(nrtl_data.get_matrix_property("Alpha_i_j",
+                                    [comp1, comp2], symbol_format='alphabetic'))
 
 # # property name
-# prop_name_lists = ["Alpha", comp1, comp3]
-# prop_name = "_".join(prop_name_lists)
-# print(prop_name)
-# pp(nrtl_data.get_matrix_property_by_name(prop_name).get('value'))
+prop_name_lists = ["Alpha", comp1, comp3]
+prop_name = "_".join(prop_name_lists)
+print(prop_name)
+print(nrtl_data.get_matrix_property_by_name(prop_name).get('value'))
 
 # ====================================
 # BUILD MATRIX EQUATION

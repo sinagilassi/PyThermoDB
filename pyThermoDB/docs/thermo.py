@@ -1,5 +1,6 @@
 # import packages/modules
 import pandas as pd
+from typing import List, Dict, Optional
 # internal
 from ..config import API_URL
 from ..api import Manage
@@ -67,7 +68,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self, databook, dataframe=True) -> pd.DataFrame | list:
+    def list_tables(self, databook: int | str, dataframe=True) -> pd.DataFrame | list[list[str]]:
         '''
         List all tables in the selected databook
 
@@ -80,7 +81,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        table list : list
+        table list : list | pandas dataframe
             list of tables
         '''
         try:
@@ -96,16 +97,16 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception("Table loading error!,", e)
 
-    def select_table(self, databook, table) -> DataBookTableTypes:
+    def select_table(self, databook: int | str, table: int | str) -> DataBookTableTypes:
         '''
-        select a table
+        Select a table
 
         Parameters
         ----------
         databook : int | str
             databook id or name
         table : int | str
-            table id or name
+            table id or name (non-zero-based id)
         dataframe: book
             if True, return a dataframe
 
@@ -115,6 +116,10 @@ class SettingDatabook(ManageData):
             table object
         '''
         try:
+            # set
+            tb_id = -1
+            tb_name = ''
+
             # find databook
             db, db_name, db_id = self.find_databook(databook)
 
@@ -154,9 +159,12 @@ class SettingDatabook(ManageData):
             raise Exception(
                 f"An error occurred while selecting the table: {e}")
 
-    def table_info(self, databook: int | str, table, dataframe=True) -> pd.DataFrame:
+    def table_info(self, databook: int | str, table, dataframe=True) -> pd.DataFrame | dict:
         '''
-        Display table header columns and other info
+        Gives table contents as:
+
+            * Table type
+            * Data and equations numbers
 
         Parameters
         ----------
@@ -239,13 +247,14 @@ class SettingDatabook(ManageData):
 
                 # ! check matrix-data
                 if tb_type == 'Matrix-Data' and tb['matrix_data'] is not None:
+                    # set
                     table_data = [*tb['matrix_data']]
 
                     # data no
                     matrix_data_no = 1
 
                 # data
-                tb_summary = {
+                tb_summary: dict = {
                     "Table Name": table_name,
                     "Type": tb_type,
                     "Equations": equation_no,
@@ -305,7 +314,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
-    def equation_load(self, databook, table) -> TableEquation:
+    def equation_load(self, databook: int | str, table: int | str) -> TableEquation:
         '''
         Display table header columns and other info
 
@@ -326,7 +335,7 @@ class SettingDatabook(ManageData):
         '''
         try:
             # table type
-            tb_type = ''
+            # tb_type = ''
             # table name
             table_name = ''
             # table equations
@@ -339,15 +348,17 @@ class SettingDatabook(ManageData):
                 # table name
                 table_name = tb['table']
                 # check data/equations
-                tb_type = 'Equation' if tb['equations'] is not None else 'Data'
+                if tb['equations'] is not None:
+                    # set table type
+                    # tb_type = 'equation'
 
-                # check equations
-                if tb_type == 'Equation':
+                    # looping through equations
                     for item in tb['equations']:
                         table_equations.append(item)
 
                     # create table equation
                     return TableEquation(table_name, table_equations)
+
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -356,7 +367,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def data_load(self, databook, table) -> TableData:
+    def data_load(self, databook: int | str, table: int | str) -> TableData:
         '''
         Display table header columns and other info
 
@@ -390,10 +401,6 @@ class SettingDatabook(ManageData):
                 # check data/equations
                 if tb['data'] is not None:
                     tb_type = TableTypes.DATA.value
-                elif tb['equations'] is not None:
-                    tb_type = TableTypes.EQUATIONS.value
-                else:
-                    raise Exception('Table loading error!')
 
                 # check data
                 if tb_type == 'data':
@@ -429,7 +436,7 @@ class SettingDatabook(ManageData):
         '''
         try:
             # table type
-            tb_type = ''
+            # tb_type = ''
             # table name
             table_name = ''
             # table equations
@@ -443,14 +450,10 @@ class SettingDatabook(ManageData):
                 table_name = tb['table']
 
                 # matrix-data/matrix-equation
-                if tb['matrix-equations'] is not None:
-                    tb_type = TableTypes.MATRIX_EQUATIONS.value
-                if tb['matrix-data'] is not None:
-                    tb_type = TableTypes.MATRIX_DATA.value
+                if tb['matrix_equations'] is not None:
+                    # tb_type = TableTypes.MATRIX_EQUATIONS.value
 
-                # check equations
-                if tb_type == 'matrix-equations':
-                    for item in tb['matrix-equations']:
+                    for item in tb['matrix_equations']:
                         table_equations.append(item)
 
                     # create table equation
@@ -463,9 +466,12 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_data_load(self, databook, table) -> TableMatrixData:
+    def matrix_data_load(self, databook: int | str, table: int | str) -> TableMatrixData:
         '''
-        Display table header columns and other info
+        Gives table contents as:
+
+            * Table type
+            * Data and equations numbers
 
         Parameters
         ----------
@@ -481,7 +487,7 @@ class SettingDatabook(ManageData):
         '''
         try:
             # table type
-            tb_type = ''
+            # tb_type = ''
             # table name
             table_name = ''
             # table data
@@ -495,15 +501,11 @@ class SettingDatabook(ManageData):
                 table_name = tb['table']
 
                 # matrix-data/matrix-equation
-                if tb['matrix-equations'] is not None:
-                    tb_type = TableTypes.MATRIX_EQUATIONS.value
-                if tb['matrix-data'] is not None:
-                    tb_type = TableTypes.MATRIX_DATA.value
+                if tb['matrix_data'] is not None:
+                    # tb_type = TableTypes.MATRIX_DATA.value
 
-                # check data
-                if tb_type == 'matrix-data':
                     # table data
-                    table_data = tb['matrix-data']
+                    table_data = tb['matrix_data']
 
                     # data no
                     return TableMatrixData(table_name, table_data)
@@ -514,7 +516,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self, component_name, databook, table, column_name=None, query=False):
+    def check_component(self, component_name: str | list, databook: int | str, table: int | str, column_name: Optional[str | list] = None, query: bool = False) -> bool:
         '''
         Check component availability in the selected databook and table
 
@@ -547,12 +549,12 @@ class SettingDatabook(ManageData):
 
             # find databook zero-based id (real)
             db, db_name, db_rid = self.find_databook(databook)
-            # databook id
+            # databook id (non-zero-based id)
             databook_id = db_rid + 1
 
             # find table zero-based id
             tb_id, tb_name = self.find_table(databook, table)
-            # table id
+            # table id (non-zero-based id)
             table_id = tb_id + 1
 
             # res
@@ -562,21 +564,24 @@ class SettingDatabook(ManageData):
             if isNumber(databook_id) and isNumber(table_id):
                 # check
                 if self.data_source == 'api':
-                    res = self.check_component_api(
-                        component_name, databook_id, table_id)
+                    # res = self.check_component_api(
+                    #     component_name, databook_id, table_id)
+                    pass
                 elif self.data_source == 'local':
                     res = self.check_component_local(
                         component_name, databook_id, table_id,
                         column_name, query=query)
                 else:
                     raise Exception('Data source error!')
+            else:
+                raise Exception("databook and table id required!")
 
             # res
             return res
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
-    def check_component_api(self, component_name, databook_id, table_id):
+    def check_component_api(self, component_name: str | list, databook_id: int, table_id: int):
         '''
         Check component availability in the selected databook and table
 
@@ -627,8 +632,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Checking data error {e}')
 
-    def check_component_local(self, component_name, databook_id, table_id,
-                              column_name, query=False) -> bool:
+    def check_component_local(self, component_name: str | list, databook_id: int, table_id: int,
+                              column_name: str | list[str], query: bool = False) -> bool:
         '''
         Check component availability in the selected databook and table
 
@@ -682,8 +687,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def get_component_data(self, component_name: str, databook_id, table_id,
-                           column_name=None, dataframe=False, query=False, matrix_tb=False):
+    def get_component_data(self, component_name: str, databook_id: int, table_id: int,
+                           column_name: Optional[str | list[str]] = None, dataframe: bool = False, query: bool = False, matrix_tb: bool = False):
         '''
         Get component data from database (api|local csvs)
 
@@ -716,9 +721,10 @@ class SettingDatabook(ManageData):
             component_name = str(component_name).strip()
             # check datasource
             if self.data_source == 'api':
-                component_data = self.get_component_data_api(
-                    component_name, databook_id, table_id, column_name,
-                    dataframe=dataframe)
+                # component_data = self.get_component_data_api(
+                #     component_name, databook_id, table_id, column_name,
+                #     dataframe=dataframe)
+                pass
             elif self.data_source == 'local':
                 component_data = self.get_component_data_local(
                     component_name, databook_id, table_id, column_name,
@@ -773,8 +779,8 @@ class SettingDatabook(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
-    def get_component_data_local(self, component_name, databook_id, table_id,
-                                 column_name, dataframe=False, query=False, matrix_tb=False):
+    def get_component_data_local(self, component_name: str, databook_id: int, table_id: int,
+                                 column_name: str | list[str], dataframe: bool = False, query: bool = False, matrix_tb: bool = False):
         '''
         Get component data from database (local csv files)
 
@@ -810,24 +816,28 @@ class SettingDatabook(ManageData):
                     databook_id, table_id, column_name, component_name,
                     query=query, matrix_tb=matrix_tb)
                 # check availability
-                if len(payload) > 0:
+                if payload:
                     # check
-                    if dataframe:
-                        df = pd.DataFrame(payload, columns=[
-                            'header', 'symbol', 'records', 'unit'])
-                        return df
+                    if len(payload) > 0:
+                        if dataframe:
+                            df = pd.DataFrame(payload, columns=[
+                                'header', 'symbol', 'records', 'unit'])
+                            return df
+                        else:
+                            return payload
                     else:
-                        return payload
+                        raise Exception(
+                            "Data for {} not available!".format(component_name))
                 else:
-                    print(f"Data for {component_name} not available!")
-                    return {}
+                    raise Exception(
+                        "Data for {} not available!".format(component_name))
             else:
                 print("databook and table id required!")
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def build_equation(self, component_name, databook, table,
-                       column_name=None, query=False) -> TableEquation:
+    def build_equation(self, component_name: str, databook: int | str, table: int | str,
+                       column_name: Optional[str | list[str]] = None, query: bool = False) -> TableEquation:
         '''
         Build equation for as:
             step1: get thermo data for a component
@@ -909,8 +919,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Building equation error {e}')
 
-    def build_data(self, component_name, databook, table,
-                   column_name=None, query=False) -> TableData:
+    def build_data(self, component_name: str, databook: int | str, table: int | str,
+                   column_name: Optional[str | list[str]] = None, query: bool = False) -> TableData:
         '''
         Build data as:
             step1: get thermo data for a component
@@ -995,8 +1005,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Building data error {e}')
 
-    def build_matrix_equation(self, component_names, databook, table,
-                              column_name=None, query=False) -> TableMatrixEquation:
+    def build_matrix_equation(self, component_names: list[str], databook: int | str, table: int | str,
+                              column_name: Optional[str | list[str]] = None, query: bool = False) -> TableMatrixEquation:
         '''
         Build matrix-equation for as:
             step1: get thermo data for a component
@@ -1091,8 +1101,8 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix-equation error {e}')
 
-    def build_matrix_data(self, component_names, databook, table,
-                          column_name=None, query=False) -> TableMatrixData:
+    def build_matrix_data(self, component_names: list[str], databook: int | str, table: int | str,
+                          column_name: Optional[str | list[str]] = None, query: bool = False) -> TableMatrixData:
         '''
         Build matrix data as:
             step1: get thermo matrix data

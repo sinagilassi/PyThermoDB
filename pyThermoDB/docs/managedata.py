@@ -5,9 +5,11 @@
 import os
 import yaml
 import pandas as pd
+from typing import TypedDict, List, Optional
 # local
 from ..data import TableTypes
 from ..models import DataBookTableTypes
+from .customref import CustomRef
 
 
 class ManageData():
@@ -24,7 +26,7 @@ class ManageData():
     # table
     __tables = []
 
-    def __init__(self, custom_ref=None):
+    def __init__(self, custom_ref: Optional[CustomRef] = None):
         # external reference
         self.custom_ref = custom_ref
         # load reference
@@ -75,7 +77,7 @@ class ManageData():
         self.__tables = []
         self.__tables = value
 
-    def load_reference(self, custom_ref) -> dict:
+    def load_reference(self, custom_ref: CustomRef) -> dict[str, dict]:
         '''
         load reference data from file
 
@@ -114,6 +116,9 @@ class ManageData():
             # merge data
             reference['REFERENCES'].update(custom_reference)
 
+        # log
+        # <class 'dict'>
+        # print(type(reference))
         return reference
 
     def get_databook_bulk(self) -> dict[str, list[DataBookTableTypes]]:
@@ -247,7 +252,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_tables(self, databook) -> tuple[list, pd.DataFrame]:
+    def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame]:
         '''
         Get a table list of selected databook
 
@@ -268,7 +273,7 @@ class ManageData():
             elif isinstance(databook, int):
                 _dbs = self.__databook_bulk[self.__databook[databook]]
             # list
-            tables = []
+            tables: list[list[str]] = []
             # check table and equations
             for i, tb in enumerate(_dbs):
                 # check
@@ -292,7 +297,12 @@ class ManageData():
 
             # dataframe
             # column name
-            column_name = f"Tables in {databook}"
+            column_name = f"Tables in {databook} databook"
+
+            # log
+            # print(type(tables), type(tables[0][0]), type(
+            #     tables[0][1]), type(tables[0][2]))
+
             # ! set table dataframe
             tables_df = pd.DataFrame(
                 tables, columns=[column_name, "Type", "Id"])

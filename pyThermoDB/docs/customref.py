@@ -10,12 +10,12 @@ class CustomRef:
 
     def __init__(self, ref):
         self.ref = ref
-        self.yml_files = []
-        self.csv_files = []
-        self.yml_paths = []
-        self.csv_paths = []
+        self.yml_files: list[str] = []
+        self.csv_files: list[str] = []
+        self.yml_paths: list[str] = []
+        self.csv_paths: list[str] = []
 
-    def init_ref(self):
+    def init_ref(self) -> bool:
         '''
         Update reference through updating yml
 
@@ -26,6 +26,10 @@ class CustomRef:
         csv_files : list
             csv files
 
+        Returns
+        -------
+        bool
+            True if reference is updated, False otherwise
         '''
         try:
             # extract data
@@ -60,7 +64,7 @@ class CustomRef:
         except Exception as e:
             raise Exception(f"updating reference failed! {e}")
 
-    def load_ref(self):
+    def load_ref(self) -> dict:
         '''
         Load reference
 
