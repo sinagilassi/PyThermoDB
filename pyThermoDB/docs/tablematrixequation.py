@@ -288,7 +288,6 @@ class TableMatrixEquation:
 
         '''
         try:
-
             pass
         except Exception as e:
             raise Exception('Set params matrix failed!, ', e)
@@ -318,6 +317,30 @@ class TableMatrixEquation:
             # unit
             matrix_table_data_unit = self.matrix_table.iloc[1, :].to_list()
 
+            # component
+            matrix_table_data_component_names = {
+                name: i for i, name in enumerate(self.matrix_table['Name']) if name != '-'}
+            # reset value to start from 0
+            matrix_table_data_component_names = {
+                str(i): name for i, name in enumerate(matrix_table_data_component_names.keys())}
+
+            # matrix component no
+            matrix_table_data_component_names_no = len(
+                matrix_table_data_component_names)
+
+            # set component name id
+            component_names_dict = {}
+            for i, name in matrix_table_data_component_names.items():
+                if name in component_names:
+                    component_names_dict[i] = name
+
+            component_names_idx = list(component_names_dict.keys())
+            component_names_idx = [int(item) for item in component_names_idx]
+
+            # check
+            if component_no > matrix_table_data_component_names_no:
+                raise Exception("Check component number!")
+
             # looping through self.parms
             # check parms
             if isinstance(self.parms, dict):
@@ -340,7 +363,7 @@ class TableMatrixEquation:
             # parms data
             matrix_table_component_parms_data = {}
             # looping through matrix table data
-            for i, component in enumerate(component_names):
+            for i, (component_key, component) in enumerate(matrix_table_data_component_names.items()):
                 # component data
                 _data_get = self.matrix_table[self.matrix_table['Name'].str.match(
                     component, case=False, na=False)]
@@ -382,7 +405,7 @@ class TableMatrixEquation:
                 jj = 0
                 for item in _parms_col_index:
                     # check
-                    if jj > component_no-1:
+                    if jj > matrix_table_data_component_names_no-1:
                         jj = 0
                     # lopping through data
                     for ii, (key, value) in enumerate(_data.items()):
@@ -415,27 +438,46 @@ class TableMatrixEquation:
                 _parms_key = f'{_parms_name}_i_j'
 
                 # 2d array
-                _2d_array = np.zeros((component_no, component_no))
+                # _2d_array = np.zeros(
+                #     (component_no, component_no))
+
+                # 2d list
+                _2d_list = []
 
                 # looping through component
-                for j in range(component_no):
+                for j in range(matrix_table_data_component_names_no):
 
-                    # get component data
-                    _data = matrix_table_component_data[component_names[j]]
+                    # check
+                    if j in component_names_idx:
+                        # check component exists in
+                        _component = matrix_table_data_component_names[str(j)]
 
-                    # get component parms data
-                    _parms_data = matrix_table_component_parms_data[component_names[j]]
+                        # get component data
+                        _data = matrix_table_component_data[_component]
 
-                    # looping through component
-                    for k in range(component_no):
-                        # set key
-                        _key = f'{_parms_name}_{j+1}_{k+1}'
+                        # get component parms data
+                        _parms_data = matrix_table_component_parms_data[_component]
 
-                        # fill 2d array
-                        _2d_array[j, k] = float(_parms_data[_key])
+                        # looping through component
+                        for k in range(matrix_table_data_component_names_no):
+                            # set key
+                            _key = f'{_parms_name}_{j+1}_{k+1}'
 
+                            # check
+                            if k in component_names_idx:
+                                # fill 2d array
+                                # _2d_array[j, k] = float(_parms_data[_key])
+                                _2d_list.append(float(_parms_data[_key]))
+
+                # reshape list
+                _2d_array = np.array(_2d_list).reshape(
+                    component_no, component_no)
                 # save parms matrix
                 parms_matrix_list[_parms_key] = _2d_array
+
+            # log
+            print("A_i_j: ", parms_matrix_list['A_i_j'])
+            print("B_i_j: ", parms_matrix_list['B_i_j'])
 
             # res
             return parms_matrix_list

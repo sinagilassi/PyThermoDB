@@ -19,7 +19,7 @@ yml_file = 'tests\\nrtl.yml'
 yml_path = os.path.join(os.getcwd(), yml_file)
 # csv files (data/equation tables)
 csv_file_1 = 'tests\\Non-randomness parameters of the NRTL equation.csv'
-csv_file_2 = 'tests\\Interaction parameters of the NRTL equation.csv'
+csv_file_2 = 'tests\\Interaction parameters of the NRTL equation-2.csv'
 csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
@@ -125,7 +125,7 @@ comp3 = 'benzene'
 # ! equation 1
 # build equation
 nrtl_tau_eq = thermo_db.build_matrix_equation(
-    [comp1, comp2], 'NRTL', 'Interaction parameters of the NRTL equation')
+    [comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
 
 # load parms
 pp(nrtl_tau_eq.parms)

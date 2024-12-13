@@ -1,0 +1,9 @@
+No.,Name,Formula,A_i_1,A_i_2,A_i_3,B_i_1,B_i_2,B_i_3,Eq
+-,-,-,A_i_1,A_i_2,A_i_3,B_i_1,B_i_2,B_i_3,tau_i_j
+-,-,-,1,1,1,1,1,1,1
+-,-,-,1,2,3,1,2,3,1
+-,-,-,methanol,ethanol,benzene,methanol,ethanol,benzene,1
+-,-,-,CH3OH,C2H5OH,C6H6,CH3OH,C2H5OH,C6H6,1
+1,methanol,CH3OH,0,4.712,-1.709,0,-1162.3,892.2,1
+2,ethanol,C2H5OH,-2.313,0,0.569,483.8,0,-54.8,1
+3,benzene,C6H6,11.58,-0.916,0,-3282.6,822,0,1
