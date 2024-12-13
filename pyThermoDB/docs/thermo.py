@@ -415,7 +415,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_equation_load(self, databook, table) -> TableMatrixEquation:
+    def matrix_equation_load(self, databook: int | str, table: int | str) -> TableMatrixEquation:
         '''
         Display table header columns and other info
 
@@ -1086,7 +1086,7 @@ class SettingDatabook(ManageData):
 
                     # update trans_data
                     eqs.trans_data_pack = transform_api_data
-                    # matrix table
+                    # matrix table (data template)
                     eqs.matrix_table = matrix_table
 
                     # equation init

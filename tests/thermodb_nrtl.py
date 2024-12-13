@@ -37,28 +37,28 @@ thermo_db = ptdb.init(ref)
 # ====================================
 # GET DATABOOK LIST
 # ====================================
-db_list = thermo_db.list_databooks()
-print(db_list)
+# db_list = thermo_db.list_databooks()
+# print(db_list)
 
 # ====================================
 # SELECT A DATABOOK
 # ====================================
 # table list
-tb_list = thermo_db.list_tables('NRTL')
-print(tb_list)
+# tb_list = thermo_db.list_tables('NRTL')
+# print(tb_list)
 
-# select a table
-tb = thermo_db.select_table(
-    'NRTL', 'Non-randomness parameters of the NRTL equation')
-print(tb)
+# # select a table
+# tb = thermo_db.select_table(
+#     'NRTL', 'Non-randomness parameters of the NRTL equation')
+# print(tb)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-tb_info = thermo_db.table_info(
-    'NRTL', "Non-randomness parameters of the NRTL equation")
-print(tb_info)
+# tb_info = thermo_db.table_info(
+#     'NRTL', "Non-randomness parameters of the NRTL equation")
+# print(tb_info)
 
 # ====================================
 # LOAD TABLE
@@ -101,110 +101,65 @@ comp3 = 'benzene'
 # BUILD MATRIX DATA
 # ====================================
 # build data
-nrtl_data = thermo_db.build_matrix_data(
-    [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
-print(nrtl_data.matrix_data_structure())
+# nrtl_alpha = thermo_db.build_matrix_data(
+#     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
+# print(nrtl_alpha.matrix_data_structure())
 
-print(nrtl_data.get_property('Alpha_i_1', comp1))
-print(nrtl_data.get_property(4, comp1))
+# print(nrtl_alpha.get_property('Alpha_i_1', comp1))
+# print(nrtl_alpha.get_property(4, comp1))
 # by symbol
 # pp(float(Alpha_i_j['value']))
 
-print(nrtl_data.get_matrix_property("Alpha_i_j",
-                                    [comp1, comp2], symbol_format='alphabetic'))
+# print(nrtl_alpha.get_matrix_property("Alpha_i_j",
+#                                      [comp1, comp2], symbol_format='alphabetic'))
 
 # # property name
-prop_name_lists = ["Alpha", comp1, comp3]
-prop_name = "_".join(prop_name_lists)
-print(prop_name)
-print(nrtl_data.get_matrix_property_by_name(prop_name).get('value'))
+# prop_name_lists = ["Alpha", comp1, comp3]
+# prop_name = "_".join(prop_name_lists)
+# print(prop_name)
+# print(nrtl_alpha.get_matrix_property_by_name(prop_name).get('value'))
 
 # ====================================
 # BUILD MATRIX EQUATION
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_matrix_equation(
+nrtl_tau_eq = thermo_db.build_matrix_equation(
     [comp1, comp2], 'NRTL', 'Interaction parameters of the NRTL equation')
 
-# search a component using query
-# comp1_eq = thermo_db.build_equation(
-#     comp1, 3, 1)
-
 # load parms
-pp(comp1_eq.parms)
-pp(comp1_eq.parms_values)
+pp(nrtl_tau_eq.parms)
+pp(nrtl_tau_eq.parms_values)
 # equation details
-pp(comp1_eq.equation_parms())
-pp(comp1_eq.equation_args())
-pp(comp1_eq.equation_body())
-pp(comp1_eq.equation_return())
+pp(nrtl_tau_eq.equation_parms())
+pp(nrtl_tau_eq.equation_args())
+pp(nrtl_tau_eq.equation_body())
+pp(nrtl_tau_eq.equation_return())
 
 # cal
-Cp_cal = comp1_eq.cal(T=298.15)
-pp(Cp_cal)
-
-# first derivative
-Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
-pp(Cp_cal_first)
-
-# second derivative
-Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
-pp(Cp_cal_second)
-
-# integral
-Cp_cal_integral = comp1_eq.cal_integral(T1=298.15, T2=320)
-pp(Cp_cal_integral)
-
-# ! equation 2
-# build equation
-vapor_pressure_eq = thermo_db.build_equation(comp1, 3, 3)
-
-pp(vapor_pressure_eq.equation_args())
-pp(vapor_pressure_eq.equation_return())
-VaPr = vapor_pressure_eq.cal(T=304.21)
-pp(VaPr)
-
-# ====================================
-# BUILD EQUATION
-# ====================================
-# build equation
-# comp1_eq = thermo_db.build_equation(comp1, 3, 1)
-
-# search a component using query
-# comp1_eq = thermo_db.build_equation(
-#     comp1, 3, 1)
-
-# equation details
-# pp(comp1_eq.equation_parms())
-# pp(comp1_eq.equation_args())
-# pp(comp1_eq.equation_body())
-# pp(comp1_eq.equation_return())
-
-# cal (using sympy)
-# Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
-# pp(Cp_cal)
-
+tau_cal = nrtl_tau_eq.cal(T=298.15)
+pp(tau_cal)
 
 # ====================================
 # BUILD THERMODB
 # ====================================
+# thermodb name
+thermodb_name = "thermodb_nrtl"
+
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
 pp(type(thermo_db))
 
-# * add TableData
-thermo_db.add_data('general', comp1_data)
-# * add TableEquation
-thermo_db.add_data('heat-capacity', comp1_eq)
-thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
-# add string
-# thermo_db.add_data('dHf', {'dHf_IG': 152})
+# * add TableMatrixData
+thermo_db.add_data('nrtl_alpha', nrtl_alpha)
+# * add TableMatrixEquation
+thermo_db.add_data('nrtl_tau', nrtl_tau_eq)
+
 # file name
 # thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
 # save
 thermo_db.save(
-    f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{thermodb_name}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
 
 # ====================================
 # CHECK THERMODB

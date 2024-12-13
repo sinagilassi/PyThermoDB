@@ -2,7 +2,7 @@
 import pandas as pd
 import math
 import sympy as sp
-import yaml
+import numpy as np
 # local
 from .equationbuilder import EquationBuilder
 
@@ -65,7 +65,7 @@ class TableMatrixEquation:
         Parameters
         ----------
         id : int
-            equation id (from 1 to ...), default is 1
+            equation id - non-zero-based id (from 1 to ...), default is 1
 
         Returns
         -------
@@ -130,6 +130,7 @@ class TableMatrixEquation:
         >>> print(res)
         '''
         # build parms dict
+        # key: parms name, value: parms matrix (2d array)
         _parms = self.load_parms()
         # execute equation
         # check
@@ -312,6 +313,11 @@ class TableMatrixEquation:
             # matrix table columns
             matrix_table_columns = list(self.matrix_table.columns)
 
+            # symbol
+            matrix_table_data_symbol = self.matrix_table.iloc[0, :]
+            # unit
+            matrix_table_data_unit = self.matrix_table.iloc[1, :].to_list()
+
             # looping through self.parms
             # check parms
             if isinstance(self.parms, dict):
@@ -329,17 +335,110 @@ class TableMatrixEquation:
 
             # create matrix
             parms_matrix_list = {}
-            # looping through _parms_col_index
-            for index in range(0, len(matrix_table_columns)//2):
-                # set
-                parms_matrix_list[_parms_col_index[index]] = index
+            # component data
+            matrix_table_component_data = {}
+            # parms data
+            matrix_table_component_parms_data = {}
+            # looping through matrix table data
+            for i, component in enumerate(component_names):
+                # component data
+                _data_get = self.matrix_table[self.matrix_table['Name'].str.match(
+                    component, case=False, na=False)]
 
                 # set
-                # _parms = {value['symbol']: float(value['value'] or 0)/float(value['unit'] or 1)
-                #           for key, value in trans_data.items() if value['symbol'] in _parms_name}
-            else:
-                _parms = {}
-            return _parms
+                _row_index = int(_data_get.index[0])
+                _data = _data_get.to_dict(orient='records')[0]
+
+                # update
+                _data['row_index'] = _row_index
+
+                # check
+                if len(_data) == 0:
+                    raise Exception('Component data not found!')
+
+                # component parms data
+                matrix_table_component_parms_data[component] = {}
+                # looping through self.parms
+                # rename _data keys
+                # * method 1:
+                for key, value in _data.items():
+                    # find parms
+                    for item in _parms_name_clean:
+                        _find_key = str(key).find(item+'_i')
+                        # check
+                        if _find_key != -1:
+                            # new key
+                            _new_key = str(key).replace('i', str(i+1))
+                            # log
+                            # print("method 1: ", _new_key, value, component)
+
+                            # set value
+                            # matrix_table_component_parms_data[component][str(
+                            #     _new_key)] = float(value)
+
+                # * method 2:
+                # find parms from matrix column index
+                # set
+                jj = 0
+                for item in _parms_col_index:
+                    # check
+                    if jj > component_no-1:
+                        jj = 0
+                    # lopping through data
+                    for ii, (key, value) in enumerate(_data.items()):
+                        # check
+                        if ii == item:
+                            # print(ii, item, jj)
+                            # new key
+                            _new_key = str(key).split(
+                                "_")[0]+"_"+f"{i+1}"+"_"+f"{jj+1}"
+
+                            # set unit
+                            _unit = float(
+                                matrix_table_data_unit[ii] or 1)
+
+                            # log
+                            # print("method 2: ", _new_key, value, component)
+                            # set value
+                            matrix_table_component_parms_data[component][_new_key] = float(
+                                value)/_unit
+                            # reset
+                            jj = jj+1
+
+                matrix_table_component_data[component] = _data
+
+            # looping through parms group
+            for i in range(len(_parms_name_clean)):
+
+                # parms key (such as A_i_j)
+                _parms_name = _parms_name_clean[i]
+                _parms_key = f'{_parms_name}_i_j'
+
+                # 2d array
+                _2d_array = np.zeros((component_no, component_no))
+
+                # looping through component
+                for j in range(component_no):
+
+                    # get component data
+                    _data = matrix_table_component_data[component_names[j]]
+
+                    # get component parms data
+                    _parms_data = matrix_table_component_parms_data[component_names[j]]
+
+                    # looping through component
+                    for k in range(component_no):
+                        # set key
+                        _key = f'{_parms_name}_{j+1}_{k+1}'
+
+                        # fill 2d array
+                        _2d_array[j, k] = float(_parms_data[_key])
+
+                # save parms matrix
+                parms_matrix_list[_parms_key] = _2d_array
+
+            # res
+            return parms_matrix_list
         except Exception as e:
             raise Exception("Loading equation parameters failed!, ", e)
 
@@ -434,6 +533,10 @@ class TableMatrixEquation:
         Returns
         -------
         None.
+
+        Notes
+        ------
+        Only one equation is used for matrix-equation calculation which is denoted by Eq 1.
         '''
         # set
         # transform_api_data = self.trans_data_pack
@@ -533,7 +636,8 @@ class TableMatrixEquation:
 
         # Define a namespace dictionary for eval
         namespace = {'args': args, "parms": parms}
-        # Import math module within the function
+        # Import math module and numpy (np) lib within the function
+        namespace['np'] = np
         namespace['math'] = math
         # Execute the body within the namespace
         exec(body, namespace)
@@ -610,7 +714,7 @@ class TableMatrixEquation:
 
         return res
 
-    def check_custom_integral_equation_body(self, equation_name) -> str:
+    def check_custom_integral_equation_body(self, equation_name: str) -> str:
         '''
         Displays the equation body of custom integral by equation name
 

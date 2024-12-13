@@ -287,6 +287,7 @@ class TableMatrixData:
                 # column name set
                 column_set = column.split('_')[0]
                 # check
+                # REVIEW
                 if property_name.upper() in column_set.upper():
                     # get the column index
                     column_index = matrix_table_column_name.index(column)
