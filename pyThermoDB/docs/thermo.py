@@ -1033,6 +1033,12 @@ class SettingDatabook(ManageData):
             if column_name is None:
                 column_name = 'Name'
 
+            # component no
+            component_no = len(component_names)
+            # check
+            if component_no <= 1:
+                raise Exception('At least two components are required')
+
             # find databook zero-based id (real)
             db, db_name, db_rid = self.find_databook(databook)
             # databook id

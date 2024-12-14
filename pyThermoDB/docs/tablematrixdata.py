@@ -113,6 +113,8 @@ class TableMatrixData:
         ----------
         property : str | int
             property name or id
+        component_name : str
+            component name
 
         Returns
         -------
