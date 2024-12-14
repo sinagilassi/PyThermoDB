@@ -6,6 +6,8 @@ import os
 from .compexporter import CompExporter
 from .tabledata import TableData
 from .tableequation import TableEquation
+from .tablematrixdata import TableMatrixData
+from .tablematrixequation import TableMatrixEquation
 
 
 class CompBuilder(CompExporter):
@@ -17,7 +19,7 @@ class CompBuilder(CompExporter):
         # init class
         super().__init__()
 
-    def add_data(self, name: str, value):
+    def add_data(self, name: str, value: TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation):
         '''
         Add TableData/TableEquation
 
@@ -43,7 +45,11 @@ class CompBuilder(CompExporter):
                 raise Exception('Name is required')
 
             # check TableData | TableEquation
-            if isinstance(value, TableData) or isinstance(value, TableEquation) or isinstance(value, dict):
+            allowed_types = (TableData, TableEquation, dict,
+                             TableMatrixData, TableMatrixEquation)
+
+            # check allowed types
+            if isinstance(value, allowed_types):
                 self.__data[name] = value
                 return True
             else:
@@ -51,7 +57,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Adding new data failed!, ', e)
 
-    def delete_data(self, name):
+    def delete_data(self, name: str):
         '''
         Delete data
 
@@ -75,7 +81,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Deleting data failed!, ', e)
 
-    def rename_data(self, name, new_name):
+    def rename_data(self, name: str, new_name: str):
         '''
         Rename data
 
@@ -143,7 +149,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Building library failed!, ', e)
 
-    def export_yml(self, component_name):
+    def export_yml(self, component_name: str):
         '''
         Export thermodb
 
@@ -163,7 +169,9 @@ class CompBuilder(CompExporter):
 
             _data_yml = {
                 'DATA': {},
-                'EQUATIONS': {}
+                'EQUATIONS': {},
+                'MATRIX-DATA': {},
+                'MATRIX-EQUATIONS': {}
             }
             # get TableData
             for i, (name, value) in enumerate(self.properties.items()):
@@ -172,12 +180,26 @@ class CompBuilder(CompExporter):
                     # add chunk
                     _data_yml['DATA'][str(name)] = _yml
 
+            # get TableMatrixData
+            for i, (name, value) in enumerate(self.properties.items()):
+                if isinstance(value, TableMatrixData):
+                    _yml = value.to_dict()
+                    # add chunk
+                    _data_yml['MATRIX-DATA'][str(name)] = _yml
+
             # get TableEquation
             for i, (name, value) in enumerate(self.functions.items()):
                 if isinstance(value, TableEquation):
                     _yml = value.to_dict()
                     # add chunk
                     _data_yml['EQUATIONS'][str(name)] = _yml
+
+            # get TableMatrixEquation
+            for i, (name, value) in enumerate(self.functions.items()):
+                if isinstance(value, TableMatrixEquation):
+                    _yml = value.to_dict()
+                    # add chunk
+                    _data_yml['MATRIX-EQUATIONS'][str(name)] = _yml
 
             # for component
             _to_comp[component_name] = _data_yml
@@ -195,7 +217,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Exporting library failed!, ', e)
 
-    def export_data_structure(self, component_name):
+    def export_data_structure(self, component_name: str):
         '''
         Export yml of thermodb containing TableData and TableEquation objects
 
@@ -236,14 +258,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking library failed!, ', e)
 
-    def check_properties(self) -> dict:
+    def check_properties(self) -> dict[str, TableData | TableMatrixData]:
         '''
         Check properties
 
         Returns
         -------
-        res : list
-            list of all properties registered
+        dict
+            all properties registered
         '''
         try:
             # check library
@@ -251,14 +273,19 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def check_property(self, name) -> TableData:
+    def check_property(self, name: str) -> TableData | TableMatrixData:
         '''
         Check properties
 
+        Parameters
+        ----------
+        name : str
+            name of the property to check
+
         Returns
         -------
-        res : bool
-            True if success
+        TableMatrixData | TableData
+            property registered
         '''
         try:
             # check library
@@ -266,14 +293,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def check_functions(self) -> dict:
+    def check_functions(self) -> dict[str, TableEquation | TableMatrixEquation]:
         '''
-        Check functions
+        Check all functions
 
         Returns
         -------
-        res : list
-            list of all functions registered
+        dict
+            all functions registered
         '''
         try:
             # check library
@@ -281,14 +308,19 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def check_function(self, name) -> TableEquation:
+    def check_function(self, name: str) -> TableEquation | TableMatrixEquation:
         '''
         Check functions
 
+        Parameters
+        ----------
+        name : str
+            function name
+
         Returns
         -------
-        res : bool
-            True if success
+        TableEquation | TableMatrixEquation
+            function registered
         '''
         try:
             # check library
@@ -296,7 +328,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def save(self, filename, file_path=None):
+    def save(self, filename: str, file_path=None) -> bool:
         """
         Saves the instance to a file using pickle
 
@@ -330,7 +362,7 @@ class CompBuilder(CompExporter):
             raise Exception("Saving CompBuilder instance failed!", e)
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename: str):
         """
         Loads a saved instance from a file using pickle
 
@@ -350,7 +382,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Loading CompBuilder instance failed!", e)
 
-    def clean(self):
+    def clean(self) -> bool:
         '''
         Clean all data including properties/functions
 

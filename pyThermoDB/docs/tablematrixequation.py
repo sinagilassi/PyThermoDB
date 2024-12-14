@@ -129,16 +129,19 @@ class TableMatrixEquation:
         >>> res = cal(T=120,P=1)
         >>> print(res)
         '''
-        # build parms dict
-        # key: parms name, value: parms matrix (2d array)
-        _parms = self.load_parms()
-        # execute equation
-        # check
-        if sympy_format:
-            res = self.eqExe_sympy(self.body, _parms, args=args)
-        else:
-            res = self.eqExe(self.body, _parms, args=args)
-        return res
+        try:
+            # build parms dict
+            # key: parms name, value: parms matrix (2d array)
+            _parms = self.load_parms()
+            # execute equation
+            # check
+            if sympy_format:
+                res = self.eqExe_sympy(self.body, _parms, args=args)
+            else:
+                res = self.eqExe(self.body, _parms, args=args)
+            return res
+        except Exception as e:
+            raise Exception('Calculation failed!, ', e)
 
     def cal_integral(self, **args):
         '''
@@ -476,8 +479,8 @@ class TableMatrixEquation:
                 parms_matrix_list[_parms_key] = _2d_array
 
             # log
-            print("A_i_j: ", parms_matrix_list['A_i_j'])
-            print("B_i_j: ", parms_matrix_list['B_i_j'])
+            # print("A_i_j: ", parms_matrix_list['A_i_j'])
+            # print("B_i_j: ", parms_matrix_list['B_i_j'])
 
             # res
             return parms_matrix_list
@@ -655,36 +658,38 @@ class TableMatrixEquation:
 
     def eqExe(self, body, parms, args):
         '''
-        Execute the function having args, parameters and body
+        Execute a function body with provided arguments and parameters.
 
         Parameters
         ----------
         body : str
-            function body
+            A string containing Python code to execute. Must define a variable `res` for the return value.
         parms : dict
-            parameters
+            A dictionary of parameters accessible as `parms` in the function body.
         args : dict
-            args
+            A dictionary of arguments accessible as `args` in the function body.
 
         Returns
         -------
         res : float
-            calculation result
+            The calculation result defined in the `body` (if `res` is set), or None in case of errors.
         '''
         # check body
         if body is None:
-            print('Function body not defined!')
-            return None
+            raise Exception('Function body not defined!')
 
-        # Define a namespace dictionary for eval
-        namespace = {'args': args, "parms": parms}
-        # Import math module and numpy (np) lib within the function
-        namespace['np'] = np
-        namespace['math'] = math
-        # Execute the body within the namespace
-        exec(body, namespace)
-        # Return the result
-        return namespace['res']
+        try:
+            # Define a namespace dictionary for eval
+            namespace = {'args': args, "parms": parms}
+            # Import math module and numpy (np) lib within the function
+            namespace['np'] = np
+            namespace['math'] = math
+            # Execute the body within the namespace
+            exec(body, namespace)
+            # Return the result
+            return namespace['res']
+        except Exception as e:
+            raise Exception("Calculation failed!, ", e)
 
     def eqExe_sympy(self, body, parms, args):
         '''

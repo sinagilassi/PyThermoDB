@@ -4,7 +4,6 @@ from pprint import pprint as pp
 import os
 from rich import print
 
-
 # dir
 # print(dir(pt))
 # get versions
@@ -101,11 +100,11 @@ comp3 = 'benzene'
 # BUILD MATRIX DATA
 # ====================================
 # build data
-# nrtl_alpha = thermo_db.build_matrix_data(
-#     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
-# print(nrtl_alpha.matrix_data_structure())
+nrtl_alpha = thermo_db.build_matrix_data(
+    [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
+print(nrtl_alpha.matrix_data_structure())
 
-# print(nrtl_alpha.get_property('Alpha_i_1', comp1))
+print(nrtl_alpha.get_property('Alpha_i_1', comp1))
 # print(nrtl_alpha.get_property(4, comp1))
 # by symbol
 # pp(float(Alpha_i_j['value']))
@@ -156,10 +155,10 @@ thermo_db.add_data('nrtl_alpha', nrtl_alpha)
 thermo_db.add_data('nrtl_tau', nrtl_tau_eq)
 
 # file name
-# thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
+thermodb_file_path = os.path.join(os.getcwd(), 'tests')
 # save
 thermo_db.save(
-    f'{thermodb_name}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{thermodb_name}', file_path=thermodb_file_path)
 
 # ====================================
 # CHECK THERMODB
