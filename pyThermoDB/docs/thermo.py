@@ -982,6 +982,7 @@ class SettingDatabook(ManageData):
                         raise Exception('Building data failed!')
 
                     # ! build data
+                    # * construct template
                     # check eq exists
                     dts = self.data_load(
                         databook_id, table_id)
@@ -1153,6 +1154,8 @@ class SettingDatabook(ManageData):
             table_id = tb_id + 1
 
             # matrix table
+            # ! retrieve all data from matrix-table
+            # ? usually matrix-table data are limited
             matrix_table = self.table_data(databook, table)
 
             # get data from api

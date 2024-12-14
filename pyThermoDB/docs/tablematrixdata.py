@@ -15,7 +15,7 @@ class TableMatrixData:
     def __init__(self, table_name, table_data, matrix_table=None):
         self.table_name = table_name
         self.table_data = table_data
-        self.matrix_table = matrix_table  # template
+        self.matrix_table = matrix_table  # all elements saved in the matrix-table
 
     @property
     def trans_data_pack(self):
@@ -129,7 +129,6 @@ class TableMatrixData:
 
         # dataframe (selected component data)
         df = pd.DataFrame(prop_data)
-        # print(df)
 
         # choose a column
         if isinstance(property, str):
@@ -289,8 +288,7 @@ class TableMatrixData:
                 # column name set
                 column_set = column.split('_')[0]
                 # check
-                # REVIEW
-                if property_name.upper() in column_set.upper():
+                if property_name.upper() == column_set.upper():
                     # get the column index
                     column_index = matrix_table_column_name.index(column)
                     # get the column

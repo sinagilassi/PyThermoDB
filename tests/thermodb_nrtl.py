@@ -109,14 +109,14 @@ print(nrtl_alpha.get_property('Alpha_i_1', comp1))
 # by symbol
 # pp(float(Alpha_i_j['value']))
 
-# print(nrtl_alpha.get_matrix_property("Alpha_i_j",
-#                                      [comp1, comp2], symbol_format='alphabetic'))
+print(nrtl_alpha.get_matrix_property("Alpha_i_j",
+                                     [comp1, comp2], symbol_format='alphabetic'))
 
 # # property name
-# prop_name_lists = ["Alpha", comp1, comp3]
-# prop_name = "_".join(prop_name_lists)
-# print(prop_name)
-# print(nrtl_alpha.get_matrix_property_by_name(prop_name).get('value'))
+prop_name_lists = ["Alpha", comp1, comp3]
+prop_name = "_".join(prop_name_lists)
+print(prop_name)
+print(nrtl_alpha.get_matrix_property_by_name(prop_name).get('value'))
 
 # ====================================
 # BUILD MATRIX EQUATION
