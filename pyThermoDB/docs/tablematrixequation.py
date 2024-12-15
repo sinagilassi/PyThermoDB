@@ -3,6 +3,7 @@ import pandas as pd
 import math
 import sympy as sp
 import numpy as np
+import re
 # local
 from .equationbuilder import EquationBuilder
 
@@ -26,8 +27,8 @@ class TableMatrixEquation:
 
     def __init__(self, table_name: str, equations: list, matrix_table=None):
         self.table_name = table_name
-        self.equations = equations
-        self.matrix_table = matrix_table
+        self.equations = equations  # * from reference yml
+        self.matrix_table = matrix_table  # * from csv
 
     @property
     def trans_data_pack(self):
@@ -280,20 +281,109 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception('Derivation calculation failed!, ', e)
 
-    def set_params_ij(self, parm_id):
+    def get_component_info(self, column_name: str = 'Name'):
         '''
-        Create a params matrix
+        Get component info through retrieving data from the matrix table
+        Parameters
+        ----------
+        column_name : str
+            column name to retrieve data from the matrix table (default is 'Name')
+
+        Returns
+        -------
+        tuple
+            component names, component index, component number
+        '''
+        try:
+            # check
+            if self.matrix_table is None:
+                raise Exception('Matrix table not found!')
+
+            # check
+            if not isinstance(self.matrix_table, pd.DataFrame):
+                raise Exception('Matrix table (dataframe) not found!')
+
+            # component
+            component_names = {
+                name: i for i, name in enumerate(self.matrix_table[str(column_name)]) if name != '-'}
+            # reset value to start from 0
+            component_idx = {
+                str(i): name for i, name in enumerate(component_names.keys())}
+
+            # component no
+            component_no = len(component_names)
+
+            # res
+            return component_names, component_idx, component_no
+        except Exception as e:
+            raise Exception('Set params matrix failed!, ', e)
+
+    def get_matrix_table_info(self, symbol_id: int = 0, unit_id: int = 1) -> tuple[list, list, list]:
+        """
+        Get matrix table info
 
         Parameters
         ----------
-        parm_id : str
-            parameter id
+        symbol_id : int
+            symbol id (default is 0)
+        unit_id : int
+            unit id (default is 1)
 
-        '''
+        Returns
+        -------
+        tuple
+            column names, symbols, units
+        """
         try:
-            pass
+            # check
+            if self.matrix_table is None:
+                raise Exception('Matrix table not found!')
+
+            # check
+            if not isinstance(self.matrix_table, pd.DataFrame):
+                raise Exception('Matrix table (dataframe) not found!')
+
+            # matrix table columns
+            column_names = list(self.matrix_table.columns)
+
+            # symbol
+            symbols = self.matrix_table.iloc[int(
+                symbol_id), :].to_list()
+            # unit
+            units = self.matrix_table.iloc[int(
+                unit_id), :].to_list()
+
+            # res
+            return column_names, symbols, units
+
         except Exception as e:
-            raise Exception('Set params matrix failed!, ', e)
+            raise Exception('Get matrix table info failed!, ', e)
+
+    def get_params_symbols(self, symbol_identifier: str = '_i_j'):
+        """
+        Get parms symbols
+
+        Returns
+        -------
+        tuple
+            parms_name, parms_name_clean
+        """
+        try:
+            #
+            if isinstance(self.parms, dict):
+                # loaded parms (taken from reference)
+                parms_name = list(self.parms.keys())
+                # params clean
+                parms_name_clean = [item.split(str(symbol_identifier))[0]
+                                    for item in parms_name]
+            else:
+                raise Exception('Parms not found!')
+
+            # res
+            return parms_name, parms_name_clean
+
+        except Exception as e:
+            raise Exception('Get params info failed!, ', e)
 
     def load_parms(self):
         '''
@@ -305,35 +395,38 @@ class TableMatrixEquation:
             trans_data_pack = self.trans_data_pack
             # component names
             component_names = list(trans_data_pack.keys())
+
+            # TODO
+            # * check duplicated names
+            if len(component_names) != len(set(component_names)):
+                raise Exception('Duplicated component names found!')
+
             # component no
             component_no = len(component_names)
+
+            # TODO
+            # * check if component no is 1
+            if component_no == 1:
+                raise Exception('Only one component found!')
 
             # check
             if not isinstance(self.matrix_table, pd.DataFrame):
                 raise Exception('Matrix table not found!')
 
-            # matrix table columns
-            matrix_table_columns = list(self.matrix_table.columns)
+            # ! matrix table info
+            matrix_table_columns, matrix_table_data_symbol, matrix_table_data_unit = self.get_matrix_table_info()
 
-            # symbol
-            matrix_table_data_symbol = self.matrix_table.iloc[0, :]
-            # unit
-            matrix_table_data_unit = self.matrix_table.iloc[1, :].to_list()
+            # ! component names in the matrix_table
+            matrix_table_data_component_names, matrix_table_data_component_names_idx, matrix_table_data_component_names_no = self.get_component_info()
 
-            # component
-            matrix_table_data_component_names = {
-                name: i for i, name in enumerate(self.matrix_table['Name']) if name != '-'}
-            # reset value to start from 0
-            matrix_table_data_component_names = {
-                str(i): name for i, name in enumerate(matrix_table_data_component_names.keys())}
+            # TODO: check component in matrix-table
+            for component in component_names:
+                if component not in matrix_table_data_component_names:
+                    raise Exception('Component not found!')
 
-            # matrix component no
-            matrix_table_data_component_names_no = len(
-                matrix_table_data_component_names)
-
-            # set component name id
+            # check component name id
             component_names_dict = {}
-            for i, name in matrix_table_data_component_names.items():
+            for i, name in matrix_table_data_component_names_idx.items():
                 if name in component_names:
                     component_names_dict[i] = name
 
@@ -344,20 +437,42 @@ class TableMatrixEquation:
             if component_no > matrix_table_data_component_names_no:
                 raise Exception("Check component number!")
 
-            # looping through self.parms
-            # check parms
-            if isinstance(self.parms, dict):
-                # loaded parms (taken from reference)
-                _parms_name = list(self.parms.keys())
-                # params clean
-                _parms_name_clean = [item.split('_')[0]
-                                     for item in _parms_name]
-                # params column index
-                _parms_col_index = []
-                for item in matrix_table_columns:
-                    if item.split('_')[0] in _parms_name_clean:
-                        _parms_col_index.append(
-                            matrix_table_columns.index(item))
+            # get parms symbols
+            parms_name, parms_name_clean = self.get_params_symbols('_i_j')
+
+            # ! parms column index in the dataframe
+            # params column index
+            # parms_col_index = []
+            # looping through
+            # for item in matrix_table_columns:
+            #     if item.split('_')[0] in parms_name_clean:
+            #         parms_col_index.append(
+            #             matrix_table_columns.index(item))
+
+            parms_col_index = []
+            # looping through clean parms names
+            for item in parms_name_clean:
+                # build parms symbol
+                # create regex
+                # regex = re.compile(re.escape(item) + '_')
+                # create str pattern
+                str_pattern = item + '_'
+
+                for matrix_table_column in matrix_table_columns:
+                    # check
+                    # * method 1: using regex
+                    # if regex.search(matrix_table_column):
+                    #     # get index
+                    #     index = matrix_table_columns.index(matrix_table_column)
+                    #     # save
+                    #     parms_col_index.append(index)
+
+                    # * method 2: using startswith
+                    if matrix_table_column.startswith(str_pattern):
+                        # get index
+                        index = matrix_table_columns.index(matrix_table_column)
+                        # save
+                        parms_col_index.append(index)
 
             # create matrix
             parms_matrix_list = {}
@@ -366,7 +481,7 @@ class TableMatrixEquation:
             # parms data
             matrix_table_component_parms_data = {}
             # looping through matrix table data
-            for i, (component_key, component) in enumerate(matrix_table_data_component_names.items()):
+            for i, (component_key, component) in enumerate(matrix_table_data_component_names_idx.items()):
                 # component data
                 _data_get = self.matrix_table[self.matrix_table['Name'].str.match(
                     component, case=False, na=False)]
@@ -389,7 +504,7 @@ class TableMatrixEquation:
                 # * method 1:
                 for key, value in _data.items():
                     # find parms
-                    for item in _parms_name_clean:
+                    for item in parms_name_clean:
                         _find_key = str(key).find(item+'_i')
                         # check
                         if _find_key != -1:
@@ -406,7 +521,7 @@ class TableMatrixEquation:
                 # find parms from matrix column index
                 # set
                 jj = 0
-                for item in _parms_col_index:
+                for item in parms_col_index:
                     # check
                     if jj > matrix_table_data_component_names_no-1:
                         jj = 0
@@ -434,10 +549,10 @@ class TableMatrixEquation:
                 matrix_table_component_data[component] = _data
 
             # looping through parms group
-            for i in range(len(_parms_name_clean)):
+            for i in range(len(parms_name_clean)):
 
                 # parms key (such as A_i_j)
-                _parms_name = _parms_name_clean[i]
+                _parms_name = parms_name_clean[i]
                 _parms_key = f'{_parms_name}_i_j'
 
                 # 2d array
@@ -453,7 +568,8 @@ class TableMatrixEquation:
                     # check
                     if j in component_names_idx:
                         # check component exists in
-                        _component = matrix_table_data_component_names[str(j)]
+                        _component = matrix_table_data_component_names_idx[str(
+                            j)]
 
                         # get component data
                         _data = matrix_table_component_data[_component]

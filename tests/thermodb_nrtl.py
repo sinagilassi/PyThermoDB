@@ -124,7 +124,7 @@ print(nrtl_alpha.get_matrix_property_by_name(prop_name).get('value'))
 # ! equation 1
 # build equation
 nrtl_tau_eq = thermo_db.build_matrix_equation(
-    [comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
+    [comp1, comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
 
 # load parms
 pp(nrtl_tau_eq.parms)
@@ -139,11 +139,34 @@ pp(nrtl_tau_eq.equation_return())
 tau_cal = nrtl_tau_eq.cal(T=298.15)
 pp(tau_cal)
 
+
+# ====================================
+# CHECK COMPONENT AVAILABILITY IN A TABLE
+# ====================================
+# check component availability in the databook and table
+comp4 = "carbon Dioxide"
+# CO2_check_availability = tdb.check_component(comp1, 1, 2)
+
+# check component
+CO2_check_availability = thermo_db.check_component(comp4,
+                                                   "Perry's Chemical Engineers' Handbook",
+                                                   "TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids")
+print(CO2_check_availability)
+
+# ====================================
+# BUILD DATA
+# ====================================
+# build data
+CO2_data = thermo_db.build_data(comp4, 1, 2)
+print(CO2_data.data_structure())
+print(CO2_data.get_property(5))
+
+
 # ====================================
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = "thermodb_nrtl"
+thermodb_name = "thermodb_nrtl_2"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
@@ -153,6 +176,8 @@ pp(type(thermo_db))
 thermo_db.add_data('nrtl_alpha', nrtl_alpha)
 # * add TableMatrixEquation
 thermo_db.add_data('nrtl_tau', nrtl_tau_eq)
+# * add TableData
+thermo_db.add_data('CO2_general_data', CO2_data)
 
 # file name
 thermodb_file_path = os.path.join(os.getcwd(), 'tests')

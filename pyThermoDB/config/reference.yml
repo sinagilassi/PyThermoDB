@@ -72,8 +72,8 @@ REFERENCES:
               - None
               - MW
               - EnFo_IG
-              - GiFo_IG
-              - S_IG
+              - GiEnFo_IG
+              - Ent_IG
               - EnCo_STD
             UNIT:
               - None

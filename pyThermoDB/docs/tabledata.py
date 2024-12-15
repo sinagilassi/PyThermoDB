@@ -10,7 +10,7 @@ class TableData:
 
     def __init__(self, table_name, table_data):
         self.table_name = table_name
-        self.table_data = table_data
+        self.table_data = table_data  # reference template
 
     @property
     def trans_data(self):
@@ -49,7 +49,7 @@ class TableData:
 
         return df
 
-    def get_property(self, property):
+    def get_property(self, property: str | int):
         '''
         Get a component property from data table structure
 
@@ -63,6 +63,7 @@ class TableData:
         dict
             component property
         '''
+        # ! get data for a selected component
         # dataframe
         df = pd.DataFrame(self.prop_data)
 

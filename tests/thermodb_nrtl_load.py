@@ -19,7 +19,7 @@ comp3 = 'benzene'
 # LOAD THERMODB
 # ====================================
 # ref
-thermodb_file = 'thermodb_nrtl.pkl'
+thermodb_file = 'thermodb_nrtl_2.pkl'
 thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
 print(thermodb_path)
 
@@ -53,6 +53,14 @@ print(nrtl_alpha_data.get_property('Alpha_i_1', comp1))
 
 print(nrtl_alpha_data.get_matrix_property("Alpha_i_j",
                                           [comp1, comp2], symbol_format='alphabetic'))
+
+# ! load data
+CO2_general = nrtl_thermodb.check_property('CO2_general_data')
+print(type(CO2_general))
+# heat of formation at 298.15K
+print(CO2_general.data_structure())
+print(CO2_general.get_property('MW'))
+print(CO2_general.get_property('GiEnFo_IG'))
 
 # ====================================
 # EQUATIONS

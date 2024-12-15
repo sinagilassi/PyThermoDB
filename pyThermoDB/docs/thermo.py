@@ -1050,6 +1050,7 @@ class SettingDatabook(ManageData):
             # table id
             table_id = tb_id + 1
 
+            # ! retrieve all data from matrix-table (csv file)
             # matrix table
             matrix_table = self.table_data(databook, table)
 
@@ -1087,6 +1088,7 @@ class SettingDatabook(ManageData):
                         raise Exception('Building matrix-equation failed!')
 
                     # ! build equation
+                    # ! reading yml reference
                     # check eq exists
                     eqs = self.matrix_equation_load(
                         databook_id, table_id)
