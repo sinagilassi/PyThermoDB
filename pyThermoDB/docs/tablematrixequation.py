@@ -111,12 +111,35 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, sympy_format=False, **args):
+    def eq_info(self):
+        '''Get equation information.'''
+        try:
+            # get return
+            _return = self.returns
+
+            # check length
+            if len(_return) == 1:
+                return list(_return.values())[0]
+            else:
+                raise Exception("Every equation has only one return")
+
+            # res
+            return _return
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    def cal(self, message='', decimal_accuracy=4, sympy_format=False, **args):
         '''
         Execute a function
 
         Parameters
         ----------
+        message : str
+            message to be printed
+        decimal_accuracy : int
+            decimal accuracy (default is 4)
+        sympy_format : bool
+            @deprecated() whether to return sympy format (default is False) 
         args : dict
             a dictionary contains variable names and values as
 
@@ -127,10 +150,13 @@ class TableMatrixEquation:
 
         Examples
         --------
-        >>> res = cal(T=120,P=1)
+        >>> res = cal(message='Interaction parameters of the NRTL equation',T=289.15)
         >>> print(res)
         '''
         try:
+            # equation info
+            eq_info = self.eq_info()
+
             # build parms dict
             # key: parms name, value: parms matrix (2d array)
             _parms = self.load_parms()
@@ -140,7 +166,18 @@ class TableMatrixEquation:
                 res = self.eqExe_sympy(self.body, _parms, args=args)
             else:
                 res = self.eqExe(self.body, _parms, args=args)
-            return res
+
+            if res is not None:
+                res = np.round(res, decimal_accuracy)
+
+            # set message
+            if message == '':
+                message = 'No message'
+
+            # eq res
+            eq_data = {'value': res, **eq_info, 'message': message}
+
+            return eq_data
         except Exception as e:
             raise Exception('Calculation failed!, ', e)
 

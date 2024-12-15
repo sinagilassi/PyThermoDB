@@ -2,6 +2,8 @@
 import pyThermoDB as ptdb
 from pprint import pprint as pp
 import os
+from rich import print
+
 
 # dir
 # print(dir(pt))
@@ -48,7 +50,13 @@ print(tb_list)
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
+tb_info = thermo_db.table_info('CO2 Hydrogenation', 1)
+print(tb_info)
+
 tb_info = thermo_db.table_info('CO2 Hydrogenation', 2)
+print(tb_info)
+
+tb_info = thermo_db.table_info('CO2 Hydrogenation', 3)
 print(tb_info)
 
 # ====================================
@@ -65,7 +73,7 @@ print(tb_info)
 # ====================================
 # check component availability in the databook and table
 comp1 = "Carbon Dioxide"
-# COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
+COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
@@ -78,11 +86,11 @@ comp1 = "Carbon Dioxide"
 # ====================================
 # build data
 comp1_data = thermo_db.build_data(comp1, 'CO2 Hydrogenation', 2)
-pp(comp1_data.data_structure())
+# print(comp1_data.data_structure())
 
-pp(comp1_data.get_property(6))
+print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 # by symbol
-pp(float(comp1_data.get_property('dHf_IG')['value']))
+print(float(comp1_data.get_property('dHf_IG')['value']))
 
 
 # ====================================
@@ -90,45 +98,46 @@ pp(float(comp1_data.get_property('dHf_IG')['value']))
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_equation(comp1, 3, 1)
+comp1_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 1)
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
 #     comp1, 3, 1)
 
 # load parms
-pp(comp1_eq.parms)
-pp(comp1_eq.parms_values)
+print(comp1_eq.parms)
+print(comp1_eq.parms_values)
 # equation details
-pp(comp1_eq.equation_parms())
-pp(comp1_eq.equation_args())
-pp(comp1_eq.equation_body())
-pp(comp1_eq.equation_return())
+print(comp1_eq.equation_parms())
+print(comp1_eq.equation_args())
+print(comp1_eq.equation_body())
+print(comp1_eq.equation_return())
 
 # cal
 Cp_cal = comp1_eq.cal(T=298.15)
-pp(Cp_cal)
+print(Cp_cal)
 
 # first derivative
 Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
-pp(Cp_cal_first)
+print(Cp_cal_first)
 
 # second derivative
 Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
-pp(Cp_cal_second)
+print(Cp_cal_second)
 
 # integral
 Cp_cal_integral = comp1_eq.cal_integral(T1=298.15, T2=320)
-pp(Cp_cal_integral)
+print(Cp_cal_integral)
 
 # ! equation 2
 # build equation
-vapor_pressure_eq = thermo_db.build_equation(comp1, 3, 3)
+vapor_pressure_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 3)
 
-pp(vapor_pressure_eq.equation_args())
-pp(vapor_pressure_eq.equation_return())
+print(vapor_pressure_eq.equation_args())
+print(vapor_pressure_eq.equation_return())
+VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
 VaPr = vapor_pressure_eq.cal(T=304.21)
-pp(VaPr)
+print(VaPr)
 
 # ====================================
 # BUILD EQUATION
@@ -154,9 +163,12 @@ pp(VaPr)
 # ====================================
 # BUILD THERMODB
 # ====================================
+# name
+thermodb_name = comp1.upper()
+
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
-pp(type(thermo_db))
+print(type(thermo_db))
 
 # * add TableData
 thermo_db.add_data('general', comp1_data)
@@ -165,15 +177,16 @@ thermo_db.add_data('heat-capacity', comp1_eq)
 thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
+
 # file name
-# thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
+thermodb_file_path = os.path.join(os.getcwd(), 'tests')
 # save
 thermo_db.save(
-    f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{thermodb_name}', file_path=thermodb_file_path)
 
 # ====================================
 # CHECK THERMODB
 # ====================================
 # check all properties and functions registered
-pp(thermo_db.check_properties())
-pp(thermo_db.check_functions())
+print(thermo_db.check_properties())
+print(thermo_db.check_functions())
