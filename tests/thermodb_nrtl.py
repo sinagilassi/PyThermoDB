@@ -110,7 +110,7 @@ print(nrtl_alpha.get_property('Alpha_i_1', comp1))
 # pp(float(Alpha_i_j['value']))
 
 print(nrtl_alpha.get_matrix_property("Alpha_i_j",
-                                     [comp1, comp2], symbol_format='alphabetic'))
+                                     [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
 
 # # property name
 prop_name_lists = ["Alpha", comp1, comp3]
@@ -127,17 +127,18 @@ nrtl_tau_eq = thermo_db.build_matrix_equation(
     [comp1, comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
 
 # load parms
-pp(nrtl_tau_eq.parms)
-pp(nrtl_tau_eq.parms_values)
+print(nrtl_tau_eq.parms)
+print(nrtl_tau_eq.parms_values)
 # equation details
-pp(nrtl_tau_eq.equation_parms())
-pp(nrtl_tau_eq.equation_args())
-pp(nrtl_tau_eq.equation_body())
-pp(nrtl_tau_eq.equation_return())
+print(nrtl_tau_eq.equation_parms())
+print(nrtl_tau_eq.equation_args())
+print(nrtl_tau_eq.equation_body())
+print(nrtl_tau_eq.equation_return())
 
 # cal
 tau_cal = nrtl_tau_eq.cal(T=298.15)
-pp(tau_cal)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", T=298.15)
+print(tau_cal)
 
 
 # ====================================
@@ -166,7 +167,7 @@ print(CO2_data.get_property(5))
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = "thermodb_nrtl_2"
+thermodb_name = "thermodb_nrtl_3"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()

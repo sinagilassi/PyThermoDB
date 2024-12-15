@@ -19,7 +19,7 @@ comp3 = 'benzene'
 # LOAD THERMODB
 # ====================================
 # ref
-thermodb_file = 'thermodb_nrtl_2.pkl'
+thermodb_file = 'thermodb_nrtl_3.pkl'
 thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
 print(thermodb_path)
 
@@ -77,5 +77,5 @@ print(nrtl_tau_eq.returns)
 # parms values
 print(nrtl_tau_eq.parms_values)
 # cal
-nrtl_tau_cal = nrtl_tau_eq.cal(T=298.15)
+nrtl_tau_cal = nrtl_tau_eq.cal(message=f"NRTL Tau value", T=298.15)
 print(nrtl_tau_cal)

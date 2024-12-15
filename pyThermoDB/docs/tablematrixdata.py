@@ -197,7 +197,7 @@ class TableMatrixData:
             raise Exception("Getting matrix property failed!, ", e)
 
     def get_matrix_property(self, property: str, component_names: list[str],
-                            symbol_format: str = 'alphabetic') -> dict:
+                            symbol_format: str = 'alphabetic', message: str = '') -> dict:
         '''
         Get a component property from data table structure
 
@@ -348,7 +348,8 @@ class TableMatrixData:
             res = {
                 "symbol": property_symbol,
                 "unit": property_unit,
-                "value": property_value
+                "value": property_value,
+                "message": message if message else "No message"
             }
 
             # return

@@ -21,6 +21,8 @@ class TableEquation:
     __parms_values = {}
     # custom integral
     _custom_integral = {}
+    # selected equation id
+    eq_id: int = -1
 
     def __init__(self, table_name, equations):
         self.table_name = table_name
@@ -99,25 +101,51 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, sympy_format=False, **args):
+    def eq_info(self):
+        '''Get equation information.'''
+        try:
+            # get return
+            _return = self.returns
+
+            # check length
+            if len(_return) == 1:
+                return list(_return.values())[0]
+            else:
+                raise Exception("Every equation has only one return")
+
+            # res
+            return _return
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    def cal(self, message='', decimal_accuracy=4, sympy_format=False, **args):
         '''
         Execute a function
 
         Parameters
         ----------
+        message : str
+            message to be printed
+        decimal_accuracy : int
+            decimal accuracy (default is 4)
+        sympy_format : bool
+            @deprecated() whether to return sympy format (default is False) 
         args : dict
             a dictionary contains variable names and values as
 
         Returns
         -------
-        res : float
+        eq_data : dict
             calculation result
 
         Examples
         --------
-        >>> res = cal(T=120,P=1)
+        >>> res = cal(message=f'{comp1} Vapor Pressure', T=120,P=1)
         >>> print(res)
         '''
+        # equation info
+        eq_info = self.eq_info()
+
         # build parms dict
         _parms = self.load_parms()
         # execute equation
@@ -126,7 +154,19 @@ class TableEquation:
             res = self.eqExe_sympy(self.body, _parms, args=args)
         else:
             res = self.eqExe(self.body, _parms, args=args)
-        return res
+
+        if res is not None:
+            res = round(res, decimal_accuracy)
+
+        # set message
+        if message == '':
+            message = 'No message'
+
+        # dict
+        eq_data = {'value': res, **eq_info, 'message': message}
+
+        # res
+        return eq_data
 
     def cal_integral(self, **args):
         '''
@@ -384,6 +424,8 @@ class TableEquation:
         # eq
         Eq_data = 0
         Eq_data = int(transform_api_data['Eq']['value'])
+        # save eq id
+        self.eq_id = Eq_data
 
         # load equation
         eq_summary = self.eq_structure(Eq_data)

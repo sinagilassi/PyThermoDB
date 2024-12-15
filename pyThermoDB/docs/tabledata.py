@@ -1,6 +1,8 @@
 # import packages/modules
 import pandas as pd
 import yaml
+from typing import Optional
+# local imports
 
 
 class TableData:
@@ -10,7 +12,7 @@ class TableData:
 
     def __init__(self, table_name, table_data):
         self.table_name = table_name
-        self.table_data = table_data  # reference template
+        self.table_data = table_data  # reference template (yml)
 
     @property
     def trans_data(self):
@@ -49,7 +51,7 @@ class TableData:
 
         return df
 
-    def get_property(self, property: str | int):
+    def get_property(self, property: str | int, message: str = ''):
         '''
         Get a component property from data table structure
 
@@ -57,10 +59,12 @@ class TableData:
         ----------
         property : str | int
             property name or id
+        message : str 
+            message to display when property is found or not found
 
         Returns
         -------
-        dict
+        data_dict : dict
             component property
         '''
         # ! get data for a selected component
@@ -81,17 +85,30 @@ class TableData:
                         get_data = self.prop_data[key]
                         break
             # series
-            sr = pd.Series(get_data)
+            sr = pd.Series(get_data, dtype='str')
+            # print(type(sr))
 
         elif isinstance(property, int):
             # get column index
             column_index = df.columns[property-1]
             sr = df.loc[:, column_index]
+            # print(type(sr))
 
         else:
             raise ValueError("loading error!")
 
-        return sr.to_dict()
+        # convert to dict
+        data_dict = sr.to_dict()
+        # print(data_dict, type(data_dict))
+
+        # update message
+        if message:
+            data_dict['message'] = str(message)
+        else:
+            data_dict['message'] = 'No message'
+
+        # res
+        return data_dict
 
     def to_dict(self):
         '''
