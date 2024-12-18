@@ -1,6 +1,7 @@
 # import packages/modules
 import pyThermoDB as ptdb
 from pprint import pprint as pp
+from rich import print
 
 
 # dir
@@ -18,14 +19,15 @@ tdb = ptdb.init()
 # DATABOOK LIST
 # ===============================
 # databook
-db_list = tdb.list_databooks()
+db_list = tdb.list_databooks(res_format='json')
 print(db_list)
 
 # ===============================
 # TABLE LIST
 # ===============================
 # table list
-tb_lists = tdb.list_tables('Chemical Thermodynamics for Process Simulation')
+tb_lists = tdb.list_tables(
+    'Chemical Thermodynamics for Process Simulation', res_format='json')
 print(tb_lists)
 
 
@@ -33,7 +35,8 @@ print(tb_lists)
 # TABLE INFO
 # ===============================
 # display a table
-tb_info = tdb.table_info('Chemical Thermodynamics for Process Simulation', 1)
+tb_info = tdb.table_info(
+    'Chemical Thermodynamics for Process Simulation', 1, res_format='dict')
 print(tb_info)
 
 # ===============================
@@ -42,11 +45,11 @@ print(tb_info)
 # load equation to check
 vapor_pressure_tb = tdb.equation_load(
     'Chemical Thermodynamics for Process Simulation', 2)
-pp(vapor_pressure_tb.eq_structure(1))
+print(vapor_pressure_tb.eq_structure(1))
 
 # load data to check
 data_table = tdb.data_load('Chemical Thermodynamics for Process Simulation', 1)
-pp(data_table.data_structure())
+print(data_table.data_structure())
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -65,7 +68,7 @@ comp1 = "carbon Dioxide"
 CO2_check_availability = tdb.check_component(comp1,
                                              "Chemical Thermodynamics for Process Simulation",
                                              "Table A.1 General data for selected compounds")
-pp(CO2_check_availability)
+print(CO2_check_availability)
 
 
 # ====================================
@@ -74,15 +77,15 @@ pp(CO2_check_availability)
 # build data
 CO2_data = tdb.build_data(comp1, "Chemical Thermodynamics for Process Simulation",
                           "Table A.1 General data for selected compounds")
-pp(CO2_data.data_structure())
+print(CO2_data.data_structure())
 
 # ACCESS DATA
 # by ID
-pp(CO2_data.get_property(12))
+print(CO2_data.get_property(12))
 # by property name
-pp(CO2_data.get_property('standard-Gibbs-energy-of-formation'))
+print(CO2_data.get_property('standard-Gibbs-energy-of-formation'))
 # by symbol
-pp(CO2_data.get_property('dGf_std'))
+print(CO2_data.get_property('dGf_std'))
 
 # CO2 Tc [K]
 CO2_Tc = float(CO2_data.get_property('Tc')['value'])
@@ -130,6 +133,6 @@ CO2_MW = float(CO2_data.get_property('MW')['value'])
 Cp_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
                            "Table A.5 Liquid heat capacity correlations for selected compounds")
 # parms
-pp(Cp_eq.parms)
-pp(Cp_eq.returns)
+print(Cp_eq.parms)
+print(Cp_eq.returns)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))

@@ -1,6 +1,7 @@
 # import packages/modules
 import pandas as pd
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Literal
+import json
 # internal
 from ..config import API_URL
 from ..api import Manage
@@ -48,27 +49,39 @@ class SettingDatabook(ManageData):
     def selected_tb(self, value):
         self.__selected_tb = value
 
-    def list_databooks(self, dataframe=True):
+    def list_databooks(self, res_format: Literal['list', 'dataframe', 'json'] = 'dataframe'):
         '''
         List all databooks
 
+        Parameters
+        -----------
+        res_format : Literal['list', 'dataframe', 'json']
+            Format of the returned data. Defaults to 'dataframe'.
+
         Returns
         -------
-        res: dict | pandas dataframe
-            databook list
+        res : list | pandas.DataFrame | str
+            Databook list in the specified format.
+            - 'list': List of dictionaries containing databook information.
+            - 'dataframe': Pandas DataFrame containing databook information.
+            - 'json': JSON string representing the databook list.
         '''
         try:
             # databook list
             res = self.get_databooks()
             # check
-            if dataframe:
-                return res[1]
-            else:
+            if res_format == 'list':
                 return res[0]
+            elif res_format == 'dataframe':
+                return res[1]
+            elif res_format == 'json':
+                return res[2]
+            else:
+                raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self, databook: int | str, dataframe=True) -> pd.DataFrame | list[list[str]]:
+    def list_tables(self, databook: int | str, res_format: Literal['list', 'dataframe', 'json'] = 'dataframe') -> list[list[str]] | pd.DataFrame | str:
         '''
         List all tables in the selected databook
 
@@ -76,12 +89,12 @@ class SettingDatabook(ManageData):
         ----------
         databook : int | str
             databook id or name
-        dataframe: book
-            if True, return a dataframe
+        res_format : Literal['list', 'dataframe', 'json']
+            Format of the returned data. Defaults to 'dataframe'.
 
         Returns
         -------
-        table list : list | pandas dataframe
+        table list : list | pandas.DataFrame | str
             list of tables
         '''
         try:
@@ -90,10 +103,14 @@ class SettingDatabook(ManageData):
             # table list
             res = self.get_tables(db_name)
             # check
-            if dataframe:
-                return res[1]
-            else:
+            if res_format == 'list':
                 return res[0]
+            elif res_format == 'dataframe':
+                return res[1]
+            elif res_format == 'json':
+                return res[2]
+            else:
+                raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception("Table loading error!,", e)
 
@@ -129,7 +146,7 @@ class SettingDatabook(ManageData):
                 tb = self.get_table(db_name, table-1)
             elif isinstance(table, str):
                 # get tables
-                tables = self.list_tables(databook=db_name, dataframe=False)
+                tables = self.list_tables(databook=db_name, res_format='list')
                 # check
                 if isinstance(tables, list):
                     # looping
@@ -159,7 +176,7 @@ class SettingDatabook(ManageData):
             raise Exception(
                 f"An error occurred while selecting the table: {e}")
 
-    def table_info(self, databook: int | str, table, dataframe=True) -> pd.DataFrame | dict:
+    def table_info(self, databook: int | str, table: int | str, res_format: Literal['dict', 'dataframe', 'json'] = 'dataframe') -> dict | pd.DataFrame | str:
         '''
         Gives table contents as:
 
@@ -177,7 +194,7 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        tb_summary : Pandas.DataFrame
+        tb_summary : dict | pandas.DataFrame | str
             table summary
 
         Notes
@@ -263,18 +280,25 @@ class SettingDatabook(ManageData):
                     "Matrix-Data": matrix_data_no
                 }
 
+                # json
+                tb_summary_json = json.dumps(tb_summary)
+
             else:
                 raise ValueError("No such table")
 
-            if dataframe:
+            if res_format == 'dataframe':
                 # column names
                 column_names = ['Table Name', 'Type', 'Equations',
                                 'Data', 'Matrix-Equations', 'Matrix-Data']
                 # dataframe
                 df = pd.DataFrame([tb_summary], columns=column_names)
                 return df
-            else:
+            elif res_format == 'json':
+                return tb_summary_json
+            elif res_format == 'dict':
                 return tb_summary
+            else:
+                raise ValueError("Invalid res_format")
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
@@ -516,9 +540,9 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self, component_name: str | list, databook: int | str, table: int | str, column_name: Optional[str | list] = None, query: bool = False) -> bool:
+    def check_component(self, component_name: str | list[str], databook: int | str, table: int | str, column_name: Optional[str | list[str]] = None, query: bool = False) -> str:
         '''
-        Check component availability in the selected databook and table
+        Check a component availability in the selected databook and table
 
         Parameters
         ----------
@@ -535,8 +559,8 @@ class SettingDatabook(ManageData):
 
         Returns
         -------
-        comp_info : str
-            component information
+        res_json : str
+            summary of the component availability
         '''
         try:
             # check search option
@@ -577,7 +601,18 @@ class SettingDatabook(ManageData):
                 raise Exception("databook and table id required!")
 
             # res
-            return res
+            res_dict = {
+                'databook_id': databook_id,
+                'table_id': table_id,
+                'component_name': component_name,
+                'availability': res
+            }
+
+            # json
+            res_json = json.dumps(res_dict, indent=4)
+
+            # res
+            return res_json
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
@@ -613,10 +648,10 @@ class SettingDatabook(ManageData):
                 compListUpper = uppercaseStringList(compList)
                 if len(compList) > 0:
                     # get databook
-                    databook_name = self.list_databooks(dataframe=False)[
+                    databook_name = self.list_databooks(res_format='list')[
                         databook_id-1]
                     # get table
-                    table_name = self.list_tables(databook=databook_id, dataframe=False)[
+                    table_name = self.list_tables(databook=databook_id, res_format='list')[
                         table_id-1][0]
                     # check
                     if component_name.upper() in compListUpper:
@@ -667,10 +702,10 @@ class SettingDatabook(ManageData):
                 # check availability
                 if len(df) > 0:
                     # get databook
-                    databook_name = self.list_databooks(dataframe=False)[
+                    databook_name = self.list_databooks(res_format='list')[
                         databook_id-1]
                     # get table
-                    table_name = self.list_tables(databook=databook_id, dataframe=False)[
+                    table_name = self.list_tables(databook=databook_id, res_format='list')[
                         table_id-1][0]
                     # log
                     print(

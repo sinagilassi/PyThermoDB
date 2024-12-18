@@ -2,6 +2,7 @@
 import pyThermoDB as ptdb
 from pprint import pprint as pp
 import os
+from rich import print
 
 # dir
 # print(dir(pt))
@@ -56,7 +57,7 @@ print(tb_info)
 tb_eq = thermo_db.equation_load(1, 1)
 # equation structure
 tb_eq_structure = tb_eq.eq_structure(1)
-pp(tb_eq_structure)
+print(tb_eq_structure)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -77,9 +78,9 @@ comp1 = "Acetaldehyde"
 # ====================================
 # build data
 comp1_data = thermo_db.build_data(comp1, 3, 2)
-pp(comp1_data.data_structure())
+print(comp1_data.data_structure())
 
-pp(comp1_data.get_property(6))
+print(comp1_data.get_property(6))
 
 
 # ====================================
@@ -93,26 +94,26 @@ comp1_eq = thermo_db.build_equation(comp1, 1, 4)
 #     comp1, 3, 1)
 
 # equation details
-pp(comp1_eq.equation_parms())
-pp(comp1_eq.equation_args())
-pp(comp1_eq.equation_body())
-pp(comp1_eq.equation_return())
+print(comp1_eq.equation_parms())
+print(comp1_eq.equation_args())
+print(comp1_eq.equation_body())
+print(comp1_eq.equation_return())
 
 # cal
 Cp_cal = comp1_eq.cal(T=290)
-pp(Cp_cal)
+print(Cp_cal)
 
 # first derivative
 Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
-pp(Cp_cal_first)
+print(Cp_cal_first)
 
 # second derivative
 Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
-pp(Cp_cal_second)
+print(Cp_cal_second)
 
 # integral
 Cp_cal_integral = comp1_eq.cal_integral(T1=273.15, T2=373.15)
-pp(Cp_cal_integral)
+print(Cp_cal_integral)
 
 # ====================================
 # BUILD EQUATION
@@ -125,14 +126,14 @@ pp(Cp_cal_integral)
 #     comp1, 3, 1)
 
 # equation details
-# pp(comp1_eq.equation_parms())
-# pp(comp1_eq.equation_args())
-# pp(comp1_eq.equation_body())
-# pp(comp1_eq.equation_return())
+# print(comp1_eq.equation_parms())
+# print(comp1_eq.equation_args())
+# print(comp1_eq.equation_body())
+# print(comp1_eq.equation_return())
 
 # cal (using sympy)
 # Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
-# pp(Cp_cal)
+# print(Cp_cal)
 
 
 # ====================================
@@ -140,15 +141,15 @@ pp(Cp_cal_integral)
 # ====================================
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
-pp(type(thermo_db))
+print(type(thermo_db))
 
 # add TableData
 thermo_db.add_data('general', comp1_data)
 # add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq)
 # add string
-thermo_db.add_data('dHf', {'dHf_IG': 152})
+# thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
 # thermo_db.export_data_structure(comp1)
 # save
-thermo_db.save(f'{comp1}-2.pkl')
+thermo_db.save(f'{comp1}-3.pkl')

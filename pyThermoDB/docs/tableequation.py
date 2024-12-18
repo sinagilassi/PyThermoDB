@@ -118,7 +118,7 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, message='', decimal_accuracy=4, sympy_format=False, **args):
+    def cal(self, message: str = '', decimal_accuracy: int = 4, sympy_format: bool = False, **args):
         '''
         Execute a function
 

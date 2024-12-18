@@ -6,6 +6,7 @@ import os
 import yaml
 import pandas as pd
 from typing import TypedDict, List, Optional
+import json
 # local
 from ..data import TableTypes
 from ..models import DataBookTableTypes
@@ -218,7 +219,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_databooks(self) -> tuple[list[str], pd.DataFrame]:
+    def get_databooks(self) -> tuple[list[str], pd.DataFrame, str]:
         '''
         Get a list of databook
 
@@ -232,6 +233,8 @@ class ManageData():
             databook list
         databook_df : pd.DataFrame
             databook dataframe
+        databook_json : str
+            databook json
 
         Notes
         ------
@@ -242,17 +245,24 @@ class ManageData():
             _db = list(self.__databook_bulk.keys())
             # add id
             res = [(db, f"[{i+1}]") for i, db in enumerate(_db)]
+
+            # create dict
+            databook_dict = {f"databook-{i+1}": str(db)
+                             for i, db in enumerate(_db)}
+            # create json
+            databook_json = json.dumps(databook_dict, indent=4)
+
             # dataframe
             # column name
             column_name = "Databooks"
             databook_df = pd.DataFrame(res, columns=[column_name, "Id"])
             # return
-            return _db, databook_df
+            return _db, databook_df, databook_json
 
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame]:
+    def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame, str]:
         '''
         Get a table list of selected databook
 
@@ -263,7 +273,7 @@ class ManageData():
 
         Returns
         -------
-        tables : list
+        tables : list | pandas.DataFrame | str
             table list of selected databook
         '''
         try:
@@ -299,15 +309,17 @@ class ManageData():
             # column name
             column_name = f"Tables in {databook} databook"
 
-            # log
-            # print(type(tables), type(tables[0][0]), type(
-            #     tables[0][1]), type(tables[0][2]))
+            # convert to json
+            tables_dict = {f"table-{i+1}": tb[0]
+                           for i, tb in enumerate(tables)}
+            # convert to json
+            tables_json = json.dumps(tables_dict, indent=4)
 
             # ! set table dataframe
             tables_df = pd.DataFrame(
                 tables, columns=[column_name, "Type", "Id"])
             # return
-            return tables, tables_df
+            return tables, tables_df, tables_json
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
