@@ -2,32 +2,34 @@
 import pyThermoDB as ptdb
 from pprint import pprint as pp
 import os
+from rich import print
 
 # ====================================
 # LOAD THERMODB
 # ====================================
 # ref
-thermodb_file = 'Acetaldehyde-2.pkl'
-thermodb_path = os.path.join(os.getcwd(), thermodb_file)
-pp(thermodb_path)
+thermodb_file = 'Acetaldehyde-3.pkl'
+thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
+print(thermodb_path)
 
 
 # load thermodb
 Acetaldehyde_thermodb = ptdb.load_thermodb(thermodb_path)
-pp(type(Acetaldehyde_thermodb))
+print(type(Acetaldehyde_thermodb))
 
 # load data
-pp(Acetaldehyde_thermodb.check_properties())
+print(Acetaldehyde_thermodb.check_properties())
 
 Acetaldehyde_general = Acetaldehyde_thermodb.check_property('general')
-pp(type(Acetaldehyde_general))
-pp(Acetaldehyde_general.prop_data)
-pp(Acetaldehyde_general.get_property(
-    'dHf_IG')['value'])
+print(type(Acetaldehyde_general))
+print(Acetaldehyde_general.prop_data)
+# print(Acetaldehyde_general.get_property(
+#     'dHf_IG')['value'])
 
 # load equation
 Acetaldehyde_equation = Acetaldehyde_thermodb.check_function('heat-capacity')
-pp(type(Acetaldehyde_equation))
+print(type(Acetaldehyde_equation))
 # cal
-Cp_cal = Acetaldehyde_equation.cal(T=290)
-pp(Cp_cal)
+Cp_cal = Acetaldehyde_equation.cal(
+    T=290, message='heat capacity of Acetaldehyde')
+print(Cp_cal)
