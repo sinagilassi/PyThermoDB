@@ -2,6 +2,8 @@
 import pickle
 import yaml
 import os
+from typing import Optional, Union
+
 # local
 from .compexporter import CompExporter
 from .tabledata import TableData
@@ -19,7 +21,7 @@ class CompBuilder(CompExporter):
         # init class
         super().__init__()
 
-    def add_data(self, name: str, value: TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation):
+    def add_data(self, name: str, value: Union[TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation]):
         '''
         Add TableData/TableEquation
 
@@ -44,7 +46,7 @@ class CompBuilder(CompExporter):
             if name is None:
                 raise Exception('Name is required')
 
-            # check TableData | TableEquation
+            # check TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation
             allowed_types = (TableData, TableEquation, dict,
                              TableMatrixData, TableMatrixEquation)
 
@@ -328,7 +330,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def save(self, filename: str, file_path=None) -> bool:
+    def save(self, filename: str, file_path: Optional[str] = None) -> bool:
         """
         Saves the instance to a file using pickle
 
@@ -337,7 +339,7 @@ class CompBuilder(CompExporter):
         filename : str
             filename
         file_path : str
-            file path
+            file path (default is None)
 
         Returns
         -------
@@ -345,16 +347,26 @@ class CompBuilder(CompExporter):
             True if success
         """
         try:
+            # check filename
+            if filename is None:
+                raise Exception("Filename is required!")
+
             # build
             self.build()
+
             # file path setting
             if file_path is None:
                 file_path = os.getcwd()
+
             # file full name
             filename = os.path.join(file_path, filename)
 
+            # file name path
+            if not filename.endswith('.pkl'):
+                filename += '.pkl'
+
             # save
-            with open(f'{filename}.pkl', 'wb') as f:
+            with open(f'{filename}', 'wb') as f:
                 pickle.dump(self, f)
             # res
             return True
