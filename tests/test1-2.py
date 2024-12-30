@@ -71,6 +71,11 @@ CO2_check_availability = tdb.check_component(comp1,
 print(CO2_check_availability)
 
 
+CO2_check_availability = tdb.check_component(comp1,
+                                             "Chemical Thermodynamics for Process Simulation",
+                                             "Table A.2 Vapor pressure correlations for selected compounds")
+print(CO2_check_availability)
+
 # ====================================
 # BUILD DATA
 # ====================================
@@ -89,11 +94,13 @@ print(CO2_data.get_property('dGf_std'))
 
 # CO2 Tc [K]
 CO2_Tc = float(CO2_data.get_property('Tc')['value'])
+print(CO2_Tc)
 # CO2 Pc [bar]
 CO2_Pc = float(CO2_data.get_property('Pc')['value'])
+print(CO2_Pc)
 # CO2 MW [g/mol]
 CO2_MW = float(CO2_data.get_property('MW')['value'])
-
+print(CO2_MW)
 
 # ====================================
 # BUILD EQUATION
@@ -133,6 +140,9 @@ CO2_MW = float(CO2_data.get_property('MW')['value'])
 Cp_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulation",
                            "Table A.5 Liquid heat capacity correlations for selected compounds")
 # parms
+print(Cp_eq.eq_id)
+print(Cp_eq.args)
 print(Cp_eq.parms)
 print(Cp_eq.returns)
+print(Cp_eq.equations)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))

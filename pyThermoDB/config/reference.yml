@@ -573,6 +573,10 @@ REFERENCES:
                   name: critical temperature
                   symbol: Tc
                   unit: K
+                molecular_weight:
+                  name: molecular weight
+                  symbol: MW
+                  unit: g/mol
               PARMS:
                 A:
                   name: A
