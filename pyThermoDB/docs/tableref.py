@@ -114,7 +114,7 @@ class TableReference(ManageData):
         df = pd.read_csv(file_path)
         return df
 
-    def search_tables(self, databook_id: int, table_id: int, column_name: str, lookup: str, query: bool = False) -> pd.DataFrame:
+    def search_tables(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str | list[str], query: bool = False) -> pd.DataFrame:
         """
         Search tables in this directory
 

@@ -668,7 +668,7 @@ class SettingDatabook(ManageData):
             raise Exception(f'Checking data error {e}')
 
     def check_component_local(self, component_name: str | list, databook_id: int, table_id: int,
-                              column_name: str | list[str], query: bool = False) -> bool:
+                              column_name: str | list[str], query: bool = False, verbose: bool = False) -> bool:
         '''
         Check component availability in the selected databook and table
 
@@ -708,13 +708,16 @@ class SettingDatabook(ManageData):
                     table_name = self.list_tables(databook=databook_id, res_format='list')[
                         table_id-1][0]
                     # log
-                    print(
-                        f"[{component_name}] available in [{table_name}] | [{databook_name}]")
+                    if verbose:
+                        print(
+                            f"[{component_name}] available in [{table_name}] | [{databook_name}]")
 
                     # res
                     return True
                 else:
-                    print(f"{component_name} is not available.")
+                    # log
+                    if verbose:
+                        print(f"{component_name} is not available.")
                     # res
                     return False
             else:
