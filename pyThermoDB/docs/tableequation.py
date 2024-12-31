@@ -13,6 +13,7 @@ class TableEquation:
     parms = {}
     args = {}
     returns = {}
+    _summary = {}
     body_integral = ''
     body_first_derivative = ''
     body_second_derivative = ''
@@ -48,6 +49,21 @@ class TableEquation:
     @property
     def custom_integral(self):
         return self._custom_integral
+
+    @property
+    def summary(self):
+        return {
+            'eq_id': self.eq_id,
+            'table_name': self.table_name,
+            'args': self.args,
+            'parms': self.parms,
+            'returns': self.returns,
+            'body': self.body,
+            'body_integral': self.body_integral,
+            'body_first_derivative': self.body_first_derivative,
+            'body_second_derivative': self.body_second_derivative,
+            'custom_integral': self._custom_integral
+        }
 
     def eq_structure(self, id=1):
         '''
