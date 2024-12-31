@@ -1,5 +1,5 @@
 Id,No.,Name,Formula,CAS no.,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq
--,-,-,-,-,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPrLi
+-,-,-,-,-,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr
 -,-,-,-,-,1,1,1,1,1,K,Pa,K,Pa,Pa
 1,1,Acetaldehyde,C2H4O,75-07-0,193.69,-8036.7,-29.502,4.37E-02,1,150.15,3.23E-01,466,5.57E+06,1
 2,2,Acetamide,C2H5NO,60-35-5,125.81,-12376,-14.589,5.08E-06,2,353.33,3.36E+02,761,6.57E+06,1

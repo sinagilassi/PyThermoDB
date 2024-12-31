@@ -1,5 +1,5 @@
 ﻿No.,Name,critical-temperature,critical-pressure,critical-molar-volume,molecular-weight,acentric-factor,boiling-temperature,melting-temperature,specific-enthalpy-of-fusion,standard-enthalpy-of-formation,standard-Gibbs-energy-of-formation
--,-,Tc,Pc,Vc,MW,AcFa,Tb,Tm,dHm,dHf_std,dGf_std
+-,-,Tc,Pc,Vc,MW,AcFa,Tb,Tm,EnFus,EnFo_IG,GiEnFo_IG
 -,-,K,bar,cm3/mol,g/mol,1,K,K,J/mol,J/mol,J/mol
 1,Water,647.096,220.64,55.947,18.015,0.3443,373.13,273.15,333.1,-241820,-228590
 2,Ammonia,405.5,113.592,75.768,17.031,0.256,239.82,195.45,332.2,-45773,-16150

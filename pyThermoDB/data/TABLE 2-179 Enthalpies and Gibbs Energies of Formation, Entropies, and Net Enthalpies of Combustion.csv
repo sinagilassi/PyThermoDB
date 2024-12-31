@@ -1,4 +1,4 @@
-no.,Name,Formula,CAS no.,Mol. wt.,Ideal gas enthalpy of formation x 1E-07,Ideal gas Gibbs energy of formation x 1E-07,Ideal gas entropy x 1E-05,Standard net enthalpy of combustion x 1E-09
+no.,Name,Formula,CAS no.,Mol. wt.,ideal-gas-enthalpy-of-formation x 1E-07,ideal-gas-Gibbs-energy-of-formation x 1E-07,ideal-gas-entropy x 1E-05,standard-net-enthalpy-of-combustion x 1E-09
 ,,,,MW,EnFo_IG,GiEnFo_IG,Ent_IG,EnCo_STD
 -,-,-,-,-,J/kmol,J/kmol,J/kmol.K,J/kmol
 1,Acetaldehyde,C2 H4O,75-07-0,44.053,-16.64,-13.33,2.642,-1.1045
