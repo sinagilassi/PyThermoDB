@@ -82,7 +82,10 @@ class TableData:
                 # check symbol value in each item
                 for key, value in self.prop_data.items():
                     if property == value['symbol']:
+                        # value found
                         get_data = self.prop_data[key]
+                        # property name
+                        property = key
                         break
             # series
             sr = pd.Series(get_data, dtype='str')
@@ -100,6 +103,12 @@ class TableData:
         # convert to dict
         data_dict = sr.to_dict()
         # print(data_dict, type(data_dict))
+
+        # property name
+        if isinstance(property, str):
+            data_dict['property_name'] = property
+        else:
+            data_dict['property_name'] = df.columns[property-1]
 
         # update message
         if message:
