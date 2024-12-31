@@ -9,6 +9,8 @@ from rich import print
 # get versions
 # print(pt.get_version())
 print(ptdb.__version__)
+print(ptdb.__author__)
+print(ptdb.__description__)
 
 # ===============================
 # databook reference initialization
