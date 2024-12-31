@@ -8,7 +8,9 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 APP_NAME = 'PyThermoDB'
-VERSION = '1.7.3'
+VERSION = '1.7.4'
+AUTHOR = 'Sina Gilassi'
+EMAIL = '<sina.gilassi@gmail.com>'
 DESCRIPTION = 'PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data.'
 LONG_DESCRIPTION = "The Python Thermodynamics Databook (PyThermoDB) is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants."
 
@@ -16,8 +18,8 @@ LONG_DESCRIPTION = "The Python Thermodynamics Databook (PyThermoDB) is a lightwe
 setup(
     name=APP_NAME,
     version=VERSION,
-    author="Sina Gilassi",
-    author_email="<sina.gilassi@gmail.com>",
+    author=AUTHOR,
+    author_email=EMAIL,
     description=DESCRIPTION,
     long_description_content_type="text/markdown",
     long_description=long_description,
@@ -29,7 +31,7 @@ setup(
     install_requires=['pandas', 'pillow', 'requests',
                       'urllib3', 'numpy', 'PyYAML', 'sympy', 'flask'],
     keywords=['python', 'chemical engineering', 'thermodynamics',
-              'PyThermoDB'],
+              'PyThermoDB', 'thermodynamic data'],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Education",
