@@ -46,6 +46,13 @@ tb_lists = tdb.list_tables(
     'Chemical Thermodynamics for Process Simulation', res_format='json')
 print(tb_lists)
 
+# ===============================
+# TABLE DESCRIPTION
+# ===============================
+# table info
+tb_description = tdb.table_description(
+    'Chemical Thermodynamics for Process Simulation', 1, res_format='str')
+print(tb_description)
 
 # ===============================
 # TABLE INFO
