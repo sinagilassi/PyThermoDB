@@ -28,6 +28,8 @@ class ManageData():
     __tables = []
     # symbol list
     __symbols = {}
+    # description
+    __description = {}
 
     def __init__(self, custom_ref: Optional[CustomRef] = None):
         # external reference
@@ -37,6 +39,9 @@ class ManageData():
 
         # symbols
         self.__symbols = self.load_symbols(custom_ref)
+
+        # description
+        self.__description = self.load_descriptions()
 
         # databook bulk
         self.__databook_bulk = self.get_databook_bulk()
@@ -174,6 +179,43 @@ class ManageData():
         except Exception as e:
             raise Exception(f"symbol loading error! {e}")
 
+    def load_descriptions(self):
+        """
+        Load reference descriptions for databooks
+        """
+        try:
+            # references
+            references = self.__reference['REFERENCES']
+
+            # descriptions
+            descriptions = {}
+
+            for key, value in references.items():
+                # databook id
+                DATABOOK_ID = value.get('DATABOOK-ID', None)
+                # init
+                descriptions[key] = {}
+                # check tables
+                for table, table_data in value.get('TABLES', {}).items():
+                    # check
+                    if 'DESCRIPTION' in table_data:
+                        descriptions[key][table] = {
+                            'DATABOOK-ID': DATABOOK_ID,
+                            'TABLE-ID': table_data.get('TABLE-ID', None),
+                            'DESCRIPTION': table_data['DESCRIPTION']
+                        }
+                    else:
+                        descriptions[key][table] = {
+                            'DATABOOK-ID': DATABOOK_ID,
+                            'TABLE-ID': table_data.get('TABLE-ID', None),
+                            'DESCRIPTION': None
+                        }
+
+            # return
+            return descriptions
+        except Exception as e:
+            raise Exception(f"load_descriptions error! {e}")
+
     def get_symbols(self) -> tuple[dict, list, str, pd.DataFrame]:
         '''
         Get symbols
@@ -202,6 +244,25 @@ class ManageData():
 
         except Exception as e:
             raise Exception(f"symbol loading error! {e}")
+
+    def get_descriptions(self) -> tuple[dict, list, str, pd.DataFrame]:
+        '''
+        Get databook descriptions
+        '''
+        try:
+            # dict
+            res = self.__description
+            # list
+            res_list = [(value, key) for key, value in res.items()]
+            # json
+            res_json = json.dumps(res, indent=4)
+            # dataframe
+            res_df = pd.DataFrame(res_list, columns=['Tables', 'Descriptions'])
+
+            # res
+            return res, res_list, res_json, res_df
+        except Exception as e:
+            raise Exception(f"description loading error! {e}")
 
     def get_databook_bulk(self) -> dict[str, list[DataBookTableTypes]]:
         '''
