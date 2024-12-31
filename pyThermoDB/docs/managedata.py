@@ -26,12 +26,17 @@ class ManageData():
     __databook_local = []
     # table
     __tables = []
+    # symbol list
+    __symbols = {}
 
     def __init__(self, custom_ref: Optional[CustomRef] = None):
         # external reference
         self.custom_ref = custom_ref
         # load reference
         self.__reference = self.load_reference(custom_ref)
+
+        # symbols
+        self.__symbols = self.load_symbols(custom_ref)
 
         # databook bulk
         self.__databook_bulk = self.get_databook_bulk()
@@ -50,6 +55,10 @@ class ManageData():
     @reference_local_no.setter
     def reference_local_no(self, value):
         self.__reference_local_no = value
+
+    @property
+    def symbols(self):
+        return self.__symbols
 
     @property
     def databook(self):
@@ -78,7 +87,7 @@ class ManageData():
         self.__tables = []
         self.__tables = value
 
-    def load_reference(self, custom_ref: CustomRef) -> dict[str, dict]:
+    def load_reference(self, custom_ref: CustomRef | None) -> dict[str, dict]:
         '''
         load reference data from file
 
@@ -121,6 +130,78 @@ class ManageData():
         # <class 'dict'>
         # print(type(reference))
         return reference
+
+    def load_symbols(self, custom_ref: CustomRef | None) -> dict:
+        '''
+        Load symbols used in the databooks
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        symbols : list
+            list of symbols
+        '''
+        try:
+            # current dir
+            current_path = os.path.join(os.path.dirname(__file__))
+
+            # Go back to the parent directory (pyThermoDB)
+            parent_path = os.path.abspath(os.path.join(current_path, '..'))
+
+            # Now navigate to the data folder
+            data_path = os.path.join(parent_path, 'config')
+
+            # relative
+            config_path = os.path.join(data_path, 'symbols.yml')
+
+            with open(config_path, 'r') as f:
+                symbols = yaml.load(f, Loader=yaml.FullLoader)
+
+            # check custom symbols
+            if custom_ref:
+                # get data
+                custom_symbols = custom_ref.load_symbols()
+                # check
+                if len(custom_symbols) > 0:
+                    # merge data
+                    symbols['SYMBOLS'].update(custom_symbols)
+
+            # return
+            return symbols
+        except Exception as e:
+            raise Exception(f"symbol loading error! {e}")
+
+    def get_symbols(self) -> tuple[dict, list, str, pd.DataFrame]:
+        '''
+        Get symbols
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        symbols : dict
+            symbols
+        '''
+        try:
+            # dict
+            res = self.symbols['SYMBOLS']
+            # list
+            res_list = [(value, key) for key, value in res.items()]
+            # json
+            res_json = json.dumps(res, indent=4)
+            # dataframe
+            res_df = pd.DataFrame(res_list, columns=['Symbol', 'Description'])
+
+            # res
+            return res, res_list, res_json, res_df
+
+        except Exception as e:
+            raise Exception(f"symbol loading error! {e}")
 
     def get_databook_bulk(self) -> dict[str, list[DataBookTableTypes]]:
         '''

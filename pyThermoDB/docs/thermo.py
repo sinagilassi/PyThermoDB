@@ -49,6 +49,29 @@ class SettingDatabook(ManageData):
     def selected_tb(self, value):
         self.__selected_tb = value
 
+    def list_symbols(self, res_format: Literal['dict', 'list', 'dataframe', 'json'] = 'dataframe'):
+        '''
+        List all symbols
+        '''
+        try:
+            # load symbols
+            res = self.get_symbols()
+
+            # check format
+            if res_format == 'dict':
+                return res[0]
+            elif res_format == 'list':
+                return res[1]
+            elif res_format == 'json':
+                return res[2]
+            elif res_format == 'dataframe':
+                return res[3]
+            else:
+                raise ValueError('Invalid res_format')
+
+        except Exception as e:
+            raise Exception(f"Symbols loading error! {e}")
+
     def list_databooks(self, res_format: Literal['list', 'dataframe', 'json'] = 'dataframe'):
         '''
         List all databooks
