@@ -346,6 +346,7 @@ class TableMatrixData:
 
             # res
             res = {
+                "property_name": property_name,
                 "symbol": property_symbol,
                 "unit": property_unit,
                 "value": property_value,

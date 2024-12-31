@@ -1,7 +1,9 @@
 REFERENCES:
-    CO2 Hydrogenation:
+    CO2 Hydrogenation Reaction:
       TABLES:
         The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State:
+          DESCRIPTION:
+            This table provides the heat capacity at constant pressure of ideal gas (Cp_IG) in J/mol.K as a function of temperature (T) in K.
           EQUATIONS:
             EQ-1:
               BODY:
@@ -45,7 +47,7 @@ REFERENCES:
               RETURNS:
                 heat_capacity_ideal_gas:
                   name: heat capacity of ideal gas
-                  symbol: HeCa_IG
+                  symbol: Cp_IG
                   unit: J/mol.K
               BODY-INTEGRAL:
                   - A1 = parms['a0']*args['T1']
@@ -65,21 +67,23 @@ REFERENCES:
                   - res = parms['R']*(parms['a1'] + 2*parms['a2']*args['T'] + 3*parms['a3']*(args['T']**2) + 4*parms['a4']*(args['T']**3))
               BODY-SECOND-DERIVATIVE:
                   - res = parms['R']*(2*parms['a2'] + 6*parms['a3']*args['T'] + 12*parms['a4']*(args['T']**2))
-        General Data: 
+        General Data:
+          DESCRIPTION:
+            This table provides the general data of different chemical species participating in the CO2 hydrogenation reaction and includes molecular weight (MW) in g/mol, critical temperature (Tc) in K, critical pressure (Pc) in MPa, and critical molar volume (Vc) in m3/kmol. The table also includes the critical compressibility factor (Zc), acentric factor (AcFa), enthalpy of formation (EnFo) in kJ/mol, and Gibbs energy of formation (GiEnFo) in kJ/mol. The chemical state of the species is also provided in the table and hence the enthalpy of formation and Gibbs energy of formation are provided for the ideal gas and liquid state are designated as EnFo_IG, GiEnFo_IG, EnFo_LIQ, and GiEnFo_LIQ, respectively.
           DATA:
             COLUMNS: 
               - No.
               - Name
               - Formula
               - State
-              - MW
-              - Tc  
-              - Pc
-              - Vc
-              - Zc
-              - AcFa
-              - dHf_IG
-              - dGf_IG
+              - molecular-weight
+              - critical-temperature  
+              - critical-pressure
+              - critical-molar-volume
+              - critical-compressibility-factor
+              - acentric-factor
+              - enthalpy-of-formation
+              - gibbs-energy-of-formation
             SYMBOL:
               - None
               - None
@@ -91,8 +95,8 @@ REFERENCES:
               - Vc
               - Zc
               - AcFa
-              - dHf_IG
-              - dGf_IG
+              - EnFo
+              - GiEnFo
             UNIT:
               - None
               - None
@@ -120,6 +124,8 @@ REFERENCES:
               - 1
               - 1
         Vapor Pressure:
+          DESCRIPTION:
+            This table provides the vapor pressure (P) in Pa as a function of temperature (T) in K.
           EQUATIONS:
             EQ-1:
               BODY:
@@ -163,7 +169,7 @@ REFERENCES:
               RETURNS:
                 vapor_pressure:
                   name: vapor pressure
-                  symbol: P
+                  symbol: VaPr
                   unit: Pa
               BODY-INTEGRAL:
                 None

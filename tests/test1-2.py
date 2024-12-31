@@ -18,6 +18,13 @@ print(ptdb.__description__)
 tdb = ptdb.init()
 
 # ===============================
+# DESCRIPTIONS
+# ===============================
+# databook description
+db_descriptions = tdb.list_descriptions(res_format='json')
+print(db_descriptions)
+
+# ===============================
 # DATABOOK LIST
 # ===============================
 # databook
@@ -44,8 +51,10 @@ print(tb_lists)
 # TABLE INFO
 # ===============================
 # display a table
+# tb_info = tdb.table_info(
+#     'Chemical Thermodynamics for Process Simulation', 1, res_format='dict')
 tb_info = tdb.table_info(
-    'Chemical Thermodynamics for Process Simulation', 1, res_format='dict')
+    'CO2 Hydrogenation Reaction', 3, res_format='dict')
 print(tb_info)
 
 # ===============================
@@ -99,7 +108,7 @@ print(CO2_data.get_property(12))
 # by property name
 print(CO2_data.get_property('standard-Gibbs-energy-of-formation'))
 # by symbol
-print(CO2_data.get_property('dGf_std'))
+print(CO2_data.get_property('GiEnFo_IG'))
 
 # CO2 Tc [K]
 CO2_Tc = float(CO2_data.get_property('Tc')['value'])
