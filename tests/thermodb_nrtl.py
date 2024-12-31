@@ -116,6 +116,7 @@ print(nrtl_alpha.get_matrix_property("Alpha_i_j",
 prop_name_lists = ["Alpha", comp1, comp3]
 prop_name = "_".join(prop_name_lists)
 print(prop_name)
+print(nrtl_alpha.get_matrix_property_by_name(prop_name))
 print(nrtl_alpha.get_matrix_property_by_name(prop_name).get('value'))
 
 # ====================================
