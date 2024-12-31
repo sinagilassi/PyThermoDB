@@ -25,8 +25,13 @@ csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 csv_path_3 = os.path.join(os.getcwd(), csv_file_3)
 
+# symbols
+symbol_file = 'tests\\custom_symbol_list.yml'
+symbol_path = os.path.join(os.getcwd(), symbol_file)
+
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2, csv_path_3]}
+ref = {'yml': [yml_path], 'csv': [
+    csv_path_1, csv_path_2, csv_path_3], 'symbols': [symbol_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -38,6 +43,12 @@ thermo_db = ptdb.init(ref)
 # ====================================
 db_list = thermo_db.list_databooks()
 print(db_list)
+
+# ====================================
+# GET SYMBOL LIST
+# ====================================
+symbol_list = thermo_db.list_symbols(res_format='json')
+print(symbol_list)
 
 # ====================================
 # SELECT A DATABOOK

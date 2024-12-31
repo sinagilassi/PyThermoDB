@@ -23,6 +23,13 @@ db_list = tdb.list_databooks(res_format='json')
 print(db_list)
 
 # ===============================
+# SYMBOL LIST
+# ===============================
+# symbols
+symbol_list = tdb.list_symbols(res_format='json')
+print(symbol_list)
+
+# ===============================
 # TABLE LIST
 # ===============================
 # table list
@@ -146,3 +153,5 @@ print(Cp_eq.parms)
 print(Cp_eq.returns)
 print(Cp_eq.equations)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
+# summary
+print(Cp_eq.summary)
