@@ -222,6 +222,45 @@ class SettingDatabook(ManageData):
             raise Exception(
                 f"An error occurred while selecting the table: {e}")
 
+    def table_description(self, databook: int | str, table: int | str, res_format: Literal['str', 'json', 'dict'] = 'str') -> str | dict:
+        '''
+        Get information about a databook.
+        '''
+        try:
+            # get the tb
+            tb = self.select_table(databook, table)
+
+            # check
+            if tb:
+                # descriptions
+                descriptions = tb['description']
+
+                # to dict
+                des_dict = {
+                    "table-description": descriptions
+                }
+
+                # check
+                if descriptions:
+                    # check
+                    if res_format == 'str':
+                        return descriptions
+                    elif res_format == 'dict':
+                        return des_dict
+                    elif res_format == 'json':
+                        return json.dumps(des_dict)
+                    else:
+                        raise ValueError('Invalid res_format')
+                else:
+                    return "No description found!"
+            else:
+                raise ValueError("No such table found!")
+
+        except Exception as e:
+            # Log or print the error for debugging purposes
+            raise Exception(
+                f"An error occurred while getting the databook info: {e}")
+
     def table_info(self, databook: int | str, table: int | str, res_format: Literal['dict', 'dataframe', 'json'] = 'dataframe') -> dict | pd.DataFrame | str:
         '''
         Gives table contents as:

@@ -290,6 +290,10 @@ class ManageData():
                     # log
                     # <class 'str' > <class 'dict' >
                     # print(type(table), type(table_data))
+
+                    # description
+                    description = table_data.get('DESCRIPTION', None)
+
                     # * check
                     # ! check EQUATIONS exists
                     if 'EQUATIONS' in table_data:
@@ -302,6 +306,7 @@ class ManageData():
                         # save
                         tables.append({
                             'table': table,
+                            'description': description,
                             'equations': _eq,
                             'data': None,
                             'matrix_equations': None,
@@ -320,6 +325,7 @@ class ManageData():
                         # save
                         tables.append({
                             'table': table,
+                            'description': description,
                             'equations': None,
                             'data': None,
                             'matrix_equations': _eq,
@@ -334,6 +340,7 @@ class ManageData():
                         # save
                         tables.append({
                             'table': table,
+                            'description': description,
                             'equations': None,
                             'data': data,
                             'matrix_equations': None,
@@ -346,6 +353,7 @@ class ManageData():
                         # save
                         tables.append({
                             'table': table,
+                            'description': description,
                             'equations': None,
                             'data': None,
                             'matrix_equations': None,
