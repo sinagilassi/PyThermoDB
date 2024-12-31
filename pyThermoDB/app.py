@@ -2,7 +2,7 @@
 # external
 
 # internal
-from .config import __version__, __author__
+from .config import __version__, __author__, __description__
 from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
 from .web import check_lib
 
