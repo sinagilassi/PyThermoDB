@@ -1,5 +1,5 @@
-﻿No.,Name,Formula,State,dHf_IG,dGf_IG
--,-,-,-,dHf_IG,dGf_IG
+﻿No.,Name,Formula,State,enthalpy-of-formation,gibbs-energy-of-formation
+-,-,-,-,EnFo,GiEnFo
 -,-,-,-,kJ/mol,kJ/mol
 1,Methane,CH4,g,-74.50,-50.50
 2,Ethane,C2H6,g,-83.80,-31.90

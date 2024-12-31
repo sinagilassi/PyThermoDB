@@ -13,6 +13,8 @@ SYMBOLS:
   liquid_density: rho_LIQ
   gas_density: rho_G
   vapor_pressure: VaPr
+  enthalpy_of_formation: EnFo
+  Gibbs_energy_of_formation: GiEnFo
   liquid_enthalpy_of_formation: EnFo_LIQ
   liquid_Gibbs_energy_of_formation: GiEnFo_LIQ
   liquid_entropy: Ent_LIQ
@@ -24,3 +26,4 @@ SYMBOLS:
   solid_heat_capacity: Cp_SOL
   enthalpy_of_vaporization: EnVap
   enthalpy_of_fusion: EnFus
+  standard_net_enthalpies_of_combustion: EnCo_STD
