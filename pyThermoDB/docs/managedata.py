@@ -193,8 +193,12 @@ class ManageData():
             for key, value in references.items():
                 # databook id
                 DATABOOK_ID = value.get('DATABOOK-ID', None)
+
                 # init
                 descriptions[key] = {}
+                # set
+                descriptions[key]['DATABOOK-ID'] = DATABOOK_ID
+
                 # check tables
                 for table, table_data in value.get('TABLES', {}).items():
                     # check
