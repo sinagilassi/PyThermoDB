@@ -12,6 +12,7 @@ class TableEquation:
     body = ''
     parms = {}
     args = {}
+    arg_symbols = {}
     returns = {}
     _summary = {}
     body_integral = ''
@@ -457,6 +458,8 @@ class TableEquation:
         # check
         if eq_summary['args'] is not None:
             self.args = eq_summary['args']
+            # make arg symbols
+            self.make_arg_symbols(self.args)
         else:
             self.args = []
         # check
@@ -644,3 +647,29 @@ class TableEquation:
             return body
         except Exception as e:
             raise Exception("Loading custom integral body failed!, ", e)
+
+    def make_arg_symbols(self, args):
+        '''
+        Make argument symbols
+
+        Parameters
+        ----------
+        args : dict
+            arguments
+
+        Returns
+        -------
+        None.
+        '''
+        # check
+        if args is not None:
+            if isinstance(args, dict):
+                for key, value in args.items():
+                    # symbol
+                    _symbol = args[key].get('symbol')
+                    # set
+                    self.arg_symbols[_symbol] = {
+                        'name': args[key].get('name'),
+                        'symbol': _symbol,
+                        'unit': args[key].get('unit'),
+                    }
