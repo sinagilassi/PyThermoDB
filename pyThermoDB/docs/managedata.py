@@ -5,7 +5,7 @@
 import os
 import yaml
 import pandas as pd
-from typing import TypedDict, List, Optional
+from typing import TypedDict, List, Optional, Literal
 import json
 # local
 from ..data import TableTypes
@@ -416,6 +416,50 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
+    def get_databook_id(self, databook: str, res_format: Literal['str', 'json', 'dict'] = 'json') -> str | dict[str, str]:
+        '''
+        Get databook id
+
+        Parameters
+        ----------
+        databook : str
+            databook name
+
+        Returns
+        -------
+        databook_id : str
+            databook id
+
+        Notes
+        -----
+        1. databook id is non-zero-based
+        2. if databook is not found, 'Databook not found!' is returned
+        '''
+        try:
+            # check
+            if not isinstance(databook, str):
+                raise Exception("databook must be string!")
+
+            # find
+            for i, db in enumerate(self.__databook):
+                if db == databook:
+                    db_id = str(i+1)
+
+                    # check
+                    if res_format == 'str':
+                        return db_id
+                    elif res_format == 'json':
+                        return json.dumps({"databook_id": db_id}, indent=4)
+                    elif res_format == 'dict':
+                        return {"databook_id": db_id}
+                    else:
+                        raise ValueError(
+                            "res_format must be 'str', 'json', or 'dict'!")
+            # return
+            return 'Databook not found!'
+        except Exception as e:
+            raise Exception(f"databook id loading error! {e}")
+
     def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame, str]:
         '''
         Get a table list of selected databook
@@ -557,6 +601,54 @@ class ManageData():
             return selected_tb
         except Exception as e:
             raise Exception(f"table loading err! {e}")
+
+    def get_table_id(self, databook: str | int, table: str, res_format: Literal['str', 'json', 'dict'] = 'json') -> str | dict[str, str]:
+        '''
+        Get table id
+
+        Parameters
+        ----------
+        databook : str | int
+            databook name or id
+        table : str
+            table name
+
+        Returns
+        -------
+        table_id : str | dict[str, str]
+            table id
+        '''
+        try:
+            # select databook
+            if isinstance(databook, str):
+                databook_set = self.databook_bulk[databook]
+            elif isinstance(databook, int):
+                databook_set = self.databook_bulk[self.__databook[databook]]
+            else:
+                raise ValueError("databook must be str or int!")
+
+            # table id
+            table_id = 'Table id not found!'
+
+            # check table and equations
+            for i, tb in enumerate(databook_set):
+                # check table id
+                if tb['table'] == table:
+                    table_id = str(i+1)
+                    break
+
+            # check
+            if res_format == 'str':
+                return table_id
+            elif res_format == 'json':
+                return json.dumps({"table_id": table_id}, indent=4)
+            elif res_format == 'dict':
+                return {"table_id": table_id}
+            else:
+                raise ValueError("res_format must be 'str' or 'json'!")
+
+        except Exception as e:
+            raise Exception(f"table id loading err! {e}")
 
     def find_databook(self, databook: str | int) -> tuple[list[DataBookTableTypes], str, int]:
         '''

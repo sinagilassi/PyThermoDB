@@ -32,6 +32,13 @@ db_list = tdb.list_databooks(res_format='json')
 print(db_list)
 
 # ===============================
+# DATABOOK ID
+# ===============================
+db_id = tdb.get_databook_id(
+    'Chemical Thermodynamics for Process Simulation', res_format='dict')
+print(db_id)
+
+# ===============================
 # SYMBOL LIST
 # ===============================
 # symbols
@@ -53,6 +60,14 @@ print(tb_lists)
 tb_description = tdb.table_description(
     'Chemical Thermodynamics for Process Simulation', 1, res_format='str')
 print(tb_description)
+
+# ===============================
+# TABLE ID
+# ===============================
+tb_id = tdb.get_table_id(
+    'Chemical Thermodynamics for Process Simulation', 'Table A.3 Liquid density correlations for selected compounds', res_format='dict')
+print(tb_id)
+
 
 # ===============================
 # TABLE INFO
