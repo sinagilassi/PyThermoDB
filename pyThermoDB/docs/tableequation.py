@@ -57,6 +57,7 @@ class TableEquation:
             'eq_id': self.eq_id,
             'table_name': self.table_name,
             'args': self.args,
+            'arg_symbols': self.arg_symbols,
             'parms': self.parms,
             'returns': self.returns,
             'body': self.body,

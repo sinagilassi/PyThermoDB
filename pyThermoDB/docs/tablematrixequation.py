@@ -60,6 +60,22 @@ class TableMatrixEquation:
     def custom_integral(self):
         return self._custom_integral
 
+    @property
+    def summary(self):
+        return {
+            'eq_id': 1,
+            'table_name': self.table_name,
+            'args': self.args,
+            'arg_symbols': self.arg_symbols,
+            'parms': self.parms,
+            'returns': self.returns,
+            'body': self.body,
+            'body_integral': self.body_integral,
+            'body_first_derivative': self.body_first_derivative,
+            'body_second_derivative': self.body_second_derivative,
+            'custom_integral': self._custom_integral
+        }
+
     def eq_structure(self, id=1):
         '''
         Display equation details

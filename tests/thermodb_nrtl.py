@@ -132,6 +132,7 @@ print(nrtl_tau_eq.parms)
 print(nrtl_tau_eq.parms_values)
 print(nrtl_tau_eq.args)
 print(nrtl_tau_eq.arg_symbols)
+print(nrtl_tau_eq.summary)
 # equation details
 print(nrtl_tau_eq.equation_parms())
 print(nrtl_tau_eq.equation_args())
