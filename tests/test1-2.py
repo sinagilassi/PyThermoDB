@@ -170,6 +170,7 @@ print(Cp_eq.args)
 print(Cp_eq.arg_symbols)
 print(Cp_eq.parms)
 print(Cp_eq.returns)
+print(Cp_eq.return_symbols)
 print(Cp_eq.equations)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
 # summary
