@@ -130,6 +130,8 @@ nrtl_tau_eq = thermo_db.build_matrix_equation(
 # load parms
 print(nrtl_tau_eq.parms)
 print(nrtl_tau_eq.parms_values)
+print(nrtl_tau_eq.args)
+print(nrtl_tau_eq.arg_symbols)
 # equation details
 print(nrtl_tau_eq.equation_parms())
 print(nrtl_tau_eq.equation_args())

@@ -167,6 +167,7 @@ Cp_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulatio
 # parms
 print(Cp_eq.eq_id)
 print(Cp_eq.args)
+print(Cp_eq.arg_symbols)
 print(Cp_eq.parms)
 print(Cp_eq.returns)
 print(Cp_eq.equations)
