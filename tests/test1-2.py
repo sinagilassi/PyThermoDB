@@ -98,7 +98,8 @@ print(data_table.data_structure())
 comp1 = "carbon Dioxide"
 #  CO
 # comp1 = "carbon monoxide"
-# CO2_check_availability = tdb.check_component(comp1, 1, 2)
+CO2_check_availability = tdb.check_component(comp1, 1, 2)
+print(CO2_check_availability)
 
 # load comp data
 # comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
@@ -186,6 +187,7 @@ print(Cp_eq.arg_symbols)
 print(Cp_eq.parms)
 print(Cp_eq.returns)
 print(Cp_eq.return_symbols)
+print(Cp_eq.body)
 print(Cp_eq.equations)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
 # summary
