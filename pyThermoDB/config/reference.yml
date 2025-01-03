@@ -1084,8 +1084,8 @@ REFERENCES:
                 unit: 1E11
                 conversion: 1E11
             RETURNS:
-              heat_capacity:
-                name: heat capacity
+              ideal_gas_heat_capacity:
+                name: ideal gas heat capacity
                 symbol: Cp_IG
                 unit: J/mol.K
                 conversion: 1

@@ -1006,6 +1006,7 @@ class SettingDatabook(ManageData):
             if component_data:
                 # check availability
                 if len(component_data) > 0:
+                    # ! reset data
                     # ! trans data
                     TransDataC = TransData(component_data)
                     # transform api data
