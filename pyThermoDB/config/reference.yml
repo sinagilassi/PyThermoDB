@@ -944,3 +944,166 @@ REFERENCES:
               None
             BODY-SECOND-DERIVATIVE:
               None
+  Introduction to Chemical Engineering Thermodynamics, 9th Edition:
+    DATABOOK-ID: 5
+    TABLES:
+      Table B.1 Characteristic Properties of Pure Species:
+        TABLE-ID: 1
+        DESCRIPTION:
+          This table contains characteristic properties of pure species. The properties include the molecular weight (MW) in g/mol, acentric factor (AcFa) with no units, critical temperature (Tc) in K, critical pressure (Pc) in bar, critical compressibility factor (Zc) with no units, critical molar volume (Vc) in m3/mol, and boiling temperature (Tb) in K.
+        DATA:
+          COLUMNS:
+            - No.
+            - Name
+            - molecular weight
+            - acentric factor
+            - critical temperature
+            - critical pressure
+            - critical compressibility factor
+            - critical molar volume
+            - boiling temperature
+          SYMBOL:
+            - None
+            - None
+            - MW
+            - AcFa
+            - Tc
+            - Pc
+            - Zc
+            - Vc
+            - Tb
+          UNIT:
+            - None
+            - None
+            - g/mol
+            - None
+            - K
+            - bar
+            - None
+            - m3/mol
+            - K
+          CONVERSION:
+            - None
+            - None
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+      Table B.2 Constants for the Antoine Equation for Vapor Pressures of Pure Species:
+        TABLE-ID: 2
+        DESCRIPTION:
+          This table contains the constants for the Antoine equation for vapor pressures (VaPr) of pure species in kilo-pascal (kPa). The equation is a function of temperature (T) in Celsius (C).
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - parms['A'] = parms['A']/1
+              - parms['B'] = parms['B']/1
+              - parms['C'] = parms['C']/1
+              - res = math.exp(parms['A'] - parms['B']/(args['T'] + parms['C']))
+            ARGS:
+              temperature:
+                name: temperature
+                symbol: T
+                unit: C
+            PARMS:
+              A:
+                name: A
+                symbol: A
+                unit: None
+                conversion: 1
+              B:
+                name: B
+                symbol: B
+                unit: None
+                conversion: 1
+              C:
+                name: C
+                symbol: C
+                unit: None
+                conversion: 1
+            RETURNS:
+              vapor_pressure:
+                name: vapor pressure
+                symbol: VaPr
+                unit: kPa
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
+  Properties of Gases and Liquids:
+    DATABOOK-ID: 6
+    TABLES:
+      Section C Ideal Gas and Liquid Heat Capacities:
+        TABLE-ID: 1
+        DESCRIPTION:
+          This table contains the heat capacity at constant pressure of ideal gas (Cp_IG) in J/mol.K as a function of temperature (T) in K.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - R = 8.314
+              - a0 = parms['a0']
+              - a1 = parms['a1']
+              - a2 = parms['a2']
+              - a3 = parms['a3']
+              - a4 = parms['a4']
+              - res = (a0 + a1*args['T'] + a2*(args['T']**2) + a3*(args['T']**3) + a4*(args['T']**4))*R
+            ARGS:
+              temperature:
+                name: temperature
+                symbol: T
+                unit: K
+            PARMS:
+              a0:
+                name: a0
+                symbol: a0
+                unit: 1
+                conversion: 1
+              a1:
+                name: a1
+                symbol: a1
+                unit: 1E3
+                conversion: 1E3
+              a2:
+                name: a2
+                symbol: a2
+                unit: 1E5
+                conversion: 1E5
+              a3:
+                name: a3
+                symbol: a3
+                unit: 1E8
+                conversion: 1E8
+              a4:
+                name: a4
+                symbol: a4
+                unit: 1E11
+                conversion: 1E11
+            RETURNS:
+              heat_capacity:
+                name: heat capacity
+                symbol: Cp_IG
+                unit: J/mol.K
+                conversion: 1
+            BODY-INTEGRAL:
+              - A1 = a0*args['T1']
+              - B1 = (a1/2)*(args['T1']**2)
+              - C1 = (a2/3)*(args['T1']**3)
+              - D1 = (a3/4)*(args['T1']**4)
+              - E1 = (a4/5)*(args['T1']**5)
+              - res1 =  A1 + B1 + C1 + D1 + E1
+              - A2 = a0*args['T2']
+              - B2 = (a1/2)*(args['T2']**2)
+              - C2 = (a2/3)*(args['T2']**3)
+              - D2 = (a3/4)*(args['T2']**4)
+              - E2 = (a4/5)*(args['T2']**5)
+              - res2 =  A2 + B2 + C2 + D2 + E2
+              - res = res2 - res1
+            BODY-FIRST-DERIVATIVE:
+              - res = (a1 + 2*a2*args['T'] + 3*a3*(args['T']**2) + 4*a4*(args['T']**3))
+            BODY-SECOND-DERIVATIVE:
+              - res = (2*a2 + 6*a3*args['T'] + 12*a4*(args['T']**2))
