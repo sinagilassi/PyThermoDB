@@ -1,6 +1,6 @@
 ﻿No.,Name,Formula,State,MW,critical temperature,Pc,Vc,Zc,AcFa,dHf_IG,dGf_IG
 -,-,-,-,MW,Tc,Pc,Vc,Zc,AcFa,dHf_IG,dGf_IG
--,-,-,-,g/mol,K,MPa,m3/kmol,-,-,kJ/mol,kJ/mol
+-,-,-,-,g/mol,K,MPa,m3/kmol,1,1,kJ/mol,kJ/mol
 1,carbon dioxide,CO2,g,44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4
 2,carbon monoxide,CO,g,28.01,132.92,3.499,0.0944,0.299,0.0482,-110.5,-137.2
 3,hydrogen,H2,g,2.016,33.19,1.313,0.064147,0.305,-0.216,0,0
