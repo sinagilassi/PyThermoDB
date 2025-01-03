@@ -49,8 +49,12 @@ print(symbol_list)
 # TABLE LIST
 # ===============================
 # table list
+# tb_lists = tdb.list_tables(
+#     'Chemical Thermodynamics for Process Simulation', res_format='json')
+# print(tb_lists)
+
 tb_lists = tdb.list_tables(
-    'Chemical Thermodynamics for Process Simulation', res_format='json')
+    'Properties of Gases and Liquids', res_format='json')
 print(tb_lists)
 
 # ===============================
@@ -58,14 +62,14 @@ print(tb_lists)
 # ===============================
 # table info
 tb_description = tdb.table_description(
-    'Chemical Thermodynamics for Process Simulation', 1, res_format='str')
+    'Properties of Gases and Liquids', 1, res_format='str')
 print(tb_description)
 
 # ===============================
 # TABLE ID
 # ===============================
 tb_id = tdb.get_table_id(
-    'Chemical Thermodynamics for Process Simulation', 'Table A.3 Liquid density correlations for selected compounds', res_format='dict')
+    'Properties of Gases and Liquids', 'Section C Ideal Gas and Liquid Heat Capacities', res_format='dict')
 print(tb_id)
 
 
@@ -76,7 +80,7 @@ print(tb_id)
 # tb_info = tdb.table_info(
 #     'Chemical Thermodynamics for Process Simulation', 1, res_format='dict')
 tb_info = tdb.table_info(
-    'CO2 Hydrogenation Reaction', 3, res_format='dict')
+    'Properties of Gases and Liquids', 'Section C Ideal Gas and Liquid Heat Capacities', res_format='dict')
 print(tb_info)
 
 # ===============================
@@ -86,6 +90,11 @@ print(tb_info)
 vapor_pressure_tb = tdb.equation_load(
     'Chemical Thermodynamics for Process Simulation', 2)
 print(vapor_pressure_tb.eq_structure(1))
+
+# heat capacity
+heat_capacity_ig_tb = tdb.equation_load(
+    'Properties of Gases and Liquids', 'Section C Ideal Gas and Liquid Heat Capacities')
+print(heat_capacity_ig_tb.eq_structure(1))
 
 # load data to check
 data_table = tdb.data_load('Chemical Thermodynamics for Process Simulation', 1)
@@ -99,6 +108,11 @@ comp1 = "carbon Dioxide"
 #  CO
 # comp1 = "carbon monoxide"
 CO2_check_availability = tdb.check_component(comp1, 1, 2)
+print(CO2_check_availability)
+
+
+CO2_check_availability = tdb.check_component(
+    comp1,  'Properties of Gases and Liquids', 'Section C Ideal Gas and Liquid Heat Capacities')
 print(CO2_check_availability)
 
 # load comp data
@@ -184,11 +198,28 @@ Cp_eq = tdb.build_equation(comp1, "Chemical Thermodynamics for Process Simulatio
 print(Cp_eq.eq_id)
 print(Cp_eq.args)
 print(Cp_eq.arg_symbols)
-print(Cp_eq.parms)
+# print(Cp_eq.parms)
 print(Cp_eq.returns)
 print(Cp_eq.return_symbols)
-print(Cp_eq.body)
-print(Cp_eq.equations)
+# print(Cp_eq.body)
+# print(Cp_eq.equations)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
-# summary
-print(Cp_eq.summary)
+# # summary
+# print(Cp_eq.summary)
+
+# ideal gas heat capacity
+Cp_ig_eq = tdb.build_equation('trichloromethane', 'Properties of Gases and Liquids',
+                              'Section C Ideal Gas and Liquid Heat Capacities')
+
+# parms
+print(Cp_ig_eq.eq_id)
+print(Cp_ig_eq.args)
+print(Cp_ig_eq.arg_symbols)
+# print(Cp_ig_eq.parms)
+print(Cp_ig_eq.returns)
+print(Cp_ig_eq.return_symbols)
+# print(Cp_ig_eq.body)
+# print(Cp_ig_eq.equations)
+print('ideal-gas heat capacity', Cp_ig_eq.cal(T=298.15))
+# # summary
+# print(Cp_ig_eq.summary)

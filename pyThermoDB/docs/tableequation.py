@@ -462,14 +462,14 @@ class TableEquation:
         if eq_summary['args'] is not None:
             self.args = eq_summary['args']
             # make arg symbols
-            self.make_arg_symbols(self.args)
+            self.arg_symbols = self.make_arg_symbols(self.args)
         else:
             self.args = []
         # check
         if eq_summary['return'] is not None:
             self.returns = eq_summary['return']
             # make return symbols
-            self.make_return_symbols(self.returns)
+            self.return_symbols = self.make_return_symbols(self.returns)
         else:
             self.returns = []
         # integral
@@ -653,7 +653,7 @@ class TableEquation:
         except Exception as e:
             raise Exception("Loading custom integral body failed!, ", e)
 
-    def make_arg_symbols(self, args):
+    def make_arg_symbols(self, args) -> dict:
         '''
         Make argument symbols
 
@@ -667,6 +667,9 @@ class TableEquation:
         None.
         '''
         try:
+            # reset
+            arg_symbols = {}
+
             # check
             if args is not None:
                 if isinstance(args, dict):
@@ -674,15 +677,20 @@ class TableEquation:
                         # symbol
                         _symbol = args[key].get('symbol')
                         # set
-                        self.arg_symbols[_symbol] = {
+                        arg_symbols[_symbol] = {
                             'name': args[key].get('name'),
                             'symbol': _symbol,
                             'unit': args[key].get('unit'),
                         }
+
+                    # return
+                    return arg_symbols
+
+            return {}
         except Exception as e:
             raise Exception("Making argument symbols failed!, ", e)
 
-    def make_return_symbols(self, returns):
+    def make_return_symbols(self, returns) -> dict:
         '''
         Make return symbols
 
@@ -696,6 +704,9 @@ class TableEquation:
         None.
         '''
         try:
+            # reset
+            return_symbols = {}
+
             # check
             if returns is not None:
                 if isinstance(returns, dict):
@@ -703,10 +714,15 @@ class TableEquation:
                         # symbol
                         _symbol = returns[key].get('symbol')
                         # set
-                        self.return_symbols[_symbol] = {
+                        return_symbols[_symbol] = {
                             'name': returns[key].get('name'),
                             'symbol': _symbol,
                             'unit': returns[key].get('unit'),
                         }
+
+                # return
+                return return_symbols
+
+            return {}
         except Exception as e:
             raise Exception("Making return symbols failed!, ", e)
