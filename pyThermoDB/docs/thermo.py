@@ -1348,3 +1348,33 @@ class SettingDatabook(ManageData):
                 raise Exception("Building data failed!")
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
+
+    def search_databook(self, search_terms: list[str], column_names: list[str] = ['Name', 'Formula']):
+        """
+        Search a term through all databook for instance a component name
+
+        Parameters
+        ----------
+        search_terms : list[str]
+            search terms as list, e.g. ['Carbon dioxide','CO2']
+        column_names : list[str]
+            column names to search, e.g. ['Name', 'Formula']
+
+        Returns
+        -------
+        str
+            search results
+        """
+        try:
+            # set table reference
+            # to load both internal and external data (csv files)
+            TableReferenceC = TableReference(custom_ref=self.custom_ref)
+
+            # search
+            res = TableReferenceC.search_component(
+                search_terms, column_names=column_names)
+
+            return res
+
+        except Exception as e:
+            raise Exception(f'Search databook error {e}')

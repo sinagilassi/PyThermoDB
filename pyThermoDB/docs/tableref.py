@@ -2,6 +2,7 @@
 import os
 import pandas as pd
 from typing import Optional
+import glob
 # local
 from .managedata import ManageData
 from ..data import TableTypes
@@ -325,22 +326,81 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Making payload error {e}")
 
-    def search_component(self, component_name: str, column_names: list[str] = ['Name', 'Formula']):
+    def search_component(self, search_terms: list[str], column_names: list[str] = ['Name', 'Formula']):
         """
         Search a component in all databooks
 
         Parameters
         ----------
-        component_name : str
-            component name such as Carbon Dioxide
         column_names : list
-            the list of column names 
+            the list of column names (default: ['Name', 'Formula'])
+        search_terms : list[str]
+            search terms for instance a component name or formula
 
         """
         try:
-            # current directory
-            current_dir = os.getcwd()
-            # parent directory
+            # data path
+            directory = self.path
+
+            # Initialize an empty list to store results
+            results = []
+
+            # Get a list of all CSV files in the directory
+            csv_files = glob.glob(directory + '/*.csv')
+
+            # Capitalize the search terms
+            search_terms = [term.upper() for term in search_terms]
+
+            # Iterate over each CSV file
+            for file in csv_files:
+                try:
+                    # Read the CSV file
+                    df = pd.read_csv(file)
+
+                    # Get existing column names
+                    existing_columns = [col for col in column_names if col.lower() in [
+                        c.lower() for c in df.columns]]
+
+                    # Skip if no columns exist
+                    if not existing_columns:
+                        print(f"No matching columns found in {file}.")
+                        continue
+
+                    # Convert existing columns to string and capitalize
+                    for col in existing_columns:
+                        df[col] = df[col].apply(lambda x: str(x).upper())
+
+                    # Filter rows where any existing column matches the search term(s)
+                    if len(search_terms) == 1:
+                        # Search both columns with single term
+                        matching_rows = df[df[existing_columns].apply(
+                            lambda x: x.str.contains(search_terms[0])).any(axis=1)]
+                    else:
+                        # Search specific columns with multiple terms
+                        if len(existing_columns) < 2:
+                            # print(f"Only one matching column found in {file}.")
+                            matching_rows = df[df[existing_columns[0]
+                                                  ].str.contains(search_terms[0])]
+                        else:
+                            matching_rows = df[
+                                (df[existing_columns[0]].str.contains(search_terms[0])) |
+                                (df[existing_columns[1]].str.contains(
+                                    search_terms[1]))
+                            ]
+
+                    # Add results to the list if matches are found
+                    if not matching_rows.empty:
+                        results.append({
+                            # Get only the file name
+                            'file_name': file.split('/')[-1],
+                            'matching_rows': matching_rows
+                        })
+                except pd.errors.EmptyDataError:
+                    print(f"{file} is empty.")
+                except pd.errors.ParserError:
+                    print(f"Error parsing {file}.")
+
+            return results
 
         except Exception as e:
             raise Exception(f'Searching component error {e}')
