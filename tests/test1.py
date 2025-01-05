@@ -1,6 +1,7 @@
 # import packages/modules
 import pyThermoDB as ptdb
 from pprint import pprint as pp
+from rich import print
 
 
 # dir
@@ -25,13 +26,20 @@ print(db_list)
 # TABLE LIST
 # ===============================
 # table list
-tb_lists = tdb.list_tables(1)
+tb_lists = tdb.list_tables(1, res_format='json')
 print(tb_lists)
-
 
 # ===============================
 # TABLE INFO
 # ===============================
+# select a table
+tb_select = tdb.select_table(1, 2)
+print(tb_select)
+
+tb_select = tdb.select_table(
+    1, 'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion')
+print(tb_select)
+
 # display a table
 tb_info = tdb.table_info(1, 2)
 print(tb_info)

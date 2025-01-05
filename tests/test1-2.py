@@ -132,6 +132,17 @@ CO2_check_availability = tdb.check_component(comp1,
 print(CO2_check_availability)
 
 # ====================================
+# SEARCH IN THE DATABOOK
+# ====================================
+# search terms
+key1 = 'carbon dioxide'
+key2 = 'CO2'
+search_terms = [key1, key2]
+search_res = tdb.search_databook(search_terms)
+print(search_res)
+
+
+# ====================================
 # BUILD DATA
 # ====================================
 # build data
