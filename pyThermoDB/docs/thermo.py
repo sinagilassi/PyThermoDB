@@ -162,7 +162,7 @@ class SettingDatabook(ManageData):
 
     def select_table(self, databook: int | str, table: int | str) -> DataBookTableTypes:
         '''
-        Select a table
+        Select a table structure
 
         Parameters
         ----------

@@ -563,7 +563,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table info loading err! {e}")
 
-    def get_table(self, databook: str | int | list[DataBookTableTypes], table_id: int) -> DataBookTableTypes:
+    def get_table(self, databook: str | int | list[DataBookTableTypes], table: int | str) -> DataBookTableTypes:
         '''
         Get a table list of selected databook
 
@@ -571,8 +571,8 @@ class ManageData():
         ----------
         databook : str | int | list
             databook name or id (zero-based id)
-        table_id : int
-            table id (zero-based id)
+        table : int
+            table id (zero-based id) or name
 
         Returns
         -------
@@ -586,16 +586,38 @@ class ManageData():
             elif isinstance(databook, int):
                 databook_set = self.databook_bulk[self.__databook[databook]]
             else:
+                # for previously extracted databook
                 databook_set = databook
 
             # ! if databook list
             # list
-            selected_tb = {}
-            # check table and equations
-            for i, tb in enumerate(databook_set):
-                # check table id
-                if i == table_id:
-                    selected_tb = tb
+            selected_tb: DataBookTableTypes = {
+                'table': 'Table not found!',
+                'description': None,
+                "data": None,
+                "equations": None,
+                "matrix_data": None,
+                "matrix_equations": None
+            }
+
+            # by table id
+            if isinstance(table, int):
+                # check table and equations
+                for i, tb in enumerate(databook_set):
+                    # check table id
+                    if i == table:
+                        selected_tb = tb
+                        break
+            # by table name
+            elif isinstance(table, str):
+                # check table name
+                for i, tb in enumerate(databook_set):
+                    # check table name
+                    if tb['table'] == table:
+                        selected_tb = tb
+                        break
+            else:
+                raise Exception("Invalid table type")
 
             # return
             return selected_tb

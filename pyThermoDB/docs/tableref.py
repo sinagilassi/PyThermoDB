@@ -324,3 +324,23 @@ class TableReference(ManageData):
 
         except Exception as e:
             raise Exception(f"Making payload error {e}")
+
+    def search_component(self, component_name: str, column_names: list[str] = ['Name', 'Formula']):
+        """
+        Search a component in all databooks
+
+        Parameters
+        ----------
+        component_name : str
+            component name such as Carbon Dioxide
+        column_names : list
+            the list of column names 
+
+        """
+        try:
+            # current directory
+            current_dir = os.getcwd()
+            # parent directory
+
+        except Exception as e:
+            raise Exception(f'Searching component error {e}')
