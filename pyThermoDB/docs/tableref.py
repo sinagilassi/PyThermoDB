@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from typing import Optional
 import glob
+import asyncio
 # local
 from .managedata import ManageData
 from ..data import TableTypes
@@ -326,7 +327,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Making payload error {e}")
 
-    def search_component(self, search_terms: list[str], column_names: list[str] = ['Name', 'Formula']):
+    async def search_component(self, search_terms: list[str], search_mode: str, column_names: list[str] = ['Name', 'Formula']) -> list[dict]:
         """
         Search a component in all databooks
 
@@ -373,27 +374,80 @@ class TableReference(ManageData):
                     # Filter rows where any existing column matches the search term(s)
                     if len(search_terms) == 1:
                         # Search both columns with single term
-                        matching_rows = df[df[existing_columns].apply(
-                            lambda x: x.str.contains(search_terms[0])).any(axis=1)]
+                        # check search mode
+                        if search_mode == 'similar':
+                            matching_rows = df[df[existing_columns].apply(
+                                lambda x: x.str.contains(search_terms[0])).any(axis=1)]
+                        elif search_mode == 'exact':
+                            matching_rows = df[df[existing_columns].eq(
+                                search_terms[0]).any(axis=1)]
+                        else:
+                            raise ValueError(
+                                f"Invalid search mode: {search_mode}")
                     else:
                         # Search specific columns with multiple terms
                         if len(existing_columns) < 2:
                             # print(f"Only one matching column found in {file}.")
-                            matching_rows = df[df[existing_columns[0]
-                                                  ].str.contains(search_terms[0])]
+                            # check search mode
+                            if search_mode == 'similar':
+                                matching_rows = df[df[existing_columns[0]
+                                                      ].str.contains(search_terms[0])]
+                            elif search_mode == 'exact':
+                                matching_rows = df[df[existing_columns[0]].eq(
+                                    search_terms[0])]
+                            else:
+                                raise ValueError(
+                                    f"Invalid search mode: {search_mode}")
                         else:
-                            matching_rows = df[
-                                (df[existing_columns[0]].str.contains(search_terms[0])) |
-                                (df[existing_columns[1]].str.contains(
-                                    search_terms[1]))
-                            ]
+                            # check search mode
+                            if search_mode == 'similar':
+                                matching_rows = df[
+                                    (df[existing_columns[0]].str.contains(search_terms[0])) |
+                                    (df[existing_columns[1]].str.contains(
+                                        search_terms[1]))
+                                ]
+                            elif search_mode == 'exact':
+                                matching_rows = df[
+                                    (df[existing_columns[0]].eq(search_terms[0])) &
+                                    (df[existing_columns[1]].eq(search_terms[1]))
+                                ]
+
+                            else:
+                                raise ValueError(
+                                    f"Invalid search mode: {search_mode}")
+
+                    # log
+                    # print("---------------------")
+                    # print(matching_rows)
+                    # print("---------------------")
 
                     # Add results to the list if matches are found
                     if not matching_rows.empty:
+                        # csv file
+                        # _csv_file = file.split('/')[-1]
+                        # csv file
+                        _csv_file = os.path.basename(file)
+                        # csv file name
+                        _table_name, extension = os.path.splitext(_csv_file)
+                        # get source
+                        _get_source = self.find_table_source(_table_name)
+                        # check
+                        if not _get_source:
+                            raise Exception(
+                                f"Source not found for {_table_name}")
+
+                        # source
+                        db, db_id, tb_name, tb_id, data_type = _get_source.values()
+
+                        # save
                         results.append({
-                            # Get only the file name
-                            'file_name': file.split('/')[-1],
-                            'matching_rows': matching_rows
+                            'search-mode': search_mode,
+                            'search-terms': ', '.join(search_terms),
+                            'databook-id': db_id,
+                            'databook-name': db,
+                            'table-id': tb_id,
+                            'table-name': _table_name,
+                            'data-type': data_type,
                         })
                 except pd.errors.EmptyDataError:
                     print(f"{file} is empty.")

@@ -2,6 +2,7 @@
 import pandas as pd
 from typing import List, Dict, Optional, Literal
 import json
+import asyncio
 # internal
 from ..config import API_URL
 from ..api import Manage
@@ -1349,7 +1350,7 @@ class SettingDatabook(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
 
-    def search_databook(self, search_terms: list[str], column_names: list[str] = ['Name', 'Formula']):
+    async def __search_databook(self, search_terms: list[str], search_mode: str, column_names: list[str] = ['Name', 'Formula']) -> list[dict[str, str]]:
         """
         Search a term through all databook for instance a component name
 
@@ -1371,10 +1372,59 @@ class SettingDatabook(ManageData):
             TableReferenceC = TableReference(custom_ref=self.custom_ref)
 
             # search
-            res = TableReferenceC.search_component(
-                search_terms, column_names=column_names)
+            res = await TableReferenceC.search_component(
+                search_terms, search_mode, column_names=column_names)
 
             return res
 
+        except Exception as e:
+            raise Exception(f'Search databook error {e}')
+
+    def search_databook(self, search_terms: list[str], column_names: list[str] = ['Name', 'Formula'], res_format: Literal['list', 'dataframe', 'json', 'dict'] = 'dict', search_mode: Literal['exact', 'similar'] = 'exact') -> list[dict[str, str]] | pd.DataFrame | str | dict[str, dict[str, str]] | dict[str, str]:
+        """
+        Search a term through all databook for instance a component name
+        This is a blocking function, use __search_databook for async version
+
+        Parameters
+        ----------
+        search_terms : list[str]
+            search terms as list, e.g. ['Carbon dioxide','CO2']
+        column_names : list[str]
+            column names to search, e.g. ['Name', 'Formula']
+
+        Returns
+        -------
+        str
+            search results
+        """
+        try:
+            # call async function
+            res = asyncio.run(self.__search_databook(
+                search_terms, search_mode, column_names))
+
+            # check
+            if len(res) == 0:
+                return {
+                    'message': f'No results found for the search terms : {search_terms}, search mode : {search_mode}',
+                }
+
+            # dict
+            res_dict = {f'record-{i+1}': item for i, item in enumerate(res)}
+            # json
+            res_json = json.dumps(res_dict, indent=4)
+            # dataframe
+            res_df = pd.DataFrame(res)
+
+            # check res_format
+            if res_format == 'list':
+                return res
+            elif res_format == 'dataframe':
+                return res_df
+            elif res_format == 'json':
+                return res_json
+            elif res_format == 'dict':
+                return res_dict
+            else:
+                raise ValueError("Invalid res_format")
         except Exception as e:
             raise Exception(f'Search databook error {e}')

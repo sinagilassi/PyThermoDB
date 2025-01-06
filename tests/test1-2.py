@@ -72,6 +72,13 @@ tb_id = tdb.get_table_id(
     'Properties of Gases and Liquids', 'Section C Ideal Gas and Liquid Heat Capacities', res_format='dict')
 print(tb_id)
 
+# ===============================
+# TABLE SOURCE
+# ===============================
+# databook name from table name
+db_name = tdb.find_table_source(
+    'Section C Ideal Gas and Liquid Heat Capacities')
+print(db_name)
 
 # ===============================
 # TABLE INFO
@@ -135,10 +142,12 @@ print(CO2_check_availability)
 # SEARCH IN THE DATABOOK
 # ====================================
 # search terms
-key1 = 'carbon dioxide'
+key1 = 'Carbon dioxide'
 key2 = 'CO2'
 search_terms = [key1, key2]
-search_res = tdb.search_databook(search_terms)
+# search_terms = [key1]
+search_res = tdb.search_databook(
+    search_terms, res_format='json', search_mode='exact')
 print(search_res)
 
 

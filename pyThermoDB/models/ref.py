@@ -4,6 +4,7 @@ from typing import TypedDict, List, Optional
 
 class DataBookTableTypes(TypedDict):
     """Databook Table Types Definition"""
+    table_id: Optional[int | str]
     table: str
     description: Optional[str]
     equations: Optional[List[str]]
