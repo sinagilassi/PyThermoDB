@@ -416,11 +416,6 @@ class TableReference(ManageData):
                                 raise ValueError(
                                     f"Invalid search mode: {search_mode}")
 
-                    # log
-                    # print("---------------------")
-                    # print(matching_rows)
-                    # print("---------------------")
-
                     # Add results to the list if matches are found
                     if not matching_rows.empty:
                         # csv file
@@ -458,3 +453,74 @@ class TableReference(ManageData):
 
         except Exception as e:
             raise Exception(f'Searching component error {e}')
+
+    async def list_all_components(self, column_name: str = 'Name') -> tuple[list[str], list[dict[str, str | int]]]:
+        """
+        List all components in all databooks.
+
+        Returns
+        -------
+        components : list
+            list of components
+        components_info : list
+            list of component information
+        """
+        try:
+            # get all components
+            components = []
+            # component info
+            components_info = []
+
+            # data path
+            directory = self.path
+
+            # Get a list of all CSV files in the directory
+            csv_files = glob.glob(directory + '/*.csv')
+
+            # Iterate over each CSV file
+            for file in csv_files:
+                # read
+                df = pd.read_csv(file)
+
+                # get columns
+                columns = df.columns.tolist()
+
+                # check
+                if len(columns) > 1:
+                    # check column name
+                    if column_name in columns:
+                        # get component
+                        component = df[column_name].tolist()
+
+                        # csv file
+                        _csv_file = os.path.basename(file)
+                        # csv file name
+                        _table_name, extension = os.path.splitext(_csv_file)
+                        # get source
+                        _get_source = self.find_table_source(_table_name)
+                        # check
+                        if not _get_source:
+                            raise Exception(
+                                f"Source not found for {_table_name}")
+
+                        # source
+                        db, db_id, tb_name, tb_id, data_type = _get_source.values()
+
+                        # add to list
+                        components.extend(component)
+
+                        # component info
+                        component_info = {
+                            "component": component,
+                            "databook": db,
+                            "database_id": db_id,
+                            "table_name": tb_name,
+                            "table_id": tb_id,
+                            "data_type": data_type
+                        }
+                        components_info.append(component_info)
+
+            return components, components_info
+
+        except Exception as e:
+            raise Exception(f'Listing all components error {e}')
