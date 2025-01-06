@@ -5,7 +5,7 @@
 import os
 import yaml
 import pandas as pd
-from typing import TypedDict, List, Optional, Literal
+from typing import TypedDict, List, Optional, Literal, Tuple
 import json
 # local
 from ..data import TableTypes
@@ -289,6 +289,12 @@ class ManageData():
                 # log
                 # <class 'str'> <class 'dict'>
                 # print(type(databook), type(databook_data))
+                # databook name
+                # databook_name = databook
+
+                # databook id
+                # databook_id = databook_data.get('DATABOOK-ID', None)
+
                 tables = []
                 for table, table_data in databook_data.get('TABLES', {}).items():
                     # log
@@ -297,6 +303,9 @@ class ManageData():
 
                     # description
                     description = table_data.get('DESCRIPTION', None)
+
+                    # table id
+                    table_id = table_data.get('TABLE-ID', -1)
 
                     # * check
                     # ! check EQUATIONS exists
@@ -309,6 +318,7 @@ class ManageData():
 
                         # save
                         tables.append({
+                            'table_id': table_id,
                             'table': table,
                             'description': description,
                             'equations': _eq,
@@ -328,6 +338,7 @@ class ManageData():
 
                         # save
                         tables.append({
+                            'table_id': table_id,
                             'table': table,
                             'description': description,
                             'equations': None,
@@ -343,6 +354,7 @@ class ManageData():
                         data = table_data['DATA']
                         # save
                         tables.append({
+                            'table_id': table_id,
                             'table': table,
                             'description': description,
                             'equations': None,
@@ -356,6 +368,7 @@ class ManageData():
                         matrix_data = table_data['MATRIX-DATA']
                         # save
                         tables.append({
+                            'table_id': table_id,
                             'table': table,
                             'description': description,
                             'equations': None,
@@ -416,13 +429,13 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_databook_id(self, databook: str, res_format: Literal['str', 'json', 'dict'] = 'json') -> str | dict[str, str]:
+    def get_databook_id(self, databook: str, res_format: Literal['str', 'json', 'dict', 'int'] = 'json') -> str | int | dict[str, str]:
         '''
         Get databook id
 
         Parameters
         ----------
-        databook : str
+        databook : str | int | dict
             databook name
 
         Returns
@@ -448,6 +461,8 @@ class ManageData():
                     # check
                     if res_format == 'str':
                         return db_id
+                    elif res_format == 'int':
+                        return int(db_id)
                     elif res_format == 'json':
                         return json.dumps({"databook_id": db_id}, indent=4)
                     elif res_format == 'dict':
@@ -592,6 +607,7 @@ class ManageData():
             # ! if databook list
             # list
             selected_tb: DataBookTableTypes = {
+                'table_id': 'Table not found!',
                 'table': 'Table not found!',
                 'description': None,
                 "data": None,
@@ -772,3 +788,103 @@ class ManageData():
 
         except Exception as e:
             raise Exception('Finding table id failed!, ', e)
+
+    def find_table_source(self, table: str | int) -> dict[str, str | int]:
+        """
+        Find table source (databook name and id)
+
+        Parameters
+        ----------
+        table : str | int
+            table name or id (non-zero-based)
+
+        Returns
+        -------
+        dict :
+            databook_name : str
+                databook name
+            databook_id : int
+                databook id
+            table_name : str
+                table name
+            table_id : int
+                table id
+
+        """
+        try:
+            # set
+            table_id, table_name = 0, ''
+            databook_id = 0
+            db = ''
+
+            # check table
+            for i, db in enumerate(self.databook):
+                # get databook name and id
+                # databook_name, databook_id = db['name'], i
+                databook_id = self.get_databook_id(db, res_format='int')
+                # check
+                if not isinstance(databook_id, int):
+                    raise ValueError("databook id must be int!")
+                if databook_id == 0:
+                    raise ValueError("databook id must be non-zero-based!")
+
+                # find table
+                for j, tb in enumerate(self.databook_bulk[db]):
+                    if isinstance(table, int):
+
+                        # check
+                        if table == 0:
+                            raise ValueError(
+                                "table id must be non-zero-based!")
+
+                        # check
+                        if tb['table_id'] == table:
+                            table_id = tb['table_id']
+                            table_name = tb['table']
+
+                            # check
+                            if not table_id:
+                                raise ValueError("table id not found!")
+
+                            # get data type
+                            data_type = self.get_table_type(
+                                databook_id, int(table_id))
+
+                            # return
+                            return {
+                                'databook_name': db,
+                                'databook_id': databook_id,
+                                'table_name': table_name,
+                                'table_id': table_id,
+                                'data_type': data_type
+                            }
+
+                    elif isinstance(table, str):
+                        # check
+                        if tb['table'] == table.strip():
+                            table_id = tb['table_id']
+                            table_name = tb['table']
+
+                            # check
+                            if not table_id:
+                                raise ValueError("table id not found!")
+
+                            # get data type
+                            data_type = self.get_table_type(
+                                databook_id, int(table_id))
+
+                            # return
+                            return {
+                                'databook_name': db,
+                                'databook_id': databook_id,
+                                'table_name': table_name,
+                                'table_id': table_id,
+                                'data_type': data_type
+                            }
+                    else:
+                        raise ValueError("table must be int or str")
+
+            # return
+            return {}
+        except Exception as e:
+            raise Exception('Finding table source failed!', e)
