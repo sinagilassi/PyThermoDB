@@ -364,7 +364,7 @@ class TableReference(ManageData):
 
                     # Skip if no columns exist
                     if not existing_columns:
-                        print(f"No matching columns found in {file}.")
+                        # print(f"No matching columns found in {file}.")
                         continue
 
                     # Convert existing columns to string and capitalize
