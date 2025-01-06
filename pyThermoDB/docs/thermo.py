@@ -1428,3 +1428,75 @@ class SettingDatabook(ManageData):
                 raise ValueError("Invalid res_format")
         except Exception as e:
             raise Exception(f'Search databook error {e}')
+
+    async def __list_components(self):
+        """
+        List all components in the databook
+        """
+        try:
+            # set table reference
+            # to load both internal and external data (csv files)
+            TableReferenceC = TableReference(custom_ref=self.custom_ref)
+
+            # search
+            res = await TableReferenceC.list_all_components()
+
+            return res
+
+        except Exception as e:
+            raise Exception(f'Search databook error {e}')
+
+    def list_components(self, res_format: Literal['list', 'dict', 'json'] = 'dict') -> list[str] | dict[str, list[str]] | str:
+        """
+        List all components in the databook
+        """
+        try:
+            # from async
+            res, _ = asyncio.run(self.__list_components())
+
+            # res dict
+            res_dict = {
+                'components': res
+            }
+
+            # json
+            res_json = json.dumps(res_dict, indent=4)
+
+            # check res_format
+            if res_format == 'list':
+                return res
+            elif res_format == 'dict':
+                return res_dict
+            elif res_format == 'json':
+                return res_json
+            else:
+                raise ValueError("Invalid res_format")
+
+        except Exception as e:
+            raise Exception(f'Listing component error {e}')
+
+    def list_component_info(self, res_format: Literal['list', 'dict', 'json'] = 'dict'):
+        """
+        List all components in the databook
+        """
+        try:
+            # from async
+            _, res = asyncio.run(self.__list_components())
+
+            # dict
+            res_dict = {f'record-{i+1}': item for i, item in enumerate(res)}
+            # json
+            res_json = json.dumps(res_dict, indent=4)
+
+            # check res_format
+            if res_format == 'list':
+                return res
+            elif res_format == 'dict':
+                return res_dict
+            elif res_format == 'json':
+                return res_json
+            else:
+                raise ValueError("Invalid res_format")
+
+        except Exception as e:
+            raise Exception(f'Listing component info error {e}')

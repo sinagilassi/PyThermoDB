@@ -1,4 +1,4 @@
-# Build ThermoDB for Components
+# Build ThermoDB
 
 ## Import Libs
 

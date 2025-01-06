@@ -25,11 +25,25 @@ db_descriptions = tdb.list_descriptions(res_format='json')
 print(db_descriptions)
 
 # ===============================
+# COMPONENT LIST
+# ===============================
+# component list
+component_list = tdb.list_components(res_format='json')
+print(component_list)
+print(len(component_list))
+
+# component info
+component_info = tdb.list_component_info(res_format='json')
+print(component_info)
+print(len(component_info))
+
+# ===============================
 # DATABOOK LIST
 # ===============================
 # databook
 db_list = tdb.list_databooks(res_format='json')
 print(db_list)
+
 
 # ===============================
 # DATABOOK ID
