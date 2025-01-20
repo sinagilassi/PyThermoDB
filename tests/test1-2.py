@@ -173,7 +173,7 @@ search_terms = [key1]
 # column_names = ['Name']
 # start search
 search_res = tdb.search_databook(
-    search_terms, res_format='json', search_mode='exact')
+    search_terms, res_format='dict', search_mode='exact')
 print(search_res)
 
 # search terms
