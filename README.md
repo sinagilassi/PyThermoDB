@@ -13,6 +13,9 @@ Key Features:
 - **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
+## Streamlit
+
+Check out `PyThermoDB` in Streamlit! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
 
 ## Google Colab
 
