@@ -21,33 +21,34 @@ col1, col2 = st.columns(2)
 
 # search button
 with col1:
-    if st.button('Search'):
+
+    if st.button('Search', use_container_width=True):
         st.write('Searching for:', search)
 
         # add spinner
         with st.spinner('Searching...'):
             # search for species
-            st.session_state.search_res = utils.search_species(search)
+            try:
+                st.session_state.search_res = utils.search_species(search)
+            except Exception as e:
+                st.error(f"Error during search: {e}")
 
 # Clear button
 with col2:
-    if st.button('Clear'):
+    if st.button('Clear', use_container_width=True):
         st.session_state.search_res = None
-        #
 
 
 # Display the search results
 if st.session_state.search_res:
     search_res = st.session_state.search_res
-    if search_res:
-        if isinstance(search_res, dict):
-            for record_key, record_value in search_res.items():
-                st.write(f"Databook ID: {record_value['databook-id']}")
-                st.write(f"Databook Name: {record_value['databook-name']}")
-                st.write(f"Table ID: {record_value['table-id']}")
-                st.write(f"Table Name: {record_value['table-name']}")
-                st.write(f"Data Type: {record_value['data-type']}")
-                st.write("---")
+    if isinstance(search_res, dict):
+        for record_key, record_value in search_res.items():
+            st.write(f"Databook ID: {record_value.get('databook-id', '')}")
+            st.write(f"Databook Name: {record_value.get('databook-name', '')}")
+            st.write(f"Table ID: {record_value.get('table-id', '')}")
+            st.write(f"Table Name: {record_value.get('table-name', '')}")
+            st.write(f"Data Type: {record_value.get('data-type', '')}")
+            st.write("---")
     else:
-        st.write('Results:')
         st.write('No results found.')
