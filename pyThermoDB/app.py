@@ -4,7 +4,6 @@
 # internal
 from .config import __version__, __author__, __description__
 from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
-from .web import check_lib
 
 
 def desc() -> None:
@@ -118,13 +117,6 @@ def load_thermodb(thermodb_file) -> CompBuilder:
         return CompBuilderC
     except Exception as e:
         raise Exception("Loading thermodb failed!, ", e)
-
-
-def check_thermodb():
-    '''
-    Check thermodb on browser
-    '''
-    check_lib()
 
 
 if __name__ == '__main__':

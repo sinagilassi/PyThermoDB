@@ -13,11 +13,9 @@ Key Features:
 - **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
-## Check ThermoDB Files
+## Streamlit
 
-You can check the thermoDB files in the following link:
-
-- [⏩thermodb-demo](https://pythermodb-demo.streamlit.app/)
+Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
 
 ## Google Colab
 
