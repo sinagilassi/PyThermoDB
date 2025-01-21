@@ -15,7 +15,7 @@ Key Features:
 
 ## Streamlit
 
-Check out `PyThermoDB` in Streamlit! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
+Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
 
 ## Google Colab
 
