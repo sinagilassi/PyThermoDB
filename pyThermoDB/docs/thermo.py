@@ -1410,6 +1410,10 @@ class SettingDatabook(ManageData):
 
             # dict
             res_dict = {f'record-{i+1}': item for i, item in enumerate(res)}
+
+            res_dict = dict(
+                {'message': f'results found for the search terms : {search_terms}, search mode : {search_mode}'}, **res_dict)
+
             # json
             res_json = json.dumps(res_dict, indent=4)
             # dataframe
