@@ -13,10 +13,6 @@ Key Features:
 - **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
-## Streamlit
-
-Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
-
 ## Google Colab
 
 You can use the following code to run `PyThermoDB` in Google Colab:
@@ -28,6 +24,10 @@ You can use the following code to run `PyThermoDB` in Google Colab:
 | Check Component Availability | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HdGHS_uypEf_yzsq7fZyLZH3dWnjYVSg?usp=sharing) |
 | Basic Usage 2 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
 | Basic Usage 1 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
+
+## Streamlit
+
+Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
 
 ## Installation
 
