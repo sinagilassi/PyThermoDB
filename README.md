@@ -23,6 +23,7 @@ You can use the following code to run `PyThermoDB` in Google Colab:
 
 | Version | Scripts |
 |---------|---------|
+| 1.7.0> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1y5GIE4DH73SwOF2JhsTug2_U_h9Fqexx?usp=sharing) |
 | 1.6.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
 | 1.5.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
 
@@ -227,7 +228,7 @@ pp(Cp_cal_custom_integral_Cp__R)
 
 ## FAQ
 
-For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gilassi/) 
+For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gilassi/)
 
 
 ## Authors
