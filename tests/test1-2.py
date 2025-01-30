@@ -79,6 +79,10 @@ tb_description = tdb.table_description(
     'Properties of Gases and Liquids', 1, res_format='str')
 print(tb_description)
 
+tb_description = tdb.table_description(
+    'Chemical Thermodynamics for Process Simulation', 1, res_format='str')
+print(tb_description)
+
 # ===============================
 # TABLE ID
 # ===============================
