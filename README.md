@@ -13,26 +13,21 @@ Key Features:
 - **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
-## Streamlit
-
-Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
-
 ## Google Colab
 
 You can use the following code to run `PyThermoDB` in Google Colab:
 
-| Version | Scripts |
-|---------|---------|
-| 1.7.0> | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1y5GIE4DH73SwOF2JhsTug2_U_h9Fqexx?usp=sharing) |
-| 1.6.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
-| 1.5.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
-
-**Examples on Google Colab**
-
 | Example | Scripts |
 |---------|---------|
+| Search Database | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1y5GIE4DH73SwOF2JhsTug2_U_h9Fqexx?usp=sharing) |
 | CO₂ Thermodynamic Data | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mzu70kACdvoB_jO6gTGVegGtK_ssOOHq?usp=sharing) |
 | Check Component Availability | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HdGHS_uypEf_yzsq7fZyLZH3dWnjYVSg?usp=sharing) |
+| Basic Usage 2 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
+| Basic Usage 1 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
+
+## Streamlit
+
+Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
 
 ## Installation
 
