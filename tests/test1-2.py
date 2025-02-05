@@ -83,6 +83,10 @@ tb_description = tdb.table_description(
     'Chemical Thermodynamics for Process Simulation', 1, res_format='str')
 print(tb_description)
 
+tb_description = tdb.table_description(
+    3, 2, res_format='str')
+print(tb_description)
+
 # ===============================
 # TABLE ID
 # ===============================
@@ -116,6 +120,10 @@ vapor_pressure_tb = tdb.equation_load(
     'Chemical Thermodynamics for Process Simulation', 2)
 print(vapor_pressure_tb.eq_structure(1))
 
+# all equations
+eq_sample = tdb.equation_load(1, 4)
+print(eq_sample.eqs_structure())
+
 # heat capacity
 heat_capacity_ig_tb = tdb.equation_load(
     'Properties of Gases and Liquids', 'Section C Ideal Gas and Liquid Heat Capacities')
@@ -124,6 +132,7 @@ print(heat_capacity_ig_tb.eq_structure(1))
 # load data to check
 data_table = tdb.data_load('Chemical Thermodynamics for Process Simulation', 1)
 print(data_table.data_structure())
+
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
