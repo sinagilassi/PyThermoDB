@@ -4,7 +4,7 @@ REFERENCES:
     TABLES:
       TABLE 2-8 Vapor Pressure of Inorganic and Organic Liquids:
         TABLE-ID: 1
-        DESCRIPTION: 
+        DESCRIPTION:
           This table provides the vapor pressure (VaPr) of inorganic and organic liquids as a function of temperature (T) and its unit is in Pascal (Pa).
         EQUATIONS:
           EQ-1:
@@ -49,7 +49,7 @@ REFERENCES:
             RETURNS:
               vapor_pressure:
                 name: vapor pressure
-                symbol: P
+                symbol: VaPr
                 unit: Pa
             BODY-INTEGRAL:
               None
@@ -59,19 +59,19 @@ REFERENCES:
               None
       TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion:
         TABLE-ID: 2
-        DESCRIPTION: 
+        DESCRIPTION:
           This table provides the ideal gas enthalpies of formation (EnFo_IG) in J/kmol, ideal gas Gibbs energies of formation (GiEnFo_IG) in J/kmol, entropies (Ent_IG) in J/kmol.K, and standard net enthalpies of combustion (EnCo_STD) in J/kmol.
         DATA:
-          COLUMNS: 
+          COLUMNS:
             - no.
             - Name
             - Formula
             - CAS no
             - Mol wt
-            - ideal-gas-enthalpy-of-formation 
-            - ideal-gas-Gibbs-energy-of-formation 
+            - ideal-gas-enthalpy-of-formation
+            - ideal-gas-Gibbs-energy-of-formation
             - ideal-gas-entropy
-            - standard-net-enthalpy-of-combustion 
+            - standard-net-enthalpy-of-combustion
           SYMBOL:
             - None
             - None
@@ -106,15 +106,15 @@ REFERENCES:
         TABLE-ID: 3
         DESCRIPTION:
           This table provides the critical temperature (Tc) in K, critical pressure (Pc) in MPa, critical molar volume (Vc) in m3/kmol, critical compressibility factor (Zc) with no units, and acentric factor (AcFa) with no units of inorganic and organic compounds.
-        DATA: 
+        DATA:
           COLUMNS:
             - no.
             - Name
             - Formula
             - CAS no
-            - molecular-weight 
-            - critical-temperature 
-            - critical-pressure 
+            - molecular-weight
+            - critical-temperature
+            - critical-pressure
             - critical-molar-volume
             - critical-compressibility-factor
             - acentric-factor
@@ -337,10 +337,10 @@ REFERENCES:
     TABLES:
       Table A.1 General data for selected compounds:
         TABLE-ID: 1
-        DESCRIPTION: 
+        DESCRIPTION:
           This table provides general data for selected compounds such as the critical temperature (Tc) in K, critical pressure (Pc) in bar, critical molar volume (Vc) in cm3/mol, molecular weight (MW) in g/mol, acentric factor (AcFa) with no units, boiling temperature (Tb) in K, melting temperature (Tm) in K, specific enthalpy of fusion (EnFus) in J/mol, standard enthalpy of formation (EnFo_IG) in J/mol, and standard Gibbs energy of formation (GiEnFo_IG) in J/mol.
-        DATA: 
-          COLUMNS: 
+        DATA:
+          COLUMNS:
             - No.
             - Name
             - critical-temperature
@@ -376,7 +376,7 @@ REFERENCES:
             - None
             - K
             - K
-            - J/mol 
+            - J/mol
             - J/mol
             - J/mol
           CONVERSION:
@@ -387,8 +387,8 @@ REFERENCES:
             - 1
             - 1
             - 1
-            - 1 
-            - 1 
+            - 1
+            - 1
             - 1
             - 1
             - 1
@@ -716,7 +716,7 @@ REFERENCES:
                 name: temperature
                 symbol: T
                 unit: K
-            PARMS: 
+            PARMS:
               None
             RETURNS:
               heat_capacity_ideal_gas:
@@ -729,12 +729,12 @@ REFERENCES:
               None
             BODY-SECOND-DERIVATIVE:
               None
-      Table A.IV Enthalpies and Gibbs Energies of Formation: 
+      Table A.IV Enthalpies and Gibbs Energies of Formation:
         TABLE-ID: 2
         DESCRIPTION:
           This table provides the ideal gas and liquid enthalpies of formation (EnFo_IG and EnFo_LIQ) in J/kmol, ideal gas and liquid Gibbs energies of formation (GiEnFo_IG and GiEnFo_LIQ) in J/kmol, and the state of the compound.
         DATA:
-          COLUMNS: 
+          COLUMNS:
             - No.
             - Name
             - Formula
@@ -837,13 +837,13 @@ REFERENCES:
         DESCRIPTION:
           This table provides the general data of different chemical species participating in the CO2 hydrogenation reaction and includes molecular weight (MW) in g/mol, critical temperature (Tc) in K, critical pressure (Pc) in MPa, and critical molar volume (Vc) in m3/kmol. The table also includes the critical compressibility factor (Zc), acentric factor (AcFa), enthalpy of formation (EnFo) in kJ/mol, and Gibbs energy of formation (GiEnFo) in kJ/mol. The chemical state of the species is also provided in the table and hence the enthalpy of formation and Gibbs energy of formation are provided for the ideal gas and liquid state are designated as EnFo_IG, GiEnFo_IG, EnFo_LIQ, and GiEnFo_LIQ, respectively.
         DATA:
-          COLUMNS: 
+          COLUMNS:
             - No.
             - Name
             - Formula
             - State
             - molecular-weight
-            - critical-temperature  
+            - critical-temperature
             - critical-pressure
             - critical-molar-volume
             - critical-compressibility-factor
@@ -856,7 +856,7 @@ REFERENCES:
             - None
             - None
             - MW
-            - Tc  
+            - Tc
             - Pc
             - Vc
             - Zc
@@ -868,12 +868,12 @@ REFERENCES:
             - None
             - None
             - None
-            - g/mol 
-            - K 
+            - g/mol
+            - K
             - MPa
-            - m3/kmol 
-            - None 
-            - None 
+            - m3/kmol
+            - None
+            - None
             - kJ/mol
             - kJ/mol
           CONVERSION:
@@ -881,12 +881,12 @@ REFERENCES:
             - None
             - None
             - None
-            - 1 
             - 1
             - 1
             - 1
-            - 1 
-            - 1 
+            - 1
+            - 1
+            - 1
             - 1
             - 1
       CO2 hydrogenation - Vapor Pressure:
