@@ -3,6 +3,8 @@ import pandas as pd
 import math
 import sympy as sp
 import yaml
+import json
+from typing import Literal
 # local
 from .equationbuilder import EquationBuilder
 
@@ -30,6 +32,8 @@ class TableEquation:
     def __init__(self, table_name, equations):
         self.table_name = table_name
         self.equations = equations
+        # number of equations
+        self.eq_num = len(equations)
 
     @property
     def trans_data(self):
@@ -121,6 +125,69 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
+    def eqs_structure(self, res_format: Literal['dict', 'json'] = 'dict'):
+        '''
+        Display all equations details
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        eq_summary : dict
+            equation summary
+        '''
+        try:
+            # equation list
+            eq_num = self.eq_num
+
+            # eq summary
+            eq_summary = {}
+
+            # looping through equations
+            for id in range(eq_num):
+                # equation id
+                equation = self.equations[id]
+                # equation body
+                _body = equation['BODY']
+                # equation args
+                _args = equation['ARGS']
+                # equation params
+                _parms = equation['PARMS']
+                # equation src
+                _return = equation['RETURNS']
+                # check if exist
+                _body_integral = equation.get('BODY-INTEGRAL')
+                _body_first_derivative = equation.get(
+                    'BODY-FIRST-DERIVATIVE')
+                _body_second_derivative = equation.get(
+                    'BODY-SECOND-DERIVATIVE')
+                # custom integral
+                _custom_integral = equation.get('CUSTOM-INTEGRAL')
+
+                # eq summary
+                eq_summary[f"equation-{id+1}"] = {
+                    'id': id,
+                    'body': _body,
+                    'args': _args,
+                    'parms': _parms,
+                    'return': _return,
+                    'body_integral': _body_integral,
+                    'body_first_derivative': _body_first_derivative,
+                    'body_second_derivative': _body_second_derivative,
+                    'custom_integral': _custom_integral
+                }
+
+            # check format
+            if res_format == 'dict':
+                return eq_summary
+            elif res_format == 'json':
+                return json.dumps(eq_summary, indent=4)
+
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
     def eq_info(self):
         '''Get equation information.'''
         try:
@@ -149,7 +216,7 @@ class TableEquation:
         decimal_accuracy : int
             decimal accuracy (default is 4)
         sympy_format : bool
-            @deprecated() whether to return sympy format (default is False) 
+            @deprecated() whether to return sympy format (default is False)
         args : dict
             a dictionary contains variable names and values as
 
@@ -327,7 +394,7 @@ class TableEquation:
 
     def load_parms(self):
         '''
-        Load parms values and store in a dict, 
+        Load parms values and store in a dict,
         These parameters are constant values defined in an equation.
         '''
         try:
