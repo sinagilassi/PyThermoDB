@@ -523,6 +523,9 @@ class TableEquation:
         # check
         if eq_summary['parms'] is not None:
             self.parms = eq_summary['parms']
+            # REVIEW
+            # params value
+            # self.__parms_values = self.load_parms()
         else:
             self.parms = []
         # check
