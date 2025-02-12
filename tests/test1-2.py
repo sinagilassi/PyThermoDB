@@ -217,6 +217,9 @@ print(CO2_data.get_property('standard-Gibbs-energy-of-formation'))
 # by symbol
 print(CO2_data.get_property('GiEnFo_IG'))
 
+#
+print(CO2_data.get_property('EnFo_IG'))
+
 # CO2 Tc [K]
 CO2_Tc = float(CO2_data.get_property('Tc')['value'])
 print(CO2_Tc)
@@ -230,6 +233,39 @@ print(CO2_MW)
 # ====================================
 # BUILD EQUATION
 # ====================================
+
+# heat capacity (CO2)
+# "record-5": {
+#         "search-mode": "exact",
+#         "search-terms": "CO2",
+#         "databook-id": 1,
+#         "databook-name": "Perry's Chemical Engineers' Handbook",
+#         "table-id": 4,
+#         "table-name": "TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids",
+#         "data-type": "equations"
+#     }
+CO2_cp_IG = tdb.build_equation(comp1, "Perry's Chemical Engineers' Handbook",
+                               'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids')
+# parms
+print(CO2_cp_IG.eq_id)
+print(CO2_cp_IG.args)
+print(CO2_cp_IG.arg_symbols)
+print(CO2_cp_IG.parms)
+print(CO2_cp_IG.parms_values)
+print(CO2_cp_IG.returns)
+print(CO2_cp_IG.return_symbols)
+print(CO2_cp_IG.body)
+print(CO2_cp_IG.equations)
+print('CO2 heat capacity (IG)', CO2_cp_IG.cal(T=300))
+
+# args
+CO2_cp_IG_args = {
+    'T': 300
+}
+print('CO2 heat capacity (IG)', CO2_cp_IG.cal(**CO2_cp_IG_args))
+
+a = 1
+
 # build an equation
 # * vapor pressure
 # eq = tdb.build_equation(
@@ -275,6 +311,11 @@ print(Cp_eq.return_symbols)
 # print(Cp_eq.body)
 # print(Cp_eq.equations)
 print('liquid heat capacity', Cp_eq.cal(T=253.15, Tc=CO2_Tc, MW=CO2_MW))
+
+# using args dict
+args_dict = {'T': 253.15, 'Tc': CO2_Tc, 'MW': CO2_MW}
+print('liquid heat capacity', Cp_eq.cal(**args_dict))
+
 # # summary
 # print(Cp_eq.summary)
 
