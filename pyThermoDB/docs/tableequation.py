@@ -7,6 +7,7 @@ import json
 from typing import Literal
 # local
 from .equationbuilder import EquationBuilder
+from ..utils import format_eq_data
 
 
 class TableEquation:
@@ -29,7 +30,8 @@ class TableEquation:
     # selected equation id
     eq_id: int = -1
 
-    def __init__(self, table_name, equations):
+    def __init__(self, databook_name, table_name, equations):
+        self.databook_name = databook_name
         self.table_name = table_name
         self.equations = equations
         # number of equations
@@ -59,8 +61,9 @@ class TableEquation:
     @property
     def summary(self):
         return {
-            'eq_id': self.eq_id,
+            'databook_name': self.databook_name,
             'table_name': self.table_name,
+            'eq_id': self.eq_id,
             'args': self.args,
             'arg_symbols': self.arg_symbols,
             'parms': self.parms,
@@ -244,13 +247,11 @@ class TableEquation:
 
         if res is not None:
             res = round(res, decimal_accuracy)
+        else:
+            res = 'Error'
 
-        # set message
-        if message == '':
-            message = 'No message'
-
-        # dict
-        eq_data = {'value': res, **eq_info, 'message': message}
+        # format data
+        eq_data = format_eq_data(res, eq_info, message or 'No message')
 
         # res
         return eq_data

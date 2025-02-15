@@ -258,6 +258,9 @@ print(CO2_cp_IG.body)
 print(CO2_cp_IG.equations)
 print('CO2 heat capacity (IG)', CO2_cp_IG.cal(T=300))
 
+# summary
+print(CO2_cp_IG.summary)
+
 # args
 CO2_cp_IG_args = {
     'T': 300
