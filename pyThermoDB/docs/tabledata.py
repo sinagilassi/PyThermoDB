@@ -10,7 +10,8 @@ class TableData:
     __trans_data = {}
     __prop_data = {}
 
-    def __init__(self, table_name, table_data):
+    def __init__(self, databook_name, table_name, table_data):
+        self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data  # reference template (yml)
 
@@ -59,7 +60,7 @@ class TableData:
         ----------
         property : str | int
             property name or id
-        message : str 
+        message : str
             message to display when property is found or not found
 
         Returns
@@ -115,6 +116,10 @@ class TableData:
             data_dict['message'] = str(message)
         else:
             data_dict['message'] = 'No message'
+
+        # add databook and table name
+        data_dict['databook_name'] = self.databook_name
+        data_dict['table_name'] = self.table_name
 
         # res
         return data_dict

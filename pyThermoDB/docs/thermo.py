@@ -450,6 +450,8 @@ class SettingDatabook(ManageData):
             table_name = ''
             # table equations
             table_equations = []
+            # databook id | name
+            db, db_name, db_id = self.find_databook(databook)
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -467,7 +469,7 @@ class SettingDatabook(ManageData):
                         table_equations.append(item)
 
                     # create table equation
-                    return TableEquation(table_name, table_equations)
+                    return TableEquation(db_name, table_name, table_equations)
 
                 else:
                     raise Exception('Table loading error!')
@@ -500,6 +502,8 @@ class SettingDatabook(ManageData):
             table_name = ''
             # table data
             table_data = []
+            # databook id | name
+            db, db_name, db_id = self.find_databook(databook)
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -517,7 +521,7 @@ class SettingDatabook(ManageData):
                     table_data = tb['data']
 
                     # data no
-                    return TableData(table_name, table_data)
+                    return TableData(db_name, table_name, table_data)
                 else:
                     raise Exception('Table loading error!')
             else:
