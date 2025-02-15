@@ -85,6 +85,7 @@ comp1_eq = tdb.build_equation(comp1, 3, 1)
 
 pp(comp1_eq.args)
 pp(comp1_eq.returns)
+pp(comp1_eq.body_integral)
 
 # res = comp1_eq.cal(T=298.15)
 # pp(res)
