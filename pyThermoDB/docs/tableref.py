@@ -431,8 +431,12 @@ class TableReference(ManageData):
                             raise Exception(
                                 f"Source not found for {_table_name}")
 
-                        # source
+                        # source (non-zero-based id)
                         db, db_id, tb_name, tb_id, data_type = _get_source.values()
+
+                        # table-description
+                        table_description = self.get_table(db, tb_name)[
+                            'description']
 
                         # save
                         results.append({
@@ -442,6 +446,7 @@ class TableReference(ManageData):
                             'databook-name': db,
                             'table-id': tb_id,
                             'table-name': _table_name,
+                            'table-description': table_description,
                             'data-type': data_type,
                         })
                 except pd.errors.EmptyDataError:
