@@ -1,8 +1,8 @@
-![PyThermoDB](https://drive.google.com/uc?export=view&id=1-yWNEkK4tL1qvi8FE_4OwcLYuTF2AkPP)
+# 🧪 Python Thermodynamics Databook
+
+![PyThermoDB](./statics/pythermo-2.png)
 
 ![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) ![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
-
-# 🧪 Python Thermodynamics Databook
 
 PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants from your `custom thermodynamic database` (csv files).
 
@@ -17,19 +17,19 @@ PyThermoDB is a lightweight and user-friendly Python package designed to provide
 
 Try PyThermoDB directly in your browser with these interactive examples:
 
-- 🔍 **Search Database**  
+- 🔍 **Search Database**
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1y5GIE4DH73SwOF2JhsTug2_U_h9Fqexx?usp=sharing)
 
-- 📊 **CO₂ Thermodynamic Data**  
+- 📊 **CO₂ Thermodynamic Data**
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mzu70kACdvoB_jO6gTGVegGtK_ssOOHq?usp=sharing)
 
-- 🔎 **Check Component Availability**  
+- 🔎 **Check Component Availability**
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HdGHS_uypEf_yzsq7fZyLZH3dWnjYVSg?usp=sharing)
 
-- 📘 **Basic Usage 2**  
+- 📘 **Basic Usage 2**
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing)
 
-- 🔰 **Basic Usage 1**  
+- 🔰 **Basic Usage 1**
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing)
 
 ## 🚀 Streamlit App

@@ -1,34 +1,44 @@
-# PyThermoDB
+# 🧪 Python Thermodynamics Databook
+
+![PyThermoDB](./pythermo-2.png)
 
 ![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) ![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
 
-Python Thermodynamics Databook
-
 PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants from your `custom thermodynamic database` (csv files).
 
-Key Features:
+## ✨ Key Features:
 
-- **Handbook Data**: The package sources its data from well-established thermodynamics handbooks, ensuring accuracy and reliability (*updated regularly*).
-- **Custom Thermodynamic Database**: It is possible to builtin your own thermodynamic databook for your project.
-- **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
-- **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
+- 📚 **Handbook Data**: The package sources its data from well-established thermodynamics handbooks, ensuring accuracy and reliability (*updated regularly*).
+- 🔧 **Custom Thermodynamic Database**: It is possible to builtin your own thermodynamic databook for your project.
+- 🪶 **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
+- 🌐 **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
-## Streamlit
+## 🔬 Google Colab Examples
 
-Check out `PyThermoDB`! [PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
+Try PyThermoDB directly in your browser with these interactive examples:
 
-## Google Colab
+- 🔍 **Search Database**
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1y5GIE4DH73SwOF2JhsTug2_U_h9Fqexx?usp=sharing)
 
-You can use the following code to run `PyThermoDB` in Google Colab:
+- 📊 **CO₂ Thermodynamic Data**
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1mzu70kACdvoB_jO6gTGVegGtK_ssOOHq?usp=sharing)
 
-| Version | Scripts |
-|---------|---------|
-| 1.6.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing) |
-| 1.5.0 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing) |
+- 🔎 **Check Component Availability**
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1HdGHS_uypEf_yzsq7fZyLZH3dWnjYVSg?usp=sharing)
 
-## Installation
+- 📘 **Basic Usage 2**
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1vj84afCy0qKfHZzQdvLiJRiVstiCX0so?usp=sharing)
 
-Install PyThermoDB with pip
+- 🔰 **Basic Usage 1**
+  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing)
+
+## 🚀 Streamlit App
+
+Check out `PyThermoDB` live! [🔗 PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
+
+## 📥 Installation
+
+Install PyThermoDB with pip:
 
 ```python
 import pyThermoDB as ptdb
@@ -36,16 +46,16 @@ import pyThermoDB as ptdb
 print(ptdb.__version__)
 ```
 
-## Usage Example
+## 🛠️ Usage Examples
 
-* databook reference initialization:
+* **Databook reference initialization**:
 
 ```python
 # databook reference initialization
 tdb = ptdb.init()
 ```
 
-* DATABOOK LIST:
+* **📚 DATABOOK LIST**:
 
 ```python
 # databook
@@ -53,7 +63,7 @@ db_list = tdb.list_databooks()
 print(db_list)
 ```
 
-* TABLE LIST:
+* **📋 TABLE LIST**:
 
 ```python
 # table list
@@ -61,7 +71,7 @@ tb_lists = tdb.list_tables(1)
 print(tb_lists)
 ```
 
-* TABLE INFO:
+* **ℹ️ TABLE INFO**:
 
 ```python
 # display a table
@@ -69,7 +79,7 @@ tb_info = tdb.table_info(1, 2)
 print(tb_info)
 ```
 
-* LOAD TABLES (before building):
+* **📥 LOAD TABLES** (before building):
 
 ```python
 # load equation to check
@@ -80,7 +90,7 @@ data_table = tdb.data_load(1, 2)
 pp(data_table.data_structure())
 ```
 
-* CHECK COMPONENT AVAILABILITY IN A TABLE:
+* **🔍 CHECK COMPONENT AVAILABILITY IN A TABLE**:
 
 ```python
 # check component availability in the databook and table
@@ -92,7 +102,7 @@ comp1 = "carbon Dioxide"
 # pp(comp_data)
 ```
 
-* BUILD DATA OBJECT:
+* **🏗️ BUILD DATA OBJECT**:
 
 ```python
 # build data
@@ -101,7 +111,7 @@ pp(CO2_data.data_structure())
 pp(CO2_data.get_property(4))
 ```
 
-* BUILD EQUATION OBJECT:
+* **📐 BUILD EQUATION OBJECT**:
 
 ```python
 # build an equation
@@ -111,11 +121,11 @@ res = eq.cal(T=298.15)
 pp(res*1e-5)
 ```
 
-### Build ThermoDB for Components
+## 🧱 Build ThermoDB for Components
 
 DataTable & EquationTable saved as an object in `Carbon Dioxide.pkl`
 
-* BUILD THERMODB:
+* **🔨 BUILD THERMODB**:
 
 ```python
 # build a thermodb
@@ -136,7 +146,7 @@ thermo_db.save(
     f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
 ```
 
-* CHECK THERMODB:
+* **🔍 CHECK THERMODB**:
 
 ```python
 # check all properties and functions registered
@@ -144,11 +154,11 @@ pp(thermo_db.check_properties())
 pp(thermo_db.check_functions())
 ```
 
-### Load a ThermoDB
+## 📂 Load a ThermoDB
 
 `Carbon Dioxide.pkl` can be loaded as:
 
-* LOAD THERMODB
+* **📤 LOAD THERMODB FILE**:
 
 ```python
 # ref
@@ -157,7 +167,7 @@ thermodb_path = os.path.join(os.getcwd(), thermodb_file)
 pp(thermodb_path)
 ```
 
-* LOAD THERMODB
+* **📥 LOAD THERMODB**:
 
 ```python
 # load thermodb
@@ -165,26 +175,26 @@ CO2_thermodb = ptdb.load_thermodb(thermodb_path)
 pp(type(CO2_thermodb))
 ```
 
-* CHECK THERMODB
+* **✅ CHECK THERMODB**:
 
 ```python
 # check all properties and functions registered
 pp(CO2_thermodb.check())
 ```
 
-### Custom Integral
+## 🧮 Custom Integral
 
-* Step 1:
+* **Step 1**:
 
-Modify `yml file` by adding `CUSTOM-INTEGRAL`.
+  Modify `yml file` by adding `CUSTOM-INTEGRAL`.
 
-* Step 2:
+* **Step 2**:
 
-Add a name for the new integral body.
+  Add a name for the new integral body.
 
-* Step 3:
+* **Step 3**:
 
-Add a list containing the integral body.
+  Add a list containing the integral body.
 
 ```yml
 CUSTOM-INTEGRAL:
@@ -204,7 +214,7 @@ CUSTOM-INTEGRAL:
         - res = res2 - res1
 ```
 
-* CHECK AS:
+* **🔬 CHECK AS**:
 
 ```python
 # check custom integral
@@ -218,11 +228,11 @@ Cp_cal_custom_integral_Cp__R = comp1_eq.cal_custom_integral(
 pp(Cp_cal_custom_integral_Cp__R)
 ```
 
-## FAQ
+## ❓ FAQ
 
-For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gilassi/) 
+For any question, contact me on [LinkedIn](https://www.linkedin.com/in/sina-gilassi/)
 
 
-## Authors
+## 👨‍💻 Authors
 
 - [@sinagilassi](https://www.github.com/sinagilassi)
