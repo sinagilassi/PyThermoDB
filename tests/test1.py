@@ -32,7 +32,8 @@ tb_select = tdb.select_table(1, 2)
 print(tb_select)
 
 tb_select = tdb.select_table(
-    1, 'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, Entropies, and Net Enthalpies of Combustion')
+    1, 'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, '
+       'Entropies, and Net Enthalpies of Combustion')
 print(tb_select)
 
 # display a table
@@ -63,7 +64,8 @@ comp1 = "carbon Dioxide"
 # check component
 CO2_check_availability = tdb.check_component(comp1,
                                              "Perry's Chemical Engineers' Handbook",
-                                             "TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids")
+                                             'TABLE 2-153 Heat Capacities of Inorganic '
+                                             'and Organic Liquids')
 print(CO2_check_availability)
 
 # ====================================
@@ -72,8 +74,13 @@ print(CO2_check_availability)
 # build data
 CO2_data = tdb.build_data(comp1, 1, 2)
 print(CO2_data.data_structure())
-print(CO2_data.get_property(5))
+# get property
+res_ = CO2_data.get_property(5)
+print(res_, type(res_))
+# by symbol
 print(CO2_data.get_property('MW'))
+# by property name
+print(CO2_data.get_property('molecular-weight'))
 
 # ====================================
 # BUILD EQUATION

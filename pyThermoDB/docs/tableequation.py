@@ -6,6 +6,7 @@ import yaml
 import json
 from typing import Literal
 # local
+from ..models import EquationResult
 from .equationbuilder import EquationBuilder
 from ..utils import format_eq_data
 
@@ -208,7 +209,7 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, message: str = '', decimal_accuracy: int = 4, sympy_format: bool = False, **args):
+    def cal(self, message: str = '', decimal_accuracy: int = 4, sympy_format: bool = False, **args) -> EquationResult:
         '''
         Execute a function
 

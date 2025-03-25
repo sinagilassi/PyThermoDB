@@ -1,7 +1,7 @@
 # GENERATE RESULTS
+from ..models import EquationResult
 
-
-def format_eq_data(value: float | str, res_dict: dict, message: str) -> dict:
+def format_eq_data(value: float | str, res_dict: dict, message: str) -> EquationResult:
     """
     Format the equation result data.
 
@@ -16,7 +16,15 @@ def format_eq_data(value: float | str, res_dict: dict, message: str) -> dict:
 
     Returns
     -------
-    eq_data : dict
+    eq_data : EquationResult
         Formatted equation result data.
     """
-    return {'value': value, **res_dict, 'message': message}
+    try:
+        # set
+        eq_data_ = {'value': value, **res_dict, 'message': message}
+        # set
+        eq_data = EquationResult(**eq_data_)
+    
+        return eq_data
+    except Exception as e:
+        raise Exception(f"Error formatting equation data: {e}") from e

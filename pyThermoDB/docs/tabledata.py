@@ -1,8 +1,8 @@
 # import packages/modules
 import pandas as pd
-import yaml
 from typing import Optional
 # local imports
+from ..models import PropertyResult
 
 
 class TableData:
@@ -52,7 +52,7 @@ class TableData:
 
         return df
 
-    def get_property(self, property: str | int, message: str = ''):
+    def get_property(self, property: str | int, message: Optional[str] = None) -> PropertyResult:
         '''
         Get a component property from data table structure
 
@@ -65,13 +65,14 @@ class TableData:
 
         Returns
         -------
-        data_dict : dict
-            component property
+        data_dict : PropertyResult
+            property result dict
         '''
         # ! get data for a selected component
         # dataframe
         df = pd.DataFrame(self.prop_data)
 
+        get_data = None
         # choose a column
         if isinstance(property, str):
             # df = df[property_name]
@@ -88,6 +89,8 @@ class TableData:
                         # property name
                         property = key
                         break
+            if get_data is None:
+                raise ValueError(f"Property '{property}' not found!")
             # series
             sr = pd.Series(get_data, dtype='str')
             # print(type(sr))
@@ -102,7 +105,7 @@ class TableData:
             raise ValueError("loading error!")
 
         # convert to dict
-        data_dict = sr.to_dict()
+        data_dict = PropertyResult(**sr.to_dict())
         # print(data_dict, type(data_dict))
 
         # property name

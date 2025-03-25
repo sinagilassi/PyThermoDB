@@ -1,6 +1,5 @@
 # import packages/modules
-from typing import TypedDict, List, Optional
-
+from typing import TypedDict, List, Optional, Union, Dict, Any
 
 class DataBookTableTypes(TypedDict):
     """Databook Table Types Definition"""
@@ -37,8 +36,23 @@ class DataResultType(TypedDict):
 
 
 class PropertyResult(TypedDict):
+    """Property Result Type Definition"""
     property_name: Optional[str]
     symbol: Optional[str]
     unit: Optional[str]
-    value: Optional[float]
+    value: Optional[Union[str, float]]
     message: Optional[str]
+    databook_name: Optional[str]
+    table_name: Optional[str]
+
+
+class EquationResult(TypedDict):
+    """Equation Result Type Definition"""
+    equation_name: Optional[str]
+    symbol: Optional[str]
+    unit: Optional[str]
+    value: Optional[Union[str, float]]
+    message: Optional[str]
+    databook_name: Optional[str]
+    table_name: Optional[str]
+    
