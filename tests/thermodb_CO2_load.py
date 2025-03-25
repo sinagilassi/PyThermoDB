@@ -36,6 +36,8 @@ CO2_general = CO2_thermodb.check_property('general')
 print(type(CO2_general))
 # heat of formation at 298.15K
 print(CO2_general.data_structure())
+# raw result
+CO2_dHf_IG = CO2_general.get_property(11)
 # print(CO2_general.get_property(11, dataframe=True))
 CO2_dHf_IG = float(CO2_general.get_property(11)['value'])
 # by name
