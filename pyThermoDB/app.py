@@ -1,10 +1,10 @@
 # import packages/modules
 # external
-
+from typing import Optional, Dict, List
 # internal
 from .config import __version__, __author__, __description__
 from .docs import (
-    SettingDatabook, TableReference, CustomRef, CompBuilder,
+    ThermoDB, TableReference, CustomRef, CompBuilder,
     TableData, TableEquation, TableMatrixData, TableMatrixEquation
 )
 
@@ -19,22 +19,39 @@ def get_version() -> str:
     return __version__
 
 
-def init(ref=None) -> SettingDatabook:
+def init(ref: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
     '''
-    Initialize thermodb app
+    Initialize thermodb app to check and build thermodynamic data and equations.
 
     Parameters
     ----------
     ref : dict
-        set-up external reference dict for databook and tables
-        format ref_external = {'yml':[yml files], 'csv':[csv files]} or
-        format ref_external = {'reference':[yml files], 'tables':[csv files]} or
-        format ref_external = {'json':[json files] for ref structure and data}
+        set-up external reference dict for databook and tables (check examples)
 
     Returns
     -------
-    SettingDatabookC : object
-        SettingDatabook object used for checking and building data and equation objects
+    ThermoDB : object
+        ThermoDB object used for checking and building data and equation objects
+    
+    Notes
+    ------
+    ### Set-up external reference dict for databook and tables
+    
+    - format ref_external = {'yml':[yml files], 'csv':[csv files]} or
+    - format ref_external = {'reference':[yml files], 'tables':[csv files]} 
+    
+    ### Examples
+    
+    ```python
+    # custom ref
+    ref = {
+    'reference': [yml_path],
+    'tables': [csv_path_1, csv_path_2]
+    }
+    
+    # init app
+    tdb = ptdb.init(ref=ref)
+    ```
     '''
     try:
         # check new custom ref
@@ -46,10 +63,9 @@ def init(ref=None) -> SettingDatabook:
 
         # check
         if check_ref:
-            SettingDatabookC = SettingDatabook(CustomRefC)
+            return ThermoDB(CustomRefC)
         else:
-            SettingDatabookC = SettingDatabook()
-        return SettingDatabookC
+            return ThermoDB()
     except Exception as e:
         raise Exception(f"Initializing app failed! {e}")
 
@@ -79,11 +95,11 @@ def ref(ref=None) -> TableReference:
 
         # check
         if check_ref:
-            TableReferenceC = TableReference(custom_ref=CustomRefC)
+            return TableReference(custom_ref=CustomRefC)
         else:
             # init
-            TableReferenceC = TableReference()
-        return TableReferenceC
+            return TableReference()
+
     except Exception as e:
         raise Exception(f'Building reference failed! {e}')
 

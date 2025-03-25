@@ -19,7 +19,7 @@ from ..data import TableTypes
 from ..models import DataBookTableTypes
 
 
-class SettingDatabook(ManageData):
+class ThermoDB(ManageData):
     '''
     Setting class
     '''

@@ -1,7 +1,6 @@
 # import packages/modules
 import os
 import pyThermoDB as ptdb
-from pprint import pprint as pp
 
 # dir
 # print(dir(pt))
