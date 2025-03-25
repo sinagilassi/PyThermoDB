@@ -66,8 +66,8 @@ REFERENCES:
             - no.
             - Name
             - Formula
-            - CAS no
-            - Mol wt
+            - CAS-number
+            - molecular-weight
             - ideal-gas-enthalpy-of-formation
             - ideal-gas-Gibbs-energy-of-formation
             - ideal-gas-entropy
