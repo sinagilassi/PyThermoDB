@@ -30,7 +30,9 @@ setup(
     include_package_data=True,  # Make sure to include non-Python files
     # Add both config and data files
     package_data={'': ['config/*.yml', 'data/*.csv']},
+    # Add license file
     license='MIT',
+    license_files=['LICENSE'],
     install_requires=['pandas', 'pillow', 'requests',
                       'urllib3', 'numpy', 'PyYAML', 'sympy'],
     keywords=['python', 'chemical engineering', 'thermodynamics',
