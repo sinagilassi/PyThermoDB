@@ -172,7 +172,7 @@ print(VaPr)
 
 
 # ====================================
-# BUILD THERMODB
+# SECTION: BUILD THERMODB
 # ====================================
 # name
 thermodb_name = comp1.upper()

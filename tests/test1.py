@@ -1,13 +1,8 @@
 # import packages/modules
 import pyThermoDB as ptdb
-from pprint import pprint as pp
 from rich import print
 
-
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# versions
 print(ptdb.__version__)
 
 # ===============================
@@ -49,10 +44,10 @@ print(tb_info)
 # ===============================
 # load equation to check
 vapor_pressure_tb = tdb.equation_load(1, 4)
-pp(vapor_pressure_tb.eq_structure(1))
+print(vapor_pressure_tb.eq_structure(1))
 # load data to check
 data_table = tdb.data_load(1, 2)
-pp(data_table.data_structure())
+print(data_table.data_structure())
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -63,31 +58,28 @@ comp1 = "carbon Dioxide"
 
 # load comp data
 # comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
-# pp(comp_data)
+# print(comp_data)
 
 # check component
 CO2_check_availability = tdb.check_component(comp1,
                                              "Perry's Chemical Engineers' Handbook",
                                              "TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids")
-pp(CO2_check_availability)
+print(CO2_check_availability)
 
 # ====================================
 # BUILD DATA
 # ====================================
 # build data
 CO2_data = tdb.build_data(comp1, 1, 2)
-pp(CO2_data.data_structure())
-
-pp(CO2_data.get_property(4))
+print(CO2_data.data_structure())
+print(CO2_data.get_property(5))
+print(CO2_data.get_property('MW'))
 
 # ====================================
 # BUILD EQUATION
 # ====================================
 # build an equation
 eq = tdb.build_equation(comp1, 1, 4)
-
-pp(eq.args)
-
+print(eq.args)
 res = eq.cal(T=298.15)
-
-pp(res*1e-5)
+print(res)

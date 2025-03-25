@@ -10,7 +10,7 @@ PyThermoDB is a lightweight and user-friendly Python package designed to provide
 
 - 📚 **Handbook Data**: The package sources its data from well-established thermodynamics handbooks, ensuring accuracy and reliability (*updated regularly*).
 - 🔧 **Custom Thermodynamic Database**: It is possible to builtin your own thermodynamic databook for your project.
-- 🪶 **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
+- 🧩 **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - 🌐 **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
 ## 🔬 Google Colab Examples
