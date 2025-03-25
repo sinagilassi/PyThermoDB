@@ -34,3 +34,11 @@ class DataResultType(TypedDict):
     value: Optional[str | float]
     unit: Optional[str | float]
     symbol: Optional[str | float]
+
+
+class PropertyResult(TypedDict):
+    property_name: Optional[str]
+    symbol: Optional[str]
+    unit: Optional[str]
+    value: Optional[float]
+    message: Optional[str]

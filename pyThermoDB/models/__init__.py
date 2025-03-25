@@ -1,1 +1,1 @@
-from .ref import DataBookTableTypes, PayLoadType, DataResultType
+from .ref import DataBookTableTypes, PayLoadType, DataResultType, MatrixDataType, PropertyResult

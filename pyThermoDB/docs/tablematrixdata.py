@@ -1,7 +1,8 @@
 # import packages/modules
 import pandas as pd
+from typing import Union, Optional, Any, Literal, TypedDict, Dict, List, Tuple
 # local
-from ..models import DataResultType
+from ..models import DataResultType, PropertyResult
 
 
 class TableMatrixData:
@@ -197,7 +198,9 @@ class TableMatrixData:
             raise Exception("Getting matrix property failed!, ", e)
 
     def get_matrix_property(self, property: str, component_names: list[str],
-                            symbol_format: str = 'alphabetic', message: str = '') -> dict:
+                            symbol_format: Literal['alphabetic',
+                                                   'numeric'] = 'alphabetic',
+                            message: str = 'Get a component property from data table structure') -> PropertyResult:
         '''
         Get a component property from data table structure
 
@@ -268,9 +271,6 @@ class TableMatrixData:
             # get component data
             _component_name = _data['Name']
             matrix_table_comp_data[_component_name] = _data
-
-        # res set
-        res = {}
 
         # ! manage property
         if isinstance(property, str) and property.endswith('_i_j'):
@@ -345,11 +345,11 @@ class TableMatrixData:
             property_unit = matrix_table.iloc[1, property_column_index]
 
             # res
-            res = {
-                "property_name": property_name,
-                "symbol": property_symbol,
-                "unit": property_unit,
-                "value": property_value,
+            res: PropertyResult = {
+                "property_name": str(property_name),
+                "symbol": str(property_symbol),
+                "unit": str(property_unit),
+                "value": float(property_value),
                 "message": message if message else "No message"
             }
 

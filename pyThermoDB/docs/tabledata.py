@@ -118,8 +118,8 @@ class TableData:
             data_dict['message'] = 'No message'
 
         # add databook and table name
-        data_dict['databook_name'] = self.databook_name
-        data_dict['table_name'] = self.table_name
+        data_dict['databook_name'] = self.databook_name if self.databook_name else 'No databook name'
+        data_dict['table_name'] = self.table_name if self.table_name else 'No table name'
 
         # res
         return data_dict
