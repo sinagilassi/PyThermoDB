@@ -217,7 +217,7 @@ class TableMatrixData:
         '''
         # matrix structure (all data)
         matrix_table = self.matrix_table
-        print(matrix_table)
+        # print(matrix_table)
 
         # check dataframe
         if not isinstance(matrix_table, pd.DataFrame):

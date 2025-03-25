@@ -3,7 +3,10 @@
 
 # internal
 from .config import __version__, __author__, __description__
-from .docs import SettingDatabook, TableReference, CustomRef, CompBuilder
+from .docs import (
+    SettingDatabook, TableReference, CustomRef, CompBuilder,
+    TableData, TableEquation, TableMatrixData, TableMatrixEquation
+)
 
 
 def desc() -> None:
@@ -97,7 +100,7 @@ def build_thermodb() -> CompBuilder:
         raise Exception("Building thermodb failed!, ", e)
 
 
-def load_thermodb(thermodb_file) -> CompBuilder:
+def load_thermodb(thermodb_file: str) -> CompBuilder:
     '''
     Load thermodb
 
