@@ -11,7 +11,10 @@ APP_NAME = 'PyThermoDB'
 VERSION = '1.7.18'
 AUTHOR = 'Sina Gilassi'
 EMAIL = '<sina.gilassi@gmail.com>'
-DESCRIPTION = 'PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data.'
+DESCRIPTION = (
+    'PyThermoDB is a lightweight and user-friendly Python package designed to '
+    'provide quick access to essential thermodynamic data.'
+)
 LONG_DESCRIPTION = "The Python Thermodynamics Databook (PyThermoDB) is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants."
 
 # Setting up
