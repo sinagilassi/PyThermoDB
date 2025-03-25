@@ -2,11 +2,16 @@
     "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
         "compexporter",
+        "customref",
         "Databooks",
+        "managedata",
         "NRTL",
         "ptdb",
         "tabledata",
         "tableequation",
+        "tablematrixdata",
+        "tablematrixequation",
+        "tableref",
         "thermodb"
     ]
 }
