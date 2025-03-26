@@ -240,6 +240,8 @@ class TableEquation:
         # build parms dict
         _parms = self.load_parms()
         # execute equation
+        # res
+        res = None
         # check
         if sympy_format:
             res = self.eqExe_sympy(self.body, _parms, args=args)

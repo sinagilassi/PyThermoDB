@@ -15,18 +15,14 @@ def desc() -> None:
           thermodynamic data.')
 
 
-def get_version() -> str:
-    return __version__
-
-
-def init(ref: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
+def init(custom_reference: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
     '''
     Initialize thermodb app to check and build thermodynamic data and equations.
 
     Parameters
     ----------
-    ref : dict
-        set-up external reference dict for databook and tables (check examples)
+    custom_reference : dict
+        set-up external reference (custom reference) dict for databook and tables (check examples)
 
     Returns
     -------
@@ -37,27 +33,27 @@ def init(ref: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
     ------
     ### Set-up external reference dict for databook and tables
     
-    - format ref_external = {'yml':[yml files], 'csv':[csv files]} or
-    - format ref_external = {'reference':[yml files], 'tables':[csv files]} 
+    - `format ref_external = {'yml':[yml files], 'csv':[csv files]}`
+    - `format ref_external = {'reference':[yml files], 'tables':[csv files]}`
     
     ### Examples
     
     ```python
     # custom ref
-    ref = {
+    custom_reference = {
     'reference': [yml_path],
     'tables': [csv_path_1, csv_path_2]
     }
     
     # init app
-    tdb = ptdb.init(ref=ref)
+    tdb = ptdb.init(custom_reference=custom_reference)
     ```
     '''
     try:
         # check new custom ref
         check_ref = False
-        if ref:
-            CustomRefC = CustomRef(ref)
+        if custom_reference:
+            CustomRefC = CustomRef(custom_reference)
             # check ref
             check_ref = CustomRefC.init_ref()
 
@@ -70,26 +66,45 @@ def init(ref: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
         raise Exception(f"Initializing app failed! {e}")
 
 
-def ref(ref=None) -> TableReference:
+def ref(custom_reference: Optional[Dict[str, List[str]]] = None) -> TableReference:
     '''
-    Building references object including databook and tables to display data
+    Checking references (custom reference) object including databook and tables to display data
 
     Parameters
     ----------
-    ref : dict
-        set-up external reference dict for databook and tables
-        format ref_external = {'yml':[yml files], 'csv':[csv files]}
+    custom_reference : dict
+        set-up external reference dict for databook and tables, format `ref_external = {'yml':[yml files], 'csv':[csv files]}`
 
     Returns
     -------
     TableReferenceC : object
         TableReference object used for checking references
+        
+    Notes
+    ------
+    ### Check external reference dict for databook and tables
+    
+    - `format ref_external = {'yml':[yml files], 'csv':[csv files]}`
+    - `format ref_external = {'reference':[yml files], 'tables':[csv files]}`
+    
+    ### Examples
+    
+    ```python
+    # custom ref
+    custom_reference = {
+    'reference': [yml_path],
+    'tables': [csv_path_1, csv_path_2]
+    }
+    
+    # init app
+    tdb = ptdb.ref(custom_reference=custom_reference)
+    ```
     '''
     try:
         # check new custom ref
         check_ref = False
-        if ref:
-            CustomRefC = CustomRef(ref)
+        if custom_reference:
+            CustomRefC = CustomRef(custom_reference)
             # check ref
             check_ref = CustomRefC.init_ref()
 
@@ -106,19 +121,27 @@ def ref(ref=None) -> TableReference:
 
 def build_thermodb() -> CompBuilder:
     '''
-    Build thermodb
+    Build thermodb object to check and build thermodynamic data and equations
+    
+    Parameters
+    ----------
+    None
+    
+    Returns
+    -------
+    CompBuilder : object
+        CompBuilder object used for building thermodynamic data and equations
     '''
     try:
         # init class
-        CompBuilderC = CompBuilder()
-        return CompBuilderC
+        return CompBuilder()
     except Exception as e:
         raise Exception("Building thermodb failed!, ", e)
 
 
 def load_thermodb(thermodb_file: str) -> CompBuilder:
     '''
-    Load thermodb
+    Load thermodb object to read thermodynamic data and equations
 
     Parameters
     ----------
@@ -127,16 +150,12 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
 
     Returns
     -------
-    CompBuilderC : object
-        CompBuilder object
+    CompBuilder : object
+        CompBuilder object used for loading thermodynamic data and equations
     '''
     try:
         # init class
-        CompBuilderC = CompBuilder.load(thermodb_file)
-        return CompBuilderC
+        return CompBuilder.load(thermodb_file)
     except Exception as e:
         raise Exception("Loading thermodb failed!, ", e)
 
-
-if __name__ == '__main__':
-    desc()

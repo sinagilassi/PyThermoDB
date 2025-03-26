@@ -555,6 +555,8 @@ class ThermoDB(ManageData):
             table_name = ''
             # table equations
             table_equations = []
+            # databook id | name
+            db, db_name, db_id = self.find_databook(databook)
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -571,7 +573,7 @@ class ThermoDB(ManageData):
                         table_equations.append(item)
 
                     # create table equation
-                    return TableMatrixEquation(table_name, table_equations)
+                    return TableMatrixEquation(db_name, table_name, table_equations)
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -606,6 +608,8 @@ class ThermoDB(ManageData):
             table_name = ''
             # table data
             table_data = []
+            # databook id | name
+            db, db_name, db_id = self.find_databook(databook)
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -622,7 +626,7 @@ class ThermoDB(ManageData):
                     table_data = tb['matrix_data']
 
                     # data no
-                    return TableMatrixData(table_name, table_data)
+                    return TableMatrixData(db_name, table_name, table_data)
                 else:
                     raise Exception('Table loading error!')
             else:
