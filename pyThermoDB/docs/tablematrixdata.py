@@ -162,7 +162,7 @@ class TableMatrixData:
         else:
             raise ValueError("loading error!")
 
-    def get_matrix_property_by_name(self, property: str) -> dict:
+    def get_matrix_property_by_name(self, property: str) -> DataResult:
         '''
         Get a component property from data table structure
 

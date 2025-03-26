@@ -65,6 +65,8 @@ print(db_list)
 
 * **📋 TABLE LIST**:
 
+list_tables(`databook_name or databook_id`)
+
 ```python
 # table list
 tb_lists = tdb.list_tables(1)
@@ -73,52 +75,74 @@ print(tb_lists)
 
 * **ℹ️ TABLE INFO**:
 
+table_info(`databook_name or id`, `table_name or id`)
+
 ```python
 # display a table
 tb_info = tdb.table_info(1, 2)
 print(tb_info)
 ```
 
-* **📥 LOAD TABLES** (before building):
+* **📊 LOAD TABLE DATA/EQUATION**:
+
+table_data(`databook_name or id`, `table_name or id`)
+
+```python
+# table load
+res_ = tdb.table_data(1, 2)
+print(res_)
+```
+
+* **📥 LOAD TABLES DATA|EQUATION STRUCTURE** (before building):
+
+equation_load(`databook_name or id`, `table_name or id`)
 
 ```python
 # load equation to check
 vapor_pressure_tb = tdb.equation_load(1, 4)
-pp(vapor_pressure_tb.eq_structure(1))
+print(vapor_pressure_tb.eq_structure(1))
 # load data to check
 data_table = tdb.data_load(1, 2)
-pp(data_table.data_structure())
+print(data_table.data_structure())
 ```
 
 * **🔍 CHECK COMPONENT AVAILABILITY IN A TABLE**:
 
+get_component_data(`component name`, `databook_name or id`, `table_name or id`, ...)
+
 ```python
 # check component availability in the databook and table
 comp1 = "carbon Dioxide"
+
+# method 1
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
 
-# load comp data
-# comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
-# pp(comp_data)
+# method 2:
+comp_data = tdb.get_component_data(comp1, 1, 2, dataframe=True)
+print(comp_data)
 ```
 
 * **🏗️ BUILD DATA OBJECT**:
 
+build_data(`component name`, `databook_name or id`, `table_name or id`)
+
 ```python
 # build data
 CO2_data = tdb.build_data(comp1, 1, 2)
-pp(CO2_data.data_structure())
-pp(CO2_data.get_property(4))
+print(CO2_data.data_structure())
+print(CO2_data.get_property(4))
 ```
 
 * **📐 BUILD EQUATION OBJECT**:
 
+build_equation(`component name`, `databook_name or id`, `table_name or id`)
+
 ```python
 # build an equation
 eq = tdb.build_equation(comp1, 1, 4)
-pp(eq.args)
+print(eq.args)
 res = eq.cal(T=298.15)
-pp(res*1e-5)
+print(res*1e-5)
 ```
 
 ## 🧱 Build ThermoDB for Components
@@ -130,7 +154,7 @@ DataTable & EquationTable saved as an object in `Carbon Dioxide.pkl`
 ```python
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
-pp(type(thermo_db))
+print(type(thermo_db))
 
 # * add TableData
 thermo_db.add_data('general', comp1_data)
@@ -143,15 +167,15 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
 # save
 thermo_db.save(
-    f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{comp1}', file_path='..\\pyThermoDB\\tests')
 ```
 
 * **🔍 CHECK THERMODB**:
 
 ```python
 # check all properties and functions registered
-pp(thermo_db.check_properties())
-pp(thermo_db.check_functions())
+print(thermo_db.check_properties())
+print(thermo_db.check_functions())
 ```
 
 ## 📂 Load a ThermoDB
@@ -164,7 +188,7 @@ pp(thermo_db.check_functions())
 # ref
 thermodb_file = 'Carbon Dioxide.pkl'
 thermodb_path = os.path.join(os.getcwd(), thermodb_file)
-pp(thermodb_path)
+print(thermodb_path)
 ```
 
 * **📥 LOAD THERMODB**:
@@ -172,14 +196,14 @@ pp(thermodb_path)
 ```python
 # load thermodb
 CO2_thermodb = ptdb.load_thermodb(thermodb_path)
-pp(type(CO2_thermodb))
+print(type(CO2_thermodb))
 ```
 
 * **✅ CHECK THERMODB**:
 
 ```python
 # check all properties and functions registered
-pp(CO2_thermodb.check())
+print(CO2_thermodb.check())
 ```
 
 ## 🧮 Custom Integral
@@ -218,14 +242,61 @@ CUSTOM-INTEGRAL:
 
 ```python
 # check custom integral
-pp(comp1_eq.custom_integral)
+print(comp1_eq.custom_integral)
 # check body
-pp(comp1_eq.check_custom_integral_equation_body('Cp/R'))
+print(comp1_eq.check_custom_integral_equation_body('Cp/R'))
 
 # Cp/R
 Cp_cal_custom_integral_Cp__R = comp1_eq.cal_custom_integral(
     'Cp/R', T1=298.15, T2=320)
-pp(Cp_cal_custom_integral_Cp__R)
+print(Cp_cal_custom_integral_Cp__R)
+```
+
+## 📚 Custom Databook & Table
+
+PyThermoDB allows you to define and use custom databooks and tables for your specific thermodynamic data needs. Here's how you can set up and use a custom databook and table:
+
+* **📝 Define Custom Reference**
+
+Check `csv` and `yml` files to be familiar with the right format!
+
+```python
+# Define custom reference
+custom_ref = {
+  'reference': ['nrtl.yml'],
+  'tables': [
+    'Non-randomness parameters of the NRTL equation.csv',
+    'Interaction parameters of the NRTL equation.csv'
+  ]
+}
+```
+
+* **📋 List Tables in Databook**
+
+```python
+# List tables in databook
+tb_lists = tdb.list_tables('NRTL', res_format='json')
+print(tb_lists)
+```
+
+* **📂 Load Table Data**
+
+table_data(`databook_name or id`, `table_name or id`)
+
+```python
+# Load table data
+tb_data = tdb.table_data(7, 1)
+print(tb_data)
+```
+
+* **🏗️ Build ThermoDB for the Custom Reference**
+
+```python
+# Build ThermoDB
+thermo_db = ptdb.build_thermodb()
+thermo_db.add_data('nrtl_alpha', nrtl_alpha)
+thermo_db.add_data('nrtl_tau', nrtl_tau_eq)
+thermo_db.save('thermodb_nrtl_0', file_path='notebooks')
 ```
 
 ## ❓ FAQ
