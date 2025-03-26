@@ -13,6 +13,26 @@ PyThermoDB is a lightweight and user-friendly Python package designed to provide
 - 🧩 **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - 🌐 **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
+## 📓 Interactive Notebooks with Binder
+
+Try PyThermoDB directly in your browser without any installation using Binder. You can find examples regarding the following contents:
+
+  - **Import Libraries**: Import the necessary libraries including pyThermoDB and rich.
+  - **Check Versions**: Print the version of pyThermoDB.
+  - **App Initialization**: Initialize the pyThermoDB application.
+  - **Databook List**: List all available databooks.
+  - **Table List**: List all tables in a specific databook.
+  - **Table Info**: Get information about a specific table.
+  - **Load Tables**: Load and display data and equations from tables.
+  - **Check Component Availability**: Check if a component is available in a specific table.
+  - **Build Data**: Build data for a specific component from a table.
+  - **Build Equation**: Build an equation for a specific component from a table.
+
+Click on any of the following links to launch interactive Jupyter notebooks:
+
+* [Basic Usage 1](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Fdoc1.ipynb)
+* [Custom Reference](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Fref-external.ipynb)
+
 ## 🔬 Google Colab Examples
 
 Try PyThermoDB directly in your browser with these interactive examples:
