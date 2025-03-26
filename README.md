@@ -1,6 +1,6 @@
 # 🧪 Python Thermodynamics Databook
 
-![PyThermoDB](./statics/pythermo-2.png)
+![PyThermoDB](./statics/pythermo-3.png)
 
 ![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) ![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
 
