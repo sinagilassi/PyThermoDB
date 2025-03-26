@@ -1,9 +1,9 @@
 from .ref import (
     DataBookTableTypes, PayLoadType, DataResultType, MatrixDataType, 
-    PropertyResult, EquationResult
+    DataResult, EquationResult
     )
 
 __all__ = [
     'DataBookTableTypes', 'PayLoadType', 'DataResultType', 'MatrixDataType', 
-    'PropertyResult', 'EquationResult'
+    'DataResult', 'EquationResult'
     ]

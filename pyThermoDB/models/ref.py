@@ -35,8 +35,8 @@ class DataResultType(TypedDict):
     symbol: Optional[str | float]
 
 
-class PropertyResult(TypedDict):
-    """Property Result Type Definition"""
+class DataResult(TypedDict):
+    """Data Result Type Definition"""
     property_name: Optional[str]
     symbol: Optional[str]
     unit: Optional[str]

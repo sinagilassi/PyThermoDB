@@ -2,7 +2,7 @@
 import pandas as pd
 from typing import Optional
 # local imports
-from ..models import PropertyResult
+from ..models import DataResult
 
 
 class TableData:
@@ -52,7 +52,7 @@ class TableData:
 
         return df
 
-    def get_property(self, property: str | int, message: Optional[str] = None) -> PropertyResult:
+    def get_property(self, property: str | int, message: Optional[str] = None) -> DataResult:
         '''
         Get a component property from data table structure
 
@@ -65,7 +65,7 @@ class TableData:
 
         Returns
         -------
-        data_dict : PropertyResult
+        data_dict : DataResult
             property result dict
         '''
         # ! get data for a selected component
@@ -105,7 +105,7 @@ class TableData:
             raise ValueError("loading error!")
 
         # convert to dict
-        data_dict = PropertyResult(**sr.to_dict())
+        data_dict = DataResult(**sr.to_dict())
         # print(data_dict, type(data_dict))
 
         # property name

@@ -1,8 +1,7 @@
 # import packages/modules
-import pyThermoDB as ptdb
-from pprint import pprint as pp
 import os
 from rich import print
+import pyThermoDB as ptdb
 
 # dir
 # print(dir(pt))

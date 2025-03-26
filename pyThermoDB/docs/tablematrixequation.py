@@ -5,7 +5,9 @@ import sympy as sp
 import numpy as np
 import re
 # local
+from ..models import EquationResult
 from .equationbuilder import EquationBuilder
+from ..utils import format_eq_data
 
 
 class TableMatrixEquation:
@@ -27,8 +29,9 @@ class TableMatrixEquation:
     # bulk data
     __trans_data_pack = {}
 
-    def __init__(self, table_name: str, equations: list, matrix_table=None):
-        self.table_name = table_name
+    def __init__(self, databook_name, table_name: str, equations: list, matrix_table=None):
+        self.databook_name = databook_name # databook name
+        self.table_name = table_name # table name
         self.equations = equations  # * from reference yml
         self.matrix_table = matrix_table  # * from csv
 
@@ -147,7 +150,7 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, message='', decimal_accuracy=4, sympy_format=False, **args):
+    def cal(self, message='', decimal_accuracy=4, sympy_format=False, **args) -> EquationResult:
         '''
         Execute a function
 
@@ -180,6 +183,8 @@ class TableMatrixEquation:
             # key: parms name, value: parms matrix (2d array)
             _parms = self.load_parms()
             # execute equation
+            # res
+            res = None
             # check
             if sympy_format:
                 res = self.eqExe_sympy(self.body, _parms, args=args)
@@ -194,7 +199,7 @@ class TableMatrixEquation:
                 message = 'No message'
 
             # eq res
-            eq_data = {'value': res, **eq_info, 'message': message}
+            eq_data = format_eq_data(res, eq_info, message or 'No message')
 
             return eq_data
         except Exception as e:

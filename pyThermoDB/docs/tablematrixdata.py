@@ -2,7 +2,7 @@
 import pandas as pd
 from typing import Union, Optional, Any, Literal, TypedDict, Dict, List, Tuple
 # local
-from ..models import DataResultType, PropertyResult
+from ..models import DataResultType, DataResult
 
 
 class TableMatrixData:
@@ -13,7 +13,8 @@ class TableMatrixData:
     __trans_data_pack = {}
     __prop_data_pack = {}
 
-    def __init__(self, table_name, table_data, matrix_table=None):
+    def __init__(self, databook_name, table_name, table_data, matrix_table=None):
+        self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data
         self.matrix_table = matrix_table  # all elements saved in the matrix-table
@@ -200,7 +201,7 @@ class TableMatrixData:
     def get_matrix_property(self, property: str, component_names: list[str],
                             symbol_format: Literal['alphabetic',
                                                    'numeric'] = 'alphabetic',
-                            message: str = 'Get a component property from data table structure') -> PropertyResult:
+                            message: str = 'Get a component property from data table structure') -> DataResult:
         '''
         Get a component property from data table structure
 
@@ -215,7 +216,7 @@ class TableMatrixData:
 
         Returns
         -------
-        dict
+        DataResult
             component property
         '''
         # matrix structure (all data)
@@ -345,12 +346,14 @@ class TableMatrixData:
             property_unit = matrix_table.iloc[1, property_column_index]
 
             # res
-            res: PropertyResult = {
+            res: DataResult = {
                 "property_name": str(property_name),
                 "symbol": str(property_symbol),
                 "unit": str(property_unit),
                 "value": float(property_value),
-                "message": message if message else "No message"
+                "message": message if message else "No message",
+                "databook_name": self.databook_name,
+                "table_name": self.table_name
             }
 
             # return

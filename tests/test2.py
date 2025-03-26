@@ -37,4 +37,4 @@ csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2]}
+ref = {'reference': [yml_path], 'tables': [csv_path_1, csv_path_2]}

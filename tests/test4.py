@@ -1,12 +1,8 @@
 # import packages/modules
 import os
 import pyThermoDB as ptdb
-from pprint import pprint as pp
 
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# version
 print(ptdb.__version__)
 
 # ===============================
@@ -22,22 +18,22 @@ csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
 csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
 
 # custom ref
-custom_ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2]}
+custom_ref = {'reference': [yml_path], 'tables': [csv_path_1, csv_path_2]}
 
 # ===============================
 # CHECKING THE REFERENCE
 # ===============================
 # init
-ref = ptdb.ref(ref=custom_ref)
+ref = ptdb.ref(custom_ref)
 
 # extract information
 # list databooks
 print(ref.list_databooks())
 # list tables
-print(ref.list_tables(3))
+print(ref.list_tables(7))
 # load table
-print(ref.load_table(3, 2))
+print(ref.load_table(7, 2))
 # search table
-print(ref.search_table(3, 2, "Formula", "CO2"))
+print(ref.search_table(7, 2, "Formula", "CO2"))
 # search table (query)
-print(ref.search_table(3, 2, ["Formula", "State"], ["CO2", "g"]))
+print(ref.search_table(7, 2, ["Formula", "State"], ["CO2", "g"]))

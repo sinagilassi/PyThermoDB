@@ -1,6 +1,5 @@
 # import packages/modules
 import pyThermoDB as ptdb
-from pprint import pprint as pp
 from rich import print
 
 

@@ -41,6 +41,15 @@ tb_info = tdb.table_info(1, 2)
 print(tb_info)
 
 # ===============================
+# TABLE LOAD
+# ===============================
+# table load
+res_ = tdb.table_data(1, 2)
+print(res_)
+
+
+
+# ===============================
 # LOAD TABLES
 # ===============================
 # load equation to check
