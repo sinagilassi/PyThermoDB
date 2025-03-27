@@ -388,16 +388,16 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def table_data(self, databook, table) -> pd.DataFrame:
+    def table_data(self, databook: str | int, table: str | int) -> pd.DataFrame:
         '''
         Get all table elements (display a table)
 
         Parameters
         ----------
-        databook : str
-            databook name
-        table : str
-            table name
+        databook : str | int
+            databook name or id
+        table : str | int
+            table name or id
 
         Returns
         -------
