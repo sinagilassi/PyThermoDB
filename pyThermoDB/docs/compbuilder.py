@@ -13,6 +13,7 @@ from .tablematrixequation import TableMatrixEquation
 
 
 class CompBuilder(CompExporter):
+    """Used to build thermodb library"""
 
     # vars
     __data = {}
