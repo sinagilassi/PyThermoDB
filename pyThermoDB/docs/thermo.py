@@ -1002,7 +1002,7 @@ class ThermoDB(ManageData):
             # if 
             if isinstance(tb_info_res_, dict):
                 # check
-                if tb_info_res_['Equations']:
+                if tb_info_res_['Type'] == 'Equation':
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
@@ -1010,26 +1010,26 @@ class ThermoDB(ManageData):
                     return self.build_equation(
                         component_names[0], databook, table)
                     
-                elif tb_info_res_['Data']:
+                elif tb_info_res_['Type'] == 'Data':
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
                     # build data
                     return self.build_data(
                         component_names[0], databook, table)
-                elif tb_info_res_['Matrix-Equations']:
+                elif tb_info_res_['Type'] == 'Matrix-Equation':
                     # check
                     if len(component_names) < 2:
                         raise Exception('At least two component names required!')
                     # build matrix-equation
-                    return self.build_matrix_data(
+                    return self.build_matrix_equation(
                         component_names, databook, table)
-                elif tb_info_res_['Matrix-Data']:
+                elif tb_info_res_['Type'] == 'Matrix-Data':
                     # check
                     if len(component_names) < 2:
                         raise Exception('At least two component names required!')
                     # build matrix-data
-                    return self.build_matrix_equation(
+                    return self.build_matrix_data(
                         component_names, databook, table)
                 else:
                     raise Exception('No data/equation found!')
