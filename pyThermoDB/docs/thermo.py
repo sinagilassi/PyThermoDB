@@ -1,6 +1,6 @@
 # import packages/modules
 import pandas as pd
-from typing import List, Dict, Optional, Literal
+from typing import List, Dict, Optional, Literal, Union, Tuple
 import json
 import asyncio
 # internal
@@ -634,7 +634,9 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self, component_name: str | list[str], databook: int | str, table: int | str, column_name: Optional[str | list[str]] = None, query: bool = False) -> str:
+    def check_component(self, component_name: str | list[str], databook: int | str, table: int | str, 
+                        column_name: Optional[str | list[str]] = None, query: bool = False,
+                        res_format: Literal['dict', 'json', 'str'] = 'json') -> Union[str, dict[str, str]]:
         '''
         Check a component availability in the selected databook and table
 
@@ -653,7 +655,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        res_json : str
+        str | dict[str, str]
             summary of the component availability
         '''
         try:
@@ -705,8 +707,15 @@ class ThermoDB(ManageData):
             # json
             res_json = json.dumps(res_dict, indent=4)
 
-            # res
-            return res_json
+            # check
+            if res_format == 'json':
+                return res_json
+            elif res_format == 'dict':
+                return res_dict
+            elif res_format == 'str':
+                return res_json
+            else:
+                raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
