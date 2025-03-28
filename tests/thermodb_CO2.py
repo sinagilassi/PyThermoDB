@@ -53,21 +53,23 @@ print(symbol_list)
 # ====================================
 # SELECT A DATABOOK
 # ====================================
+# NOTE:
+databook = 'CO2-Hydrogenation Reaction'
 # table list
-tb_list = thermo_db.list_tables('CO2 Hydrogenation')
+tb_list = thermo_db.list_tables(databook)
 print(tb_list)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-tb_info = thermo_db.table_info('CO2 Hydrogenation', 1)
+tb_info = thermo_db.table_info(databook, 1)
 print(tb_info)
 
-tb_info = thermo_db.table_info('CO2 Hydrogenation', 2)
+tb_info = thermo_db.table_info(databook, 2)
 print(tb_info)
 
-tb_info = thermo_db.table_info('CO2 Hydrogenation', 3)
+tb_info = thermo_db.table_info(databook, 3)
 print(tb_info)
 
 # ====================================
@@ -96,12 +98,12 @@ COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 # BUILD DATA
 # ====================================
 # build data
-comp1_data = thermo_db.build_data(comp1, 'CO2 Hydrogenation', 2)
-# print(comp1_data.data_structure())
+comp1_data = thermo_db.build_data(comp1, databook, 2)
+print(comp1_data.data_structure())
 
 print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 # by symbol
-print(float(comp1_data.get_property('dHf_IG')['value']))
+print(float(comp1_data.get_property('gibbs-energy-of-formation')['value']))
 
 
 # ====================================
@@ -109,7 +111,7 @@ print(float(comp1_data.get_property('dHf_IG')['value']))
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 1)
+comp1_eq = thermo_db.build_equation(comp1, databook, 1)
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
@@ -142,7 +144,7 @@ print(Cp_cal_integral)
 
 # ! equation 2
 # build equation
-vapor_pressure_eq = thermo_db.build_equation(comp1, 'CO2 Hydrogenation', 3)
+vapor_pressure_eq = thermo_db.build_equation(comp1, databook, 3)
 
 print(vapor_pressure_eq.equation_args())
 print(vapor_pressure_eq.equation_return())
