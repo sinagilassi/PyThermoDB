@@ -77,6 +77,22 @@ CO2_check_availability = tdb.check_component(comp1,
                                              'and Organic Liquids')
 print(CO2_check_availability)
 
+
+# ====================================
+# BUILD THERMO PROPERTY
+# ====================================
+# build thermo property
+CO2_data_0 = tdb.build_thermo_property([comp1], 1, 2)
+print(CO2_data_0.data_structure())
+# get property
+res_ = CO2_data_0.get_property(5)
+print(res_, type(res_))
+# by symbol
+print(CO2_data_0.get_property('MW'))
+# by property name
+print(CO2_data_0.get_property('molecular-weight'))
+
+
 # ====================================
 # BUILD DATA
 # ====================================
