@@ -100,8 +100,15 @@ comp3 = 'benzene'
 # BUILD MATRIX DATA
 # ====================================
 # build data
-nrtl_alpha = thermo_db.build_matrix_data(
+# nrtl_alpha = thermo_db.build_matrix_data(
+#     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
+
+# NOTE
+nrtl_alpha = thermo_db.build_thermo_property(
     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
+
+
+
 print(nrtl_alpha.matrix_data_structure())
 
 print(nrtl_alpha.get_property('Alpha_i_1', comp1))
@@ -124,7 +131,11 @@ print(nrtl_alpha.get_matrix_property_by_name(prop_name).get('value'))
 # ====================================
 # ! equation 1
 # build equation
-nrtl_tau_eq = thermo_db.build_matrix_equation(
+# nrtl_tau_eq = thermo_db.build_matrix_equation(
+#     [comp1, comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
+
+# NOTE
+nrtl_tau_eq = thermo_db.build_thermo_property(
     [comp1, comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
 
 # load parms
