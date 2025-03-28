@@ -977,6 +977,69 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
+    def build_thermo_property(self, component_names: list, databook: int | str, table: int | str):
+        """  
+        Build a thermodynamic property including data, equation, matrix-data and matrix-equation.
+        
+        Parameters
+        ----------
+        component_names :  list
+            list of component name (e.g. 'Carbon dioxide')
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+            
+        Returns
+        -------
+            
+        
+        """
+        try:
+            # detect table type
+            tb_info_res_ = self.table_info(databook, table, res_format='dict')
+            
+            # if 
+            if isinstance(tb_info_res_, dict):
+                # check
+                if tb_info_res_['Equations']:
+                    # check
+                    if len(component_names) > 1:
+                        raise Exception('Only one component name required!')
+                    # build equation
+                    return self.build_equation(
+                        component_names[0], databook, table)
+                    
+                elif tb_info_res_['Data']:
+                    # check
+                    if len(component_names) > 1:
+                        raise Exception('Only one component name required!')
+                    # build data
+                    return self.build_data(
+                        component_names[0], databook, table)
+                elif tb_info_res_['Matrix-Equations']:
+                    # check
+                    if len(component_names) < 2:
+                        raise Exception('At least two component names required!')
+                    # build matrix-equation
+                    return self.build_matrix_data(
+                        component_names, databook, table)
+                elif tb_info_res_['Matrix-Data']:
+                    # check
+                    if len(component_names) < 2:
+                        raise Exception('At least two component names required!')
+                    # build matrix-data
+                    return self.build_matrix_equation(
+                        component_names, databook, table)
+                else:
+                    raise Exception('No data/equation found!')
+            else:
+                raise Exception('Table loading error!')
+        except Exception as e:
+            raise Exception(f'Building thermo property error {e}')
+    
+    
+    
     def build_equation(self, component_name: str, databook: int | str, table: int | str,
                        column_name: Optional[str | list[str]] = None, query: bool = False) -> TableEquation:
         '''
