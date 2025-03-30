@@ -418,8 +418,9 @@ class CompBuilder(CompExporter):
         '''
         try:
             # SECTION 1: check if the property exists in both functions and properties
-            if (thermo_name in list(self.functions.keys()) and 
-                thermo_name in list(self.properties.keys())):
+            check_list = list(self.functions.keys()) + list(self.properties.keys())
+            # check if the property exists in both functions and properties
+            if (thermo_name not in check_list):
                 # raise
                 raise Exception('Property exists in both functions and properties!')
             
@@ -465,7 +466,6 @@ class CompBuilder(CompExporter):
         try:
             # split source
             source = property_source.split('|')
-            
             
             # SECTION: check message
             message = message if message is not None else f'Retrieving used for {property_source}!'

@@ -40,7 +40,7 @@ print(prop1_.prop_data)
 print(prop1_.get_property('dHf_IG'))
 
 # new format
-dHf_IG_src = 'general-data | dHf_IG'
+dHf_IG_src = 'general-data-2 | dHf_IG'
 print(data_thermodb.retrieve(dHf_IG_src, message="enthalpy of formation"))
 
 # ====================================
