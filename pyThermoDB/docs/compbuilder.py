@@ -2,7 +2,7 @@
 import pickle
 import yaml
 import os
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 
 # local
 from .compexporter import CompExporter
@@ -295,6 +295,26 @@ class CompBuilder(CompExporter):
             return self.properties[thermo_name]
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
+        
+    def select_property(self, thermo_name: str) -> TableData | TableMatrixData:
+        '''
+        Select a thermodynamic property
+        
+        Parameters
+        ----------
+        thermo_name : str
+            name of the thermodynamic property
+            
+        Returns
+        -------
+        TableMatrixData | TableData
+            property registered in the thermodb
+        '''
+        try:
+            # check library
+            return self.properties[thermo_name]
+        except Exception as e:
+            raise Exception('Selecting a property failed!, ', e)
 
     def check_functions(self) -> dict[str, TableEquation | TableMatrixEquation]:
         '''
@@ -323,7 +343,7 @@ class CompBuilder(CompExporter):
         Returns
         -------
         TableEquation | TableMatrixEquation
-            function registered
+            function registered in the thermodb
         '''
         try:
             # check library
@@ -331,9 +351,29 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
         
+    def select_function(self, function_name: str) -> TableEquation | TableMatrixEquation:
+        '''
+        Select a thermodynamic function
+        
+        Parameters
+        ----------
+        function_name : str
+            name of the thermodynamic function
+            
+        Returns
+        -------
+        TableMatrixEquation | TableEquation
+            function registered in the thermodb
+        '''
+        try:
+            # check library
+            return self.functions[function_name]
+        except Exception as e:
+            raise Exception('Selecting a function failed!, ', e)
+        
     def select(self, thermo_name: str) -> TableData | TableMatrixData | TableEquation | TableMatrixEquation:
         '''
-        Select a thermodynamic property
+        Select a thermodynamic property used for both functions and properties registered in the thermodb
 
         Parameters
         ----------
@@ -364,26 +404,39 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a thermodynamic property failed!, ', e)
 
-    def retrieve(self, property_source: str):
+    def retrieve(self, property_source: str, message: Optional[str] = None, symbol_format: Literal['alphabetic', 'numeric'] = 'alphabetic'):
         '''
-        Retrieve a thermodynamic property from source
+        Retrieve a thermodynamic property from the thermodb for only TableData and TableMatrixData
         
         Parameters
         ----------
         property_source : str
             source of the property to retrieve such as 'general-data | dH_IG'
+        message : str
+            message to display (default is None)
+        symbol_format : str
+            symbol format to use (default is 'alphabetic'), needed for TableMatrixData
             
         Returns
         -------
         prop: DataResult
             property object
+            
+        Notes
+        -----
+        The property source is a string containing the name of the property source and the name of the property separated by a pipe (|) character.
+        For example, 
+        
+        1- 'general-data | dH_IG' means that the property is in the general-data source and the name of the property is dH_IG.
+        2- 'nrtl-data | alpha_ij | methanol | ethanol' means that the property is in the nrtl-data source and the name of the property is alpha_ij and the components are methanol and ethanol.
         '''
         try:
             # split source
             source = property_source.split('|')
-            # check length
-            if len(source) != 2:
-                raise ValueError(f"Invalid source format! {property_source}")
+            
+            
+            # SECTION: check message
+            message = message if message is not None else f'Retrieving used for {property_source}!'
 
             # SECTION: property source
             prop_src = self.select(source[0].strip())
@@ -391,7 +444,24 @@ class CompBuilder(CompExporter):
             # SECTION: property name
             # check
             if isinstance(prop_src, TableData):
-                prop = prop_src.get_property(source[1].strip())
+                # check length
+                if len(source) != 2:
+                    raise ValueError(f"Invalid source format! {property_source}")
+                # get property
+                prop = prop_src.get_property(source[1].strip(), message=message)
+                # return
+                return prop
+            elif isinstance(prop_src, TableMatrixData):
+                # get components
+                component_names = source[2:]
+                # trim
+                component_names = [name.strip() for name in component_names]
+                # check length
+                if len(component_names) != 2:
+                    raise ValueError(f"Invalid source format! {property_source}, components are required!")
+                # get property
+                prop = prop_src.get_matrix_property(source[1].strip(), component_names=component_names, 
+                                                    symbol_format=symbol_format, message=message)
                 # return
                 return prop
             else:

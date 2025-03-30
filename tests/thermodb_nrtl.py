@@ -4,10 +4,7 @@ from pprint import pprint as pp
 import os
 from rich import print
 
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# version
 print(ptdb.__version__)
 
 # ====================================
@@ -162,7 +159,7 @@ print(tau_cal)
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-comp4 = "carbon Dioxide"
+comp4 = "Carbon Dioxide"
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
 
 # check component
@@ -184,17 +181,17 @@ print(CO2_data.get_property(5))
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = "thermodb_nrtl_3"
+thermodb_name = "thermodb_nrtl_1"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
 pp(type(thermo_db))
 
-# * add TableMatrixData
+# NOTE: add TableMatrixData
 thermo_db.add_data('nrtl_alpha', nrtl_alpha)
-# * add TableMatrixEquation
+# NOTE: add TableMatrixEquation
 thermo_db.add_data('nrtl_tau', nrtl_tau_eq)
-# * add TableData
+# NOTE: add TableData
 thermo_db.add_data('CO2_general_data', CO2_data)
 
 # file name

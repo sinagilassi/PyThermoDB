@@ -19,7 +19,7 @@ comp3 = 'benzene'
 # LOAD THERMODB
 # ====================================
 # ref
-thermodb_file = 'thermodb_nrtl_3.pkl'
+thermodb_file = 'thermodb_nrtl_1.pkl'
 thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
 print(thermodb_path)
 
@@ -53,6 +53,12 @@ print(nrtl_alpha_data.get_property('Alpha_i_1', comp1))
 
 print(nrtl_alpha_data.get_matrix_property("Alpha_i_j",
                                           [comp1, comp2], symbol_format='alphabetic'))
+
+
+nrtl_data_ = " nrtl_alpha | Alpha_i_j | methanol | ethanol"
+print(nrtl_thermodb.retrieve(nrtl_data_, message="NRTL Alpha value"))
+
+
 
 # ! load data
 CO2_general = nrtl_thermodb.check_property('CO2_general_data')
