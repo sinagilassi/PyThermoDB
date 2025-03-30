@@ -176,6 +176,12 @@ DataTable & EquationTable saved as an object in `Carbon Dioxide.pkl`
 thermo_db = ptdb.build_thermodb()
 print(type(thermo_db))
 
+# version
+print(thermo_db.build_version)
+
+# thermodb name
+print(thermo_db.thermodb_name)
+
 # * add TableData
 thermo_db.add_data('general', comp1_data)
 # * add TableEquation
