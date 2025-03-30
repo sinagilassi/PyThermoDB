@@ -28,7 +28,7 @@ ref = {
 # ====================================
 # INITIALIZATION OWN THERMO DB
 # ====================================
-thermo_db = ptdb.init(ref)
+thermo_db = ptdb.init(custom_reference=ref)
 
 # ====================================
 # GET DATABOOK LIST
@@ -104,7 +104,8 @@ comp3 = 'benzene'
 nrtl_alpha = thermo_db.build_thermo_property(
     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation")
 
-
+# symbol
+print(nrtl_alpha.matrix_symbol)
 
 print(nrtl_alpha.matrix_data_structure())
 

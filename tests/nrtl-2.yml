@@ -1,7 +1,8 @@
 REFERENCES:
     NRTL:
       TABLES:
-        Non-randomness parameters of the NRTL equation: 
+        Non-randomness parameters of the NRTL equation:
+          MATRIX-SYMBOL: Alpha_i_j
           MATRIX-DATA:
             COLUMNS: 
               - No.
@@ -32,6 +33,7 @@ REFERENCES:
               - 1 
               - 1
         Interaction parameters of the NRTL equation-2:
+          MATRIX-SYMBOL: tau_i_j
           MATRIX-EQUATIONS:
             EQ-1:
               BODY:

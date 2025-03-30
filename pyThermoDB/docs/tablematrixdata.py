@@ -9,15 +9,21 @@ class TableMatrixData:
     # vars
     __trans_data = {}
     __prop_data = {}
+    __matrix_symbol = None
     # pack
     __trans_data_pack = {}
     __prop_data_pack = {}
 
-    def __init__(self, databook_name, table_name, table_data, matrix_table=None):
+    def __init__(self, databook_name, table_name, table_data, matrix_table=None, matrix_symbol=None):
         self.databook_name = databook_name
         self.table_name = table_name
-        self.table_data = table_data
+        self.table_data = table_data # NOTE: reference template (yml)
         self.matrix_table = matrix_table  # all elements saved in the matrix-table
+        
+        # check
+        if matrix_symbol is None:
+            symbol_ = self.table_data['MATRIX-SYMBOL']  # matrix symbol such as Alpha_i_j
+            self.__matrix_symbol = symbol_.strip()
 
     @property
     def trans_data_pack(self):
@@ -57,6 +63,10 @@ class TableMatrixData:
         exclude_key = 'matrix-data'
         self.__prop_data = {key: value for key,
                             value in value.items() if key != exclude_key}
+        
+    @property
+    def matrix_symbol(self):
+        return self.__matrix_symbol
 
     def _find_component_prop_data(self, component_name_set: str):
         '''
