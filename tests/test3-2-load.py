@@ -36,9 +36,8 @@ prop1_ = data_thermodb.select('general-data')
 print(type(prop1_))
 print(prop1_.prop_data)
 
-# get property
-print(prop1_.get_property('dHf_IG')['value'])
-
+# old format
+print(prop1_.get_property('dHf_IG'))
 
 # new format
 dHf_IG_src = 'general-data | dHf_IG'
