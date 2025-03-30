@@ -119,13 +119,15 @@ def ref(custom_reference: Optional[Dict[str, List[str]]] = None) -> TableReferen
         raise Exception(f'Building reference failed! {e}')
 
 
-def build_thermodb() -> CompBuilder:
+def build_thermodb(thermodb_name: Optional[str] = None) -> CompBuilder:
     '''
     Build thermodb object to check and build thermodynamic data and equations
     
     Parameters
     ----------
-    None
+    thermodb_name : str
+        name of the thermodb object
+        - `thermodb_name` : str, name of the thermodb object
     
     Returns
     -------
@@ -134,7 +136,7 @@ def build_thermodb() -> CompBuilder:
     '''
     try:
         # init class
-        return CompBuilder()
+        return CompBuilder(thermodb_name=thermodb_name)
     except Exception as e:
         raise Exception("Building thermodb failed!, ", e)
 
