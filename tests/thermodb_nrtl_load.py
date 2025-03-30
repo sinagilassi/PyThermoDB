@@ -51,10 +51,11 @@ print(nrtl_alpha_data.matrix_data_structure())
 print(nrtl_alpha_data.get_property('Alpha_i_1', comp1))
 # by symbol
 
+# old format
 print(nrtl_alpha_data.get_matrix_property("Alpha_i_j",
                                           [comp1, comp2], symbol_format='alphabetic'))
 
-
+# new format
 nrtl_data_ = " nrtl_alpha | Alpha_i_j | methanol | ethanol"
 print(nrtl_thermodb.retrieve(nrtl_data_, message="NRTL Alpha value"))
 
