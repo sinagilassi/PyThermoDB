@@ -45,6 +45,10 @@ print(nrtl_thermodb.check_properties())
 # ! load data
 nrtl_alpha_data = nrtl_thermodb.check_property('nrtl_alpha')
 print(type(nrtl_alpha_data))
+
+nrtl_alpha_data = nrtl_thermodb.select_property('nrtl_alpha')
+print(type(nrtl_alpha_data))
+
 # heat of formation at 298.15K
 print(nrtl_alpha_data.matrix_data_structure())
 

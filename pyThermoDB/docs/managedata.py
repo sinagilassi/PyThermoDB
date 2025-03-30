@@ -335,6 +335,14 @@ class ManageData():
                         for eq, eq_data in table_data['MATRIX-EQUATIONS'].items():
                             # save
                             _eq.append(eq_data)
+                            
+                        # matrix-symbol
+                        # matrix_symbol = table_data.get('MATRIX-SYMBOL', None)
+                        # # embedded symbol
+                        # if matrix_symbol:
+                        #     _eq.append({
+                        #         'MATRIX-SYMBOL': matrix_symbol
+                        #     })
 
                         # save
                         tables.append({
@@ -366,6 +374,12 @@ class ManageData():
                     elif 'MATRIX-DATA' in table_data:
                         # matrix-data
                         matrix_data = table_data['MATRIX-DATA']
+                        # matrix-symbol
+                        matrix_symbol = table_data.get('MATRIX-SYMBOL', None)
+                        # embedded symbol
+                        if matrix_symbol:
+                            matrix_data['MATRIX-SYMBOL'] = matrix_symbol
+                        
                         # save
                         tables.append({
                             'table_id': table_id,
