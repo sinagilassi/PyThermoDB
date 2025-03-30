@@ -13,8 +13,14 @@ print(ptdb.__version__)
 # BUILD THERMODB
 # ====================================
 # build a thermodb
-thermo_db = ptdb.build_thermodb()
+thermo_db = ptdb.build_thermodb(thermodb_name="CO2-thermodb")
 print(type(thermo_db))
+
+# version
+print(thermo_db.build_version)
+
+# thermodb name
+print(thermo_db.thermodb_name)
 
 # add TableData
 # add TableEquation
@@ -28,3 +34,5 @@ thermo_db.add_data(
 
 # save
 thermo_db.save(f'{property_name}', 'tests')
+
+# version

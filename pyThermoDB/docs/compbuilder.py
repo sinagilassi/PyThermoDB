@@ -10,6 +10,7 @@ from .tabledata import TableData
 from .tableequation import TableEquation
 from .tablematrixdata import TableMatrixData
 from .tablematrixequation import TableMatrixEquation
+from ..config import __version__
 
 
 class CompBuilder(CompExporter):
@@ -17,10 +18,40 @@ class CompBuilder(CompExporter):
 
     # vars
     __data = {}
+    # thermodb name (optional)
+    __thermodb_name: str | None = None
+    # thermodb version
+    build_version = __version__
 
-    def __init__(self):
+    def __init__(self, thermodb_name: Optional[str] = None):
+        '''
+        Initialize CompBuilder object
+        
+        Parameters
+        ----------
+        thermodb_name : str
+            name of the thermodb (default is None)
+        '''
         # init class
         super().__init__()
+        # set name
+        self.__thermodb_name = thermodb_name
+        
+    @property
+    def thermodb_name(self) -> str | None:
+        '''
+        Get thermodb name
+        
+        Returns
+        -------
+        str
+            thermodb name
+        '''
+        # check name
+        if self.__thermodb_name is None:
+            # return default name
+            return 'thermodb'
+        return self.__thermodb_name
         
     def add_data(self, name: str, value: Union[TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation]):
         '''
