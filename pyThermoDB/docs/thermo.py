@@ -992,8 +992,8 @@ class ThermoDB(ManageData):
             
         Returns
         -------
-            
-        
+        object : TableEquation | TableData | TableMatrixEquation | TableMatrixData
+            table object with data loaded
         """
         try:
             # detect table type
@@ -1037,8 +1037,6 @@ class ThermoDB(ManageData):
                 raise Exception('Table loading error!')
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
-    
-    
     
     def build_equation(self, component_name: str, databook: int | str, table: int | str,
                        column_name: Optional[str | list[str]] = None, query: bool = False) -> TableEquation:

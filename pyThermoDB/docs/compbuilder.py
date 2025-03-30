@@ -418,7 +418,7 @@ class CompBuilder(CompExporter):
         '''
         try:
             # SECTION 1: check if the property exists in both functions and properties
-            if thermo_name in self.__data and thermo_name in self.properties:
+            if thermo_name in self.functions and thermo_name in self.properties:
                 # raise
                 raise Exception('Property exists in both functions and properties!')
             
