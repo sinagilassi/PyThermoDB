@@ -1,4 +1,4 @@
-﻿No.,Name,Formula,State,MW,Tc,Pc,Vc,Zc,AcFa,dHf_IG,dGf_IG
+﻿No.,Name,Formula,State,MW,Tc,Pc,Vc,Zc,AcFa,enthalpy-of-formaation,dGf_IG
 -,-,-,-,MW,Tc,Pc,Vc,Zc,AcFa,EnFo,GiEnFo
 -,-,-,-,g/mol,K,MPa,m3/kmol,1,1,kJ/mol,kJ/mol
 1,carbon dioxide,CO2,g,44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4
