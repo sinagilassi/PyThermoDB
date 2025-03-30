@@ -102,7 +102,7 @@ class TableData:
             # print(type(sr))
 
         else:
-            raise ValueError("loading error!")
+            raise ValueError(f"loading error! {property} is not a valid type!")
 
         # convert to dict
         data_dict = DataResult(**sr.to_dict())
@@ -127,6 +127,81 @@ class TableData:
         # res
         return data_dict
 
+    def insert(self, property: str | int, message: Optional[str] = None) -> DataResult:
+        '''
+        Get a component property from data table structure
+
+        Parameters
+        ----------
+        property : str | int
+            property name, symbol or id
+        message : str
+            message to display when property is found or not found
+
+        Returns
+        -------
+        data_dict : DataResult
+            property result dict
+        '''
+        # ! get data for a selected component
+        # dataframe
+        df = pd.DataFrame(self.prop_data)
+
+        get_data = None
+        # choose a column
+        if isinstance(property, str):
+            # df = df[property_name]
+            # look up prop_data dict
+            # check key exists
+            if property in self.prop_data.keys():
+                get_data = self.prop_data[property]
+            else:
+                # check symbol value in each item
+                for key, value in self.prop_data.items():
+                    if property == value['symbol']:
+                        # value found
+                        get_data = self.prop_data[key]
+                        # property name
+                        property = key
+                        break
+            if get_data is None:
+                raise ValueError(f"Property '{property}' not found!")
+            # series
+            sr = pd.Series(get_data, dtype='str')
+            # print(type(sr))
+
+        elif isinstance(property, int):
+            # get column index
+            column_index = df.columns[property-1]
+            sr = df.loc[:, column_index]
+            # print(type(sr))
+
+        else:
+            raise ValueError(f"loading error! {property} is not a valid type!")
+
+        # convert to dict
+        data_dict = DataResult(**sr.to_dict())
+        # print(data_dict, type(data_dict))
+
+        # property name
+        if isinstance(property, str):
+            data_dict['property_name'] = property
+        else:
+            data_dict['property_name'] = df.columns[property-1]
+
+        # update message
+        if message:
+            data_dict['message'] = str(message)
+        else:
+            data_dict['message'] = 'No message'
+
+        # add databook and table name
+        data_dict['databook_name'] = self.databook_name if self.databook_name else 'No databook name'
+        data_dict['table_name'] = self.table_name if self.table_name else 'No table name'
+
+        # res
+        return data_dict
+    
     def to_dict(self):
         '''
         Convert prop to dict
