@@ -2,6 +2,7 @@
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB import TableData
 
 # verify the version of pyThermoDB
 print(ptdb.__version__)
@@ -37,9 +38,17 @@ print(prop1_.prop_data)
 
 # get property
 print(prop1_.get_property('dHf_IG')['value'])
-print(prop1_.insert('dHf_IG')['value'])
 
 
 # new format
 dHf_IG_src = 'general-data | dHf_IG'
-print(data_thermodb.retrieve(dHf_IG_src))
+print(data_thermodb.retrieve(dHf_IG_src, message="enthalpy of formation"))
+
+# ====================================
+# SELECT A FUNCTION
+# ====================================
+# select function
+func1_ = data_thermodb.select_function('heat-capacity')
+print(type(func1_))
+print(func1_.args)
+print(func1_.cal(T=295.15, message="heat capacity of methanol"))
