@@ -361,6 +361,9 @@ class TableMatrixData:
         else:
             raise ValueError(f"Property format {property} not recognized.")
 
+    def insert(self):
+        pass
+
     def to_dict(self):
         '''
         Convert prop to dict

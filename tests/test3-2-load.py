@@ -27,3 +27,19 @@ print(type(data_thermodb))
 # ====================================
 # check all properties and functions registered
 print(data_thermodb.check())
+
+# ====================================
+# SELECT PROPERTY
+# ====================================
+prop1_ = data_thermodb.select('general-data')
+print(type(prop1_))
+print(prop1_.prop_data)
+
+# get property
+print(prop1_.get_property('dHf_IG')['value'])
+print(prop1_.insert('dHf_IG')['value'])
+
+
+# new format
+dHf_IG_src = 'general-data | dHf_IG'
+print(data_thermodb.retrieve(dHf_IG_src))

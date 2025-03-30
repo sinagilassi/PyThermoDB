@@ -20,11 +20,14 @@ print(type(Acetaldehyde_thermodb))
 # load data
 print(Acetaldehyde_thermodb.check_properties())
 
-Acetaldehyde_general = Acetaldehyde_thermodb.check_property('general')
+# check property
+# methdod 1
+# Acetaldehyde_general = Acetaldehyde_thermodb.check_property('general')
+# method 2
+Acetaldehyde_general = Acetaldehyde_thermodb.select('general')
 print(type(Acetaldehyde_general))
 print(Acetaldehyde_general.prop_data)
-# print(Acetaldehyde_general.get_property(
-#     'dHf_IG')['value'])
+print(Acetaldehyde_general.get_property('dHf_IG')['value'])
 
 # load equation
 Acetaldehyde_equation = Acetaldehyde_thermodb.check_function('heat-capacity')

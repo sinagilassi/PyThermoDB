@@ -21,7 +21,7 @@ class CompBuilder(CompExporter):
     def __init__(self):
         # init class
         super().__init__()
-
+        
     def add_data(self, name: str, value: Union[TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation]):
         '''
         Add TableData/TableEquation
@@ -276,14 +276,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def check_property(self, name: str) -> TableData | TableMatrixData:
+    def check_property(self, thermo_name: str) -> TableData | TableMatrixData:
         '''
         Check properties
 
         Parameters
         ----------
-        name : str
-            name of the property to check
+        thermo_name : str
+            name of the thermodynamic property
 
         Returns
         -------
@@ -292,7 +292,7 @@ class CompBuilder(CompExporter):
         '''
         try:
             # check library
-            return self.properties[name]
+            return self.properties[thermo_name]
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
@@ -330,7 +330,77 @@ class CompBuilder(CompExporter):
             return self.functions[name]
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
+        
+    def select(self, thermo_name: str) -> TableData | TableMatrixData | TableEquation | TableMatrixEquation:
+        '''
+        Select a thermodynamic property
 
+        Parameters
+        ----------
+        thermo_name : str
+            name of the thermodynamic property
+
+        Returns
+        -------
+        TableMatrixData | TableData | TableEquation | TableMatrixEquation
+            property defined in the thermodb 
+        '''
+        try:
+            # SECTION 1: check if the property exists in both functions and properties
+            if thermo_name in self.__data and thermo_name in self.properties:
+                # raise
+                raise Exception('Property exists in both functions and properties!')
+            
+            # SECTION 2: check if the property is a function or a property
+            if thermo_name in self.functions:
+                # check if the property is a function
+                return self.functions[thermo_name]
+            elif thermo_name in self.properties:
+                # check if the property is a property
+                return self.properties[thermo_name]
+            else:
+                # check if the property is a property in the thermodb
+                raise Exception('Property not found in the thermodb!')
+        except Exception as e:
+            raise Exception('Selecting a thermodynamic property failed!, ', e)
+
+    def retrieve(self, property_source: str):
+        '''
+        Retrieve a thermodynamic property from source
+        
+        Parameters
+        ----------
+        property_source : str
+            source of the property to retrieve such as 'general-data | dH_IG'
+            
+        Returns
+        -------
+        prop: DataResult
+            property object
+        '''
+        try:
+            # split source
+            source = property_source.split('|')
+            # check length
+            if len(source) != 2:
+                raise ValueError(f"Invalid source format! {property_source}")
+
+            # SECTION: property source
+            prop_src = self.select(source[0].strip())
+
+            # SECTION: property name
+            # check
+            if isinstance(prop_src, TableData):
+                prop = prop_src.get_property(source[1].strip())
+                # return
+                return prop
+            else:
+                raise Exception(
+                    f"Property source is not a TableData object! {prop_src}")
+                
+        except Exception as e:
+            raise Exception("Retrieving failed!, ", e)
+        
     def save(self, filename: str, file_path: Optional[str] = None) -> bool:
         """
         Saves the instance to a file using pickle
