@@ -448,7 +448,7 @@ class CompBuilder(CompExporter):
         message : str
             message to display (default is None)
         symbol_format : str
-            symbol format to use (default is 'alphabetic'), needed for TableMatrixData
+            symbol format to use (default is 'alphabetic'), needed for `TableMatrixData`
             
         Returns
         -------
@@ -492,7 +492,7 @@ class CompBuilder(CompExporter):
                 if len(component_names) != 2:
                     raise ValueError(f"Invalid source format! {property_source}, components are required!")
                 # get property
-                prop = prop_src.get_matrix_property(source[1].strip(), component_names=component_names, 
+                prop = prop_src.ij(source[1].strip(), component_names=component_names, 
                                                     symbol_format=symbol_format, message=message)
                 # return
                 return prop

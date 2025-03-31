@@ -1,6 +1,7 @@
 # import packages/modules
 import pandas as pd
 from typing import Union, Optional, Any, Literal, TypedDict, Dict, List, Tuple
+from warnings import warn
 # local
 from ..models import DataResultType, DataResult
 
@@ -179,7 +180,7 @@ class TableMatrixData:
         Parameters
         ----------
         property : str
-            property name or id must be string as: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol
+            property name or id must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
 
         Returns
         -------
@@ -229,6 +230,10 @@ class TableMatrixData:
         DataResult
             component property
         '''
+        # NOTE: warning deprecated method
+        # warn("get_matrix_property is deprecated, use ij method instead",
+        #      DeprecationWarning, stacklevel=2)
+        
         # matrix structure (all data)
         matrix_table = self.matrix_table
         # print(matrix_table)
@@ -371,9 +376,61 @@ class TableMatrixData:
         else:
             raise ValueError(f"Property format {property} not recognized.")
 
-    def insert(self):
-        pass
+    def ij(self, property: str, component_names: list[str],
+                            symbol_format: Literal['alphabetic',
+                                                   'numeric'] = 'alphabetic',
+                            message: Optional[str] = None) -> DataResult:
+        '''
+        Get a component property from data table structure
 
+        Parameters
+        ----------
+        property : str
+            property must be a string as: `Alpha_ij` or `Alpha_name1_name2`
+        component_names : list[str]
+            component names such as ['ethanol', 'methanol']
+        symbol_format : str
+            symbol format alphabetic or numeric (default: alphabetic)
+        message : str
+            message (default: None)
+
+        Returns
+        -------
+        DataResult
+            component property
+        '''
+        try:
+            # check property alpha_ij or alpha_name1_name2
+            if "_" not in property.strip():
+                raise Exception(
+                    "Invalid property name. Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                )
+                
+            # extract data
+            prop_name, item1, item2 = property.split('_')
+            # strip
+            item1 = item1.strip()
+            item2 = item2.strip()
+            
+            # check item1 and item2 types
+            if item1+item2 != 'i_j':
+                # NOTE: get matrix property by name
+                return self.get_matrix_property_by_name(
+                    property)
+            elif item1+item2 == 'i_j':
+                # set components
+                component_names = [item1, item2]
+                
+                # set message
+                message = message if message else "No message"
+                
+                # NOTE: get matrix property
+                return self.get_matrix_property(
+                    property, component_names, symbol_format, message)
+                
+        except Exception as e:
+            raise Exception("Getting matrix property failed!, ", e)
+        
     def to_dict(self):
         '''
         Convert prop to dict
