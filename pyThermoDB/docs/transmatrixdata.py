@@ -1,6 +1,6 @@
 # import packages/modules
 # external
-import pandas as pd
+
 # internal
 
 
@@ -60,25 +60,3 @@ class TransMatrixData:
 
         # res
         return self.data_trans_pack
-
-    # def view(self, value=False):
-    #     '''
-    #     Display data in a table (pandas dataframe)
-
-    #     Parameters
-    #     ----------
-    #     value: bool
-    #         display value
-
-    #     Returns
-    #     -------
-    #     df: dataframe
-    #         data table
-    #     '''
-    #     df = pd.DataFrame(self.api_data_pack)
-    #     print(df)
-    #     # check
-    #     if value:
-    #         return df
-    #     else:
-    #         return None
