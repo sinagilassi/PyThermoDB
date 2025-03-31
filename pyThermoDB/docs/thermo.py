@@ -977,13 +977,13 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def build_thermo_property(self, component_names: list, databook: int | str, table: int | str):
+    def build_thermo_property(self, component_names: list[str], databook: int | str, table: int | str):
         """  
         Build a thermodynamic property including data, equation, matrix-data and matrix-equation.
         
         Parameters
         ----------
-        component_names :  list
+        component_names :  list[str]
             list of component name (e.g. 'Carbon dioxide')
         databook : int | str
             databook id or name
@@ -1253,23 +1253,32 @@ class ThermoDB(ManageData):
             # table id
             table_id = tb_id + 1
 
+            # NOTE 
             # ! retrieve all data from matrix-table (csv file)
             # matrix table
             matrix_table = self.table_data(databook, table)
 
+            # NOTE
             # get data from api
             component_data_pack = []
+            
+            # looping through components
             for component_name in component_names:
-                component_data = self.get_component_data(component_name.strip(),
+                # component name
+                component_name = str(component_name).strip()
+                
+                # get data from api
+                component_data = self.get_component_data(component_name,
                                                          databook_id, table_id,
                                                          column_name=column_name,
                                                          query=query, matrix_tb=True)
                 # save
                 component_data_pack.append({
-                    'component_name': str(component_name).strip(),
+                    'component_name': component_name,
                     'data': component_data
                 })
 
+            # SECTION
             # check loading state
             if component_data_pack:
                 # check availability

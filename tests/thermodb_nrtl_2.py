@@ -84,6 +84,8 @@ comp3 = 'benzene'
 # COMP1_check_availability = thermo_db.check_component(
 #     comp1, 3, 2, query, query=True)
 
+components = [comp1, comp2, comp3]
+
 # ====================================
 # LOAD MATRIX DATA
 # ====================================
@@ -123,7 +125,6 @@ print(nrtl_alpha.ij(prop_name))
 print(nrtl_alpha.ij(prop_name).get('value'))
 
 # components
-components = [comp1, comp2, comp3]
 # looping through the matrix data
 for comp1 in components:
     for comp2 in components:
@@ -138,7 +139,7 @@ for comp1 in components:
 # ====================================
 # NOTE: build equation
 nrtl_tau_eq = thermo_db.build_thermo_property(
-    [comp1, comp2, comp3], 'NRTL', 'Interaction parameters of the NRTL equation-2')
+    components, 'NRTL', 'Interaction parameters of the NRTL equation-2')
 
 # load parms
 print(nrtl_tau_eq.parms)
