@@ -42,8 +42,8 @@ class DataResult(TypedDict):
     unit: Optional[str]
     value: Optional[Union[str, float]]
     message: Optional[str]
-    databook_name: Optional[str]
-    table_name: Optional[str]
+    databook_name: Optional[Union[str, int]]
+    table_name: Optional[Union[str, int]]
 
 
 class EquationResult(TypedDict):
@@ -53,6 +53,5 @@ class EquationResult(TypedDict):
     unit: Optional[str]
     value: Optional[Union[str, float]]
     message: Optional[str]
-    databook_name: Optional[str]
-    table_name: Optional[str]
-    
+    databook_name: Optional[Union[str, int]]
+    table_name: Optional[Union[str, int]]

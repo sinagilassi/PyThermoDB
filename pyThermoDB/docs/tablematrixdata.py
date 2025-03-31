@@ -11,21 +11,26 @@ class TableMatrixData:
     __trans_data = {}
     __prop_data = {}
     __matrix_symbol = None
+    __table_strcuture = None
     # pack
     __trans_data_pack = {}
     __prop_data_pack = {}
 
-    def __init__(self, databook_name, table_name, table_data, matrix_table=None, matrix_symbol=None):
+    def __init__(self, databook_name: str | int, table_name: str | int, 
+                 table_data, matrix_table=None, matrix_symbol: Optional[List[str]] = None):
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data # NOTE: reference template (yml)
         self.matrix_table = matrix_table  # all elements saved in the matrix-table
         
-        # check
+        # NOTE: check
         if matrix_symbol is None:
             symbol_ = self.table_data['MATRIX-SYMBOL']  # matrix symbol such as Alpha_i_j
-            self.__matrix_symbol = symbol_.strip()
-
+            self.__matrix_symbol = symbol_
+            
+        # NOTE: table structure
+        self.__generate_table_structure(self.table_data)
+        
     @property
     def trans_data_pack(self):
         return self.__trans_data_pack
@@ -68,6 +73,29 @@ class TableMatrixData:
     @property
     def matrix_symbol(self):
         return self.__matrix_symbol
+    
+    def __generate_table_structure(self, table_data: dict[str, Any]):
+        '''
+        Generate table structure from data table
+        
+        Parameters
+        ----------
+        table_data : dict[str, Any]
+            data table
+        '''
+        try:
+            # init
+            self.__table_strcuture = {}
+            # looping through table data
+            for key, value in self.table_data.items():
+                if key != 'MATRIX-SYMBOL':
+                    self.__table_strcuture[key] = value
+            
+            # check
+            if self.__table_strcuture is None:
+                raise Exception("Table structure is None!")
+        except Exception as e:
+            raise Exception("Generating table structure failed!, ", e)
 
     def _find_component_prop_data(self, component_name_set: str):
         '''
@@ -106,17 +134,21 @@ class TableMatrixData:
         '''
         Display matrix-data table structure
         '''
-        # dataframe
-        df = pd.DataFrame(self.table_data)
-        # add ID column
-        df.insert(0, 'ID', range(1, len(df) + 1))
-        # arrange columns
-        # change the position of ID column to the last
-        cols = df.columns.tolist()
-        cols.insert(len(cols), cols.pop(cols.index('ID')))
-        df = df[cols]
+        try:
+            # NOTE: choose from table data structure all except matrix-symbol
+            # dataframe
+            df = pd.DataFrame(self.__table_strcuture)
+            # add ID column
+            df.insert(0, 'ID', range(1, len(df) + 1))
+            # arrange columns
+            # change the position of ID column to the last
+            cols = df.columns.tolist()
+            cols.insert(len(cols), cols.pop(cols.index('ID')))
+            df = df[cols]
 
-        return df
+            return df
+        except Exception as e:
+            raise Exception("Matrix data structure failed!, ", e)
 
     def get_property(self, property: str | int, component_name: str) -> DataResultType | dict:
         '''
