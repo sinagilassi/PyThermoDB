@@ -63,6 +63,15 @@ print(nrtl_alpha_data.get_matrix_property("Alpha_i_j",
 nrtl_data_ = " nrtl_alpha | Alpha_i_j | methanol | ethanol"
 print(nrtl_thermodb.retrieve(nrtl_data_, message="NRTL Alpha value"))
 
+# new format
+nrtl_data_ = "nrtl_alpha | Alpha_methanol_ethanol"
+print(nrtl_thermodb.retrieve(nrtl_data_, message="NRTL Alpha value"))
+
+# ij method
+nrtl_data_ = "Alpha_methanol_ethanol"
+alpha_ = nrtl_alpha_data.ij(nrtl_data_)
+print(alpha_)
+
 
 
 # ! load data
