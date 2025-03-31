@@ -466,6 +466,8 @@ class CompBuilder(CompExporter):
         try:
             # split source
             source = property_source.split('|')
+            # num
+            source_num = len(source)
             
             # SECTION: check message
             message = message if message is not None else f'Retrieving used for {property_source}!'
@@ -477,25 +479,42 @@ class CompBuilder(CompExporter):
             # check
             if isinstance(prop_src, TableData):
                 # check length
-                if len(source) != 2:
+                if source_num != 2:
                     raise ValueError(f"Invalid source format! {property_source}")
                 # get property
                 prop = prop_src.get_property(source[1].strip(), message=message)
                 # return
                 return prop
             elif isinstance(prop_src, TableMatrixData):
-                # get components
-                component_names = source[2:]
-                # trim
-                component_names = [name.strip() for name in component_names]
-                # check length
-                if len(component_names) != 2:
-                    raise ValueError(f"Invalid source format! {property_source}, components are required!")
-                # get property
-                prop = prop_src.ij(source[1].strip(), component_names=component_names, 
-                                                    symbol_format=symbol_format, message=message)
-                # return
-                return prop
+                # NOTE: check strring format
+                if source_num == 2:
+                    # property name full format
+                    prop_name = source[1].strip()
+                    
+                    # check if the property name is in the format of 'Alpha_i_j'
+                    extracted = prop_name.split('_')
+                    # count
+                    if len(extracted) != 3:
+                        raise ValueError(f"Invalid source format! {property_source}, property name is required!")
+                    
+                    # NOTE: get property (ij method)
+                    prop = prop_src.ij(prop_name, symbol_format=symbol_format, message=message)
+                    # return
+                    return prop
+                elif source_num == 4:
+                    # get components
+                    component_names = source[2:]
+                    # trim
+                    component_names = [name.strip() for name in component_names]
+                    # check length
+                    if len(component_names) != 2:
+                        raise ValueError(f"Invalid source format! {property_source}, components are required!")
+                    
+                    # NOTE: get property (get_matrix_property method)
+                    prop = prop_src.get_matrix_property(source[1].strip(), component_names=component_names, 
+                                                        symbol_format=symbol_format, message=message)
+                    # return
+                    return prop
             else:
                 raise Exception(
                     f"Property source is not a TableData object! {prop_src}")
