@@ -203,9 +203,6 @@ class TableEquation:
                 return list(_return.values())[0]
             else:
                 raise Exception("Every equation has only one return")
-
-            # res
-            return _return
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
@@ -236,6 +233,13 @@ class TableEquation:
         '''
         # equation info
         eq_info = self.eq_info()
+        # databook and table name
+        eq_src = {
+            'databook_name': self.databook_name,
+            'table_name': self.table_name,
+        }
+        # update
+        eq_info.update(eq_src)
 
         # build parms dict
         _parms = self.load_parms()

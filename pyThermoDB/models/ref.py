@@ -1,5 +1,6 @@
 # import packages/modules
 from typing import TypedDict, List, Optional, Union, Dict, Any
+import numpy as np
 
 class DataBookTableTypes(TypedDict):
     """Databook Table Types Definition"""
@@ -51,7 +52,7 @@ class EquationResult(TypedDict):
     equation_name: Optional[str]
     symbol: Optional[str]
     unit: Optional[str]
-    value: Optional[Union[str, float]]
+    value: Optional[Union[str, float, dict, np.ndarray]]
     message: Optional[str]
     databook_name: Optional[Union[str, int]]
     table_name: Optional[Union[str, int]]
