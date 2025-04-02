@@ -1,7 +1,8 @@
 # GENERATE RESULTS
+import numpy as np
 from ..models import EquationResult
 
-def format_eq_data(value: float | str, res_dict: dict, message: str) -> EquationResult:
+def format_eq_data(value: float | str | dict | np.ndarray, res_dict: dict, message: str) -> EquationResult:
     """
     Format the equation result data.
 

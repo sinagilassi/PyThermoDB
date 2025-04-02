@@ -154,10 +154,23 @@ print(nrtl_tau_eq.equation_parms())
 print(nrtl_tau_eq.equation_args())
 print(nrtl_tau_eq.equation_body())
 print(nrtl_tau_eq.equation_return())
+# elements
+print(nrtl_tau_eq.matrix_elements)
 
 # cal
 tau_cal = nrtl_tau_eq.cal(T=298.15)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='numeric', T=298.15)
+print(tau_cal)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='alphabetic', T=298.15)
+print(tau_cal)
+
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='numeric', T=298.15)
+print(tau_cal)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='alphabetic', T=298.15)
+print(tau_cal)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='numeric', T=298.15)
+print(tau_cal)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='alphabetic', T=298.15)
 print(tau_cal)
 
 # ====================================

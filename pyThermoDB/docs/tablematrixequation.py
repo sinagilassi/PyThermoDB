@@ -4,6 +4,7 @@ import math
 import sympy as sp
 import numpy as np
 import re
+from typing import Optional, Union, List, Dict, Any, Literal
 # local
 from ..models import EquationResult
 from .equationbuilder import EquationBuilder
@@ -21,6 +22,7 @@ class TableMatrixEquation:
     body_integral = ''
     body_first_derivative = ''
     body_second_derivative = ''
+    matrix_elements = []
     __trans_data = {}
     __prop_equation = {}
     __parms_values = {}
@@ -78,7 +80,8 @@ class TableMatrixEquation:
             'body_integral': self.body_integral,
             'body_first_derivative': self.body_first_derivative,
             'body_second_derivative': self.body_second_derivative,
-            'custom_integral': self._custom_integral
+            'custom_integral': self._custom_integral,
+            'matrix_elements': self.matrix_elements,
         }
 
     def eq_structure(self, id=1):
@@ -144,13 +147,14 @@ class TableMatrixEquation:
                 return list(_return.values())[0]
             else:
                 raise Exception("Every equation has only one return")
-
-            # res
-            return _return
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, message='', decimal_accuracy=4, sympy_format=False, **args) -> EquationResult:
+    def cal(self, message: str = '', decimal_accuracy: int = 4, 
+            sympy_format: bool = False, 
+            filter_elements: list = [], 
+            output_format: Literal['alphabetic', 'numeric'] = 'numeric',
+            **args) -> EquationResult:
         '''
         Execute a function
 
@@ -162,6 +166,8 @@ class TableMatrixEquation:
             decimal accuracy (default is 4)
         sympy_format : bool
             @deprecated() whether to return sympy format (default is False) 
+        filter_elements : list[str], optional
+            list of elements to be calculated (default is None)
         args : dict
             a dictionary contains variable names and values as
 
@@ -178,6 +184,14 @@ class TableMatrixEquation:
         try:
             # equation info
             eq_info = self.eq_info()
+            
+            # add table name and databook
+            eq_src = {
+                'table_name': self.table_name,
+                'databook_name': self.databook_name,
+            }
+            # update
+            eq_info.update(eq_src)
 
             # build parms dict
             # key: parms name, value: parms matrix (2d array)
@@ -185,6 +199,9 @@ class TableMatrixEquation:
             # execute equation
             # res
             res = None
+            res_comp = {}
+            res_filtered = None
+            res_comp_filtered = None
             # check
             if sympy_format:
                 res = self.eqExe_sympy(self.body, _parms, args=args)
@@ -193,13 +210,72 @@ class TableMatrixEquation:
 
             if res is not None:
                 res = np.round(res, decimal_accuracy)
-
+                
+                # SECTION
+                # element no
+                element_no = len(self.matrix_elements)
+                
+                # extract from res
+                for i in range(element_no):
+                    for j in range(element_no):
+                        # key
+                        key = f'{self.matrix_elements[i]}_{self.matrix_elements[j]}'
+                        # value
+                        value = res[i][j]
+                        # set
+                        res_comp[key] = value
+                                
+                # SECTION
+                # check
+                if len(filter_elements) != 0:
+                    # check at least 2 elements
+                    if len(filter_elements) < 2:
+                        raise Exception('At least 2 elements required!')
+                    
+                    # init
+                    res_comp_filtered = {}
+                    
+                    # filter
+                    filtered_elements_no = len(filter_elements)
+                    
+                    # init 
+                    res_filtered = np.zeros(filtered_elements_no*filtered_elements_no)
+                    k = 0
+                    
+                    # extract from res
+                    for element_1 in filter_elements:
+                        for element_2 in filter_elements:
+                            # key
+                            key_ = f'{element_1}_{element_2}'
+                            # value
+                            value = res_comp[key_]
+                            # set
+                            res_comp_filtered[key_] = value
+                            # set filtered value
+                            res_filtered[k] = value
+                            
+                            # increment
+                            k += 1
+                                
+                    # reshape
+                    res_filtered = np.array(res_filtered).reshape(filtered_elements_no, filtered_elements_no)
+            
+            # SECTION
             # set message
             if message == '':
                 message = 'No message'
 
             # eq res
-            eq_data = format_eq_data(res, eq_info, message or 'No message')
+            if output_format == 'numeric':
+                # set
+                res_ = res_filtered if res_filtered is not None else res
+            elif output_format == 'alphabetic':
+                # set
+                res_ = res_comp_filtered if res_comp_filtered is not None else res_comp 
+            else:
+                raise Exception('Output format not supported!')
+            
+            eq_data = format_eq_data(res_, eq_info, message or 'No message', )
 
             return eq_data
         except Exception as e:
@@ -456,6 +532,10 @@ class TableMatrixEquation:
             trans_data_pack = self.trans_data_pack
             # component names
             component_names = list(trans_data_pack.keys())
+            # strip
+            component_names = [item.strip() for item in component_names]
+            # set
+            self.matrix_elements = component_names
 
             # TODO
             # * check duplicated names
