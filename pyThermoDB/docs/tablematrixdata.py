@@ -15,6 +15,8 @@ class TableMatrixData:
     # pack
     __trans_data_pack = {}
     __prop_data_pack = {}
+    # matrix elements
+    __matrix_elements = None
 
     def __init__(self, databook_name: str | int, table_name: str | int, 
                  table_data, matrix_table=None, matrix_symbol: Optional[List[str]] = None):
@@ -73,6 +75,15 @@ class TableMatrixData:
     @property
     def matrix_symbol(self):
         return self.__matrix_symbol
+    
+    @property
+    def matrix_elements(self):
+        return self.__matrix_elements
+    
+    @matrix_elements.setter
+    def matrix_elements(self, value):
+        self.__matrix_elements = {}
+        self.__matrix_elements = value
     
     def __generate_table_structure(self, table_data: dict[str, Any]):
         '''
@@ -149,6 +160,66 @@ class TableMatrixData:
             return df
         except Exception as e:
             raise Exception("Matrix data structure failed!, ", e)
+        
+    def get_matrix_table(self, mode: Literal['all', 'selected'] = 'all') -> pd.DataFrame:
+        '''
+        Get matrix table data
+        
+        Parameters
+        ----------
+        mode : str
+            mode of data table (all or selected)
+        
+        Returns
+        -------
+        pd.DataFrame
+            matrix table data
+        '''
+        try:
+            # matrix table
+            matrix_table = self.matrix_table
+            
+            if matrix_table is None:
+                raise Exception("Matrix table is None!")
+            
+            # NOTE: check mode
+            if mode == 'all':
+                # SECTION: matrix table (all data)
+                return matrix_table
+            elif mode == 'selected':
+                # SECTION: get all records in Name column
+                # matrix table
+                Names = matrix_table['Name'].unique()
+                Names = [str(i) for i in Names if str(i) != "-"]
+                
+                # selected records
+                Names_selected = self.matrix_elements
+                
+                # check
+                if Names_selected is None:
+                    raise Exception("Selected records are None!")
+                
+                # reduced records
+                Names_ignored = [i for i in Names if i not in Names_selected]
+                
+                # NOTE: remove row where Name is XXX
+                # matrix table
+                matrix_table_filtered = matrix_table[~matrix_table['Name'].isin(Names_ignored)]
+                # drop columns for all Names ignored
+                for column in matrix_table_filtered.columns:
+                    # looping through ignored names
+                    for name in Names_ignored:
+                        # check column name
+                        if name in matrix_table_filtered[column].values:
+                            # drop column
+                            matrix_table_filtered = matrix_table_filtered.drop(
+                                column, axis=1)
+                # return filtered matrix table
+                return matrix_table_filtered
+            else:
+                raise ValueError("Mode not recognized!")
+        except Exception as e:
+            raise Exception("Getting matrix table failed!, ", e)
 
     def get_property(self, property: str | int, component_name: str) -> DataResultType | dict:
         '''
@@ -323,10 +394,9 @@ class TableMatrixData:
         # warn("get_matrix_property is deprecated, use ij method instead",
         #      DeprecationWarning, stacklevel=2)
         
-        # matrix structure (all data)
+        # SECTION: matrix structure (all data)
         matrix_table = self.matrix_table
-        # print(matrix_table)
-
+        
         # check dataframe
         if not isinstance(matrix_table, pd.DataFrame):
             raise Exception("Matrix data is not a dataframe!")

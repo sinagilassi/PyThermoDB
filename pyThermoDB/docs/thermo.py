@@ -1420,6 +1420,8 @@ class ThermoDB(ManageData):
                                 dts.prop_data_pack = transform_api_data
                                 # matrix table
                                 dts.matrix_table = matrix_table
+                                # matrix element
+                                dts.matrix_elements = component_names
 
                                 # res
                                 return dts

@@ -102,6 +102,10 @@ components = [comp1, comp2, comp3]
 nrtl_alpha = thermo_db.build_thermo_property(
     [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation-2")
 
+# matrix table
+print(nrtl_alpha.matrix_table)
+# matrix table
+print(nrtl_alpha.get_matrix_table(mode='selected'))
 # symbol
 print(nrtl_alpha.matrix_symbol)
 
