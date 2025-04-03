@@ -9,12 +9,6 @@ from .docs import (
 )
 
 
-def desc() -> None:
-    print(f'pyThermoDB v-{__version__} is a lightweight and user-friendly\
-          Python package developed by {__author__} designed to provide quick access to essential \
-          thermodynamic data.')
-
-
 def init(custom_reference: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
     '''
     Initialize thermodb app to check and build thermodynamic data and equations.
