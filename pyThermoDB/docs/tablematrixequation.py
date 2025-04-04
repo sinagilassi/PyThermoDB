@@ -219,7 +219,7 @@ class TableMatrixEquation:
                 for i in range(element_no):
                     for j in range(element_no):
                         # key
-                        key = f'{self.matrix_elements[i]}_{self.matrix_elements[j]}'
+                        key = f'{self.matrix_elements[i].strip()} | {self.matrix_elements[j].strip()}'
                         # value
                         value = res[i][j]
                         # set
@@ -246,7 +246,7 @@ class TableMatrixEquation:
                     for element_1 in filter_elements:
                         for element_2 in filter_elements:
                             # key
-                            key_ = f'{element_1}_{element_2}'
+                            key_ = f'{element_1.strip()} | {element_2.strip()}'
                             # value
                             value = res_comp[key_]
                             # set

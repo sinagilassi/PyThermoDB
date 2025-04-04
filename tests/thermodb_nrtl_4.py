@@ -146,64 +146,65 @@ print(prop_matrix, type(prop_matrix))
 
 prop_name = f"alpha | {comp1} | {comp2}"
 # get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='array')
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='dict')
 print(prop_matrix, type(prop_matrix))
-# ====================================
-# BUILD MATRIX EQUATION
-# ====================================
-# NOTE: build equation
-nrtl_tau_eq = thermo_db.build_thermo_property(
-    components, 'NRTL', 'Interaction parameters of the NRTL equation-2')
+# # ====================================
+# # BUILD MATRIX EQUATION
+# # ====================================
+# # NOTE: build equation
+# nrtl_tau_eq = thermo_db.build_thermo_property(
+#     components, 'NRTL', 'Interaction parameters of the NRTL equation-2')
 
-# load parms
-print(nrtl_tau_eq.parms)
-print(nrtl_tau_eq.parms_values)
-print(nrtl_tau_eq.args)
-print(nrtl_tau_eq.arg_symbols)
-print(nrtl_tau_eq.returns)
-print(nrtl_tau_eq.return_symbols)
-print(nrtl_tau_eq.summary)
-# equation details
-print(nrtl_tau_eq.equation_parms())
-print(nrtl_tau_eq.equation_args())
-print(nrtl_tau_eq.equation_body())
-print(nrtl_tau_eq.equation_return())
-# elements
-print(nrtl_tau_eq.matrix_elements)
+# # load parms
+# print(nrtl_tau_eq.parms)
+# print(nrtl_tau_eq.parms_values)
+# print(nrtl_tau_eq.args)
+# print(nrtl_tau_eq.arg_symbols)
+# print(nrtl_tau_eq.returns)
+# print(nrtl_tau_eq.return_symbols)
+# print(nrtl_tau_eq.summary)
+# # equation details
+# print(nrtl_tau_eq.equation_parms())
+# print(nrtl_tau_eq.equation_args())
+# print(nrtl_tau_eq.equation_body())
+# print(nrtl_tau_eq.equation_return())
+# # elements
+# print(nrtl_tau_eq.matrix_elements)
 
-# cal
-tau_cal = nrtl_tau_eq.cal(T=298.15)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='numeric', T=298.15)
-print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='alphabetic', T=298.15)
-print(tau_cal)
+# # cal
+# tau_cal = nrtl_tau_eq.cal(T=298.15)
+# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='numeric', T=298.15)
+# print(tau_cal)
+# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='alphabetic', T=298.15)
+# print(tau_cal)
 
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='numeric', T=298.15)
-print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='alphabetic', T=298.15)
-print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='numeric', T=298.15)
-print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='alphabetic', T=298.15)
-print(tau_cal)
+# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='numeric', T=298.15)
+# print(tau_cal)
+# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='alphabetic', T=298.15)
+# print(tau_cal)
+# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='numeric', T=298.15)
+# print(tau_cal)
+# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='alphabetic', T=298.15)
+# print(tau_cal)
 
 # ====================================
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = "thermodb_nrtl_3"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
 pp(type(thermo_db))
 
 # NOTE: add TableMatrixData
-thermo_db.add_data('nrtl_alpha', nrtl_alpha)
+thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
 # NOTE: add TableMatrixEquation
-thermo_db.add_data('nrtl_tau', nrtl_tau_eq)
+# thermo_db.add_data('tau-eq', nrtl_tau_eq)
 
 # file name
-thermodb_file_path = os.path.join(os.getcwd(), 'tests')
+# thermodb_file_path = os.path.join(os.getcwd(), 'tests')
+thermodb_file_path = r"E:\Python Projects\universal-projects\PyThermoModels"
 # save
 thermo_db.save(
     f'{thermodb_name}', file_path=thermodb_file_path)
