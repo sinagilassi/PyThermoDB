@@ -611,7 +611,8 @@ class TableMatrixData:
                     val = self.ij(prop_).get('value')
                     
                     # set
-                    res_dict[key] = val
+                    key_comp = f"{components[i]} | {components[j]}"
+                    res_dict[key_comp] = val
                     res_array[i][j] = val
 
             # check

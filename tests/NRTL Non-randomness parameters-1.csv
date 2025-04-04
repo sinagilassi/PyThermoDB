@@ -4,5 +4,5 @@ No.,Name,Formula,alpha_i_1,alpha_i_2,dg_i_1,dg_i_2
 -,-,-,1,2,1,2
 -,-,-,methanol,butyl-methyl-ether,methanol,butyl-methyl-ether
 -,-,-,C2H5OH,C5H12O,C2H5OH,C5H12O
-1,ethanol,C2H5OH,0,0.680715,0,1.216705263
-2,butyl-methyl-ether,C5H12O,0.680715,0,0.658310467,0
+1,ethanol,C2H5OH,0,0.680715,0,3268.884433
+2,butyl-methyl-ether,C5H12O,0.680715,0,1768.662389,0
