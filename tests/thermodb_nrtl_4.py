@@ -42,26 +42,17 @@ tb_list = thermo_db.list_tables('NRTL-EtOH-MTBE')
 print(tb_list)
 
 # # select a table
-# tb = thermo_db.select_table(
-#     'NRTL', 'Non-randomness parameters of the NRTL equation')
-# print(tb)
+tb = thermo_db.select_table(
+    'NRTL-EtOH-MTBE', 'NRTL Non-randomness parameters-1')
+print(tb)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-# tb_info = thermo_db.table_info(
-#     'NRTL', "Non-randomness parameters of the NRTL equation")
-# print(tb_info)
-
-# ====================================
-# LOAD TABLE
-# ====================================
-# # load equation
-# tb_eq = thermo_db.equation_load(3, 1)
-# # equation structure
-# tb_eq_structure = tb_eq.eq_structure(1)
-# pp(tb_eq_structure)
+tb_info = thermo_db.table_info(
+    'NRTL-EtOH-MTBE', "NRTL Non-randomness parameters-1")
+print(tb_info)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -81,15 +72,6 @@ comp2 = "butyl-methyl-ether"
 #     comp1, 3, 2, query, query=True)
 
 components = [comp1, comp2]
-
-# ====================================
-# LOAD MATRIX DATA
-# ====================================
-# tb_data_df = thermo_db.table_data(
-#     'NRTL', 2)
-# print(type(tb_data_df))
-# pp(tb_data_df)
-
 
 # ====================================
 # BUILD MATRIX DATA
@@ -125,15 +107,6 @@ res_1 = nrtl_alpha.ij(prop_name)
 print(res_1)
 print(res_1.get('value'))
 
-# components
-# looping through the matrix data
-# for comp1 in components:
-#     for comp2 in components:
-#         prop_name = f"dg_{comp1}_{comp2}"
-#         # get property value
-#         prop_value = nrtl_alpha.ij(prop_name).get('value')
-#         # log
-#         print(f"Property: {prop_name} = {prop_value}")
         
 # get property value using the matrix data
 # format 1
@@ -141,57 +114,19 @@ print(res_1.get('value'))
 # format 2
 prop_name = f"dg | {comp1} | {comp2}"
 # get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='array')
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
 
 prop_name = f"alpha | {comp1} | {comp2}"
 # get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='dict')
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
-# # ====================================
-# # BUILD MATRIX EQUATION
-# # ====================================
-# # NOTE: build equation
-# nrtl_tau_eq = thermo_db.build_thermo_property(
-#     components, 'NRTL', 'Interaction parameters of the NRTL equation-2')
-
-# # load parms
-# print(nrtl_tau_eq.parms)
-# print(nrtl_tau_eq.parms_values)
-# print(nrtl_tau_eq.args)
-# print(nrtl_tau_eq.arg_symbols)
-# print(nrtl_tau_eq.returns)
-# print(nrtl_tau_eq.return_symbols)
-# print(nrtl_tau_eq.summary)
-# # equation details
-# print(nrtl_tau_eq.equation_parms())
-# print(nrtl_tau_eq.equation_args())
-# print(nrtl_tau_eq.equation_body())
-# print(nrtl_tau_eq.equation_return())
-# # elements
-# print(nrtl_tau_eq.matrix_elements)
-
-# # cal
-# tau_cal = nrtl_tau_eq.cal(T=298.15)
-# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='numeric', T=298.15)
-# print(tau_cal)
-# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='alphabetic', T=298.15)
-# print(tau_cal)
-
-# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='numeric', T=298.15)
-# print(tau_cal)
-# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='alphabetic', T=298.15)
-# print(tau_cal)
-# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='numeric', T=298.15)
-# print(tau_cal)
-# tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='alphabetic', T=298.15)
-# print(tau_cal)
 
 # ====================================
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_1"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
@@ -199,12 +134,10 @@ pp(type(thermo_db))
 
 # NOTE: add TableMatrixData
 thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
-# NOTE: add TableMatrixEquation
-# thermo_db.add_data('tau-eq', nrtl_tau_eq)
 
 # file name
-# thermodb_file_path = os.path.join(os.getcwd(), 'tests')
-thermodb_file_path = r"E:\Python Projects\universal-projects\PyThermoModels"
+thermodb_file_path = os.path.join(os.getcwd(), 'tests')
+
 # save
 thermo_db.save(
     f'{thermodb_name}', file_path=thermodb_file_path)
