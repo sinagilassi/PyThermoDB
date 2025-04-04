@@ -119,10 +119,11 @@ print(nrtl_alpha.get_matrix_property("dg_i_j",
                                      [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
 
 # property name using ij method
-prop_name = f"Alpha_{comp1}_{comp2}"
+prop_name = f"alpha_{comp1}_{comp2}"
 print(prop_name)
-print(nrtl_alpha.ij(prop_name))
-print(nrtl_alpha.ij(prop_name).get('value'))
+res_1 = nrtl_alpha.ij(prop_name)
+print(res_1)
+print(res_1.get('value'))
 
 # components
 # looping through the matrix data
@@ -135,10 +136,18 @@ print(nrtl_alpha.ij(prop_name).get('value'))
 #         print(f"Property: {prop_name} = {prop_value}")
         
 # get property value using the matrix data
-prop_name = f"dg_{comp1}_{comp2}"
+# format 1
+# prop_name = f"dg_{comp1}_{comp2}"
+# format 2
+prop_name = f"dg | {comp1} | {comp2}"
+# get values
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='array')
 print(prop_matrix, type(prop_matrix))
 
+prop_name = f"alpha | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='array')
+print(prop_matrix, type(prop_matrix))
 # ====================================
 # BUILD MATRIX EQUATION
 # ====================================
