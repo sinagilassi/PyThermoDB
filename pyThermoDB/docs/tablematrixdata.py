@@ -1,5 +1,6 @@
 # import packages/modules
 import pandas as pd
+import numpy as np
 from typing import Union, Optional, Any, Literal, TypedDict, Dict, List, Tuple
 from warnings import warn
 # local
@@ -535,6 +536,67 @@ class TableMatrixData:
         else:
             raise ValueError(f"Property format {property} not recognized.")
 
+    def ijs(self, property: str, res_format: Literal['dict', 'array'] = 'dict') -> Dict[str, float | int] | np.ndarray:
+        '''
+        Generate a dictionary for ij property
+        
+        Parameters
+        ----------
+        property : str
+            property name must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
+        res_format : str
+            result format (default: dict)
+            
+        Returns
+        -------
+        dict
+            dictionary for ij property
+        '''
+        try:
+            # check property name
+            if "_" not in property.strip():
+                raise Exception(
+                    "Invalid property name. Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                )
+
+            # extract data
+            prop_name, comp1, comp2 = property.split('_')
+
+            # set property name
+            prop_name = prop_name.strip()
+            
+            # components
+            components = [comp1.strip(), comp2.strip()]
+            
+            # res
+            res_array = np.zeros((len(components), len(components)))
+            res_dict = {}
+            
+            # NOTE: extract data
+            for i in range(len(components)):
+                for j in range(len(components)):
+                    # key
+                    key = f"{components[i]}_{components[j]}"
+                    prop_ = f"{prop_name}_{key}"
+                    
+                    # get property
+                    val = self.ij(prop_).get('value')
+                    
+                    # set
+                    res_dict[key] = val
+                    res_array[i][j] = val
+
+            # check
+            if res_format == 'dict':
+                return res_dict
+            elif res_format == 'array':
+                return res_array
+            else:
+                raise Exception("Result format not recognized!")
+
+        except Exception as e:
+            raise Exception("Generating dictionary failed!, ", e)        
+    
     def to_dict(self):
         '''
         Convert prop to dict
