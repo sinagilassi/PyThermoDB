@@ -1,0 +1,40 @@
+REFERENCES:
+    NRTL-EtOH-MTBE:
+      TABLES:
+        NRTL Non-randomness parameters-1:
+          MATRIX-SYMBOL: 
+            - alpha
+            - dg
+          MATRIX-DATA:
+            COLUMNS: 
+              - No.
+              - Name
+              - Formula
+              - alpha_i_1
+              - alpha_i_2
+              - dg_i_1
+              - dg_i_2
+            SYMBOL:
+              - None
+              - None
+              - None
+              - alpha_i_1
+              - alpha_i_2
+              - dg_i_1
+              - dg_i_2
+            UNIT:
+              - None
+              - None
+              - None
+              - 1
+              - 1 
+              - 1
+              - 1
+            CONVERSION:
+              - None
+              - None
+              - None
+              - 1
+              - 1 
+              - 1
+              - 1
