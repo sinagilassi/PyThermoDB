@@ -1,7 +1,11 @@
 REFERENCES:
     NRTL-EtOH-MTBE:
+      DATABOOK-ID: 1
       TABLES:
         NRTL Non-randomness parameters-1:
+          TABLE-ID: 1
+          DESCRIPTION:
+            This table provides the NRTL non-randomness parameters for the NRTL equation.
           MATRIX-SYMBOL: 
             - alpha
             - dg

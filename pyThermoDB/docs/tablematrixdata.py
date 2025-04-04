@@ -320,7 +320,7 @@ class TableMatrixData:
         Parameters
         ----------
         property : str
-            property name or id must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
+            property name or id must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol` or `Alpha | ethanol | methanol`
         symbol_format : str
             symbol format alphabetic or numeric (default: alphabetic)
         message : str
@@ -333,22 +333,37 @@ class TableMatrixData:
         '''
         try:
             # check property name
-            if "_" not in property.strip():
-                raise Exception(
-                    "Invalid property name. Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
-                )
+            # check not empty
+            if property is None or property.strip() == "":
+                raise Exception("Property name is empty!")
 
             # extract data
-            extracted = property.split('_')
+            # NOTE: format 1: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
+            # check contains underscore
+            extracted = property.strip().split('_')
             
-            # check
-            if len(extracted) != 3:
-                raise Exception(
-                    "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
-                )
-                
-            # extract data
-            prop_name, comp1, comp2 = extracted
+            # check len
+            if len(extracted) == 3:
+                prop_name, comp1, comp2 = extracted
+                # remove _ij
+                prop_name = prop_name.replace('_ij', '')
+            else:    
+                # NOTE: format 2: Alpha | ethanol | methanol
+                extracted = property.strip().split('|')
+            
+                # check len
+                if len(extracted) == 3:
+                    prop_name, comp1, comp2 = extracted
+                    # remove _ij
+                    prop_name = prop_name.replace('_ij', '')
+                else:
+                    raise Exception(
+                        "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                    )
+            
+            # NOTE: check all extracted
+            if prop_name is None or comp1 is None or comp2 is None:
+                raise Exception("Property name is not in the correct format!")
             
             # trim
             prop_name = prop_name.strip()
@@ -536,7 +551,7 @@ class TableMatrixData:
         else:
             raise ValueError(f"Property format {property} not recognized.")
 
-    def ijs(self, property: str, res_format: Literal['dict', 'array'] = 'dict') -> Dict[str, float | int] | np.ndarray:
+    def ijs(self, property: str, res_format: Literal['alphabetic', 'numeric'] = 'alphabetic', symbol_delimiter: Literal["|", "_"] = "|") -> Dict[str, float | int] | np.ndarray:
         '''
         Generate a dictionary for ij property
         
@@ -546,6 +561,9 @@ class TableMatrixData:
             property name must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol` or `Alpha | ethanol | methanol`
         res_format : str
             result format (default: dict)
+        symbol_delimiter : str
+            symbol delimiter (default: |), array element symbol delimiter
+            such as `Alpha | ethanol | methanol` or `Alpha_ethanol_methanol`
             
         Returns
         -------
@@ -600,6 +618,14 @@ class TableMatrixData:
             res_array = np.zeros((len(components), len(components)))
             res_dict = {}
             
+            # NOTE: set
+            if symbol_delimiter == "_":
+                symbol_delimiter_set = "_"
+            elif symbol_delimiter == "|":
+                symbol_delimiter_set = " | "
+            else:
+                raise Exception("Symbol delimiter not recognized!")
+            
             # NOTE: extract data
             for i in range(len(components)):
                 for j in range(len(components)):
@@ -611,14 +637,16 @@ class TableMatrixData:
                     val = self.ij(prop_).get('value')
                     
                     # set
-                    key_comp = f"{components[i]} | {components[j]}"
+                    key_comp = f"{components[i]}{symbol_delimiter_set}{components[j]}"
                     res_dict[key_comp] = val
                     res_array[i][j] = val
 
             # check
-            if res_format == 'dict':
+            if res_format == 'alphabetic':
+                # NOTE: convert to alphabetic format
                 return res_dict
-            elif res_format == 'array':
+            elif res_format == 'numeric':
+                # NOTE: convert to numeric format
                 return res_array
             else:
                 raise Exception("Result format not recognized!")
