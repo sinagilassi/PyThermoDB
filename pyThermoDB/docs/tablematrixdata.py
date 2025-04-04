@@ -543,7 +543,7 @@ class TableMatrixData:
         Parameters
         ----------
         property : str
-            property name must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
+            property name must be string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol` or `Alpha | ethanol | methanol`
         res_format : str
             result format (default: dict)
             
@@ -554,13 +554,41 @@ class TableMatrixData:
         '''
         try:
             # check property name
-            if "_" not in property.strip():
-                raise Exception(
-                    "Invalid property name. Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
-                )
+            # check not empty
+            if property is None or property.strip() == "":
+                raise Exception("Property name is empty!")
 
             # extract data
-            prop_name, comp1, comp2 = property.split('_')
+            # NOTE: format 1: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
+            # check contains underscore
+            extracted = property.strip().split('_')
+            
+            # check len
+            if len(extracted) == 3:
+                prop_name, comp1, comp2 = extracted
+                # remove _ij
+                prop_name = prop_name.replace('_ij', '')
+            else:    
+                # NOTE: format 2: Alpha | ethanol | methanol
+                extracted = property.strip().split('|')
+            
+                # check len
+                if len(extracted) == 3:
+                    prop_name, comp1, comp2 = extracted
+                    # remove _ij
+                    prop_name = prop_name.replace('_ij', '')
+                else:
+                    raise Exception(
+                        "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                    )
+                
+            # NOTE: check all extracted
+            if prop_name is None or comp1 is None or comp2 is None:
+                raise Exception("Property name is not in the correct format!")
+            
+            # check
+            if comp1 == comp2:
+                raise Exception("Component names are the same!")
 
             # set property name
             prop_name = prop_name.strip()
