@@ -16,7 +16,7 @@ comp2 = "butyl-methyl-ether"
 # LOAD THERMODB
 # ====================================
 # ref
-thermodb_file = 'thermodb_nrtl_ethanol_butyl-methyl-ether.pkl'
+thermodb_file = 'thermodb_nrtl_ethanol_butyl-methyl-ether_1.pkl'
 thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
 print(thermodb_path)
 
