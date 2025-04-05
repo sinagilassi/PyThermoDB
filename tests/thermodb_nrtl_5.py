@@ -119,6 +119,11 @@ prop_name = f"c | {comp1} | {comp2}"
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
 
+prop_name = f"alpha | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+
 # ====================================
 # BUILD THERMODB
 # ====================================
