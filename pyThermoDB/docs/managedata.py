@@ -335,7 +335,7 @@ class ManageData():
                         for eq, eq_data in table_data['MATRIX-EQUATIONS'].items():
                             # save
                             _eq.append(eq_data)
-                            
+
                         # matrix-symbol
                         # matrix_symbol = table_data.get('MATRIX-SYMBOL', None)
                         # # embedded symbol
@@ -379,7 +379,7 @@ class ManageData():
                         # embedded symbol
                         if matrix_symbol:
                             matrix_data['MATRIX-SYMBOL'] = matrix_symbol
-                        
+
                         # save
                         tables.append({
                             'table_id': table_id,
@@ -489,7 +489,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook id loading error! {e}")
 
-    def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame, str]:
+    def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame, str, dict[str, str]]:
         '''
         Get a table list of selected databook
 
@@ -546,7 +546,7 @@ class ManageData():
             tables_df = pd.DataFrame(
                 tables, columns=[column_name, "Type", "Id"])
             # return
-            return tables, tables_df, tables_json
+            return tables, tables_df, tables_json, tables_dict
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 

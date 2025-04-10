@@ -128,7 +128,8 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self, databook: int | str, res_format: Literal['list', 'dataframe', 'json'] = 'dataframe') -> list[list[str]] | pd.DataFrame | str:
+    def list_tables(self, databook: int | str,
+                    res_format: Literal['list', 'dataframe', 'json', 'dict'] = 'dataframe') -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
         '''
         List all tables in the selected databook
 
@@ -156,6 +157,8 @@ class ThermoDB(ManageData):
                 return res[1]
             elif res_format == 'json':
                 return res[2]
+            elif res_format == 'dict':
+                return res[3]
             else:
                 raise ValueError('Invalid res_format')
         except Exception as e:
@@ -634,7 +637,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self, component_name: str | list[str], databook: int | str, table: int | str, 
+    def check_component(self, component_name: str | list[str], databook: int | str, table: int | str,
                         column_name: Optional[str | list[str]] = None, query: bool = False,
                         res_format: Literal['dict', 'json', 'str'] = 'json') -> Union[str, dict[str, str]]:
         '''
@@ -978,9 +981,9 @@ class ThermoDB(ManageData):
             raise Exception(f'Reading data error {e}')
 
     def build_thermo_property(self, component_names: list[str], databook: int | str, table: int | str):
-        """  
+        """
         Build a thermodynamic property including data, equation, matrix-data and matrix-equation.
-        
+
         Parameters
         ----------
         component_names :  list[str]
@@ -989,7 +992,7 @@ class ThermoDB(ManageData):
             databook id or name
         table : int | str
             table id or name
-            
+
         Returns
         -------
         object : TableEquation | TableData | TableMatrixEquation | TableMatrixData
@@ -998,8 +1001,8 @@ class ThermoDB(ManageData):
         try:
             # detect table type
             tb_info_res_ = self.table_info(databook, table, res_format='dict')
-            
-            # if 
+
+            # if
             if isinstance(tb_info_res_, dict):
                 # check
                 if tb_info_res_['Type'] == 'Equation':
@@ -1009,7 +1012,7 @@ class ThermoDB(ManageData):
                     # build equation
                     return self.build_equation(
                         component_names[0], databook, table)
-                    
+
                 elif tb_info_res_['Type'] == 'Data':
                     # check
                     if len(component_names) > 1:
@@ -1020,14 +1023,16 @@ class ThermoDB(ManageData):
                 elif tb_info_res_['Type'] == 'Matrix-Equation':
                     # check
                     if len(component_names) < 2:
-                        raise Exception('At least two component names required!')
+                        raise Exception(
+                            'At least two component names required!')
                     # build matrix-equation
                     return self.build_matrix_equation(
                         component_names, databook, table)
                 elif tb_info_res_['Type'] == 'Matrix-Data':
                     # check
                     if len(component_names) < 2:
-                        raise Exception('At least two component names required!')
+                        raise Exception(
+                            'At least two component names required!')
                     # build matrix-data
                     return self.build_matrix_data(
                         component_names, databook, table)
@@ -1037,7 +1042,7 @@ class ThermoDB(ManageData):
                 raise Exception('Table loading error!')
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
-    
+
     def build_equation(self, component_name: str, databook: int | str, table: int | str,
                        column_name: Optional[str | list[str]] = None, query: bool = False) -> TableEquation:
         '''
@@ -1253,7 +1258,7 @@ class ThermoDB(ManageData):
             # table id
             table_id = tb_id + 1
 
-            # NOTE 
+            # NOTE
             # ! retrieve all data from matrix-table (csv file)
             # matrix table
             matrix_table = self.table_data(databook, table)
@@ -1261,12 +1266,12 @@ class ThermoDB(ManageData):
             # NOTE
             # get data from api
             component_data_pack = []
-            
+
             # looping through components
             for component_name in component_names:
                 # component name
                 component_name = str(component_name).strip()
-                
+
                 # get data from api
                 component_data = self.get_component_data(component_name,
                                                          databook_id, table_id,
