@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 APP_NAME = 'PyThermoDB'
-VERSION = '1.8.12'
+VERSION = '1.8.13'
 AUTHOR = 'Sina Gilassi'
 EMAIL = '<sina.gilassi@gmail.com>'
 DESCRIPTION = (
@@ -33,7 +33,8 @@ setup(
     # Add license file
     license='MIT',
     license_files=[],
-    install_requires=['pandas', 'requests', 'urllib3', 'numpy', 'PyYAML', 'sympy'],
+    install_requires=['pandas', 'requests',
+                      'urllib3', 'numpy', 'PyYAML', 'sympy'],
     keywords=['python', 'chemical engineering', 'thermodynamics',
               'PyThermoDB', 'thermodynamic data'],
     classifiers=[
