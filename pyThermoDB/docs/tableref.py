@@ -62,7 +62,7 @@ class TableReference(ManageData):
         databook_id : int
             databook id
         '''
-        _, df, _ = self.get_tables(databook_id-1)
+        _, df, _, _ = self.get_tables(databook_id-1)
         return df
 
     def load_table(self, databook_id: int, table_id: int) -> pd.DataFrame:

@@ -21,7 +21,7 @@ print(db_list)
 # TABLE LIST
 # ===============================
 # table list
-tb_lists = tdb.list_tables(1, res_format='json')
+tb_lists = tdb.list_tables(1, res_format='dict')
 print(tb_lists)
 
 # ===============================
@@ -46,7 +46,6 @@ print(tb_info)
 # table load
 res_ = tdb.table_data(1, 2)
 print(res_)
-
 
 
 # ===============================
