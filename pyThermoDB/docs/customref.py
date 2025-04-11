@@ -1,6 +1,7 @@
 # import packages/modules
 import os
 import yaml
+from typing import Literal
 
 
 class CustomRef:
@@ -17,15 +18,51 @@ class CustomRef:
         # symbols
         self.symbols_files: list[str] = []
         self.symbols_paths: list[str] = []
+        # data mode
+        self.data_mode: Literal['NORMAL', 'VALUES'] = self.set_data_mode()
+
+    def set_data_mode(self, data_mode: Literal['NORMAL', 'VALUES'] = 'NORMAL'):
+        '''
+        Set data mode
+
+        Parameters
+        ----------
+        data_mode : str, optional
+            data mode, by default 'NORMAL'
+        '''
+        try:
+            # ref keys
+            ref_keys = list(self.ref.keys())
+            ref_keys = [x.lower() for x in ref_keys]
+
+            # check ref keys [yml, reference, csv, tables, symbols]
+            if len(ref_keys) == 0:
+                raise Exception("No reference keys found.")
+
+            # check data mode
+            if len(ref_keys) == 1:
+                if 'yml' in ref_keys or 'reference' in ref_keys:
+                    # set data mode
+                    return 'VALUES'
+
+            # res
+            return 'NORMAL'
+        except Exception as e:
+            raise Exception(f"Setting data mode failed! {e}")
 
     def init_ref(self) -> bool:
         '''
         Update reference through updating yml
 
+        Parameters
+        ----------
+        data_mode : str, optional
+            data mode, by default 'NORMAL'
+
         Notes
         ----------
         yml_files : list
-            yml files 
+            yml files
         csv_files : list
             csv files
 
@@ -35,7 +72,7 @@ class CustomRef:
             True if reference is updated, False otherwise
         '''
         try:
-            # extract data
+            # SECTION: extract data
             # reference
             yml_files = self.ref.get('yml') or self.ref.get('reference') or []
             # tables
@@ -43,31 +80,36 @@ class CustomRef:
             # symbols (optional)
             symbol_files = self.ref.get('symbols') or []
 
-            # check files exist
+            # SECTION: check files exist
             if len(yml_files) == 0:
                 raise Exception("No yml files to update.")
-            if len(csv_files) == 0:
+            if len(csv_files) == 0 and self.data_mode == 'NORMAL':
                 raise Exception("No csv files to update.")
 
-            # check file path
+            # SECTION: check file path
             for yml_file in yml_files:
                 if not os.path.exists(yml_file):
                     raise Exception(f"{yml_file} does not exist.")
                 else:
                     # get path
                     self.yml_paths.append(os.path.abspath(yml_file))
-            for csv_file in csv_files:
-                if not os.path.exists(csv_file):
-                    raise Exception(f"{csv_file} does not exist.")
-                else:
-                    # get path
-                    self.csv_paths.append(os.path.abspath(csv_file))
-
-            # update vars
-            self.yml_files = yml_files
-            self.csv_files = csv_files
 
             # check
+            if self.data_mode == 'NORMAL':
+                for csv_file in csv_files:
+                    if not os.path.exists(csv_file):
+                        raise Exception(f"{csv_file} does not exist.")
+                    else:
+                        # get path
+                        self.csv_paths.append(os.path.abspath(csv_file))
+
+            # NOTE: update vars
+            self.yml_files = yml_files
+            # check
+            if self.data_mode == 'NORMAL':
+                self.csv_files = csv_files
+
+            # SECTION: check
             if len(symbol_files) > 0:
                 # symbols
                 for symbol_file in symbol_files:
