@@ -1,6 +1,6 @@
 # import packages/modules
 # external
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Literal
 # internal
 from .config import __version__, __author__, __description__
 from .docs import (
@@ -22,23 +22,23 @@ def init(custom_reference: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
     -------
     ThermoDB : object
         ThermoDB object used for checking and building data and equation objects
-    
+
     Notes
     ------
     ### Set-up external reference dict for databook and tables
-    
+
     - `format ref_external = {'yml':[yml files], 'csv':[csv files]}`
     - `format ref_external = {'reference':[yml files], 'tables':[csv files]}`
-    
+
     ### Examples
-    
+
     ```python
     # custom ref
     custom_reference = {
     'reference': [yml_path],
     'tables': [csv_path_1, csv_path_2]
     }
-    
+
     # init app
     tdb = ptdb.init(custom_reference=custom_reference)
     ```
@@ -73,23 +73,23 @@ def ref(custom_reference: Optional[Dict[str, List[str]]] = None) -> TableReferen
     -------
     TableReferenceC : object
         TableReference object used for checking references
-        
+
     Notes
     ------
     ### Check external reference dict for databook and tables
-    
+
     - `format ref_external = {'yml':[yml files], 'csv':[csv files]}`
     - `format ref_external = {'reference':[yml files], 'tables':[csv files]}`
-    
+
     ### Examples
-    
+
     ```python
     # custom ref
     custom_reference = {
     'reference': [yml_path],
     'tables': [csv_path_1, csv_path_2]
     }
-    
+
     # init app
     tdb = ptdb.ref(custom_reference=custom_reference)
     ```
@@ -116,13 +116,13 @@ def ref(custom_reference: Optional[Dict[str, List[str]]] = None) -> TableReferen
 def build_thermodb(thermodb_name: Optional[str] = None) -> CompBuilder:
     '''
     Build thermodb object to check and build thermodynamic data and equations
-    
+
     Parameters
     ----------
     thermodb_name : str
         name of the thermodb object
         - `thermodb_name` : str, name of the thermodb object
-    
+
     Returns
     -------
     CompBuilder : object
@@ -154,4 +154,3 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
         return CompBuilder.load(thermodb_file)
     except Exception as e:
         raise Exception("Loading thermodb failed!, ", e)
-
