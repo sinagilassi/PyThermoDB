@@ -48,17 +48,23 @@ print(tb_info)
 # tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 # print(tb_info)
 
-
-dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
-print(dt_)
-
 # ====================================
 # LOAD TABLE
 # ====================================
+dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
+print(dt_.data_structure())
+
 # load equation
-tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
+# tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
+# # equation structure
+# tb_eq_structure = tb_eq.eq_structure()
+# print(tb_eq_structure)
+
+#
+tb_eq = thermo_db.equation_load("Perry's Chemical Engineers' Handbook",
+                                'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids')
 # equation structure
-tb_eq_structure = tb_eq.eq_structure(1)
+tb_eq_structure = tb_eq.eq_structure()
 print(tb_eq_structure)
 
 # ====================================
@@ -78,14 +84,14 @@ comp1 = "carbon dioxide"
 # ====================================
 # BUILD DATA
 # ====================================
-# build data
-data_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'General-Data')
-print(type(data_1))
+# # build data
+# data_1 = thermo_db.build_thermo_property(
+#     [comp1], 'CUSTOM-REF-1', 'General-Data')
+# print(type(data_1))
 
-# retrieve data
-res_ = data_1.get_property("MW")
-print(res_)
+# # retrieve data
+# res_ = data_1.get_property("MW")
+# print(res_)
 
 
 # ====================================
