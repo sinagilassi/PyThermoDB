@@ -80,11 +80,13 @@ comp1 = "carbon dioxide"
 # ====================================
 # build data
 data_1 = thermo_db.build_thermo_property(
-    [comp1], 1, 1)
-
-# build data
-data_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'General-Data')
+print(type(data_1))
+
+# retrieve data
+res_ = data_1.get_property("MW")
+print(res_)
+
 
 # ====================================
 # BUILD EQUATION
