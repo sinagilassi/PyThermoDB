@@ -2,7 +2,7 @@ REFERENCES:
     CUSTOM-REF-1:
       DATABOOK-ID: 1
       TABLES:
-        The Molar Heat Capacities of Gases in the Ideal Gas State:
+        Ideal-Gas-Molar-Heat-Capacity:
           TABLE-ID: 1
           DESCRIPTION:
             This table provides the heat capacity at constant pressure of ideal gas (Cp_IG) in J/mol.K as a function of temperature (T) in K.
@@ -86,7 +86,7 @@ REFERENCES:
                 - [14,'benzene','C6H6','l',3.551,-6.184,14.365,-19.807,8.234,8.314,1]
                 - [15,'nitrogen','N2','g',3.539,-0.261,0.007,0.157,-0.099,8.314,1]
                 - [16,'ethane','C2H6','g',4.178,-4.427,5.660,-6.651,2.487,8.314,1]
-        General Data:
+        General-Data:
           TABLE-ID: 2
           DESCRIPTION:
             This table provides the general data of different chemical species participating in the CO2 hydrogenation reaction and includes molecular weight (MW) in g/mol, critical temperature (Tc) in K, critical pressure (Pc) in MPa, and critical molar volume (Vc) in m3/kmol. The table also includes the critical compressibility factor (Zc), acentric factor (AcFa), enthalpy of formation (EnFo) in kJ/mol, and Gibbs energy of formation (GiEnFo) in kJ/mol. The chemical state of the species is also provided in the table and hence the enthalpy of formation and Gibbs energy of formation are provided for the ideal gas and liquid state are designated as EnFo_IG, GiEnFo_IG, EnFo_LIQ, and GiEnFo_LIQ, respectively.
@@ -160,7 +160,7 @@ REFERENCES:
               - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
               - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
               - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
-        Vapor Pressure:
+        Vapor-Pressure:
           TABLE-ID: 3
           DESCRIPTION:
             This table provides the vapor pressure (P) in Pa as a function of temperature (T) in K.

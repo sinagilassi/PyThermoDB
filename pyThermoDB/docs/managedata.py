@@ -627,8 +627,23 @@ class ManageData():
                 "data": None,
                 "equations": None,
                 "matrix_data": None,
-                "matrix_equations": None
+                "matrix_equations": None,
+                "table_type": None
             }
+
+            # SECTION: set table type
+            def set_table_type(tb):
+                # check table type
+                if 'equations' in tb and tb['equations'] is not None:
+                    return TableTypes.EQUATIONS.value
+                elif 'data' in tb and tb['data'] is not None:
+                    return TableTypes.DATA.value
+                elif 'matrix_data' in tb and tb['matrix_data'] is not None:
+                    return TableTypes.MATRIX_DATA.value
+                elif 'matrix_equations' in tb and tb['matrix_equations'] is not None:
+                    return TableTypes.MATRIX_EQUATIONS.value
+                else:
+                    raise Exception("table type unknown!")
 
             # by table id
             if isinstance(table, int):
@@ -637,6 +652,10 @@ class ManageData():
                     # check table id
                     if i == table:
                         selected_tb = tb
+                        # NOTE: check table type
+                        # tb_name_ = selected_tb['table']
+                        # set
+                        selected_tb['table_type'] = set_table_type(tb)
                         break
             # by table name
             elif isinstance(table, str):
@@ -645,6 +664,10 @@ class ManageData():
                     # check table name
                     if tb['table'] == table:
                         selected_tb = tb
+                        # NOTE: check table type
+                        # tb_name_ = selected_tb['table']
+                        # set
+                        selected_tb['table_type'] = set_table_type(tb)
                         break
             else:
                 raise Exception("Invalid table type")
