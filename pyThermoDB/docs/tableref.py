@@ -160,12 +160,17 @@ class TableReference(ManageData):
                             file_data.extend(values)
 
                     elif tb_type == TableTypes.EQUATIONS.value:
-                        if isinstance(table_data, list):
+                        if isinstance(table_data, dict):
                             # NOTE: equations
-                            for eq_id, eq in enumerate(table_data):
-                                # params
-                                parms = eq.get('PARMS', None)
-                                returns = eq.get('RETURNS', None)
+                            eq = table_data.get('EQ-1', None)
+                            if eq is None:
+                                raise Exception(
+                                    f"Table data is None for {file_name}.")
+                            parms = eq['PARMS']
+                            returns = eq['RETURNS']
+
+                            # values
+                            values = eq.get('VALUES', None)
 
                 # check
                 # if file_path is None:

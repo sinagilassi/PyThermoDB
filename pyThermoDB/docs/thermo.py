@@ -523,8 +523,30 @@ class ThermoDB(ManageData):
                 if tb_type == 'data':
                     table_data = tb['data']
 
+                    # check
+                    if not isinstance(table_data, dict):
+                        raise ValueError("Table data is not a dictionary!")
+
+                    # extract table data
+                    COLUMNS = table_data.get('COLUMNS')
+                    SYMBOL = table_data.get('SYMBOL')
+                    UNIT = table_data.get('UNIT')
+                    CONVERSION = table_data.get('CONVERSION')
+
+                    # NOTE: check if the table data is empty
+                    if not COLUMNS or not SYMBOL or not UNIT or not CONVERSION:
+                        raise ValueError("Table data is empty!")
+
+                    # select table data
+                    table_structure = {
+                        'COLUMNS': COLUMNS,
+                        'SYMBOL': SYMBOL,
+                        'UNIT': UNIT,
+                        'CONVERSION': CONVERSION
+                    }
+
                     # data no
-                    return TableData(db_name, table_name, table_data)
+                    return TableData(db_name, table_name, table_structure)
                 else:
                     raise Exception('Table loading error!')
             else:

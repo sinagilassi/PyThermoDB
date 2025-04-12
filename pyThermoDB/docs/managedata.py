@@ -725,6 +725,37 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table id loading err! {e}")
 
+    def get_table_values(self, databook: str | int, table: str | int):
+        '''
+        Get table values
+
+        Parameters
+        ----------
+        databook : str | int
+            databook name or id
+        table : str | int
+            table name or id
+
+        Returns
+        -------
+        table_values : list
+            table values
+        '''
+        try:
+            # NOTE: find databook
+            db, db_name, db_id = self.find_databook(databook)
+
+            # NOTE: find table
+            tb_id, tb_name = self.find_table(db_name, table)
+
+            # NOTE: get table
+            tb = self.get_table(db_name, tb_name)
+
+            return tb
+
+        except Exception as e:
+            raise Exception(f"table values loading err! {e}")
+
     def find_databook(self, databook: str | int) -> tuple[list[DataBookTableTypes], str, int]:
         '''
         Find a databook
