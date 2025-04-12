@@ -1,7 +1,7 @@
 # import packages/modules
 import os
 import pandas as pd
-from typing import Optional
+from typing import Optional, Dict, Union, Any, List
 import glob
 import asyncio
 # local
@@ -9,6 +9,7 @@ from .managedata import ManageData
 from ..data import TableTypes
 from ..models import PayLoadType
 from .customref import CustomRef
+from ..models import DataBookTableTypes
 
 
 class TableReference(ManageData):
@@ -81,40 +82,84 @@ class TableReference(ManageData):
         df : pandas DataFrame
             dataframe of excel file
         """
-        # table
-        tb = self.get_table(databook_id-1, table_id-1)
-        # table name
-        table_name = tb['table']
-        # table file
-        file_name = table_name + '.csv'
+        try:
+            # init vars
+            file_data = None
+            file_path = None
 
-        # check table exists in local or external references
-        reference_local_no = self.reference_local_no
+            # NOTE:
+            # table
+            tb = self.get_table(databook_id-1, table_id-1)
+            # table type
+            tb_type = tb['table_type']
 
-        # table file path
-        # local
-        if databook_id <= reference_local_no:
-            # set file path
-            file_path = os.path.join(self.path, file_name)
-        else:
+            # table name
+            table_name = tb['table']
+            # table file
+            file_name = table_name + '.csv'
+
+            # check table exists in local or external references
+            reference_local_no = self.reference_local_no
+
+            # SECTION: table file path
+            # local
+            if databook_id <= reference_local_no:
+                # set file path
+                file_path = os.path.join(self.path, file_name)
+            else:
+                # check
+                if self.custom_ref is None:
+                    raise ValueError('No custom reference provided')
+
+                # NOTE: load external path
+                path_external = self.load_external_csv(self.custom_ref)
+
+                # NOTE: check if the file exists in the external paths
+                file_path = None
+                # check
+                if len(path_external) > 0:
+                    # check csv paths
+                    # csv file names
+                    file_names = [os.path.basename(path)
+                                  for path in path_external]
+                    # check csv file
+                    for item in file_names:
+                        if item == file_name:
+                            file_path = path_external[file_names.index(item)]
+                            break
+
+                # NOTE: load values from custom reference
+                if tb_type:
+                    # load table data
+                    table_data = self.retrieve_data(
+                        tb, tb_type)
+
+                    # load values
+                    if isinstance(table_data, dict):
+                        file_data = table_data.get('VALUES', None)
+
+                # check
+                # if file_path is None:
+                #     raise Exception(f"{file_name} does not exist.")
+
+            # SECTION
             # check
-            if self.custom_ref is None:
-                raise ValueError('No custom reference provided')
-            # load external path
-            path_external = self.load_external_csv(self.custom_ref)
-            # csv file names
-            file_names = [os.path.basename(path) for path in path_external]
-            # check csv file
-            for item in file_names:
-                if item == file_name:
-                    file_path = path_external[file_names.index(item)]
-                    break
-            # check
-            if file_path is None:
+            if file_path is not None:
+                # create dataframe
+                df = pd.read_csv(file_path)
+            elif file_data is not None:
+                # create dataframe
+                df = pd.DataFrame(file_data)
+            else:
                 raise Exception(f"{file_name} does not exist.")
-        # create dataframe
-        df = pd.read_csv(file_path)
-        return df
+
+            # res
+            return df
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"File {file_name} not found in {self.path}")
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
 
     def search_tables(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str | list[str], query: bool = False) -> pd.DataFrame:
         """
@@ -181,35 +226,41 @@ class TableReference(ManageData):
         result : pandas DataFrame
             result of search
         '''
-        # tb
-        df = self.load_table(databook_id, table_id)
-        # take first three rows
-        df_info = df.iloc[:2, :]
-        # filter
-        if isinstance(column_name, str) and query is False:
-            # create filter
-            df_filter = df[df[column_name].str.lower() == lookup.lower()]
-        # query
-        elif isinstance(column_name, str) and query is True:
-            # create filter
-            df_filter = df.query(column_name)
-        # list
-        elif isinstance(column_name, list) and isinstance(lookup, list):
-            # use query
-            _querys = []
-            for i in range(len(column_name)):
-                _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
-            # make query
-            _query_set = ' & '.join(_querys)
-            # query
-            df_filter = df.query(_query_set)
+        try:
+            # SECTION: tb
+            # NOTE: load table data (all data)
+            df = self.load_table(databook_id, table_id)
 
-            # combine dfs
-        result = pd.concat([df_info, df_filter])
-        if not df_filter.empty:
-            return result
-        else:
-            return pd.DataFrame()
+            # take first three rows
+            df_info = df.iloc[:2, :]
+
+            # SECTION: filter
+            if isinstance(column_name, str) and query is False:
+                # create filter
+                df_filter = df[df[column_name].str.lower() == lookup.lower()]
+            # query
+            elif isinstance(column_name, str) and query is True:
+                # create filter
+                df_filter = df.query(column_name)
+            # list
+            elif isinstance(column_name, list) and isinstance(lookup, list):
+                # use query
+                _querys = []
+                for i in range(len(column_name)):
+                    _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                # make query
+                _query_set = ' & '.join(_querys)
+                # query
+                df_filter = df.query(_query_set)
+
+            # SECTION: combine dfs
+            result = pd.concat([df_info, df_filter])
+            if not df_filter.empty:
+                return result
+            else:
+                return pd.DataFrame()
+        except Exception as e:
+            raise Exception(f"Searching table error {e}")
 
     def search_matrix_table(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str, query: bool = False) -> pd.DataFrame:
         '''
@@ -296,14 +347,15 @@ class TableReference(ManageData):
             records, if nan exists then converted to 0
         '''
         try:
-            # check
+            # SECTION: check
             if matrix_tb:
                 df = self.search_matrix_table(databook_id, table_id,
                                               column_name, lookup=lookup, query=query)
             else:
                 df = self.search_table(databook_id, table_id,
                                        column_name, lookup=lookup, query=query)
-            # check
+
+            # SECTION: check
             if len(df) > 0:
                 # payload
                 if matrix_tb:
@@ -529,3 +581,49 @@ class TableReference(ManageData):
 
         except Exception as e:
             raise Exception(f'Listing all components error {e}')
+
+    def retrieve_data(self, table_data: DataBookTableTypes, table_type: str):
+        '''
+        Retrieve data from table data based on table type
+
+        Parameters
+        ----------
+        table_data : Dict
+            table data
+        table_type : str
+            table type
+                - data
+                - equations
+                - matrix-data
+                - matrix-equations
+
+        Returns
+        -------
+        data : list
+            data
+        '''
+        try:
+            # check table type
+            if table_type == TableTypes.DATA.value:
+                # data
+                data = table_data['data']
+            elif table_type == TableTypes.EQUATIONS.value:
+                # data
+                data = table_data['equations']
+            elif table_type == TableTypes.MATRIX_DATA.value:
+                # data
+                data = table_data['matrix_data']
+            elif table_type == TableTypes.MATRIX_EQUATIONS.value:
+                # data
+                data = table_data['matrix_equations']
+            else:
+                raise Exception(f"Table type {table_type} is not supported.")
+
+            # check
+            if data is None:
+                raise Exception(f"Table data is None.")
+
+            # res
+            return data
+        except Exception as e:
+            raise Exception(f"Retrieving data error {e}")

@@ -265,7 +265,7 @@ class ThermoDB(ManageData):
             raise Exception(
                 f"An error occurred while getting the databook info: {e}")
 
-    def table_info(self, databook: int | str, table: int | str, res_format: Literal['dict', 'dataframe', 'json'] = 'dataframe') -> dict | pd.DataFrame | str:
+    def table_info(self, databook: int | str, table: int | str, res_format: Literal['dict', 'dataframe', 'json'] = 'dataframe') -> dict[str, int | str] | pd.DataFrame | str:
         '''
         Gives table contents as:
 
@@ -360,7 +360,7 @@ class ThermoDB(ManageData):
                     matrix_data_no = 1
 
                 # data
-                tb_summary: dict = {
+                tb_summary: Dict[str, str | int] = {
                     "Table Name": table_name,
                     "Type": tb_type,
                     "Equations": equation_no,
@@ -1164,7 +1164,7 @@ class ThermoDB(ManageData):
             # table id
             table_id = tb_id + 1
 
-            # get data from api
+            # SECTION: get data from api
             component_data = self.get_component_data(
                 component_name, databook_id, table_id, column_name=column_name,
                 query=query)

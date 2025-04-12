@@ -2,15 +2,17 @@
 from typing import TypedDict, List, Optional, Union, Dict, Any
 import numpy as np
 
+
 class DataBookTableTypes(TypedDict):
     """Databook Table Types Definition"""
     table_id: Optional[int | str]
     table: str
     description: Optional[str]
-    equations: Optional[List[str]]
-    data: Optional[List[str]]
-    matrix_equations: Optional[List[str]]
-    matrix_data: Optional[List[str]]
+    equations: Optional[List[str] | Dict[str, Any]]
+    data: Optional[List[str] | Dict[str, Any]]
+    matrix_equations: Optional[List[str] | Dict[str, Any]]
+    matrix_data: Optional[List[str] | Dict[str, Any]]
+    table_type: Optional[str]
 
 
 class PayLoadType(TypedDict):
