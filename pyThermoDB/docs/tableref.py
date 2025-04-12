@@ -135,8 +135,37 @@ class TableReference(ManageData):
                         tb, tb_type)
 
                     # load values
-                    if isinstance(table_data, dict):
-                        file_data = table_data.get('VALUES', None)
+                    if tb_type == TableTypes.DATA.value:
+                        if isinstance(table_data, dict):
+                            # NOTE: data
+                            columns = table_data.get('COLUMNS', None)
+                            symbol = table_data.get('SYMBOL', None)
+                            unit = table_data.get('UNIT', None)
+
+                            # check
+                            if columns is None or symbol is None or unit is None:
+                                raise Exception(
+                                    f"Table data is None for {file_name}.")
+                            # add to file data
+                            file_data = []
+                            # file_data.append(columns)
+                            file_data.append(symbol)
+                            file_data.append(unit)
+
+                            # values
+                            values = table_data.get('VALUES', None)
+                            if values is None:
+                                raise Exception(
+                                    f"Table data is None for {file_name}.")
+                            file_data.extend(values)
+
+                    elif tb_type == TableTypes.EQUATIONS.value:
+                        if isinstance(table_data, list):
+                            # NOTE: equations
+                            for eq_id, eq in enumerate(table_data):
+                                # params
+                                parms = eq.get('PARMS', None)
+                                returns = eq.get('RETURNS', None)
 
                 # check
                 # if file_path is None:
@@ -149,7 +178,7 @@ class TableReference(ManageData):
                 df = pd.read_csv(file_path)
             elif file_data is not None:
                 # create dataframe
-                df = pd.DataFrame(file_data)
+                df = pd.DataFrame(file_data, columns=columns)
             else:
                 raise Exception(f"{file_name} does not exist.")
 
@@ -228,8 +257,9 @@ class TableReference(ManageData):
         '''
         try:
             # SECTION: tb
-            # NOTE: load table data (all data)
+            # NOTE: load table data/equations (all data)
             df = self.load_table(databook_id, table_id)
+            # print(df)
 
             # take first three rows
             df_info = df.iloc[:2, :]
