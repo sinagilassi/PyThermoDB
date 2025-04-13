@@ -678,7 +678,7 @@ class TableEquation:
         # load equation
         eq_summary = self.eq_structure(Eq_data)
 
-        # extract data
+        # REVIEW: extract data
         _body = eq_summary['body']
         self.body = ';'.join(_body)
         # check

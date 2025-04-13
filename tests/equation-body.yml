@@ -1,0 +1,18 @@
+BODY:
+  - parms['C1 | C1 | 1'] = parms['C1 | C1 | 1']/1
+  - parms['C2 | C2 | 1'] = parms['C2 | C2 | 1']/1
+  - parms['C3 | C3 | 1'] = parms['C3 | C3 | 1']/1
+  - parms['C4 | C4 | 1'] = parms['C4 | C4 | 1']/1
+  - parms['C5 | C5 | 1'] = parms['C5 | C5 | 1']/1
+  - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
+BODY-INTEGRAL:
+  - parms['C1 | C1 | 1'] = parms['C1 | C1 | 1']/1
+  - parms['C2 | C2 | 1'] = parms['C2 | C2 | 1']/1
+  - parms['C3 | C3 | 1'] = parms['C3 | C3 | 1']/1
+  - parms['C4 | C4 | 1'] = parms['C4 | C4 | 1']/1
+  - parms['C5 | C5 | 1'] = parms['C5 | C5 | 1']/1
+  - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
+BODY-FIRST-DERIVATIVE:
+  - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
+BODY-SECOND-DERIVATIVE:
+  - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))

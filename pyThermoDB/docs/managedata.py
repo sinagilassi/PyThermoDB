@@ -5,8 +5,9 @@
 import os
 import yaml
 import pandas as pd
-from typing import TypedDict, List, Optional, Literal, Tuple
+from typing import TypedDict, List, Optional, Literal, Tuple, Dict, Union, Any
 import json
+import re
 # local
 from ..data import TableTypes
 from ..models import DataBookTableTypes
@@ -321,6 +322,8 @@ class ManageData():
                         for eq, eq_data in table_data['EQUATIONS'].items():
                             # save
                             _eq.append(eq_data)
+
+                        # NOTE: parse equations
 
                         # save
                         tables.append({
@@ -960,3 +963,190 @@ class ManageData():
             return {}
         except Exception as e:
             raise Exception('Finding table source failed!', e)
+
+    def __parse_equation(self, eq_data: List[str]):
+        '''
+        Parse equation data into a dictionary including equation args, parameters, returns
+
+        Parameters
+        ----------
+        eq_data : dict
+            equation data
+        '''
+        try:
+            # check
+            if not isinstance(eq_data, list):
+                raise ValueError("eq_data must be a list!")
+
+            # init
+            eq_dict = {}
+            eq_dict['ARGS'] = {}
+            eq_dict['PARMS'] = {}
+            eq_dict['RETURNS'] = {}
+            eq_dict['BODY'] = []
+
+            # NOTE: value generator
+            def val_generator(d):
+                '''Generate value'''
+                # check 3 |
+                if "|" in d:
+                    # split
+                    match_res = d.split("|")
+                    # check
+                    if len(match_res) != 3:
+                        raise ValueError(
+                            f"{d} must be 3 elements!")
+
+                    # key
+                    key = match_res[0].strip()
+                    # name
+                    name = key
+                    # symbol
+                    symbol = match_res[1].strip()
+                    # unit
+                    unit = match_res[2].strip()
+
+                    # set
+                    val = {
+                        'name': name,
+                        'symbol': symbol,
+                        'unit': unit
+                    }
+                else:
+                    raise Exception(
+                        f"Invalid value format! {d} must be 3 elements!")
+
+                return key, val
+
+            # SECTION: parse equation data
+            # loop through eq_data
+            for eq in eq_data:
+                # check
+                if isinstance(eq, str):
+                    # parse equation body
+                    body_ = eq
+
+                    # NOTE: parse to extract args
+                    # regex
+                    regex = r"args\['([^']+)'\]"
+                    # find all matches
+                    matches = re.findall(regex, body_)
+                    # check
+                    if matches:
+                        # loop through matches
+                        for match in matches:
+                            # ! val generator
+                            key, val = val_generator(match)
+                            # check
+                            if match not in eq_dict['ARGS']:
+                                # set
+                                eq_dict['ARGS'][key] = val
+                                # set body
+                                body_ = body_.replace(
+                                    f"'{match}'", f"'{val['symbol']}'")
+
+                    # NOTE: parse to extract parameters
+                    # regex
+                    regex = r"parms\['([^']+)'\]"
+                    # find all matches
+                    matches = re.findall(regex, body_)
+                    # check
+                    if matches:
+                        # loop through matches
+                        for match in matches:
+                            # ! val generator
+                            key, val = val_generator(match)
+                            # check
+                            if match not in eq_dict['PARMS']:
+                                # set
+                                eq_dict['PARMS'][key] = val
+                                # set body
+                                body_ = body_.replace(
+                                    f"'{match}'", f"'{val['symbol']}'")
+
+                    # NOTE: parse to extract returns
+                    # regex
+                    regex = r"res\['([^']+)'\]"
+                    # find all matches
+                    matches = re.findall(regex, body_)
+                    # check
+                    if matches:
+                        # loop through matches
+                        for match in matches:
+                            # ! val generator
+                            key, val = val_generator(match)
+                            # check
+                            if match not in eq_dict['RETURNS']:
+                                # set
+                                eq_dict['RETURNS'][key] = val
+                                # set body
+                                body_ = body_.replace(f"res['{match}']", "res")
+
+                # updated body
+                # set body
+                eq_dict['BODY'].append(body_)
+            # return
+            return eq_dict
+        except Exception as e:
+            raise Exception(f"parse_equation error! {e}")
+
+    def equation_format_checker(self, equation_file: str,
+                                equation_key: Literal['BODY', 'BODY-INTEGRAL', 'BODY-FIRST-DERIVATIVE', 'BODY-SECOND-DERIVATIVE'] = 'BODY') -> Dict[str, Any]:
+        '''
+        Check equation format
+
+        Parameters
+        ----------
+        equation_file : str
+            equation file path
+        '''
+        try:
+            # NOTE: load equation file (yml format)
+            with open(equation_file, 'r') as f:
+                equations = yaml.load(f, Loader=yaml.FullLoader)
+
+            # NOTE: check
+            if equation_key not in equations:
+                raise ValueError(f"equation key {equation_key} not found!")
+
+            # NOTE: get equation body
+            body_ = equations['BODY']
+
+            # NOTE: parse
+            parse_res = self.__parse_equation(body_)
+
+            # NOTE: check other equations
+            body_integral = equations.get('BODY-INTEGRAL', None)
+            body_first_derivative = equations.get(
+                'BODY-FIRST-DERIVATIVE', None)
+            body_second_derivative = equations.get(
+                'BODY-SECOND-DERIVATIVE', None)
+
+            # check
+            if body_integral:
+                parse_ = self.__parse_equation(body_integral)
+                # add to res
+                parse_res['BODY-INTEGRAL'] = parse_['BODY']
+            else:
+                parse_res['BODY-INTEGRAL'] = None
+
+            if body_first_derivative:
+                parse_ = self.__parse_equation(body_first_derivative)
+                # add to res
+                parse_res['BODY-FIRST-DERIVATIVE'] = parse_['BODY']
+            else:
+                parse_res['BODY-FIRST-DERIVATIVE'] = None
+
+            if body_second_derivative:
+                parse_ = self.__parse_equation(body_second_derivative)
+                # add to res
+                parse_res['BODY-SECOND-DERIVATIVE'] = parse_['BODY']
+            else:
+                parse_res['BODY-SECOND-DERIVATIVE'] = None
+
+            # res
+            return parse_res
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File not found: {equation_file}")
+        except Exception as e:
+            raise Exception(f"equation format checker error! {e}")
