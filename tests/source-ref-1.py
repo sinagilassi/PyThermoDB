@@ -51,14 +51,29 @@ print(tb_info)
 # ====================================
 # LOAD TABLE
 # ====================================
+# table load
+tb_ = thermo_db.table_data('CUSTOM-REF-1', 'General-Data')
+print(tb_)
+
+
+# table-data
 dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
 print(dt_.data_structure())
+print(dt_.table_columns)
+print(dt_.table_symbols)
+print(dt_.table_units)
+print(dt_.table_values)
 
-# load equation
-# tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
-# # equation structure
-# tb_eq_structure = tb_eq.eq_structure()
-# print(tb_eq_structure)
+# table-equation
+tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
+# equation structure
+tb_eq_structure = tb_eq.eq_structure()
+print(tb_eq_structure)
+print(tb_eq.eqs_structure())
+print(tb_eq.table_columns)
+print(tb_eq.table_symbols)
+print(tb_eq.table_units)
+print(tb_eq.table_values)
 
 #
 tb_eq = thermo_db.equation_load("Perry's Chemical Engineers' Handbook",
@@ -66,6 +81,10 @@ tb_eq = thermo_db.equation_load("Perry's Chemical Engineers' Handbook",
 # equation structure
 tb_eq_structure = tb_eq.eq_structure()
 print(tb_eq_structure)
+print(tb_eq.eqs_structure())
+# print(tb_eq.table_columns())
+# print(tb_eq.table_symbols())
+# print(tb_eq.table_units())
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -84,45 +103,45 @@ comp1 = "carbon dioxide"
 # ====================================
 # BUILD DATA
 # ====================================
-# # build data
-# data_1 = thermo_db.build_thermo_property(
-#     [comp1], 'CUSTOM-REF-1', 'General-Data')
-# print(type(data_1))
+# build data
+data_1 = thermo_db.build_thermo_property(
+    [comp1], 'CUSTOM-REF-1', 'General-Data')
+print(type(data_1))
 
-# # retrieve data
-# res_ = data_1.get_property("MW")
-# print(res_)
-
+# retrieve data
+res_ = data_1.get_property("MW")
+print(res_)
 
 # ====================================
 # BUILD EQUATION
 # ====================================
-# build equation
-comp1_eq = thermo_db.build_thermo_property(
+# ! build equation
+comp1_eq_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'Vapor-Pressure')
 
 # equation details
-print(comp1_eq.equation_parms())
-print(comp1_eq.equation_args())
-print(comp1_eq.equation_body())
-print(comp1_eq.equation_return())
+print(comp1_eq_1.equation_parms())
+print(comp1_eq_1.equation_args())
+print(comp1_eq_1.equation_body())
+print(comp1_eq_1.equation_return())
 
 # cal
-Cp_cal = comp1_eq.cal(T=290)
-print(Cp_cal)
+res_ = comp1_eq_1.cal(T=290)
+print(res_)
 
-# first derivative
-Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
-print(Cp_cal_first)
+# ! build equation
+comp1_eq_2 = thermo_db.build_thermo_property(
+    [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 
-# second derivative
-Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
-print(Cp_cal_second)
+# equation details
+print(comp1_eq_2.equation_parms())
+print(comp1_eq_2.equation_args())
+print(comp1_eq_2.equation_body())
+print(comp1_eq_2.equation_return())
 
-# integral
-Cp_cal_integral = comp1_eq.cal_integral(T1=273.15, T2=373.15)
-print(Cp_cal_integral)
-
+# cal
+res_ = comp1_eq_2.cal(T=290)
+print(res_)
 
 # ====================================
 # BUILD THERMODB
@@ -132,12 +151,55 @@ thermo_db = ptdb.build_thermodb()
 print(type(thermo_db))
 
 # add TableData
-thermo_db.add_data('general', comp1_data)
+thermo_db.add_data('general', data_1)
 # add TableEquation
-thermo_db.add_data('heat-capacity', comp1_eq)
+thermo_db.add_data('vapor-pressure', comp1_eq_1)
+# add TableEquation
+thermo_db.add_data('heat-capacity', comp1_eq_2)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
 # thermo_db.export_data_structure(comp1)
+
+thermodb_file = f'{comp1}-yml-1.pkl'
+thermodb_path = os.path.join(os.getcwd(), 'tests')
+
 # save
-thermo_db.save(f'{comp1}-4.pkl')
+# thermo_db.save(thermodb_file, file_path=thermodb_path)
+
+# check
+# print(thermo_db.check())
+
+# ====================================
+# LOAD THERMODB
+# ====================================
+# load a thermodb
+thermo_db_loaded = ptdb.load_thermodb(
+    os.path.join(thermodb_path, thermodb_file))
+print(type(thermo_db_loaded))
+
+# check
+print(thermo_db_loaded.check())
+
+# ====================================
+# SELECT PROPERTY
+# ====================================
+prop1_ = thermo_db_loaded.select('general')
+print(type(prop1_))
+print(prop1_.prop_data)
+
+# old format
+print(prop1_.get_property('MW'))
+
+# new format
+_src = 'general | MW'
+print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
+
+# ====================================
+# SELECT A FUNCTION
+# ====================================
+# select function
+func1_ = thermo_db_loaded.select_function('heat-capacity')
+print(type(func1_))
+print(func1_.args)
+print(func1_.cal(T=295.15, message="heat capacity result"))
