@@ -1,6 +1,6 @@
 # import packages/modules
 import pandas as pd
-from typing import Optional
+from typing import Optional, List, Dict, Any, Union
 # local imports
 from ..models import DataResult
 
@@ -10,10 +10,31 @@ class TableData:
     __trans_data = {}
     __prop_data = {}
 
-    def __init__(self, databook_name, table_name, table_data):
+    def __init__(self, databook_name, table_name, table_data,
+                 table_values: Optional[List | Dict] = None,
+                 table_structure: Optional[Dict[str, Any]] = None):
+        '''
+        Initialize TableData class
+
+        Parameters
+        ----------
+        databook_name : str
+            databook name
+        table_name : str
+            table name
+        table_data : dict
+            table data (dict), taken directly from yml file
+        table_values : list | dict, optional
+            table values (default: None), taken directly from yml file if exists
+        table_structure : dict, optional
+            table structure (default: None), taken directly from yml file if exists
+        '''
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data  # reference template (yml)
+        # table values (yml)
+        self.__table_values = table_values if table_values else None
+        self.__table_structure = table_structure if table_structure else None
 
     @property
     def trans_data(self):
@@ -35,10 +56,104 @@ class TableData:
         self.__prop_data = {key: value for key,
                             value in value.items() if key != exclude_key}
 
+    @property
+    def table_values(self):
+        '''Get table values from yml file (if exists)'''
+        if self.__table_values:
+            return self.__table_values
+        else:
+            msg = f"""No table values found in the following reference \n
+            ::: {self.databook_name}
+            :::  {self.table_name}!
+            """
+            print(msg)
+            return None
+
+    @property
+    def table_structure(self):
+        '''Get table structure from yml file (if exists)'''
+        if self.__table_structure:
+            return self.__table_structure
+        else:
+            msg = f"""No table structure found in the following reference \n
+            ::: {self.databook_name}
+            :::  {self.table_name}!
+            """
+            print(msg)
+            return None
+
+    @property
+    def table_columns(self, column_name: str = 'COLUMNS') -> List[str]:
+        '''
+        Get table columns from data-table structure
+
+        Parameters
+        ----------
+        column_name : str
+            column name (default: 'COLUMNS')
+
+        Returns
+        -------
+        columns : list
+            list of columns
+        '''
+        try:
+            return self.table_data[column_name]
+        except KeyError:
+            raise KeyError(
+                "Table columns not found in the data table structure!")
+        except Exception as e:
+            raise Exception(f"Error retrieving table columns: {e}")
+
+    @property
+    def table_symbols(self, symbol_name: str = 'SYMBOL') -> List[str]:
+        '''
+        Get table symbols from data-table structure
+
+        Parameters
+        ----------
+        symbol_name : str
+            symbol name (default: 'SYMBOL')
+
+        Returns
+        -------
+        symbols : list
+            list of symbols
+        '''
+        try:
+            return self.table_data[symbol_name]
+        except KeyError:
+            raise KeyError(
+                "Table symbols not found in the data table structure!")
+        except Exception as e:
+            raise Exception(f"Error retrieving table symbols: {e}")
+
+    @property
+    def table_units(self, unit_name: str = 'UNIT') -> List[str]:
+        '''
+        Get table units from data-table structure
+
+        Parameters
+        ----------
+        unit_name : str
+            unit name (default: 'UNIT')
+
+        Returns
+        -------
+        units : list
+            list of units
+        '''
+        try:
+            return self.table_data[unit_name]
+        except KeyError:
+            raise KeyError(
+                "Table units not found in the data table structure!")
+        except Exception as e:
+            raise Exception(f"Error retrieving table units: {e}")
+
     def data_structure(self):
         '''
-        Display data table structure
-
+        Display data-table structure including `column names`, `symbol`, `units` and `values`
         '''
         # dataframe
         df = pd.DataFrame(self.table_data)
@@ -201,7 +316,7 @@ class TableData:
 
         # res
         return data_dict
-    
+
     def to_dict(self):
         '''
         Convert prop to dict

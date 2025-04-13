@@ -114,7 +114,7 @@ class TableReference(ManageData):
                 # NOTE: load external path
                 path_external = self.load_external_csv(self.custom_ref)
 
-                # NOTE: check if the file exists in the external paths
+                # SECTION: check if the file exists in the external paths
                 file_path = None
                 # check
                 if len(path_external) > 0:
@@ -128,7 +128,7 @@ class TableReference(ManageData):
                             file_path = path_external[file_names.index(item)]
                             break
 
-                # NOTE: load values from custom reference
+                # SECTION: load values from custom reference
                 if tb_type:
                     # load table data
                     table_data = self.retrieve_data(
@@ -136,45 +136,72 @@ class TableReference(ManageData):
 
                     # load values
                     if tb_type == TableTypes.DATA.value:
-                        if isinstance(table_data, dict):
-                            # NOTE: data
-                            columns = table_data.get('COLUMNS', None)
-                            symbol = table_data.get('SYMBOL', None)
-                            unit = table_data.get('UNIT', None)
+                        # NOTE: table structure
+                        table_structure = tb.get(
+                            'table_structure', None)
 
-                            # check
-                            if columns is None or symbol is None or unit is None:
-                                raise Exception(
-                                    f"Table data is None for {file_name}.")
-                            # add to file data
-                            file_data = []
-                            # file_data.append(columns)
-                            file_data.append(symbol)
-                            file_data.append(unit)
+                        # check
+                        if table_structure is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
 
-                            # values
-                            values = table_data.get('VALUES', None)
-                            if values is None:
-                                raise Exception(
-                                    f"Table data is None for {file_name}.")
-                            file_data.extend(values)
+                        # NOTE: table structure
+                        columns = table_structure.get('COLUMNS', None)
+                        symbol = table_structure.get('SYMBOL', None)
+                        unit = table_structure.get('UNIT', None)
+
+                        # check
+                        if columns is None or symbol is None or unit is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # values
+                        values = tb.get('table_values', None)
+                        # check
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # NOTE: add to file data
+                        file_data = []
+                        # ! add to dataframe header
+                        # file_data.append(columns)
+                        file_data.append(symbol)
+                        file_data.append(unit)
+                        file_data.extend(values)
 
                     elif tb_type == TableTypes.EQUATIONS.value:
-                        if isinstance(table_data, dict):
-                            # NOTE: equations
-                            eq = table_data.get('EQ-1', None)
-                            if eq is None:
-                                raise Exception(
-                                    f"Table data is None for {file_name}.")
-                            parms = eq['PARMS']
-                            returns = eq['RETURNS']
+                        # NOTE: table structure
+                        table_structure = tb.get(
+                            'table_structure', None)
+                        # check
+                        if table_structure is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
 
-                            # values
-                            values = eq.get('VALUES', None)
+                        # table structure
+                        columns = table_structure.get('COLUMNS', None)
+                        symbol = table_structure.get('SYMBOL', None)
+                        unit = table_structure.get('UNIT', None)
 
-                # check
-                # if file_path is None:
-                #     raise Exception(f"{file_name} does not exist.")
+                        # check
+                        if columns is None or symbol is None or unit is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # values
+                        values = tb.get('table_values', None)
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # NOTE: make file data
+                        file_data = []
+                        # ! add to dataframe header
+                        # file_data.append(columns)
+                        file_data.append(symbol)
+                        file_data.append(unit)
+                        file_data.extend(values)
 
             # SECTION
             # check

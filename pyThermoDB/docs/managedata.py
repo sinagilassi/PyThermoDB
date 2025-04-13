@@ -301,11 +301,17 @@ class ManageData():
                     # <class 'str' > <class 'dict' >
                     # print(type(table), type(table_data))
 
-                    # description
+                    # NOTE: description
                     description = table_data.get('DESCRIPTION', None)
 
-                    # table id
+                    # NOTE: table id
                     table_id = table_data.get('TABLE-ID', -1)
+
+                    # NOTE: table values
+                    table_values = table_data.get('VALUES', None)
+
+                    # NOTE: table structure
+                    table_structure = table_data.get('STRUCTURE', None)
 
                     # * check
                     # ! check EQUATIONS exists
@@ -325,6 +331,9 @@ class ManageData():
                             'data': None,
                             'matrix_equations': None,
                             'matrix_data': None,
+                            'table_type': TableTypes.EQUATIONS.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure
                         })
                         # reset
                         _eq = []
@@ -336,14 +345,6 @@ class ManageData():
                             # save
                             _eq.append(eq_data)
 
-                        # matrix-symbol
-                        # matrix_symbol = table_data.get('MATRIX-SYMBOL', None)
-                        # # embedded symbol
-                        # if matrix_symbol:
-                        #     _eq.append({
-                        #         'MATRIX-SYMBOL': matrix_symbol
-                        #     })
-
                         # save
                         tables.append({
                             'table_id': table_id,
@@ -353,6 +354,9 @@ class ManageData():
                             'data': None,
                             'matrix_equations': _eq,
                             'matrix_data': None,
+                            'table_type': TableTypes.MATRIX_EQUATIONS.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure
                         })
                         # reset
                         _eq = []
@@ -369,6 +373,9 @@ class ManageData():
                             'data': data,
                             'matrix_equations': None,
                             'matrix_data': None,
+                            'table_type': TableTypes.DATA.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure
                         })
                     # ! check MATRIX-DATA
                     elif 'MATRIX-DATA' in table_data:
@@ -388,13 +395,15 @@ class ManageData():
                             'equations': None,
                             'data': None,
                             'matrix_equations': None,
-                            'matrix_data': matrix_data
+                            'matrix_data': matrix_data,
+                            'table_type': TableTypes.MATRIX_DATA.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure
                         })
 
                 # save
                 databook_list[databook] = tables
-                # log
-                # print(type(databook_list))
+
             # return
             return databook_list
         except Exception as e:
@@ -594,7 +603,7 @@ class ManageData():
 
     def get_table(self, databook: str | int | list[DataBookTableTypes], table: int | str) -> DataBookTableTypes:
         '''
-        Get a table list of selected databook
+        Get a table with respect to databook and table id or name
 
         Parameters
         ----------
@@ -605,8 +614,8 @@ class ManageData():
 
         Returns
         -------
-        tables : list
-            table list of selected databook
+        table : DataBookTableTypes
+            selected table based on databook and table id or name
         '''
         try:
             # select databook
@@ -620,16 +629,8 @@ class ManageData():
 
             # ! if databook list
             # list
-            selected_tb: DataBookTableTypes = {
-                'table_id': 'Table not found!',
-                'table': 'Table not found!',
-                'description': None,
-                "data": None,
-                "equations": None,
-                "matrix_data": None,
-                "matrix_equations": None,
-                "table_type": None
-            }
+            # selected_tb: DataBookTableTypes
+            selected_tb = None
 
             # SECTION: set table type
             def set_table_type(tb):
@@ -651,7 +652,7 @@ class ManageData():
                 for i, tb in enumerate(databook_set):
                     # check table id
                     if i == table:
-                        selected_tb = tb
+                        selected_tb = DataBookTableTypes(**tb)
                         # NOTE: check table type
                         # tb_name_ = selected_tb['table']
                         # set
@@ -663,7 +664,7 @@ class ManageData():
                 for i, tb in enumerate(databook_set):
                     # check table name
                     if tb['table'] == table:
-                        selected_tb = tb
+                        selected_tb = DataBookTableTypes(**tb)
                         # NOTE: check table type
                         # tb_name_ = selected_tb['table']
                         # set
@@ -672,6 +673,9 @@ class ManageData():
             else:
                 raise Exception("Invalid table type")
 
+            # NOTE: check selected table
+            if selected_tb is None:
+                raise Exception("table not found!")
             # return
             return selected_tb
         except Exception as e:

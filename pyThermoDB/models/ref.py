@@ -13,6 +13,8 @@ class DataBookTableTypes(TypedDict):
     matrix_equations: Optional[List[str] | Dict[str, Any]]
     matrix_data: Optional[List[str] | Dict[str, Any]]
     table_type: Optional[str]
+    table_values: Optional[List[Any] | Dict[str, Any]]
+    table_structure: Optional[Dict[str, Any]]
 
 
 class PayLoadType(TypedDict):

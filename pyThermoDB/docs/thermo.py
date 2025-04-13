@@ -460,8 +460,25 @@ class ThermoDB(ManageData):
 
             # check
             if tb:
-                # table name
+                # NOTE: table name
                 table_name = tb['table']
+
+                # NOTE: table type
+                if tb['table_type'] is not None:
+                    tb_type = TableTypes.EQUATIONS.value
+
+                # NOTE: table values
+                if tb['table_values'] is not None:
+                    table_values = tb['table_values']
+                else:
+                    table_values = None
+
+                # NOTE: table structure
+                if tb['table_structure'] is not None:
+                    table_structure = tb['table_structure']
+                else:
+                    table_structure = None
+
                 # check data/equations
                 if tb['equations'] is not None:
                     # set table type
@@ -472,8 +489,9 @@ class ThermoDB(ManageData):
                         table_equations.append(item)
 
                     # create table equation
-                    return TableEquation(db_name, table_name, table_equations)
-
+                    return TableEquation(db_name, table_name, table_equations,
+                                         table_values=table_values,
+                                         table_structure=table_structure)
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -512,12 +530,24 @@ class ThermoDB(ManageData):
 
             # check
             if tb:
-                # table name
+                # NOTE: table name
                 table_name = tb['table']
 
-                # check data/equations
+                # NOTE: check data/equations
                 if tb['data'] is not None:
                     tb_type = TableTypes.DATA.value
+
+                # NOTE: check table values
+                if tb['table_values'] is not None:
+                    table_values = tb['table_values']
+                else:
+                    table_values = None
+
+                # NOTE: check table structure
+                if tb['table_structure'] is not None:
+                    table_structure = tb['table_structure']
+                else:
+                    table_structure = None
 
                 # check data
                 if tb_type == 'data':
@@ -537,16 +567,10 @@ class ThermoDB(ManageData):
                     if not COLUMNS or not SYMBOL or not UNIT or not CONVERSION:
                         raise ValueError("Table data is empty!")
 
-                    # select table data
-                    table_structure = {
-                        'COLUMNS': COLUMNS,
-                        'SYMBOL': SYMBOL,
-                        'UNIT': UNIT,
-                        'CONVERSION': CONVERSION
-                    }
-
                     # data no
-                    return TableData(db_name, table_name, table_structure)
+                    return TableData(db_name, table_name, table_data,
+                                     table_values=table_values,
+                                     table_structure=table_structure)
                 else:
                     raise Exception('Table loading error!')
             else:

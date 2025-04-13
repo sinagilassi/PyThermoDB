@@ -24,14 +24,15 @@ class TransData:
 
     def trans(self):
         '''
-        Transform the data loaded from API, 
+        Transform the data loaded from API,
         It consists of:
             step 1: display api data
                 data['header'],['records'],['unit']
-            step 2: transform to dict 
+            step 2: transform to dict
         '''
         self.data_trans = {}
 
+        # loop through the data including header, records, unit, symbol
         for x, y, z, w in zip(self.api_data['header'], self.api_data['records'], self.api_data['unit'], self.api_data['symbol']):
             # check eq exists
             if x == "Eq":
@@ -40,6 +41,7 @@ class TransData:
                 self.__data_type = 'equation'
             else:
                 self.__data_type = 'data'
+
             # set values
             self.data_trans[str(x)] = {"value": y, "unit": z, "symbol": w}
 

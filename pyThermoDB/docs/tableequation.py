@@ -4,7 +4,7 @@ import math
 import sympy as sp
 import yaml
 import json
-from typing import Literal
+from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult
 from .equationbuilder import EquationBuilder
@@ -31,12 +31,34 @@ class TableEquation:
     # selected equation id
     eq_id: int = -1
 
-    def __init__(self, databook_name, table_name, equations):
+    def __init__(self, databook_name, table_name, equations,
+                 table_values: Optional[List | Dict] = None,
+                 table_structure: Optional[Dict[str, Any]] = None):
+        '''
+        Initialize the TableEquation class.
+
+        Parameters
+        ----------
+        databook_name : str
+            Name of the databook.
+        table_name : str
+            Name of the table.
+        equations : list
+            List of equations.
+        table_values : list, optional
+            Values for the table (default is None), if provided in yml file.
+        table_structure : dict, optional
+            Structure of the table (default is None), if provided in yml file.
+        '''
         self.databook_name = databook_name
         self.table_name = table_name
-        self.equations = equations
+        self.equations = equations  # equation list structures (yml file)
         # number of equations
         self.eq_num = len(equations)
+        # table values (yml)
+        self.__table_values = table_values if table_values else None
+        # table structure (yml)
+        self.__table_structure = table_structure if table_structure else None
 
     @property
     def trans_data(self):
@@ -76,6 +98,32 @@ class TableEquation:
             'body_second_derivative': self.body_second_derivative,
             'custom_integral': self._custom_integral
         }
+
+    @property
+    def table_values(self):
+        '''Get table values from yml file (if exists)'''
+        if self.__table_values:
+            return self.__table_values
+        else:
+            msg = f"""No table values found in the following reference \n
+            ::: {self.databook_name}
+            :::  {self.table_name}!
+            """
+            print(msg)
+            return None
+
+    @property
+    def table_structure(self):
+        '''Get table structure from yml file (if exists)'''
+        if self.__table_structure:
+            return self.__table_structure
+        else:
+            msg = f"""No table structure found in the following reference \n
+            ::: {self.databook_name}
+            :::  {self.table_name}!
+            """
+            print(msg)
+            return None
 
     def eq_structure(self, id=1):
         '''
@@ -188,6 +236,111 @@ class TableEquation:
                 return eq_summary
             elif res_format == 'json':
                 return json.dumps(eq_summary, indent=4)
+
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    @property
+    def table_columns(self, column_name: str = 'COLUMNS'):
+        '''
+        Display table columns defined in `yml file`
+
+        Parameters
+        ----------
+        column_name : str, optional
+            column name (default is 'COLUMNS')
+
+        Returns
+        -------
+        columns : list
+            table columns
+        '''
+        try:
+            # table structure
+            table_structure = self.table_structure
+
+            # check table structure
+            if table_structure is None:
+                raise Exception('Table structure not defined!')
+
+            # res
+            columns = table_structure.get(column_name, None)
+            # check columns
+            if columns is None:
+                raise Exception(f'Column {column_name} not found!')
+
+            # res
+            return columns
+
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    @property
+    def table_units(self, unit_name: str = 'UNIT'):
+        '''
+        Display table units defined in `yml file`
+
+        Parameters
+        ----------
+        unit_name : str, optional
+            unit name (default is 'UNIT')
+
+        Returns
+        -------
+        units : list
+            table units
+        '''
+        try:
+            # table structure
+            table_structure = self.table_structure
+
+            # check table structure
+            if table_structure is None:
+                raise Exception('Table structure not defined!')
+
+            # res
+            units = table_structure.get(unit_name, None)
+            # check units
+            if units is None:
+                raise Exception(f'Unit {unit_name} not found!')
+
+            # res
+            return units
+
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    @property
+    def table_symbols(self, symbol_name: str = 'SYMBOL'):
+        '''
+        Display table symbols defined in `yml file`
+
+        Parameters
+        ----------
+        symbol_name : str, optional
+            symbol name (default is 'SYMBOL')
+
+        Returns
+        -------
+        symbols : list
+            table symbols
+        '''
+        try:
+            # table structure
+            table_structure = self.table_structure
+
+            # check table structure
+            if table_structure is None:
+                raise Exception('Table structure not defined!')
+
+            # res
+            symbols = table_structure.get(symbol_name, None)
+            # check symbols
+            if symbols is None:
+                raise Exception(f'Symbol {symbol_name} not found!')
+
+            # res
+            return symbols
 
         except Exception as e:
             raise Exception(f'Loading error {e}!')
