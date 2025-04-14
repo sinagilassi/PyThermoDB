@@ -11,7 +11,7 @@ print(ptdb.__version__)
 # CUSTOM REFERENCES
 # ====================================
 # files
-yml_file = 'tests\\source-ref-2.yml'
+yml_file = 'tests\\source-ref-4.yml'
 yml_path = os.path.join(os.getcwd(), yml_file)
 
 # custom ref
@@ -39,11 +39,11 @@ print(tb_list)
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data')
-# print(tb_info)
-
-tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data')
 print(tb_info)
+
+# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
+# print(tb_info)
 
 # tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 # print(tb_info)
@@ -52,12 +52,22 @@ print(tb_info)
 # LOAD TABLE
 # ====================================
 # table-data
-# dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
-# print(dt_.data_structure())
-# print(dt_.table_columns)
-# print(dt_.table_symbols)
-# print(dt_.table_units)
-# print(dt_.table_values)
+dt_ = thermo_db.data_load(
+    1, 'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
+print(dt_.data_structure())
+print(dt_.table_columns)
+print(dt_.table_symbols)
+print(dt_.table_units)
+print(dt_.table_values)
+
+
+# table-data
+dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
+print(dt_.data_structure())
+print(dt_.table_columns)
+print(dt_.table_symbols)
+print(dt_.table_units)
+print(dt_.table_values)
 
 # table-equation
 tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
@@ -145,7 +155,7 @@ thermo_db.add_data('heat-capacity', comp1_eq_2)
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-yml-1.pkl'
+thermodb_file = f'{comp1}-yml-4.pkl'
 thermodb_path = os.path.join(os.getcwd(), 'tests')
 
 # save
@@ -187,3 +197,9 @@ func1_ = thermo_db_loaded.select_function('heat-capacity')
 print(type(func1_))
 print(func1_.args)
 print(func1_.cal(T=295.15, message="heat capacity result"))
+
+# select function
+func2_ = thermo_db_loaded.select_function('vapor-pressure')
+print(type(func2_))
+print(func2_.args)
+print(func2_.cal(T=295.15, message="vapor pressure result"))

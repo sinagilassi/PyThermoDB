@@ -6,6 +6,7 @@ import os
 import yaml
 import pandas as pd
 from typing import TypedDict, List, Optional, Literal, Tuple, Dict, Union, Any
+from pathlib import Path
 import json
 import re
 # local
@@ -324,13 +325,14 @@ class ManageData():
                             _eq.append(eq_data)
 
                         # NOTE: parse equations
+                        _eq_formatted = self.__eq_formatter(_eq)
 
                         # save
                         tables.append({
                             'table_id': table_id,
                             'table': table,
                             'description': description,
-                            'equations': _eq,
+                            'equations': _eq_formatted,
                             'data': None,
                             'matrix_equations': None,
                             'matrix_data': None,
@@ -367,6 +369,10 @@ class ManageData():
                     elif 'DATA' in table_data:
                         # data
                         data = table_data['DATA']
+
+                        # generate table structure
+                        table_structure = data if table_structure is None else table_structure
+
                         # save
                         tables.append({
                             'table_id': table_id,
@@ -1037,13 +1043,14 @@ class ManageData():
                         for match in matches:
                             # ! val generator
                             key, val = val_generator(match)
+                            symbol = val['symbol']
                             # check
                             if match not in eq_dict['ARGS']:
                                 # set
                                 eq_dict['ARGS'][key] = val
                                 # set body
                                 body_ = body_.replace(
-                                    f"'{match}'", f"'{val['symbol']}'")
+                                    f"'{match}'", f"'{symbol}'")
 
                     # NOTE: parse to extract parameters
                     # regex
@@ -1056,13 +1063,14 @@ class ManageData():
                         for match in matches:
                             # ! val generator
                             key, val = val_generator(match)
+                            symbol = val['symbol']
                             # check
                             if match not in eq_dict['PARMS']:
                                 # set
                                 eq_dict['PARMS'][key] = val
                                 # set body
                                 body_ = body_.replace(
-                                    f"'{match}'", f"'{val['symbol']}'")
+                                    f"'{match}'", f"'{symbol}'")
 
                     # NOTE: parse to extract returns
                     # regex
@@ -1075,6 +1083,7 @@ class ManageData():
                         for match in matches:
                             # ! val generator
                             key, val = val_generator(match)
+                            symbol = val['symbol']
                             # check
                             if match not in eq_dict['RETURNS']:
                                 # set
@@ -1090,24 +1099,56 @@ class ManageData():
         except Exception as e:
             raise Exception(f"parse_equation error! {e}")
 
-    def equation_format_checker(self, equation_file: str,
-                                equation_key: Literal['BODY', 'BODY-INTEGRAL', 'BODY-FIRST-DERIVATIVE', 'BODY-SECOND-DERIVATIVE'] = 'BODY') -> Dict[str, Any]:
+    def __eq_formatter(self, eqs: List):
+        '''
+        Format equations
+        '''
+        try:
+            # NOTE: eqs
+            eqs_formatted = []
+
+            # NOTE: check eqs
+            for eq in eqs:
+                # check keys
+                if "ARGS" not in eq or "PARMS" not in eq or "RETURNS" not in eq:
+                    # parse eq to generate equation structure
+                    eq_ = self.equation_formatter(eq)
+                    eqs_formatted.append(eq_)
+                else:
+                    eqs_formatted.append(eq)
+
+            # res
+            return eqs_formatted
+        except Exception as e:
+            raise Exception(f"equation formatting error! {e}")
+
+    def equation_formatter(self, equation_src: Dict | str) -> Dict[str, Any]:
         '''
         Check equation format
 
         Parameters
         ----------
-        equation_file : str
-            equation file path
+        equation_src : str | dict
+            equation source (file path string or dict)
         '''
         try:
-            # NOTE: load equation file (yml format)
-            with open(equation_file, 'r') as f:
-                equations = yaml.load(f, Loader=yaml.FullLoader)
+            # SECTION: path check
+            if isinstance(equation_src, str):
+                # check file
+                if not os.path.isfile(equation_src):
+                    raise FileNotFoundError(f"File not found: {equation_src}")
 
+                # NOTE: load equation file (yml format)
+                with open(equation_src, 'r') as f:
+                    equations = yaml.load(f, Loader=yaml.FullLoader)
+            elif isinstance(equation_src, dict):
+                # NOTE: check if dict
+                equations = equation_src
+
+            # SECTION: check equation format
             # NOTE: check
-            if equation_key not in equations:
-                raise ValueError(f"equation key {equation_key} not found!")
+            if 'BODY' not in equations:
+                raise ValueError("equation key `BODY` not found!")
 
             # NOTE: get equation body
             body_ = equations['BODY']
@@ -1123,30 +1164,39 @@ class ManageData():
                 'BODY-SECOND-DERIVATIVE', None)
 
             # check
-            if body_integral:
-                parse_ = self.__parse_equation(body_integral)
-                # add to res
-                parse_res['BODY-INTEGRAL'] = parse_['BODY']
+            if body_integral is not None:
+                # check
+                if body_integral != 'None' and body_integral != 'NONE':
+                    # parse
+                    parse_ = self.__parse_equation(body_integral)
+                    # add to res
+                    parse_res['BODY-INTEGRAL'] = parse_['BODY']
             else:
                 parse_res['BODY-INTEGRAL'] = None
 
-            if body_first_derivative:
-                parse_ = self.__parse_equation(body_first_derivative)
-                # add to res
-                parse_res['BODY-FIRST-DERIVATIVE'] = parse_['BODY']
+            if body_first_derivative is not None:
+                # check
+                if body_first_derivative != 'None' and body_first_derivative != 'NONE':
+                    # parse
+                    parse_ = self.__parse_equation(body_first_derivative)
+                    # add to res
+                    parse_res['BODY-FIRST-DERIVATIVE'] = parse_['BODY']
             else:
                 parse_res['BODY-FIRST-DERIVATIVE'] = None
 
-            if body_second_derivative:
-                parse_ = self.__parse_equation(body_second_derivative)
-                # add to res
-                parse_res['BODY-SECOND-DERIVATIVE'] = parse_['BODY']
+            if body_second_derivative is not None:
+                # check
+                if body_second_derivative != 'None' and body_second_derivative != 'NONE':
+                    # parse
+                    parse_ = self.__parse_equation(body_second_derivative)
+                    # add to res
+                    parse_res['BODY-SECOND-DERIVATIVE'] = parse_['BODY']
             else:
                 parse_res['BODY-SECOND-DERIVATIVE'] = None
 
             # res
             return parse_res
         except FileNotFoundError:
-            raise FileNotFoundError(f"File not found: {equation_file}")
+            raise FileNotFoundError(f"File not found: {equation_src}")
         except Exception as e:
             raise Exception(f"equation format checker error! {e}")
