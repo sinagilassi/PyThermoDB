@@ -564,8 +564,13 @@ class TableEquation:
             # looping through self.parms
             # check parms
             if isinstance(self.parms, dict):
-                # loaded parms (taken from reference)
+                # NOTE: loaded parms (taken from reference)
                 _parms_name = list(self.parms.keys())
+                # from symbol
+                _parms_name = [value['symbol']
+                               for key, value in self.parms.items()]
+
+                # NOTE: create params dict
                 _parms = {value['symbol']: float(value['value'] or 0)/float(value['unit'] or 1)
                           for key, value in trans_data.items() if value['symbol'] in _parms_name}
             else:

@@ -20,5 +20,5 @@ yml_file = 'tests\\equation-body.yml'
 yml_path = os.path.join(os.getcwd(), yml_file)
 
 # check equation body
-res = thermo_db.equation_format_checker(yml_path)
+res = thermo_db.equation_formatter(yml_path)
 print(res)

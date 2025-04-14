@@ -464,23 +464,23 @@ class ThermoDB(ManageData):
                 table_name = tb['table']
 
                 # NOTE: table type
-                if tb['table_type'] is not None:
+                if tb['table_type'] is not None and tb['table_type'] != 'None':
                     tb_type = TableTypes.EQUATIONS.value
 
                 # NOTE: table values
-                if tb['table_values'] is not None:
+                if tb['table_values'] is not None and tb['table_values'] != 'None':
                     table_values = tb['table_values']
                 else:
                     table_values = None
 
                 # NOTE: table structure
-                if tb['table_structure'] is not None:
+                if tb['table_structure'] is not None and tb['table_structure'] != 'None':
                     table_structure = tb['table_structure']
                 else:
                     table_structure = None
 
                 # check data/equations
-                if tb['equations'] is not None:
+                if tb['equations'] is not None and tb['equations'] != 'None':
                     # set table type
                     # tb_type = 'equation'
 
@@ -534,17 +534,20 @@ class ThermoDB(ManageData):
                 table_name = tb['table']
 
                 # NOTE: check data/equations
-                if tb['data'] is not None:
-                    tb_type = TableTypes.DATA.value
+                if tb['data'] is None or tb['data'] == 'None':
+                    raise Exception(
+                        'This method not compatible with the selected table!')
+
+                tb_type = TableTypes.DATA.value
 
                 # NOTE: check table values
-                if tb['table_values'] is not None:
+                if tb['table_values'] is not None and tb['table_values'] != 'None':
                     table_values = tb['table_values']
                 else:
                     table_values = None
 
                 # NOTE: check table structure
-                if tb['table_structure'] is not None:
+                if tb['table_structure'] is not None and tb['table_structure'] != 'None':
                     table_structure = tb['table_structure']
                 else:
                     table_structure = None
@@ -1051,22 +1054,21 @@ class ThermoDB(ManageData):
             # if
             if isinstance(tb_info_res_, dict):
                 # check
-                if tb_info_res_['Type'] == 'Equation':
+                if tb_info_res_['Type'] == 'Equation':  # ! equation
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
                     # build equation
                     return self.build_equation(
                         component_names[0], databook, table)
-
-                elif tb_info_res_['Type'] == 'Data':
+                elif tb_info_res_['Type'] == 'Data':  # ! data
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
                     # build data
                     return self.build_data(
                         component_names[0], databook, table)
-                elif tb_info_res_['Type'] == 'Matrix-Equation':
+                elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
                     # check
                     if len(component_names) < 2:
                         raise Exception(
@@ -1074,7 +1076,7 @@ class ThermoDB(ManageData):
                     # build matrix-equation
                     return self.build_matrix_equation(
                         component_names, databook, table)
-                elif tb_info_res_['Type'] == 'Matrix-Data':
+                elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
                     # check
                     if len(component_names) < 2:
                         raise Exception(
