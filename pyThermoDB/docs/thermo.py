@@ -391,6 +391,56 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    def table_view(self, databook: str | int, table: str | int):
+        '''
+        Display a table header columns and other info
+
+        Parameters
+        ----------
+        databook : str | int
+            databook name or id
+        table : str | int
+            table name or id
+        '''
+        try:
+            # SECTION: detect table type
+            tb_info_res_ = self.table_info(databook, table, res_format='dict')
+
+            # res
+            tb_res = None
+
+            # if
+            if isinstance(tb_info_res_, dict):
+                # check
+                if tb_info_res_['Type'] == 'Equation':  # ! equation
+                    # load table equation
+                    tb_res = self.table_data(databook, table)
+                elif tb_info_res_['Type'] == 'Data':  # ! data
+                    # load table data
+                    tb_res = self.table_data(databook, table)
+                elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
+                    # load table equation
+                    tb_res = self.table_data(databook, table)
+                elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
+                    # load table equation
+                    tb_res = self.table_data(databook, table)
+                else:
+                    raise Exception('No data/equation found!')
+
+                # SECTION: convert dataframe to dict
+                # check
+                if isinstance(tb_res, pd.DataFrame):
+                    # convert to dict
+                    tb_res = tb_res.to_dict(orient='records')
+
+                # res
+                return tb_res
+
+            else:
+                raise Exception('Table loading error!')
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
+
     def table_data(self, databook: str | int, table: str | int) -> pd.DataFrame:
         '''
         Get all table elements (display a table)
