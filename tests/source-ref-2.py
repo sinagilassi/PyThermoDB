@@ -80,6 +80,15 @@ print(tb_eq.table_symbols)
 print(tb_eq.table_units)
 print(tb_eq.table_values)
 
+# ===============================
+# TABLE LOAD
+# ===============================
+# table load
+res_ = thermo_db.table_data('CUSTOM-REF-1', 'Vapor-Pressure')
+print(type(res_))
+print(res_)
+
+
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
