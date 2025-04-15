@@ -433,6 +433,9 @@ class ThermoDB(ManageData):
                     # convert to dict
                     tb_res = tb_res.to_dict(orient='records')
 
+                # SECTION: web application
+                # check jinja2 installed
+                # from jinja2 import Environment, FileSystemLoader
                 # res
                 return tb_res
 
