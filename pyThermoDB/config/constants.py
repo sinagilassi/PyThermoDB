@@ -1,5 +1,5 @@
 # pyThermoDB version
-__version__ = "1.9.2"
+__version__ = "1.9.3"
 # author
 __author__ = "Sina Gilassi"
 # description
