@@ -32,6 +32,7 @@ Click on any of the following links to launch interactive Jupyter notebooks:
 
 * [Basic Usage 1](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Fdoc1.ipynb)
 * [Custom Reference](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Fref-external.ipynb)
+* [Check Reference](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Ftable-view.ipynb)
 
 ## 🔬 Google Colab Examples
 
