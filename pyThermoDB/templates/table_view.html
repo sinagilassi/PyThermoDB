@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default('PyThermoDB Table Viewer') }}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <style>
+        /* Apply dynamic text colors based on theme (client-side fallback) */
+        [data-bs-theme="dark"] {
+            --text-primary-color: {{ text_colors['dark']['primary'] if text_colors is defined else '#f8f9fa' }};
+            --text-secondary-color: {{ text_colors['dark']['secondary'] if text_colors is defined else '#e9ecef' }};
+            --text-muted-color: {{ text_colors['dark']['muted'] if text_colors is defined else '#adb5bd' }};
+        }
+
+        [data-bs-theme="light"] {
+            --text-primary-color: {{ text_colors['light']['primary'] if text_colors is defined else '#212529' }};
+            --text-secondary-color: {{ text_colors['light']['secondary'] if text_colors is defined else '#495057' }};
+            --text-muted-color: {{ text_colors['light']['muted'] if text_colors is defined else '#6c757d' }};
+        }
+
+        /* Ensure text is always visible regardless of theme */
+        body, table, .card, .modal-content {
+            color: var(--text-primary-color);
+        }
+
+        .text-muted {
+            color: var(--text-muted-color) !important;
+        }
+
+        .modal-content, .card {
+            color: var(--text-primary-color);
+        }
+
+        /* Fix selected rows text color */
+        .selected-row td {
+            color: var(--text-primary-color);
+        }
+
+        /* Fix for pagination links */
+        .page-link {
+            color: var(--text-primary-color);
+        }
+
+        /* Dark Mode Toggle Button - Ensure visibility in both themes */
+        #darkModeToggle {
+            color: white !important;
+            border-color: white;
+            background-color: transparent;
+        }
+
+        #darkModeToggle:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Force icon visibility in any theme */
+        #darkModeToggle i {
+            visibility: visible !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body data-bs-theme="{{ default_theme|default('light') }}">
+
+    <!-- SECTION: Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='img/logo-2.png') }}" alt="PyThermoDB Logo" height="40" class="ms-3">
+                <!-- {{ app_name|default('PyThermoDB Viewer') }} -->
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="navbar-nav">
+                        <a class="nav-link active" href="#">Home</a>
+                    </li>
+                    <li class="navbar-nav">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#aboutModal">About</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <button id="darkModeToggle" class="btn btn-outline-primary me-2">
+                        <i class="bi bi-moon-stars"></i> Dark Mode
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SECTION: Main Content -->
+    <div class="container mt-4 main-container">
+        <h1 class="text-center mb-4 text-primary">{{ databook_name|default('Databook') }}</h1>
+        <h5 class="text-center fst-italic mb-4">{{ table_name|default('Table') }}</h5>
+
+        <!-- Search and Button Controls -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search data...">
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button id="selectButton" class="btn btn-primary me-2" disabled>Select</button>
+                <button id="resetButton" class="btn btn-secondary">Reset</button>
+            </div>
+        </div>
+
+        <!-- SECTION: Table -->
+        <div class="table-responsive">
+            <table id="dataTable" class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <!-- Table headers will be dynamically generated -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be dynamically generated -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION: Pagination Controls -->
+        <div id="paginationControls" class="my-3">
+            <!-- Pagination controls will be dynamically generated -->
+        </div>
+
+        <!-- SECTION: Selected Data Information -->
+        <div class="my-4">
+            <h3>Selected Data</h3>
+            <div id="selectedData" class="card p-3">
+                <p>No data selected</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SECTION: Footer -->
+    <footer class="footer py-3">
+        <div class="container text-center">
+            <p>{{ footer_text|default('PyThermoDB Table Viewer - A web application to display and interact with thermodynamic data tables.') }}</p>
+            <p>&copy; <span id="currentYear"></span> {{ company|default('PyThermoDB Project') }}, Developed by <a href="www.linkedin.com/in/sina-gilassi" target="_blank">Sina Gilassi</a>.</p>
+        </div>
+    </footer>
+
+    <!-- SECTION: About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aboutModalLabel">About {{ app_name|default('PyThermoDB Table Viewer') }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class="bi bi-table text-primary" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="text-center mb-3">{{ app_name|default('PyThermoDB Table Viewer') }} {{ app_version }}</h5>
+                    <p>{{ app_description|default('PyThermoDB Table Viewer is a responsive web application designed to display and interact with tabular data from PyThermoDB.') }}</p>
+                    <p>This application provides the following features:</p>
+                    <ul>
+                        <li>Responsive data table with pagination support</li>
+                        <li>Real-time search filtering across all columns</li>
+                        <li>Data row selection with detailed view</li>
+                        <li>Support for large datasets with page navigation</li>
+                    </ul>
+                    <hr>
+                    <p class="mb-0 text-muted">
+                        Developed by <a href="www.linkedin.com/in/sina-gilassi" target="_blank">Sina Gilassi</a>.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION: libs -->
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+    <!-- Pass data from backend to frontend -->
+    <script>
+        window.tableData = {{ table_data|tojson|safe }};
+    </script>
+</body>
+</html>
