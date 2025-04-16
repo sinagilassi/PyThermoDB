@@ -113,6 +113,15 @@ res_ = tdb.table_data(1, 2)
 print(res_)
 ```
 
+* **🌐 VIEW TABLE CONTENT IN THE BROWSER**
+
+table_view(`databook_name or id`, `table_name or id`)
+
+```python
+# VIEW table CONTENT
+tdb.table_view(1, 2)
+```
+
 * **📥 LOAD TABLES DATA|EQUATION STRUCTURE** (before building):
 
 equation_load(`databook_name or id`, `table_name or id`)
