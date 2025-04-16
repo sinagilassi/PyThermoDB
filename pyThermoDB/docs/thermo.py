@@ -407,6 +407,11 @@ class ThermoDB(ManageData):
             databook name or id
         table : str | int
             table name or id
+
+        Returns
+        -------
+        str
+            HTML content of the table view page.
         '''
         try:
             # SECTION: detect table type
@@ -442,7 +447,7 @@ class ThermoDB(ManageData):
                 # SECTION: convert dataframe to dict
                 # check
                 if isinstance(tb_res, pd.DataFrame):
-                    # convert to dict
+                    # NOTE: convert to list of dict
                     tb_res = tb_res.to_dict(orient='records')
 
                 # SECTION: web application
@@ -478,15 +483,25 @@ class ThermoDB(ManageData):
                         return static_dir
                     return '#'
 
-                def render_page(databook_name, table_name, sample_data, page=1, rows_per_page=50, theme="light"):
+                def render_page(databook_name: str, table_name: str, sample_data: List[Dict],
+                                page: int = 1, rows_per_page: int = 50, theme: Literal['light', 'dark'] = "light"):
                     """
                     Render the HTML page using Jinja2 templates
 
-                    Args:
-                        page: Current page number to display (default=1)
-                        rows_per_page: Number of rows per page (default=50)
-                        theme: UI theme, either 'light' or 'dark' (default='light')
-                        show_all: If True, displays all data without pagination (default=False)
+                    Parameters
+                    ----------
+                    databook_name : str
+                        Name of the databook
+                    table_name : str
+                        Name of the table
+                    sample_data : list
+                        List of dictionaries containing table data
+                    page : int, optional
+                        Current page number (default is 1)
+                    rows_per_page : int, optional
+                        Number of rows per page (default is 50)
+                    theme : str, optional
+                        Theme for the table ('light' or 'dark', default is 'light')
                     """
                     # Define text colors for each theme to ensure visibility
                     text_colors = {
@@ -574,7 +589,8 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def table_data(self, databook: str | int, table: str | int) -> pd.DataFrame:
+    def table_data(self, databook: str | int, table: str | int,
+                   res_format: Literal['dataframe', 'list', 'json'] = 'dataframe') -> pd.DataFrame | List[Dict[str, Optional[float | int | str]]] | str:
         '''
         Get all table elements (display a table)
 
@@ -584,11 +600,13 @@ class ThermoDB(ManageData):
             databook name or id
         table : str | int
             table name or id
+        res_format : Literal['dataframe', 'dict','json']
+            Format of the returned data. Defaults to 'dataframe'.
 
         Returns
         -------
-        tb_data : Pandas.DataFrame
-            table data dataframe
+        tb_data : Pandas.DataFrame | list | str
+            table data in the specified format.
         '''
         try:
             # find databook zero-based id (real)
@@ -606,7 +624,20 @@ class ThermoDB(ManageData):
             # load table
             tb_data = TableReferenceC.load_table(databook_id, table_id)
 
-            return tb_data
+            # convert to list of dicts
+            tb_list_dict = tb_data.to_dict(orient='records')
+            # to json
+            tb_json = tb_data.to_json(orient='records')
+
+            # NOTE: check res_format
+            if res_format == 'dataframe':
+                return tb_data
+            elif res_format == 'list':
+                return tb_list_dict
+            elif res_format == 'json':
+                return tb_json
+            else:
+                raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
