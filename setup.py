@@ -29,7 +29,8 @@ setup(
     packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
     include_package_data=True,  # Make sure to include non-Python files
     # Add both config and data files
-    package_data={'': ['config/*.yml', 'data/*.csv']},
+    package_data={'': ['config/*.yml', 'data/*.csv',
+                       'templates/*.html', 'static/*']},
     # Add license file
     license='MIT',
     license_files=[],

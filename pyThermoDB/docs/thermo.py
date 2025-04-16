@@ -1,8 +1,12 @@
 # import packages/modules
+import os
 import pandas as pd
 from typing import List, Dict, Optional, Literal, Union, Tuple
 import json
 import asyncio
+import webbrowser
+import tempfile
+from jinja2 import Environment, FileSystemLoader
 # internal
 from ..config import API_URL
 from ..api import Manage
@@ -17,6 +21,8 @@ from .tabledata import TableData
 from .tablematrixdata import TableMatrixData
 from ..data import TableTypes
 from ..models import DataBookTableTypes
+# web app
+from ..ui import init_app
 
 
 class ThermoDB(ManageData):
@@ -406,6 +412,12 @@ class ThermoDB(ManageData):
             # SECTION: detect table type
             tb_info_res_ = self.table_info(databook, table, res_format='dict')
 
+            # NOTE: databook name
+            db, db_name, db_rid = self.find_databook(databook)
+
+            # NOTE: table name
+            tb_id, tb_name = self.find_table(databook, table)
+
             # res
             tb_res = None
 
@@ -437,7 +449,107 @@ class ThermoDB(ManageData):
                 # check jinja2 installed
                 # from jinja2 import Environment, FileSystemLoader
                 # res
-                return tb_res
+                # return tb_res
+                # NOTE: tojson function
+                def tojson(obj):
+                    return json.dumps(obj)
+
+                # NOTE: url_for function
+                def url_for(endpoint, filename=None):
+                    """
+                    Generate absolute paths for static files when opening the HTML file directly.
+                    """
+                    if endpoint == 'static':
+                        # Get the directory of the current script
+                        # base_dir = os.path.dirname(os.path.abspath(__file__))
+                        parent_dir = os.path.dirname(os.path.dirname(__file__))
+                        # static directory
+                        static_dir = f'file://{os.path.join(parent_dir, "static", filename).replace(os.sep, "/")}'
+                        return static_dir
+                    return '#'
+
+                def render_page(databook_name, table_name, sample_data, page=1, rows_per_page=50, theme="light"):
+                    """
+                    Render the HTML page using Jinja2 templates
+
+                    Args:
+                        page: Current page number to display (default=1)
+                        rows_per_page: Number of rows per page (default=50)
+                        theme: UI theme, either 'light' or 'dark' (default='light')
+                        show_all: If True, displays all data without pagination (default=False)
+                    """
+                    # Define text colors for each theme to ensure visibility
+                    text_colors = {
+                        'light': {
+                            'primary': '#212529',  # Dark text for light backgrounds
+                            'secondary': '#495057',
+                            'muted': '#6c757d'
+                        },
+                        'dark': {
+                            'primary': '#f8f9fa',  # Light text for dark backgrounds
+                            'secondary': '#e9ecef',
+                            'muted': '#adb5bd'
+                        }
+                    }
+
+                    # extract data
+                    sample_data = sample_data[2:]
+                    # Calculate pagination values
+                    total_items = len(sample_data)
+                    total_pages = (
+                        total_items + rows_per_page - 1) // rows_per_page
+
+                    # SECTION: Setup Jinja2 environment
+                    # parent folder
+                    parent_dir = os.path.dirname(os.path.dirname(__file__))
+                    template_loader = FileSystemLoader(
+                        searchpath=os.path.join(parent_dir, 'templates'))
+                    template_env = Environment(loader=template_loader)
+
+                    # Add the function to Jinja2 environment globals
+                    template = template_env.get_template('table_view.html')
+
+                    # SECTION: Get the template and render it with the data
+                    rendered_html = template.render(
+                        title='PyThermoDB Table Viewer',
+                        app_name='PyThermoDB Viewer',
+                        databook_name=databook_name,
+                        table_name=table_name,
+                        table_title='Chemical Compounds Data',
+                        table_data=sample_data,
+                        total_data=total_items,
+                        tojson=tojson,
+                        url_for=url_for,
+                        current_page=page,
+                        rows_per_page=rows_per_page,
+                        total_pages=total_pages,
+                        default_theme=theme,
+                        text_colors=text_colors,
+                        footer_text=(
+                            'PyThermoDB Table Viewer - A web application to display and '
+                            'interact with thermodynamic data tables.'
+                        ),
+                        company='PyThermoDB Project',
+                        app_version='1.9.1',
+                    )
+
+                    return rendered_html
+
+                # generate HTML content for the requested page
+                html_content = render_page(db_name, tb_name, tb_res,
+                                           page=1, rows_per_page=50, theme='light')
+
+                # temporary file to store the HTML content
+                with tempfile.NamedTemporaryFile(
+                    'w', delete=False, suffix='.html'
+                ) as temp_file:
+                    temp_file.write(html_content)
+                    # NOTE: the file is not deleted after closing, so we can open it in the
+                    # browser
+                    webbrowser.open(temp_file.name)
+
+                # Return the path to the temporary file in case needed elsewhere
+                return temp_file.name
 
             else:
                 raise Exception('Table loading error!')

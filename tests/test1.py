@@ -48,7 +48,7 @@ res_ = tdb.table_data(1, 2)
 print(res_)
 
 res_ = tdb.table_view(1, 2)
-print(res_)
+# print(res_)
 
 # ===============================
 # LOAD TABLES

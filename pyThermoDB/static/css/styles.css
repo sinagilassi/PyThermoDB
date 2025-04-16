@@ -1,0 +1,110 @@
+/* Main Styling for PyThermoDB Table Viewer */
+
+/* Light Theme (Default) */
+:root {
+    --primary-color: #0d6efd;
+    --primary-light: #cfe2ff;
+    --secondary-color: #6c757d;
+    --bg-color: #f8f9fa;
+    --text-color: #212529;
+    --table-hover: #e9ecef;
+    --card-bg: #ffffff;
+    --footer-bg: #e9ecef;
+    --border-color: #dee2e6;
+}
+
+/* Dark Theme */
+[data-bs-theme="dark"] {
+    --primary-color: #0d6efd;
+    --primary-light: #031633;
+    --secondary-color: #adb5bd;
+    --bg-color: #212529;
+    --text-color: #f8f9fa;
+    --table-hover: #2c3034;
+    --card-bg: #343a40;
+    --footer-bg: #343a40;
+    --border-color: #495057;
+}
+
+/* Apply theme colors */
+html {
+    height: 100%;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.navbar {
+    background-color: var(--primary-color);
+}
+
+.navbar-brand, .nav-link {
+    color: white !important;
+}
+
+/* Main content area should flex-grow to push footer down */
+.container {
+    flex: 1;
+}
+
+.table {
+    border-color: var(--border-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--table-hover);
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-color: var (--border-color);
+}
+
+.footer {
+    background-color: var(--footer-bg);
+    color: var(--text-color);
+    border-top: 1px solid var(--border-color);
+    margin-top: auto; /* Push to bottom with flexbox */
+}
+
+/* Highlight selected row */
+.selected-row {
+    background-color: var(--primary-light) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .col-md-6.text-end {
+        text-align: left !important;
+        margin-top: 10px;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Ensure minimum page height for scrolling scenarios */
+.main-container {
+    min-height: 80vh;
+}

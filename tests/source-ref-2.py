@@ -88,6 +88,7 @@ res_ = thermo_db.table_data('CUSTOM-REF-1', 'Vapor-Pressure')
 print(type(res_))
 print(res_)
 
+res_ = thermo_db.table_view('CUSTOM-REF-1', 'Vapor-Pressure')
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
