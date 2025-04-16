@@ -193,25 +193,27 @@ class ManageData():
             descriptions = {}
 
             for key, value in references.items():
+                # databook name
+                databook_name = key
                 # databook id
                 DATABOOK_ID = value.get('DATABOOK-ID', None)
 
                 # init
-                descriptions[key] = {}
+                descriptions[databook_name] = {}
                 # set
-                descriptions[key]['DATABOOK-ID'] = DATABOOK_ID
+                descriptions[databook_name]['DATABOOK-ID'] = DATABOOK_ID
 
                 # check tables
                 for table, table_data in value.get('TABLES', {}).items():
                     # check
                     if 'DESCRIPTION' in table_data:
-                        descriptions[key][table] = {
+                        descriptions[databook_name][table] = {
                             'DATABOOK-ID': DATABOOK_ID,
                             'TABLE-ID': table_data.get('TABLE-ID', None),
                             'DESCRIPTION': table_data['DESCRIPTION']
                         }
                     else:
-                        descriptions[key][table] = {
+                        descriptions[databook_name][table] = {
                             'DATABOOK-ID': DATABOOK_ID,
                             'TABLE-ID': table_data.get('TABLE-ID', None),
                             'DESCRIPTION': None
