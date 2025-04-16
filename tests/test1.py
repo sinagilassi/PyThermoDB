@@ -48,8 +48,14 @@ res_ = tdb.table_data(1, 2)
 print(res_)
 print(type(res_))
 
-res_ = tdb.table_view(1, 2)
-# print(res_)
+# ===============================
+# TABLE IN THE BROWSER
+# ===============================
+# open table in the browser
+# tdb.table_view(1, 2)
+
+# open all tables in the browser
+tdb.tables_view()
 
 # ===============================
 # LOAD TABLES
