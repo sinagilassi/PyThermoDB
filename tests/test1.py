@@ -46,6 +46,7 @@ print(tb_info)
 # table load
 res_ = tdb.table_data(1, 2)
 print(res_)
+print(type(res_))
 
 res_ = tdb.table_view(1, 2)
 # print(res_)
