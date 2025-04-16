@@ -116,9 +116,13 @@ print(res_)
 
 * **🌐 VIEW TABLE CONTENT IN THE BROWSER**
 
+
 table_view(`databook_name or id`, `table_name or id`)
 
 ```python
+# install Jinja2
+pip install Jinja2
+
 # VIEW table CONTENT
 tdb.table_view(1, 2)
 ```
