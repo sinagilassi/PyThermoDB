@@ -2,5 +2,7 @@
 __version__ = "1.9.5"
 # author
 __author__ = "Sina Gilassi"
+# email
+__email__ = "sina.gilassi@gmail.com"
 # description
 __description__ = "PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data."

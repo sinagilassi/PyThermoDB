@@ -8,7 +8,7 @@ import webbrowser
 import tempfile
 # from jinja2 import Environment, FileSystemLoader
 # internal
-from ..config import API_URL
+from ..config import API_URL, __version__
 from ..api import Manage
 from ..utils import isNumber, uppercaseStringList
 from .tableref import TableReference
@@ -22,7 +22,7 @@ from .tablematrixdata import TableMatrixData
 from ..data import TableTypes
 from ..models import DataBookTableTypes
 # web app
-from ..ui import init_app
+from ..ui import Launcher
 
 
 class ThermoDB(ManageData):
@@ -570,7 +570,7 @@ class ThermoDB(ManageData):
                             'interact with thermodynamic data tables.'
                         ),
                         company='PyThermoDB Project',
-                        app_version='1.9.1',
+                        app_version=__version__,
                     )
 
                     return rendered_html
@@ -595,6 +595,66 @@ class ThermoDB(ManageData):
                 raise Exception('Table loading error!')
         except Exception as e:
             raise Exception(f"Table loading error {e}")
+
+    def tables_view(self):
+        """
+        Display all tables in the browser.
+        """
+        try:
+            # SECTION: check if jinja2 is installed
+            try:
+                from jinja2 import Environment, FileSystemLoader
+            except ImportError:
+                raise ImportError(
+                    "Jinja2 is not installed. Please install it using 'pip install jinja2'.")
+
+            # SECTION: load data
+            data_ = self.list_descriptions(res_format='dict')
+
+            # check
+            if not isinstance(data_, dict):
+                raise ValueError("data_ is not a dictionary!")
+
+            # card data
+            card_data = []
+
+            # looping through databooks
+            for k, v in data_.items():
+                db_name = k
+                db_id = v['DATABOOK-ID']
+
+                # looping through tables
+                for k_, v_ in v.items():
+                    if k_ == 'DATABOOK-ID':
+                        continue
+
+                    _table_id = v_['TABLE-ID']
+                    _table_description = v_['DESCRIPTION']
+                    _table_name = k_
+
+                    # data load
+                    _table_data = self.table_data(
+                        db_id, _table_id, res_format='list')
+
+                    # collect data
+                    card_data.append({
+                        'db_name': db_name,
+                        'db_id': db_id,
+                        'table_name': _table_name,
+                        'table_id': _table_id,
+                        'table_description': _table_description,
+                        'table_data': _table_data,
+                        'table_data_length': len(_table_data),
+                    })
+
+            # SECTION: render HTML page
+            # init launcher
+            app = Launcher()
+            # pass data
+            return app.launch(card_data)
+
+        except Exception as e:
+            raise Exception(f"Error displaying tables: {e}")
 
     def table_data(self, databook: str | int, table: str | int,
                    res_format: Literal['dataframe', 'list', 'json'] = 'dataframe') -> pd.DataFrame | List[Dict[str, Optional[float | int | str]]] | str:
@@ -1027,8 +1087,19 @@ class ThermoDB(ManageData):
                     databook_name = self.list_databooks(res_format='list')[
                         databook_id-1]
                     # get table
-                    table_name = self.list_tables(databook=databook_id, res_format='list')[
-                        table_id-1][0]
+                    # table_name = self.list_tables(databook=databook_id, res_format='list')[
+                    #     table_id-1][0]
+
+                    list_tables_ = self.list_tables(
+                        databook=databook_id, res_format='list')
+                    table_id_ = table_id - 1
+
+                    # check
+                    if len(list_tables_) > 0:
+                        # get table name
+
+                        table_name = "Obsolete Table"
+
                     # check
                     if component_name.upper() in compListUpper:
                         print(
