@@ -461,10 +461,20 @@ class ThermoDB(ManageData):
                     """
                     if endpoint == 'static':
                         # Get the directory of the current script
+                        # current path
+                        current_path = os.path.dirname(__file__)
+
+                        # Go back to the parent directory (pyThermoDB)
+                        parent_path = os.path.abspath(
+                            os.path.join(current_path, '..'))
+
+                        # static path
+                        static_path = os.path.join(parent_path, 'static')
+
                         # base_dir = os.path.dirname(os.path.abspath(__file__))
-                        parent_dir = os.path.dirname(os.path.dirname(__file__))
+                        # parent_dir = os.path.dirname(os.path.dirname(__file__))
                         # static directory
-                        static_dir = f'file://{os.path.join(parent_dir, "static", filename).replace(os.sep, "/")}'
+                        static_dir = f'file://{os.path.join(static_path, filename).replace(os.sep, "/")}'
                         return static_dir
                     return '#'
 
@@ -500,10 +510,18 @@ class ThermoDB(ManageData):
                         total_items + rows_per_page - 1) // rows_per_page
 
                     # SECTION: Setup Jinja2 environment
-                    # parent folder
-                    parent_dir = os.path.dirname(os.path.dirname(__file__))
+                    # current path
+                    current_path = os.path.dirname(__file__)
+
+                    # Go back to the parent directory (pyThermoDB)
+                    parent_path = os.path.abspath(
+                        os.path.join(current_path, '..'))
+
+                    # template path
+                    template_path = os.path.join(parent_path, 'templates')
+
                     template_loader = FileSystemLoader(
-                        searchpath=os.path.join(parent_dir, 'templates'))
+                        searchpath=template_path)
                     template_env = Environment(loader=template_loader)
 
                     # Add the function to Jinja2 environment globals
