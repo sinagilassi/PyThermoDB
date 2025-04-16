@@ -6,7 +6,7 @@ import json
 import asyncio
 import webbrowser
 import tempfile
-from jinja2 import Environment, FileSystemLoader
+# from jinja2 import Environment, FileSystemLoader
 # internal
 from ..config import API_URL
 from ..api import Manage
@@ -414,6 +414,13 @@ class ThermoDB(ManageData):
             HTML content of the table view page.
         '''
         try:
+            # SECTION: check if jinja2 is installed
+            try:
+                from jinja2 import Environment, FileSystemLoader
+            except ImportError:
+                raise ImportError(
+                    "Jinja2 is not installed. Please install it using 'pip install jinja2'.")
+
             # SECTION: detect table type
             tb_info_res_ = self.table_info(databook, table, res_format='dict')
 

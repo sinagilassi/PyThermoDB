@@ -3,7 +3,7 @@ import os
 import json
 import webbrowser
 import tempfile
-from jinja2 import Environment, FileSystemLoader
+# from jinja2 import Environment, FileSystemLoader
 
 
 def tojson(obj):
@@ -31,6 +31,14 @@ def render_page(sample_data, page=1, rows_per_page=50, theme="light"):
         theme: UI theme, either 'light' or 'dark' (default='light')
         show_all: If True, displays all data without pagination (default=False)
     """
+    # SECTION: check if jinja2 is installed
+    try:
+        from jinja2 import Environment, FileSystemLoader
+    except ImportError:
+        raise ImportError(
+            "Jinja2 is not installed. Please install it using 'pip install Jinja2'."
+        )
+
     # Define text colors for each theme to ensure visibility
     text_colors = {
         'light': {
