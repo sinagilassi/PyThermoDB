@@ -28,23 +28,21 @@ print(tb_lists)
 # TABLE INFO
 # ===============================
 # select a table
-tb_select = tdb.select_table(1, 2)
+tb_select = tdb.select_table(7, 1)
 print(tb_select)
 
-tb_select = tdb.select_table(
-    1, 'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, '
-       'Entropies, and Net Enthalpies of Combustion')
+tb_select = tdb.select_table(7, 2)
 print(tb_select)
 
 # display a table
-tb_info = tdb.table_info(1, 2)
+tb_info = tdb.table_info(7, 1)
 print(tb_info)
 
 # ===============================
 # TABLE LOAD
 # ===============================
 # table load
-res_ = tdb.table_data(1, 2)
+res_ = tdb.table_data(7, 1)
 print(res_)
 print(type(res_))
 
@@ -61,10 +59,10 @@ print(type(res_))
 # LOAD TABLES
 # ===============================
 # load equation to check
-vapor_pressure_tb = tdb.equation_load(1, 4)
+vapor_pressure_tb = tdb.equation_load(7, 2)
 print(vapor_pressure_tb.eq_structure(1))
 # load data to check
-data_table = tdb.data_load(1, 2)
+data_table = tdb.data_load(7, 1)
 print(data_table.data_structure())
 
 # ====================================
@@ -79,33 +77,30 @@ comp1 = "carbon Dioxide"
 # print(comp_data)
 
 # check component
-CO2_check_availability = tdb.check_component(comp1,
-                                             "Perry's Chemical Engineers' Handbook",
-                                             'TABLE 2-153 Heat Capacities of Inorganic '
-                                             'and Organic Liquids')
+CO2_check_availability = tdb.check_component(comp1, 7, 1)
 print(CO2_check_availability)
 
 
 # ====================================
 # BUILD THERMO PROPERTY
 # ====================================
-# build thermo property
-CO2_data_0 = tdb.build_thermo_property([comp1], 1, 2)
-print(CO2_data_0.data_structure())
-# get property
-res_ = CO2_data_0.get_property(5)
-print(res_, type(res_))
-# by symbol
-print(CO2_data_0.get_property('MW'))
-# by property name
-print(CO2_data_0.get_property('molecular-weight'))
+# # build thermo property
+# CO2_data_0 = tdb.build_thermo_property([comp1], 7, 1)
+# print(CO2_data_0.data_structure())
+# # get property
+# res_ = CO2_data_0.get_property(5)
+# print(res_, type(res_))
+# # by symbol
+# print(CO2_data_0.get_property('MW'))
+# # by property name
+# print(CO2_data_0.get_property('molecular-weight'))
 
 
 # ====================================
 # BUILD DATA
 # ====================================
 # build data
-CO2_data = tdb.build_data(comp1, 1, 2)
+CO2_data = tdb.build_data(comp1, 7, 1)
 print(CO2_data.data_structure())
 # get property
 res_ = CO2_data.get_property(5)
@@ -119,7 +114,7 @@ print(CO2_data.get_property('molecular-weight'))
 # BUILD EQUATION
 # ====================================
 # build an equation
-eq = tdb.build_equation(comp1, 1, 4)
+eq = tdb.build_equation(comp1, 7, 2)
 print(eq.args)
 res = eq.cal(T=298.15)
 print(res)
