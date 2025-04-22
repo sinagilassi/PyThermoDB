@@ -1149,7 +1149,7 @@ class ManageData():
 
             # SECTION: check equation format
             # NOTE: check
-            if 'BODY' not in equations:
+            if 'BODY' not in equations.keys():
                 raise ValueError("equation key `BODY` not found!")
 
             # NOTE: get equation body

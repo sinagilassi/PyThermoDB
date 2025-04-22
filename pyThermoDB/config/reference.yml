@@ -1109,3 +1109,66 @@ REFERENCES:
               - res = (a1 + 2*a2*args['T'] + 3*a3*(args['T']**2) + 4*a4*(args['T']**3))
             BODY-SECOND-DERIVATIVE:
               - res = (2*a2 + 6*a3*args['T'] + 12*a4*(args['T']**2))
+  The Thermodynamics of Phase and Reaction Equilibria:
+    DATABOOK-ID: 7
+    TABLES:
+      Critical constants and acentric factors:
+        TABLE-ID: 1
+        DESCRIPTION:
+          This table contains the critical temperature (Tc) in K, critical pressure (Pc) in bar, critical molar volume (Vc) in cm3/mol, molecular weight (MW) in g/mol, and acentric factor (AcFa) with no units for different compounds.
+        DATA:
+          COLUMNS:
+            - no.
+            - name
+            - formula
+            - molecular-weight
+            - critical-temperature
+            - critical-pressure
+            - critical-molar-volume
+            - acentric-factor
+          SYMBOL:
+            - None
+            - None
+            - None
+            - MW
+            - Tc
+            - Pc
+            - Vc
+            - AcFa
+          UNIT:
+            - None
+            - None
+            - None
+            - g/mol
+            - K
+            - bar
+            - cm3/mol
+            - None
+          CONVERSION:
+            - None
+            - None
+            - None
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
+      Antoine constants:
+        TABLE-ID: 2
+        DESCRIPTION:
+          This table contains the Antoine constants (A, B, C) for different compounds and the equation is a function of temperature (T) in K. These constants are used to calculate the vapor pressure (VaPr) in bar using the Antoine equation.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - TERM_1 = parms['A | A | 1'] - parms['B | B | 1']/(args['temperature | T | K'] + parms['C | C | 1'] - 273.15)
+              - res['vapor pressure | VaPr | bar'] = math.pow(10, TERM_1)
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
+        STRUCTURE:
+          COLUMNS: [no., name, formula, A, B, C, minimum-temperature, maximum-temperature]
+          SYMBOL: [None, None, None, A, B, C, T_min, T_max]
+          UNIT: [None, None, None, 1, 1, 1, K, K]

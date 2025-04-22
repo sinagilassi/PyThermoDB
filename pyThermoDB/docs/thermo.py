@@ -1152,8 +1152,16 @@ class ThermoDB(ManageData):
                     databook_name = self.list_databooks(res_format='list')[
                         databook_id-1]
                     # get table
-                    table_name = self.list_tables(databook=databook_id, res_format='list')[
-                        table_id-1][0]
+                    # table_name = self.list_tables(databook=databook_id, res_format='list')[
+                    #     table_id-1][0]
+
+                    table_name_ = self.list_tables(
+                        databook=databook_id, res_format='list')
+
+                    # heck
+                    if isinstance(table_name_, list):
+                        table_name = table_name_[table_id-1][0]
+
                     # log
                     if verbose:
                         print(
