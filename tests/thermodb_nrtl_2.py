@@ -128,6 +128,14 @@ print(prop_name)
 print(nrtl_alpha.ij(prop_name))
 print(nrtl_alpha.ij(prop_name).get('value'))
 
+
+# matrix data
+res_1 = nrtl_alpha.mat("Alpha", [comp2, comp1, comp3])
+print(res_1)
+
+# metric
+print(nrtl_alpha.ijs(f"Alpha | {comp1} | {comp2}"))
+
 # components
 # looping through the matrix data
 for comp1 in components:
@@ -137,6 +145,7 @@ for comp1 in components:
         prop_value = nrtl_alpha.ij(prop_name).get('value')
         # log
         print(f"Property: {prop_name} = {prop_value}")
+
 
 # ====================================
 # BUILD MATRIX EQUATION
@@ -163,18 +172,24 @@ print(nrtl_tau_eq.matrix_elements)
 
 # cal
 tau_cal = nrtl_tau_eq.cal(T=298.15)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='numeric', T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value",
+                          output_format='numeric', T=298.15)
 print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", output_format='alphabetic', T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value",
+                          output_format='alphabetic', T=298.15)
 print(tau_cal)
 
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='numeric', T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=[
+                          'methanol', 'ethanol'], output_format='numeric', T=298.15)
 print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['methanol', 'ethanol'], output_format='alphabetic', T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=[
+                          'methanol', 'ethanol'], output_format='alphabetic', T=298.15)
 print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='numeric', T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=[
+                          'ethanol', 'methanol'], output_format='numeric', T=298.15)
 print(tau_cal)
-tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=['ethanol', 'methanol'], output_format='alphabetic', T=298.15)
+tau_cal = nrtl_tau_eq.cal(message="NRTL Tau value", filter_elements=[
+                          'ethanol', 'methanol'], output_format='alphabetic', T=298.15)
 print(tau_cal)
 
 # ====================================
