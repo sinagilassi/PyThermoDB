@@ -34,6 +34,17 @@ Click on any of the following links to launch interactive Jupyter notebooks:
 * [Custom Reference](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Fref-external.ipynb)
 * [Check Reference](https://mybinder.org/v2/gh/sinagilassi/PyThermoDB/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Ftable-view.ipynb)
 
+## 🛠️ Examples
+
+The repository includes an `examples` folder with various sample applications and use cases to help you get started with PyThermoDB. These examples demonstrate different methods and features of the package, including:
+
+- 🧰 **Basic Usage Examples**: Learn how to use PyThermoDB for common tasks.
+- 📂 **Custom Thermodynamic Databases**: Work with your own thermodynamic data.
+- 🔍 **Data Manipulation**: Load, search, and manipulate thermodynamic data.
+- 📐 **Equations and Calculations**: Use equations for thermodynamic calculations.
+
+Browse through these examples to learn how to use different methods and features of PyThermoDB in your own projects.
+
 ## 🔬 Google Colab Examples
 
 Try PyThermoDB directly in your browser with these interactive examples:
