@@ -1822,7 +1822,12 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Search databook error {e}')
 
-    def search_databook(self, search_terms: list[str], column_names: list[str] = ['Name', 'Formula'], res_format: Literal['list', 'dataframe', 'json', 'dict'] = 'dict', search_mode: Literal['exact', 'similar'] = 'exact') -> list[dict[str, str]] | pd.DataFrame | str | dict[str, dict[str, str]] | dict[str, str]:
+    def search_databook(self,
+                        search_terms: list[str],
+                        column_names: list[str] = ['Name', 'Formula'],
+                        res_format: Literal['list',
+                                            'dataframe', 'json', 'dict'] = 'dict',
+                        search_mode: Literal['exact', 'similar'] = 'exact'):
         """
         Search a term through all databook for instance a component name
         This is a blocking function, use __search_databook for async version
@@ -1854,7 +1859,10 @@ class ThermoDB(ManageData):
             res_dict = {f'record-{i+1}': item for i, item in enumerate(res)}
 
             res_dict = dict(
-                {'message': f'results found for the search terms : {search_terms}, search mode : {search_mode}'}, **res_dict)
+                {
+                    'message': f'results found for the search terms : {search_terms}, search mode : {search_mode}'
+                }, **res_dict
+            )
 
             # json
             res_json = json.dumps(res_dict, indent=4)

@@ -128,8 +128,8 @@ class TableReference(ManageData):
                             file_path = path_external[file_names.index(item)]
                             break
 
-                # SECTION: load values from custom reference
-                if tb_type:
+                # SECTION: load values from custom reference (if exists in the yml file)
+                if tb_type and file_path is None:
                     # load table data
                     table_data = self.retrieve_data(
                         tb, tb_type)

@@ -1119,13 +1119,13 @@ REFERENCES:
         DATA:
           COLUMNS:
             - no.
-            - name
-            - formula
-            - molecular-weight
-            - critical-temperature
-            - critical-pressure
-            - critical-molar-volume
-            - acentric-factor
+            - Name
+            - Formula
+            - Molecular-weight
+            - Critical-temperature
+            - Critical-pressure
+            - Critical-molar-volume
+            - Acentric-factor
           SYMBOL:
             - None
             - None
@@ -1169,6 +1169,6 @@ REFERENCES:
             BODY-SECOND-DERIVATIVE:
               None
         STRUCTURE:
-          COLUMNS: [no., name, formula, A, B, C, minimum-temperature, maximum-temperature]
+          COLUMNS: [No., Name, Formula, A, B, C, Minimum-temperature, Maximum-temperature]
           SYMBOL: [None, None, None, A, B, C, T_min, T_max]
           UNIT: [None, None, None, 1, 1, 1, K, K]
