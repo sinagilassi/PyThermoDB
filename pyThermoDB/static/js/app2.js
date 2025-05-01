@@ -851,3 +851,75 @@ function updateThemeToggleButton(theme) {
         }
     }
 }
+
+// SECTION: JavaScript for handling the search functionality
+
+document.getElementById('componentSearchButton').addEventListener('click', function() {
+    const searchInput = document.getElementById('componentSearchInput').value.trim();
+    const searchResultsList = document.getElementById('searchResultsList');
+
+    // Clear previous results
+    searchResultsList.innerHTML = '';
+
+    if (searchInput === '') {
+        alert('Please enter a search term.');
+        return;
+    }
+
+    // Use cardData to search inside table_data
+    const filteredResults = [];
+
+    window.cardData.forEach(card => {
+        card.table_data.forEach(row => {
+            // Check if any value in the row matches the search input
+            if (Object.values(row).some(value => String(value).toLowerCase().includes(searchInput.toLowerCase()))) {
+                filteredResults.push({
+                    databookName: card.db_name,
+                    databookId: card.db_id,
+                    tableName: card.table_name,
+                    tableId: card.table_id,
+                    rowData: row,
+                    // Assuming the row has 'Name' and 'Formula' fields
+                    recordName: row.Name || 'N/A',
+                    recordFormula: row.Formula || 'N/A',
+                });
+
+                // log
+                // console.log(`Found match in ${card.table_name}:`, row);
+            }
+        });
+    });
+
+    if (filteredResults.length === 0) {
+        const noResultsItem = document.createElement('li');
+        noResultsItem.className = 'list-group-item';
+        noResultsItem.textContent = 'No results found.';
+        searchResultsList.appendChild(noResultsItem);
+    } else {
+        // NOTE: update search text
+        // get the search input element
+        const searchInputElement = document.getElementById('searchInput');
+        // set the value of the search input element to the search term
+        searchInputElement.innerHTML = searchInput;
+
+        // fill data to the list
+        filteredResults.forEach(result => {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            // add data
+            listItem.innerHTML = `
+                <div>🔍 <strong>Record:</strong> ${result.recordName}</div>
+                <div>📝 <strong>Formula:</strong> ${result.recordFormula}</div>
+                <div>📚 <strong>Databook:</strong> ${result.databookName} (Id: ${result.databookId})</div>
+                <div>📊 <strong>Table:</strong> ${result.tableName} (Id: ${result.tableId})</div>
+            `;
+
+            // append to the list
+            searchResultsList.appendChild(listItem);
+        });
+    }
+
+    // Show the modal
+    const searchResultsModal = new bootstrap.Modal(document.getElementById('searchResultsModal'));
+    searchResultsModal.show();
+});

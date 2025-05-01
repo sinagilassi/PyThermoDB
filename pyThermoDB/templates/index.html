@@ -127,6 +127,39 @@
         <h3 class="text-center">{{ table_title|default('Data Table View') }}</h3>
         <h6 class="text-center mb-4">version {{app_version}}</h6>
 
+        <!-- SECTION: Search -->
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <input type="text" id="componentSearchInput" class="form-control" placeholder="Search for a component name or formula...">
+                    <button id="componentSearchButton" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTE: Modal for Search Results -->
+        <div class="modal fade" id="searchResultsModal" tabindex="-1" aria-labelledby="searchResultsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="searchResultsModalLabel">Search Results</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- search input (component name or formula) -->
+                        <h6><span id="searchInput" class="badge text-bg-primary">New</span></h6>
+
+                        <ul id="searchResultsList" class="list-group">
+                            <!-- Search results will be dynamically generated here -->
+                        </ul>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!--  NOTE: Add a new section for displaying cards dynamically -->
         <div class="row" id="cardSection">
             <!-- Cards will be dynamically generated here -->
