@@ -134,8 +134,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self, databook: int | str,
-                    res_format: Literal['list', 'dataframe', 'json', 'dict'] = 'dataframe') -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
+    def list_tables(self,
+                    databook: int | str,
+                    res_format: Literal[
+                        'list', 'dataframe', 'json', 'dict'
+                    ] = 'dataframe') -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
         '''
         List all tables in the selected databook
 
@@ -232,7 +235,12 @@ class ThermoDB(ManageData):
             raise Exception(
                 f"An error occurred while selecting the table: {e}")
 
-    def table_description(self, databook: int | str, table: int | str, res_format: Literal['str', 'json', 'dict'] = 'str') -> str | dict:
+    def table_description(self,
+                          databook: int | str,
+                          table: int | str,
+                          res_format: Literal[
+                              'str', 'json', 'dict'
+                          ] = 'str') -> str | dict:
         '''
         Get information about a databook.
         '''
@@ -271,7 +279,12 @@ class ThermoDB(ManageData):
             raise Exception(
                 f"An error occurred while getting the databook info: {e}")
 
-    def table_info(self, databook: int | str, table: int | str, res_format: Literal['dict', 'dataframe', 'json'] = 'dataframe') -> dict[str, int | str] | pd.DataFrame | str:
+    def table_info(self,
+                   databook: int | str,
+                   table: int | str,
+                   res_format: Literal['dict',
+                                       'dataframe', 'json'] = 'dataframe'
+                   ) -> dict[str, int | str] | pd.DataFrame | str:
         '''
         Gives table contents as:
 
@@ -656,8 +669,12 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error displaying tables: {e}")
 
-    def table_data(self, databook: str | int, table: str | int,
-                   res_format: Literal['dataframe', 'list', 'json'] = 'dataframe') -> pd.DataFrame | List[Dict[str, Optional[float | int | str]]] | str:
+    def table_data(self,
+                   databook: str | int,
+                   table: str | int,
+                   res_format: Literal[
+                       'dataframe', 'list', 'json'
+                   ] = 'dataframe') -> pd.DataFrame | List[Dict[str, Optional[float | int | str]]] | str:
         '''
         Get all table elements (display a table)
 
@@ -906,7 +923,11 @@ class ThermoDB(ManageData):
                         table_equations.append(item)
 
                     # create table equation
-                    return TableMatrixEquation(db_name, table_name, table_equations)
+                    return TableMatrixEquation(
+                        db_name,
+                        table_name,
+                        table_equations
+                    )
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -915,7 +936,9 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_data_load(self, databook: int | str, table: int | str) -> TableMatrixData:
+    def matrix_data_load(self,
+                         databook: int | str,
+                         table: int | str) -> TableMatrixData:
         '''
         Gives table contents as:
 
@@ -1272,8 +1295,14 @@ class ThermoDB(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
-    def get_component_data_local(self, component_name: str, databook_id: int, table_id: int,
-                                 column_name: str | list[str], dataframe: bool = False, query: bool = False, matrix_tb: bool = False):
+    def get_component_data_local(self,
+                                 component_name: str,
+                                 databook_id: int,
+                                 table_id: int,
+                                 column_name: str | list[str],
+                                 dataframe: bool = False,
+                                 query: bool = False,
+                                 matrix_tb: bool = False):
         '''
         Get component data from database (local csv files)
 

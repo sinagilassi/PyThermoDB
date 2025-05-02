@@ -10,12 +10,16 @@ print(ptdb.__version__)
 # ====================================
 # CUSTOM REFERENCES
 # ====================================
+# parent directory
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+print(f"Parent directory: {parent_dir}")
+
 # files
-yml_file = 'tests\\NRTL Non-randomness parameters-2.yml'
-yml_path = os.path.join(os.getcwd(), yml_file)
+yml_file = 'NRTL Non-randomness parameters-2.yml'
+yml_path = os.path.join(parent_dir, yml_file)
 # csv files (data/equation tables)
-csv_file_1 = 'tests\\NRTL Non-randomness parameters-2.csv'
-csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
+csv_file_1 = 'NRTL Non-randomness parameters-2.csv'
+csv_path_1 = os.path.join(parent_dir, csv_file_1)
 
 # custom ref
 ref = {
@@ -137,12 +141,9 @@ pp(type(thermo_db))
 # NOTE: add TableMatrixData
 thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
 
-# file name
-thermodb_file_path = os.path.join(os.getcwd(), 'tests')
-
 # save
 thermo_db.save(
-    f'{thermodb_name}', file_path=thermodb_file_path)
+    f'{thermodb_name}', file_path=parent_dir)
 
 # ====================================
 # CHECK THERMODB

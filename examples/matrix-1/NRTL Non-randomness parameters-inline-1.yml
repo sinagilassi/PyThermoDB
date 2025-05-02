@@ -1,0 +1,93 @@
+REFERENCES:
+    NRTL-PARAMETERS:
+      DATABOOK-ID: 1
+      TABLES:
+        NRTL Non-randomness parameters-1:
+          TABLE-ID: 1
+          DESCRIPTION:
+            This table provides the NRTL non-randomness parameters for the NRTL equation.
+          MATRIX-SYMBOL:
+            - alpha
+            - dg
+          MATRIX-DATA:
+            COLUMNS:
+              - No.
+              - Name
+              - Formula
+              - alpha_i_1
+              - alpha_i_2
+              - dg_i_1
+              - dg_i_2
+            SYMBOL:
+              - None
+              - None
+              - None
+              - alpha_i_1
+              - alpha_i_2
+              - dg_i_1
+              - dg_i_2
+            UNIT:
+              - None
+              - None
+              - None
+              - 1
+              - 1
+              - 1
+              - 1
+            CONVERSION:
+              - None
+              - None
+              - None
+              - 1
+              - 1
+              - 1
+              - 1
+        NRTL Non-randomness parameters-2:
+          TABLE-ID: 2
+          DESCRIPTION:
+            This table provides the NRTL non-randomness parameters for the NRTL equation.
+          MATRIX-SYMBOL:
+            - a
+            - b
+            - c
+          MATRIX-DATA:
+            COLUMNS:
+              - No.
+              - Name
+              - Formula
+              - a_i_1
+              - a_i_2
+              - b_i_1
+              - b_i_2
+              - c_i_1
+              - c_i_2
+            SYMBOL:
+              - None
+              - None
+              - None
+              - a_i_1
+              - a_i_2
+              - b_i_1
+              - b_i_2
+              - c_i_1
+              - c_i_2
+            UNIT:
+              - None
+              - None
+              - None
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+            CONVERSION:
+              - None
+              - None
+              - None
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
