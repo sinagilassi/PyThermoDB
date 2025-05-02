@@ -10,20 +10,17 @@ print(ptdb.__version__)
 # ====================================
 # CUSTOM REFERENCES
 # ====================================
+# parent directory
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
 # files
-yml_file = 'NRTL Non-randomness parameters-1.yml'
+yml_file = 'NRTL Non-randomness parameters-inline-2-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
-# csv files (data/equation tables)
-csv_file_1 = 'NRTL Non-randomness parameters-1.csv'
-csv_path_1 = os.path.join(parent_dir, csv_file_1)
 
 # custom ref
 ref = {
     'reference': [yml_path],
-    'tables': [csv_path_1]
 }
 
 # ====================================
@@ -46,7 +43,7 @@ print(tb_list)
 
 # # select a table
 tb = thermo_db.select_table(
-    'NRTL-PARAMETERS', 'NRTL Non-randomness parameters-1')
+    'NRTL-PARAMETERS', 'NRTL Non-randomness parameters-2')
 print(tb)
 
 # ====================================
@@ -54,25 +51,20 @@ print(tb)
 # ====================================
 # display a table
 tb_info = thermo_db.table_info(
-    'NRTL-PARAMETERS', "NRTL Non-randomness parameters-1")
+    'NRTL-PARAMETERS', "NRTL Non-randomness parameters-2")
 print(tb_info)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-comp1 = "ethanol"
+comp1 = "methanol"
 # COMP1_check_availability = thermo_db.check_component(
 #     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
 
-comp2 = "butyl-methyl-ether"
+comp2 = "ethanol"
 # COMP1_check_availability = thermo_db.check_component(
 #     comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
-
-# query
-# query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp1, 3, 2, query, query=True)
 
 components = [comp1, comp2]
 
@@ -81,7 +73,7 @@ components = [comp1, comp2]
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_thermo_property(
-    [comp1, comp2], 'NRTL-PARAMETERS', "NRTL Non-randomness parameters-1")
+    [comp1, comp2], 'NRTL-PARAMETERS', "NRTL Non-randomness parameters-2")
 
 # matrix table
 print(nrtl_alpha.matrix_table)
@@ -94,28 +86,35 @@ print(nrtl_alpha.matrix_symbol)
 
 print(nrtl_alpha.matrix_data_structure())
 
-print(nrtl_alpha.get_property('alpha_i_1', comp1))
-
-
-print(nrtl_alpha.get_matrix_property("alpha_i_j",
+# matrix data
+print(nrtl_alpha.get_matrix_property("a_i_j",
                                      [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
 
-print(nrtl_alpha.get_matrix_property("dg_i_j",
+print(nrtl_alpha.get_matrix_property("b_i_j",
                                      [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
 
 # property name using ij method
-prop_name = f"alpha_{comp1}_{comp2}"
+prop_name = f"a_{comp1}_{comp2}"
 print(prop_name)
 res_1 = nrtl_alpha.ij(prop_name)
 print(res_1)
 print(res_1.get('value'))
 
-
 # get property value using the matrix data
 # format 1
 # prop_name = f"dg_{comp1}_{comp2}"
 # format 2
-prop_name = f"dg | {comp1} | {comp2}"
+prop_name = f"a | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+
+prop_name = f"b | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+
+prop_name = f"c | {comp1} | {comp2}"
 # get values
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
@@ -129,7 +128,7 @@ print(prop_matrix, type(prop_matrix))
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_1"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_2_inline"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()

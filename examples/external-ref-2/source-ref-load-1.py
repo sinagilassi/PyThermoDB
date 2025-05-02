@@ -14,7 +14,7 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 
 # file
-thermodb_file = 'carbon dioxide-yml-1.pkl'
+thermodb_file = 'carbon dioxide-yml-3.pkl'
 
 # ====================================
 # LOAD THERMODB

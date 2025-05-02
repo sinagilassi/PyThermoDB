@@ -26,7 +26,7 @@ class CompBuilder(CompExporter):
     def __init__(self, thermodb_name: Optional[str] = None):
         '''
         Initialize CompBuilder object
-        
+
         Parameters
         ----------
         thermodb_name : str
@@ -36,12 +36,12 @@ class CompBuilder(CompExporter):
         super().__init__()
         # set name
         self.__thermodb_name = thermodb_name
-        
+
     @property
     def thermodb_name(self) -> str | None:
         '''
         Get thermodb name
-        
+
         Returns
         -------
         str
@@ -52,7 +52,7 @@ class CompBuilder(CompExporter):
             # return default name
             return 'thermodb'
         return self.__thermodb_name
-        
+
     def add_data(self, name: str, value: Union[TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation]):
         '''
         Add TableData/TableEquation
@@ -281,7 +281,7 @@ class CompBuilder(CompExporter):
         Returns
         -------
         res : dict
-            list of all properties and functions registered 
+            list of all properties and functions registered
         '''
         try:
             # res
@@ -326,16 +326,16 @@ class CompBuilder(CompExporter):
             return self.properties[thermo_name]
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
-        
+
     def select_property(self, thermo_name: str) -> TableData | TableMatrixData:
         '''
         Select a thermodynamic property
-        
+
         Parameters
         ----------
         thermo_name : str
             name of the thermodynamic property
-            
+
         Returns
         -------
         TableMatrixData | TableData
@@ -381,16 +381,16 @@ class CompBuilder(CompExporter):
             return self.functions[name]
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
-        
+
     def select_function(self, function_name: str) -> TableEquation | TableMatrixEquation:
         '''
         Select a thermodynamic function
-        
+
         Parameters
         ----------
         function_name : str
             name of the thermodynamic function
-            
+
         Returns
         -------
         TableMatrixEquation | TableEquation
@@ -401,7 +401,7 @@ class CompBuilder(CompExporter):
             return self.functions[function_name]
         except Exception as e:
             raise Exception('Selecting a function failed!, ', e)
-        
+
     def select(self, thermo_name: str) -> TableData | TableMatrixData | TableEquation | TableMatrixEquation:
         '''
         Select a thermodynamic property used for both functions and properties registered in the thermodb
@@ -414,16 +414,18 @@ class CompBuilder(CompExporter):
         Returns
         -------
         TableMatrixData | TableData | TableEquation | TableMatrixEquation
-            property defined in the thermodb 
+            property defined in the thermodb
         '''
         try:
             # SECTION 1: check if the property exists in both functions and properties
-            check_list = list(self.functions.keys()) + list(self.properties.keys())
+            check_list = list(self.functions.keys()) + \
+                list(self.properties.keys())
             # check if the property exists in both functions and properties
             if (thermo_name not in check_list):
                 # raise
-                raise Exception('Property exists in both functions and properties!')
-            
+                raise Exception(
+                    'Property exists in both functions and properties!')
+
             # SECTION 2: check if the property is a function or a property
             if thermo_name in self.functions:
                 # check if the property is a function
@@ -437,10 +439,13 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a thermodynamic property failed!, ', e)
 
-    def retrieve(self, property_source: str, message: Optional[str] = None, symbol_format: Literal['alphabetic', 'numeric'] = 'alphabetic'):
+    def retrieve(self,
+                 property_source: str,
+                 message: Optional[str] = None,
+                 symbol_format: Literal['alphabetic', 'numeric'] = 'alphabetic'):
         '''
         Retrieve a thermodynamic property from the thermodb for only TableData and TableMatrixData
-        
+
         Parameters
         ----------
         property_source : str
@@ -449,17 +454,17 @@ class CompBuilder(CompExporter):
             message to display (default is None)
         symbol_format : str
             symbol format to use (default is 'alphabetic'), needed for `TableMatrixData`
-            
+
         Returns
         -------
         prop: DataResult
             property object
-            
+
         Notes
         -----
         The property source is a string containing the name of the property source and the name of the property separated by a pipe (|) character.
-        For example, 
-        
+        For example,
+
         1- 'general-data | dH_IG' means that the property is in the general-data source and the name of the property is dH_IG.
         2- 'nrtl-data | alpha_ij | methanol | ethanol' means that the property is in the nrtl-data source and the name of the property is alpha_ij and the components are methanol and ethanol.
         '''
@@ -468,7 +473,7 @@ class CompBuilder(CompExporter):
             source = property_source.split('|')
             # num
             source_num = len(source)
-            
+
             # SECTION: check message
             message = message if message is not None else f'Retrieving used for {property_source}!'
 
@@ -480,9 +485,11 @@ class CompBuilder(CompExporter):
             if isinstance(prop_src, TableData):
                 # check length
                 if source_num != 2:
-                    raise ValueError(f"Invalid source format! {property_source}")
+                    raise ValueError(
+                        f"Invalid source format! {property_source}")
                 # get property
-                prop = prop_src.get_property(source[1].strip(), message=message)
+                prop = prop_src.get_property(
+                    source[1].strip(), message=message)
                 # return
                 return prop
             elif isinstance(prop_src, TableMatrixData):
@@ -490,38 +497,42 @@ class CompBuilder(CompExporter):
                 if source_num == 2:
                     # property name full format
                     prop_name = source[1].strip()
-                    
+
                     # check if the property name is in the format of 'Alpha_i_j'
                     extracted = prop_name.split('_')
                     # count
                     if len(extracted) != 3:
-                        raise ValueError(f"Invalid source format! {property_source}, property name is required!")
-                    
+                        raise ValueError(
+                            f"Invalid source format! {property_source}, property name is required!")
+
                     # NOTE: get property (ij method)
-                    prop = prop_src.ij(prop_name, symbol_format=symbol_format, message=message)
+                    prop = prop_src.ij(
+                        prop_name, symbol_format=symbol_format, message=message)
                     # return
                     return prop
                 elif source_num == 4:
                     # get components
                     component_names = source[2:]
                     # trim
-                    component_names = [name.strip() for name in component_names]
+                    component_names = [name.strip()
+                                       for name in component_names]
                     # check length
                     if len(component_names) != 2:
-                        raise ValueError(f"Invalid source format! {property_source}, components are required!")
-                    
+                        raise ValueError(
+                            f"Invalid source format! {property_source}, components are required!")
+
                     # NOTE: get property (get_matrix_property method)
-                    prop = prop_src.get_matrix_property(source[1].strip(), component_names=component_names, 
+                    prop = prop_src.get_matrix_property(source[1].strip(), component_names=component_names,
                                                         symbol_format=symbol_format, message=message)
                     # return
                     return prop
             else:
                 raise Exception(
                     f"Property source is not a TableData object! {prop_src}")
-                
+
         except Exception as e:
             raise Exception("Retrieving failed!, ", e)
-        
+
     def save(self, filename: str, file_path: Optional[str] = None) -> bool:
         """
         Saves the instance to a file using pickle

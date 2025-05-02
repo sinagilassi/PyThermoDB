@@ -60,7 +60,9 @@ def init(custom_reference: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
         raise Exception(f"Initializing app failed! {e}")
 
 
-def ref(custom_reference: Optional[Dict[str, List[str]]] = None) -> TableReference:
+def ref(
+    custom_reference: Optional[Dict[str, List[str]]] = None
+) -> TableReference:
     '''
     Checking references (custom reference) object including databook and tables to display data
 

@@ -370,10 +370,15 @@ class ManageData():
                     # ! check DATA
                     elif 'DATA' in table_data:
                         # data
-                        data = table_data['DATA']
+                        data = table_data.get('DATA', [])
 
-                        # generate table structure
+                        # REVIEW: generate table structure
                         table_structure = data if table_structure is None else table_structure
+                        # set
+                        if isinstance(data, list):
+                            # check data
+                            if len(data) == 0:
+                                data = table_structure
 
                         # save
                         tables.append({
@@ -389,9 +394,9 @@ class ManageData():
                             'table_structure': table_structure
                         })
                     # ! check MATRIX-DATA
-                    elif 'MATRIX-DATA' in table_data:
-                        # matrix-data
-                        matrix_data = table_data['MATRIX-DATA']
+                    elif ('MATRIX-DATA' in table_data) or ('MATRIX-SYMBOL' in table_data):
+                        # matrix-data (data)
+                        matrix_data = table_data.get('MATRIX-DATA', {})
                         # matrix-symbol
                         matrix_symbol = table_data.get('MATRIX-SYMBOL', None)
                         # embedded symbol
@@ -612,7 +617,9 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table info loading err! {e}")
 
-    def get_table(self, databook: str | int | list[DataBookTableTypes], table: int | str) -> DataBookTableTypes:
+    def get_table(self,
+                  databook: str | int | list[DataBookTableTypes],
+                  table: int | str) -> DataBookTableTypes:
         '''
         Get a table with respect to databook and table id or name
 
@@ -692,7 +699,12 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
-    def get_table_id(self, databook: str | int, table: str, res_format: Literal['str', 'json', 'dict'] = 'json') -> str | dict[str, str]:
+    def get_table_id(self,
+                     databook: str | int,
+                     table: str,
+                     res_format: Literal[
+                         'str', 'json', 'dict'
+                     ] = 'json') -> str | dict[str, str]:
         '''
         Get table id
 
@@ -771,7 +783,9 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table values loading err! {e}")
 
-    def find_databook(self, databook: str | int) -> tuple[list[DataBookTableTypes], str, int]:
+    def find_databook(self,
+                      databook: str | int
+                      ) -> tuple[list[DataBookTableTypes], str, int]:
         '''
         Find a databook
 

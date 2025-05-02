@@ -14,7 +14,7 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 
 # files
-yml_file = 'source-ref-1.yml'
+yml_file = 'source-ref-1-2.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # custom ref
@@ -164,7 +164,7 @@ thermo_db.add_data('heat-capacity', comp1_eq_2)
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-yml-1.pkl'
+thermodb_file = f'{comp1}-yml-3.pkl'
 
 # save
 thermo_db.save(thermodb_file, file_path=parent_dir)

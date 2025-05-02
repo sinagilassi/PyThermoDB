@@ -422,13 +422,13 @@ class TableMatrixData:
         # column name
         matrix_table_column_name = list(matrix_table.columns)
 
-        # component names
+        # NOTE: component names
         comp_i = 1
         matrix_table_component = {}
         # looping through Name column
         for i, item in enumerate(list(matrix_table['Name'])):
             # check item is a component name
-            if item != "-" and len(item) > 1:
+            if item != "-" and len(item) > 1 and item != 'None' and item != 'None':
                 matrix_table_component[item] = comp_i
                 comp_i += 1
 
@@ -656,7 +656,8 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Generating dictionary failed!, ", e)
 
-    def mat(self, property_name: str,
+    def mat(self,
+            property_name: str,
             component_names: list[str],
             symbol_format: Literal['alphabetic', 'numeric'] = 'numeric'):
         '''
@@ -683,6 +684,8 @@ class TableMatrixData:
                 raise Exception("Property name is empty!")
             # set
             property_name = property_name.strip()
+            # remove _i_j
+            property_name = property_name.replace('_i_j', '')
 
             # NOTE: check component names
             if component_names is None or len(component_names) == 0:

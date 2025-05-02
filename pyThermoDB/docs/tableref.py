@@ -134,33 +134,59 @@ class TableReference(ManageData):
                     table_data = self.retrieve_data(
                         tb, tb_type)
 
-                    # load values
+                    # NOTE: load structure
+                    table_structure = tb.get('table_structure', None)
+
+                    # check
+                    if table_structure is None:
+                        raise Exception(
+                            f"Table data is None for {file_name}.")
+
+                    # NOTE: table structure
+                    columns = table_structure.get('COLUMNS', None)
+                    symbol = table_structure.get('SYMBOL', None)
+                    unit = table_structure.get('UNIT', None)
+
+                    # check
+                    if columns is None or symbol is None or unit is None:
+                        raise Exception(
+                            f"Table data is None for {file_name}.")
+
+                    # values
+                    values = tb.get('table_values', None)
+                    # check
+                    if values is None:
+                        raise Exception(
+                            f"Table data is None for {file_name}.")
+
+                    # NOTE: load values
                     if tb_type == TableTypes.DATA.value:
-                        # NOTE: table structure
-                        table_structure = tb.get(
-                            'table_structure', None)
+                        # ! data & matrix data
+                        # # NOTE: table structure
+                        # table_structure = tb.get(
+                        #     'table_structure', None)
 
-                        # check
-                        if table_structure is None:
-                            raise Exception(
-                                f"Table data is None for {file_name}.")
+                        # # check
+                        # if table_structure is None:
+                        #     raise Exception(
+                        #         f"Table data is None for {file_name}.")
 
-                        # NOTE: table structure
-                        columns = table_structure.get('COLUMNS', None)
-                        symbol = table_structure.get('SYMBOL', None)
-                        unit = table_structure.get('UNIT', None)
+                        # # NOTE: table structure
+                        # columns = table_structure.get('COLUMNS', None)
+                        # symbol = table_structure.get('SYMBOL', None)
+                        # unit = table_structure.get('UNIT', None)
 
-                        # check
-                        if columns is None or symbol is None or unit is None:
-                            raise Exception(
-                                f"Table data is None for {file_name}.")
+                        # # check
+                        # if columns is None or symbol is None or unit is None:
+                        #     raise Exception(
+                        #         f"Table data is None for {file_name}.")
 
-                        # values
-                        values = tb.get('table_values', None)
-                        # check
-                        if values is None:
-                            raise Exception(
-                                f"Table data is None for {file_name}.")
+                        # # values
+                        # values = tb.get('table_values', None)
+                        # # check
+                        # if values is None:
+                        #     raise Exception(
+                        #         f"Table data is None for {file_name}.")
 
                         # NOTE: add to file data
                         file_data = []
@@ -170,30 +196,73 @@ class TableReference(ManageData):
                         file_data.append(unit)
                         file_data.extend(values)
 
+                    elif tb_type == TableTypes.MATRIX_DATA.value:
+                        # ! matrix data
+                        # matrix data
+                        matrix_data = tb.get('matrix_data', None)
+                        # check
+                        if matrix_data is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # matrix symbol
+                        matrix_symbol = matrix_data.get('MATRIX-SYMBOL', None)
+
+                        # check
+                        if matrix_symbol is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # size of matrix symbols
+                        matrix_symbol_len = len(matrix_symbol)
+
+                        # size of matrix symbols
+                        component_idx_len = len(values) - 2
+
+                        # ! No., Name, Formula are necessary for matrix data
+                        header_ = ['-', '-', '-']
+                        component_idx = [str(i) for i in range(
+                            1, component_idx_len+1)]*matrix_symbol_len
+
+                        # updated header
+                        header_ = header_ + component_idx
+
+                        # updated values
+                        values_ = [header_, *values]
+
+                        # NOTE: add to file data
+                        file_data = []
+                        # ! add to dataframe header
+                        # file_data.append(columns)
+                        file_data.append(symbol)
+                        file_data.append(unit)
+                        file_data.extend(values_)
+
                     elif tb_type == TableTypes.EQUATIONS.value:
-                        # NOTE: table structure
-                        table_structure = tb.get(
-                            'table_structure', None)
-                        # check
-                        if table_structure is None:
-                            raise Exception(
-                                f"Table data is None for {file_name}.")
+                        # ! equations
+                        # # NOTE: table structure
+                        # table_structure = tb.get(
+                        #     'table_structure', None)
+                        # # check
+                        # if table_structure is None:
+                        #     raise Exception(
+                        #         f"Table data is None for {file_name}.")
 
-                        # table structure
-                        columns = table_structure.get('COLUMNS', None)
-                        symbol = table_structure.get('SYMBOL', None)
-                        unit = table_structure.get('UNIT', None)
+                        # # table structure
+                        # columns = table_structure.get('COLUMNS', None)
+                        # symbol = table_structure.get('SYMBOL', None)
+                        # unit = table_structure.get('UNIT', None)
 
-                        # check
-                        if columns is None or symbol is None or unit is None:
-                            raise Exception(
-                                f"Table data is None for {file_name}.")
+                        # # check
+                        # if columns is None or symbol is None or unit is None:
+                        #     raise Exception(
+                        #         f"Table data is None for {file_name}.")
 
-                        # values
-                        values = tb.get('table_values', None)
-                        if values is None:
-                            raise Exception(
-                                f"Table data is None for {file_name}.")
+                        # # values
+                        # values = tb.get('table_values', None)
+                        # if values is None:
+                        #     raise Exception(
+                        #         f"Table data is None for {file_name}.")
 
                         # NOTE: make file data
                         file_data = []
