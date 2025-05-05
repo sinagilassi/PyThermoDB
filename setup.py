@@ -8,7 +8,7 @@ with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
 APP_NAME = 'PyThermoDB'
-VERSION = '1.10.5'
+VERSION = '1.10.6'
 AUTHOR = 'Sina Gilassi'
 EMAIL = '<sina.gilassi@gmail.com>'
 DESCRIPTION = (
