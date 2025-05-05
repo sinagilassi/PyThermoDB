@@ -334,6 +334,103 @@ REFERENCES:
               None
             BODY-SECOND-DERIVATIVE:
               None
+      TABLE 2-32 Densities of Inorganic and Organic Liquids:
+        TABLE-ID: 6
+        DESCRIPTION:
+          This table provides the density (rho) of inorganic and organic liquids as a function of temperature (T) in K and its unit is in mol/dm3.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - parms['C1'] = parms['C1']/1
+              - parms['C2'] = parms['C2']/1
+              - parms['C3'] = parms['C3']/1
+              - parms['C4'] = parms['C4']/1
+              - A = parms['C1']/parms['C2']
+              - B = 1 + (1 - (args['T']/parms['C3']))
+              - C = math.pow(B, parms['C4'])
+              - res = math.pow(A, C)
+            ARGS:
+              temperature:
+                name: temperature
+                symbol: T
+                unit: K
+            PARMS:
+              C1:
+                name: C1
+                symbol: C1
+                unit: None
+                conversion: 1
+              C2:
+                name: C2
+                symbol: C2
+                unit: None
+                conversion: 1
+              C3:
+                name: C3
+                symbol: C3
+                unit: None
+                conversion: 1
+              C4:
+                name: C4
+                symbol: C4
+                unit: None
+                conversion: 1
+            RETURNS:
+              density:
+                name: liquid density
+                symbol: rho
+                unit: mol/dm3
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
+          EQ-2:
+            BODY:
+              - parms['C1'] = parms['C1']/1
+              - parms['C2'] = parms['C2']/1
+              - parms['C3'] = parms['C3']/1
+              - parms['C4'] = parms['C4']/1
+              - res = parms['C1'] + parms['C2']*args['T'] + parms['C3']*math.pow(args['T'],2) +
+                parms['C4']*math.pow(args['T'],3)
+            ARGS:
+              temperature:
+                name: temperature
+                symbol: T
+                unit: K
+            PARMS:
+              C1:
+                name: C1
+                symbol: C1
+                unit: None
+                conversion: 1
+              C2:
+                name: C2
+                symbol: C2
+                unit: None
+                conversion: 1
+              C3:
+                name: C3
+                symbol: C3
+                unit: None
+                conversion: 1
+              C4:
+                name: C4
+                symbol: C4
+                unit: None
+                conversion: 1
+            RETURNS:
+              density:
+                name: liquid density
+                symbol: rho
+                unit: mol/dm3
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
   Chemical Thermodynamics for Process Simulation:
     DATABOOK-ID: 2
     TABLES:
