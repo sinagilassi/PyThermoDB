@@ -341,14 +341,10 @@ REFERENCES:
         EQUATIONS:
           EQ-1:
             BODY:
-              - parms['C1'] = parms['C1']/1
-              - parms['C2'] = parms['C2']/1
-              - parms['C3'] = parms['C3']/1
-              - parms['C4'] = parms['C4']/1
-              - A = parms['C1']/parms['C2']
-              - B = 1 + (1 - (args['T']/parms['C3']))
-              - C = math.pow(B, parms['C4'])
-              - res = math.pow(A, C)
+              - A = parms['C2']
+              - B = 1 - args['T']/parms['C3']
+              - C = 1 + math.pow(B, parms['C4'])
+              - res = parms['C1']/math.pow(A, C)
             ARGS:
               temperature:
                 name: temperature
