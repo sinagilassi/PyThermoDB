@@ -138,6 +138,29 @@ class ManageData():
         # print(type(reference))
         return reference
 
+    def select_reference(self, reference: str) -> dict:
+        '''
+        Select a reference from the loaded references
+
+        Parameters
+        ----------
+        reference : str
+            reference name
+
+        '''
+        try:
+            # check
+            if reference not in self.__reference['REFERENCES']:
+                raise ValueError(f"Reference {reference} not found!")
+
+            # get reference
+            selected_ref = self.__reference['REFERENCES'][reference]
+
+            # return
+            return selected_ref
+        except Exception as e:
+            raise Exception(f"select reference error! {e}")
+
     def load_symbols(self, custom_ref: CustomRef | None) -> dict:
         '''
         Load symbols used in the databooks
