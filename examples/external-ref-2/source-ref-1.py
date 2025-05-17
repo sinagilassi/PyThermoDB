@@ -18,6 +18,9 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 yml_file = 'str-ref-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
+md_file = 'str-ref-1.md'
+md_path = os.path.join(parent_dir, md_file)
+
 # custom ref
 ref = {'reference': [yml_path]}
 
