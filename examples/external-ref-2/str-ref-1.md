@@ -22,20 +22,14 @@ EQ-1:
   - parms['C5 | C5 | 1'] = parms['C5 | C5 | 1']/1
   - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
 - BODY-INTEGRAL:
-    None
 - BODY-FIRST-DERIVATIVE:
-    None
 - BODY-SECOND-DERIVATIVE:
-    None
 
 STRUCTURE:
 
-- COLUMNS
-    [No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq]
-- SYMBOL:
-    [None,None,None,None,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr]
-- UNIT:
-    [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
+- COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq]
+- SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr]
+- UNIT: [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
 
 VALUES:
 
@@ -66,14 +60,10 @@ DATA: []
 
 STRUCTURE:
 
-- COLUMNS:
-    [No.,Name,Formula,State,Molecular-Weight,Critical-Temperature,Critical-Pressure,Critical-Molar-Volume,Critical-Compressibility-Factor,Acentric-Factor,Enthalpy-of-Formation,Gibbs-Energy-of-Formation]
-- SYMBOL:
-    [None,None,None,None,MW,Tc,Pc,Vc,Zc,AcFa,EnFo,GiEnFo]
-- UNIT:
-    [None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
-- CONVERSION:
-    [None,None,None,None,1,1,1,1,1,1,1,1]
+- COLUMNS:[No.,Name,Formula,State,Molecular-Weight,Critical-Temperature,Critical-Pressure,Critical-Molar-Volume,Critical-Compressibility-Factor,Acentric-Factor,Enthalpy-of-Formation,Gibbs-Energy-of-Formation]
+- SYMBOL:[None,None,None,None,MW,Tc,Pc,Vc,Zc,AcFa,EnFo,GiEnFo]
+- UNIT:[None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
+- CONVERSION:[None,None,None,None,1,1,1,1,1,1,1,1]
 
 VALUES:
 

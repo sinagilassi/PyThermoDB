@@ -14,7 +14,8 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 
 # files
-yml_file = 'source-ref-1-2.yml'
+# yml_file = 'source-ref-1-2.yml'
+yml_file = 'str-ref-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # custom ref
@@ -25,6 +26,11 @@ ref = {'reference': [yml_path]}
 # ====================================
 thermo_db = ptdb.init(custom_reference=ref)
 
+# log reference
+# print(thermo_db.reference)
+
+# select reference
+print(thermo_db.select_reference('CUSTOM-REF-1'))
 # ====================================
 # GET DATABOOK LIST
 # ====================================

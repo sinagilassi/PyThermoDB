@@ -7,6 +7,7 @@ REFERENCES:
           DESCRIPTION:
             This table provides the general data of different chemical species participating in the CO2 hydrogenation reaction and includes molecular weight (MW) in g/mol, critical temperature (Tc) in K, critical pressure (Pc) in MPa, and critical molar volume (Vc) in m3/kmol. The table also includes the critical compressibility factor (Zc), acentric factor (AcFa), enthalpy of formation (EnFo) in kJ/mol, and Gibbs energy of formation (GiEnFo) in kJ/mol. The chemical state of the species is also provided in the table and hence the enthalpy of formation and Gibbs energy of formation are provided for the ideal gas and liquid state are designated as EnFo_IG, GiEnFo_IG, EnFo_LIQ, and GiEnFo_LIQ, respectively.
           DATA: []
+          MATRIX-SYMBOL: []
           STRUCTURE:
             COLUMNS: [No.,Name,Formula,State,Molecular-Weight,Critical-Temperature,Critical-Pressure,Critical-Molar-Volume,Critical-Compressibility-Factor,Acentric-Factor,Enthalpy-of-Formation,Gibbs-Energy-of-Formation]
             SYMBOL: [None,None,None,None,MW,Tc,Pc,Vc,Zc,AcFa,EnFo,GiEnFo]
@@ -29,10 +30,13 @@ REFERENCES:
             - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
             - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
+          ITEMS: []
         Vapor-Pressure:
           TABLE-ID: 2
           DESCRIPTION:
             This table provides the vapor pressure (P) in Pa as a function of temperature (T) in K.
+          DATA: []
+          MATRIX-SYMBOL: []
           EQUATIONS:
             EQ-1:
               BODY:
@@ -69,10 +73,13 @@ REFERENCES:
             - [14,'benzene','C6H6','l',83.107,-6486.2,-9.2194,6.98E-06,2,278.68,4.76E+03,562.05,4.88E+06,1]
             - [15,'nitrogen','N2','g',58.282,-1084.1,-8.3144,4.41E-02,1,63.15,1.25E+04,126.2,3.39E+06,1]
             - [16,'ethane','C2H6','g',51.857,-2598.7,-5.1283,1.49E-05,2,90.35,1.13E+00,305.32,4.85E+06,1]
+          ITEMS: []
         NRTL Non-randomness parameters-2:
               TABLE-ID: 1
               DESCRIPTION:
                 This table provides the NRTL non-randomness parameters for the NRTL equation.
+              DATA: []
+              EQUATIONS: []
               MATRIX-SYMBOL:
                 - a
                 - b
@@ -87,3 +94,7 @@ REFERENCES:
                 - [None,None,None,CH3OH,C2H5OH,CH3OH,C2H5OH,CH3OH,C2H5OH,CH3OH,C2H5OH]
                 - [1,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
                 - [2,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+              ITEMS:
+                METHANOL-ETHANOL:
+                  - [1,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+                  - [2,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
