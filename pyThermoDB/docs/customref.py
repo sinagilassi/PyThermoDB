@@ -3,7 +3,7 @@ import os
 import yaml
 import re
 import ast
-from typing import Literal
+from typing import Literal, List
 
 
 class CustomRef:
@@ -18,6 +18,9 @@ class CustomRef:
         self.yml_files: list[str] = []
         self.csv_files: list[str] = []
         self.md_files: list[str] = []
+
+        # NOTE: raw content
+        self.contents: List[str] | None = None
 
         # NOTE: paths
         self.yml_paths: list[str] = []
@@ -104,6 +107,15 @@ class CustomRef:
             # NOTE: check file extension
             yml_files = [x for x in yml_files if x.endswith('.yml')]
             md_files = [x for x in md_files if x.endswith('.md')]
+
+            # NOTE: check string format
+            if len(yml_files) == 0 and len(md_files) == 0:
+                # get content
+                contents_ = self.ref.get('reference')
+                # std content
+                if isinstance(contents_, list):
+                    # check
+                    self.contents = self.content_manager(contents_)
 
             # SECTION: check file path
             # yml files
@@ -207,6 +219,22 @@ class CustomRef:
                         temp_data = self.parse_markdown(content)
                         # merge data
                         data.update(temp_data['REFERENCES'])
+
+            # SECTION: check content
+            if self.contents is not None and len(self.contents) > 0:
+                # loop through the rest of the files
+                for i in range(0, len(self.contents)):
+                    # load data
+                    content = self.contents[i]
+                    # check
+                    if content is None:
+                        raise Exception(
+                            "No data in the file number %d" % i)
+
+                    # extract data
+                    temp_data = self.parse_markdown(content)
+                    # merge data
+                    data.update(temp_data['REFERENCES'])
 
             # res
             return data
@@ -419,13 +447,42 @@ class CustomRef:
             value_rows = re.findall(r'- \[(.*?)\]', values_content)
 
             for row in value_rows:
+                # NOTE: replace double quotes with single quotes
+                # row = row.replace('"', "'")
+                # NOTE: remove quotes from left and right
+                row = row.strip().strip('"')
+                # NOTE: remove quotes from left and right
+                row = row.strip().strip("'")
+
                 try:
                     # Use a regex to split on commas but not on commas inside single or double quotes
                     items = []
-                    # Pattern matches commas not inside quotes
-                    parts = re.findall(r'(?:[^\s,"]|"(?:\\.|[^"])*")++', row)
+                    # Split by commas that are not within single or
+                    # double quotes
+                    # pattern = r',\s*(?=(?:[^\'"]*(\'|")[^\'"]*\1)*[^\']*$)'
+                    pattern = r"""
+                        (                             # Capture group
+                            "(?:[^"\\]|\\.)*"         # Double-quoted string, allowing escaped quotes
+                            |                         # OR
+                            '(?:[^'\\]|\\.)*'         # Single-quoted string, allowing escaped quotes
+                            |                         # OR
+                            [^,\[\]\s]+               # Unquoted tokens (numbers, identifiers)
+                        )
+                    """
+
+                    # split the row
+                    # parts = re.split(pattern, row)
+                    parts = re.findall(pattern, row, re.VERBOSE)
+
+                    # loop through the parts
                     for part in parts:
-                        items.append(part.strip().strip('"'))
+                        # remove quotes from left and right
+                        part = part.strip().strip('"').strip("'")
+                        # check if part is empty
+                        if part == '':
+                            continue
+
+                        items.append(part)
                     values.append(items)
                 except Exception:
                     values.append(row)
@@ -468,3 +525,30 @@ class CustomRef:
             ]
 
         return result
+
+    def content_manager(self, content: List[str]):
+        '''
+        Manage content
+
+        Parameters
+        ----------
+        content : List[str]
+            list of content containing separate references
+
+        Returns
+        -------
+        content : str
+            content
+        '''
+        try:
+            # NOTE: check content
+            if content is None:
+                raise Exception("No content found.")
+
+            # length check
+            if len(content) == 0:
+                raise Exception("No content found.")
+
+            return content
+        except Exception as e:
+            raise Exception(f"Content manager failed! {e}")
