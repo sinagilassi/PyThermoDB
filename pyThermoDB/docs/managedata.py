@@ -448,6 +448,13 @@ class ManageData():
                         if table_items:
                             matrix_data['ITEMS'] = table_items
 
+                        # NOTE: table structure
+                        if table_structure is not None:
+                            # update
+                            for k, v in table_structure.items():
+                                # update
+                                matrix_data[k] = v
+
                         # save
                         tables.append({
                             'table_id': table_id,

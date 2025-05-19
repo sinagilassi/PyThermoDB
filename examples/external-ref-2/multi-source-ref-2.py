@@ -1,3 +1,29 @@
+# import packages/modules
+import os
+from rich import print
+import pyThermoDB as ptdb
+
+# get versions
+# print(pt.get_version())
+print(ptdb.__version__)
+
+# ====================================
+# CUSTOM REFERENCES
+# ====================================
+# parent directory
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+
+# files
+# SECTION: yml_file = 'source-ref-1-2.yml'
+yml_file = 'str-ref-1.yml'
+yml_path = os.path.join(parent_dir, yml_file)
+
+# SECTION: md_file = 'source-ref-1-2.md'
+md_file = 'str-ref-1.md'
+md_path = os.path.join(parent_dir, md_file)
+
+# SECTION: file contents
+file_contents = """
 # REFERENCES
 
 ## CUSTOM-REF-1
@@ -142,61 +168,190 @@ EXTERNAL-REFERENCES:
 
 - url1
 - url2
+"""
 
-### NRTL Non-randomness parameters-1
+# custom ref
+ref = {'reference': [file_contents]}
+# md ref
+ref = {'reference': [md_path]}
+# yml ref
+ref = {'reference': [yml_path]}
 
-TABLE-ID: 4
+# ====================================
+# INITIALIZATION OWN THERMO DB
+# ====================================
+thermo_db = ptdb.init(custom_reference=ref)
 
-DESCRIPTION: This table provides the NRTL non-randomness parameters for the NRTL equation.
+# log reference
+# print(thermo_db.reference)
 
-MATRIX-SYMBOL:
+# select reference
+print(thermo_db.select_reference('CUSTOM-REF-1'))
+# ====================================
+# GET DATABOOK LIST
+# ====================================
+db_list = thermo_db.list_databooks()
+print(db_list)
 
-- a
-- b
-- c
-- alpha
+# ====================================
+# SELECT A DATABOOK
+# ====================================
+# table list
+tb_list = thermo_db.list_tables('CUSTOM-REF-1')
+print(tb_list)
 
-STRUCTURE:
+# ====================================
+# DISPLAY TABLE INFO
+# ====================================
+# display a table
+tb_info = thermo_db.table_info(
+    'CUSTOM-REF-1',
+    'NRTL Non-randomness parameters-2')
+print(tb_info)
 
-- COLUMNS: [No.,Name,Formula,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-- SYMBOL: [None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-- UNIT: [None,None,None,1,1,1,1,1,1,1,1]
-
-VALUES
-
-- [None,None,None,methanol,ethanol,methanol,ethanol,methanol,ethanol,methanol,ethanol]
-- [None,None,None,CH3OH,C2H5OH,CH3OH,C2H5OH,CH3OH,C2H5OH,CH3OH,C2H5OH]
-- [1,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-- [2,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
-
-### NRTL Non-randomness parameters-2
-
-TABLE-ID: 5
-
-DESCRIPTION: This table provides the NRTL non-randomness parameters for the NRTL equation.
-
-MATRIX-SYMBOL:
-
-- a
-- b
-- c
-- alpha
-
-STRUCTURE:
-
-- COLUMNS: [No.,Mixture,Name,Formula,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-- SYMBOL: [None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-- UNIT: [None,None,None,None,1,1,1,1,1,1,1,1]
-
-VALUES:
-
-- [1,methanol|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-- [2,methanol|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
-- [1,methane|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-- [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+# ====================================
+# LOAD TABLE
+# ====================================
+# table load
+tb_ = thermo_db.table_data('CUSTOM-REF-1', 'General-Data')
+print(tb_)
 
 
-EXTERNAL-REFERENCES:
+# table-data
+dt_ = thermo_db.matrix_data_load(
+    'CUSTOM-REF-1',
+    'NRTL Non-randomness parameters-2')
 
-- url1
-- url2
+# ====================================
+# CHECK COMPONENT AVAILABILITY IN A TABLE
+# ====================================
+# check component availability in the databook and table
+# comp1 = "methanol"
+# COMP1_check_availability = thermo_db.check_component(
+#     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
+
+# comp2 = "ethanol"
+# COMP1_check_availability = thermo_db.check_component(
+#     comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
+
+# components = [comp1, comp2]
+
+# component list
+components_list = [
+    "methanol",
+    "ethanol",
+]
+
+# ====================================
+# BUILD MATRIX DATA
+# ====================================
+# looping through the components
+for i in range(len(components_list)):
+    for j in range(i + 1, len(components_list)):
+        comp1 = components_list[i]
+        comp2 = components_list[j]
+        # # check component availability
+        # if not thermo_db.check_component(comp1, 'CUSTOM-REF-1', "NRTL Non-randomness parameters-2"):
+        #     print(f"Component {comp1} is not available in the table.")
+        #     continue
+        # if not thermo_db.check_component(comp2, 'CUSTOM-REF-1', "NRTL Non-randomness parameters-2"):
+        #     print(f"Component {comp2} is not available in the table.")
+        #     continue
+
+        # NOTE: build a matrix data
+        nrtl_alpha = thermo_db.build_thermo_property(
+            [comp1, comp2], 'CUSTOM-REF-1', "NRTL Non-randomness parameters-2")
+
+        # matrix table
+        print(nrtl_alpha.matrix_table)
+        # matrix table
+        res_ = nrtl_alpha.get_matrix_table(mode='selected')
+        print(res_, type(res_))
+
+        # symbol
+        print(nrtl_alpha.matrix_symbol)
+
+        print(nrtl_alpha.matrix_data_structure())
+
+        # # matrix data
+        # print(nrtl_alpha.get_matrix_property("a_i_j",
+        #                                      [comp1, comp2],
+        #                                      symbol_format='alphabetic',
+        #                                      message="NRTL Alpha value"))
+
+        # print(nrtl_alpha.get_matrix_property("b_i_j",
+        #                                      [comp1, comp2],
+        #                                      symbol_format='alphabetic',
+        #                                      message="NRTL Alpha value"))
+
+        # property name using ij method
+        prop_name = f"a_{comp1}_{comp2}"
+        print(prop_name)
+        res_1 = nrtl_alpha.ij(prop_name)
+        print(res_1)
+        print(res_1.get('value'))
+        print("*" * 20)
+
+        # get property value using the matrix data
+        # format 1
+        # prop_name = f"dg_{comp1}_{comp2}"
+        # format 2
+        prop_name = f"a | {comp1} | {comp2}"
+        # get values
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+        print(prop_matrix, type(prop_matrix))
+
+        print("*" * 20)
+        prop_name = f"b | {comp1} | {comp2}"
+        # get values
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+        print(prop_matrix, type(prop_matrix))
+
+        print("*" * 20)
+        prop_name = f"c | {comp1} | {comp2}"
+        # get values
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+        print(prop_matrix, type(prop_matrix))
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
+        print(prop_matrix, type(prop_matrix))
+        mat_ = nrtl_alpha.mat('c', [comp1, comp2])
+        print(mat_)
+        # get values
+        prop_name = f"c | {comp2} | {comp1}"
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+        print(prop_matrix, type(prop_matrix))
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
+        print(prop_matrix, type(prop_matrix))
+        # ! ij matrix
+        mat_ = nrtl_alpha.mat('c', [comp2, comp1])
+        print(mat_)
+        print("*" * 20)
+
+        prop_name = f"alpha | {comp1} | {comp2}"
+        # get values
+        prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+        print(prop_matrix, type(prop_matrix))
+
+        # ! ij matrix
+        mat_ = nrtl_alpha.mat('alpha', [comp2, comp1])
+        print(mat_)
+        print("*" * 20)
+        print("*" * 20)
+
+# ====================================
+# BUILD THERMODB
+# ====================================
+# build a thermodb
+thermo_db = ptdb.build_thermodb()
+print(type(thermo_db))
+
+# NOTE: add TableMatrixData
+thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
+
+thermodb_file = 'nrtl-1.pkl'
+
+# save
+thermo_db.save(thermodb_file, file_path=parent_dir)
+
+# check
+print(thermo_db.check())
