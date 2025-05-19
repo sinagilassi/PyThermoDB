@@ -350,17 +350,17 @@ class CustomRef:
         # Initialize the result dictionary
         result = {}
 
-        # Extract TABLE-ID
+        # SECTION: TABLE-ID
         table_match = re.search(r'TABLE-ID: (.*?)(?:\n|$)', content)
         if table_match:
             result['TABLE-ID'] = table_match.group(1).strip()
 
-        # Extract DESCRIPTION
+        # SECTION: DESCRIPTION
         desc_match = re.search(r'DESCRIPTION: (.*?)(?:\n|$)', content)
         if desc_match:
             result['DESCRIPTION'] = desc_match.group(1).strip()
 
-        # Extract DATA
+        # SECTION: DATA
         data_match = re.search(r'DATA: \[(.*?)\]', content, re.DOTALL)
         if data_match:
             data_str = data_match.group(1).strip()
@@ -381,7 +381,7 @@ class CustomRef:
             matrix_items = re.findall(r'- (.*?)(?:\n|$)', matrix_content)
             result['MATRIX-SYMBOL'] = [item.strip() for item in matrix_items]
 
-        # Extract EQUATIONS
+        # SECTION: EQUATIONS
         equations = {}
         eq_pattern = r'EQUATIONS:\s*\n(.*?)(?:\n\w+:|$)'
         eq_section = re.search(eq_pattern, content, re.DOTALL)
@@ -391,7 +391,7 @@ class CustomRef:
             eq_blocks = re.findall(eq_pattern, eq_content, re.DOTALL)
 
             # Debug output to verify equation blocks found
-            print(f"Found {len(eq_blocks)} equation blocks")
+            # print(f"Found {len(eq_blocks)} equation blocks")
 
             for eq_id, eq_block in eq_blocks:
                 equation = {}
@@ -419,7 +419,7 @@ class CustomRef:
 
             result['EQUATIONS'] = equations
 
-        # Extract STRUCTURE
+        # SECTION: STRUCTURE
         structure = {}
         struct_pattern = r'STRUCTURE:\s*\n(.*?)(?:\n\w+:|$)'
         struct_section = re.search(struct_pattern, content, re.DOTALL)
@@ -438,7 +438,7 @@ class CustomRef:
 
             result['STRUCTURE'] = structure
 
-        # Extract VALUES
+        # SECTION: VALUES
         values = []
         values_pattern = r'VALUES:\s*\n(.*?)(?:\n\w+:|$)'
         values_section = re.search(values_pattern, content, re.DOTALL)
@@ -489,29 +489,36 @@ class CustomRef:
 
             result['VALUES'] = values
 
-        # Extract ITEMS
+        # SECTION: ITEMS
         items_match = re.search(
             r'ITEMS:\s*\n(.*?)(?:\n\w+:|$)', content, re.DOTALL
         )
         if items_match:
             items_content = items_match.group(1).strip()
             items = {}
+            # Updated regex to capture all elements starting with - item:
+            item_pattern = (
+                # Match any item names starting with "- "
+                r'- ([\|\w\d\s]+):\s*\n'
+                # Match content containing list elements with square brackets
+                r'((?:\s*- \[.*?\]\s*\n)+)'
+            )
             item_blocks = re.findall(
-                r'- (\w+):\s*\n(.*?)(?=\n- \w+:|\n\w+:|\Z)',
+                item_pattern,
                 items_content,
                 re.DOTALL
             )
 
             for item_name, item_content in item_blocks:
                 item_values = re.findall(r'- \[(.*?)\]', item_content)
-                items[item_name] = [
+                items[item_name.strip()] = [
                     [value.strip() for value in row.split(',')]
                     for row in item_values
                 ]
 
             result['ITEMS'] = items
 
-        # Extract EXTERNAL-REFERENCES
+        # SECTION: EXTERNAL-REFERENCES
         external_references = []
         ext_ref_pattern = r'EXTERNAL-REFERENCES:\s*\n(.*?)(?:\n\w+:|$)'
         ext_ref_section = re.search(ext_ref_pattern, content, re.DOTALL)

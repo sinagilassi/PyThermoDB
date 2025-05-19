@@ -340,6 +340,10 @@ class ManageData():
                     # NOTE: table structure
                     table_structure = table_data.get('STRUCTURE', None)
 
+                    # NOTE: table reference
+                    external_references = table_data.get(
+                        'EXTERNAL-REFERENCES', None)
+
                     # * check
                     # ! check EQUATIONS exists
                     if 'EQUATIONS' in table_data:
@@ -363,7 +367,8 @@ class ManageData():
                             'matrix_data': None,
                             'table_type': TableTypes.EQUATIONS.value,
                             'table_values': table_values,
-                            'table_structure': table_structure
+                            'table_structure': table_structure,
+                            'external_references': external_references
                         })
                         # reset
                         _eq = []
@@ -386,7 +391,8 @@ class ManageData():
                             'matrix_data': None,
                             'table_type': TableTypes.MATRIX_EQUATIONS.value,
                             'table_values': table_values,
-                            'table_structure': table_structure
+                            'table_structure': table_structure,
+                            'external_references': external_references
                         })
                         # reset
                         _eq = []
@@ -414,17 +420,34 @@ class ManageData():
                             'matrix_data': None,
                             'table_type': TableTypes.DATA.value,
                             'table_values': table_values,
-                            'table_structure': table_structure
+                            'table_structure': table_structure,
+                            'external_references': external_references
                         })
                     # ! check MATRIX-DATA
                     elif ('MATRIX-DATA' in table_data) or ('MATRIX-SYMBOL' in table_data):
                         # matrix-data (data)
                         matrix_data = table_data.get('MATRIX-DATA', {})
-                        # matrix-symbol
+
+                        # NOTE: matrix-symbol
                         matrix_symbol = table_data.get('MATRIX-SYMBOL', None)
+
                         # embedded symbol
                         if matrix_symbol:
                             matrix_data['MATRIX-SYMBOL'] = matrix_symbol
+
+                        # NOTE: table items
+                        table_items = table_data.get('ITEMS', None)
+
+                        # embedded symbol
+                        if table_items:
+                            matrix_data['ITEMS'] = table_items
+
+                        # NOTE: table structure
+                        table_structure = table_data.get('STRUCTURE', None)
+
+                        # embedded structure
+                        if table_structure:
+                            matrix_data['STRUCTURE'] = table_structure
 
                         # save
                         tables.append({
@@ -437,7 +460,9 @@ class ManageData():
                             'matrix_data': matrix_data,
                             'table_type': TableTypes.MATRIX_DATA.value,
                             'table_values': table_values,
-                            'table_structure': table_structure
+                            'table_structure': table_structure,
+                            'table_items': table_items,
+                            'external_references': external_references
                         })
 
                 # save

@@ -12,15 +12,23 @@ class TableMatrixData:
     __trans_data = {}
     __prop_data = {}
     __matrix_symbol = None
-    __table_strcuture = None
+    __table_structure = None
     # pack
     __trans_data_pack = {}
     __prop_data_pack = {}
     # matrix elements
     __matrix_elements = None
+    # matrix items
+    __matrix_items: Optional[Dict[str, List[str | int | float]]] = None
+    # matrix item keys
+    __matrix_item_keys: Optional[List[str]] = None
 
-    def __init__(self, databook_name: str | int, table_name: str | int,
-                 table_data, matrix_table=None, matrix_symbol: Optional[List[str]] = None):
+    def __init__(self,
+                 databook_name: str | int,
+                 table_name: str | int,
+                 table_data,
+                 matrix_table=None,
+                 matrix_symbol: Optional[List[str]] = None):
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data  # NOTE: reference template (yml)
@@ -31,6 +39,13 @@ class TableMatrixData:
             # matrix symbol such as Alpha_i_j
             symbol_ = self.table_data['MATRIX-SYMBOL']
             self.__matrix_symbol = symbol_
+
+            # matrix items
+            items_ = self.table_data.get('ITEMS', None)
+            # check
+            if items_ is not None and items_ != "None":
+                # setting matrix items
+                self.__set_matrix_items(items_)
 
         # NOTE: table structure
         self.__generate_table_structure(self.table_data)
@@ -87,6 +102,197 @@ class TableMatrixData:
         self.__matrix_elements = {}
         self.__matrix_elements = value
 
+    @property
+    def matrix_items(self):
+        """Return matrix items if valid, otherwise None."""
+        if isinstance(self.__matrix_items, dict) and self.__matrix_items:
+            return self.__matrix_items
+        return None
+
+    @property
+    def matrix_item_keys(self):
+        """Get matrix item keys"""
+        return self.__matrix_item_keys
+
+    def __set_matrix_items(self, matrix_items):
+        """Set matrix items"""
+        # init
+        self.__matrix_item_keys = []
+        self.__matrix_items = {}
+
+        # check
+        if matrix_items is not None:
+            # check
+            if isinstance(matrix_items, dict):
+
+                # looping through matrix items
+                for key, value in matrix_items.items():
+                    # check
+                    if "|" in key:
+                        # split key
+                        key_split = key.split('|')
+                        # check
+                        if len(key_split) != 2:
+                            raise Exception(
+                                "Matrix item key is not in the correct format!")
+
+                        # std key
+                        key_std = " | ".join(key_split)
+                        # set
+                        self.__matrix_item_keys.append(key_std)
+                        # set
+                        self.__matrix_items[key_std] = value
+            else:
+                # set
+                self.__matrix_item_keys = []
+        else:
+            # set
+            self.__matrix_item_keys = []
+
+    def __generate_table_items(self, component_names: list[str]):
+        '''
+        Generate dataframe for each matrix item
+
+        Parameters
+        ----------
+        component_names : list[str]
+            component names
+
+        Notes
+        -----
+        The Dataframe structure is based on columns, symbols, units as:
+        - header: No.,Name,Formula, matrix_symbol, matrix_symbol, ...
+        - row 1: No.,Name,Formula, matrix_symbol, matrix_symbol, ...
+        - row 2: None,None,None,1,1,1, ...
+        - row 3: None,None,None, 1,2,1,2, ...
+
+        Build two rows for each matrix item:
+        - row 4: None, None, None, component1_name, component2_name, ...
+        - row 5: None, None, None, component1_symbol, component2_symbol, ...
+
+        Embedded the item data (List[List[str | int | float]]) in the matrix table as:
+        - row 6: 1, component1_name, component1_formula, 1, 1, 1, ...
+        - row 7: 2, component2_name, component2_formula, 1, 1, 1, ...
+        '''
+        try:
+            # NOTE: matrix structure
+            table_structure = self.__table_structure
+            # check
+            if table_structure is None:
+                raise Exception("Table structure is None!")
+
+            # extract
+            columns = table_structure['STRUCTURE'].get('COLUMNS', None)
+            symbol = table_structure['STRUCTURE'].get('SYMBOL', None)
+            unit = table_structure['STRUCTURE'].get('UNIT', None)
+
+            # NOTE: matrix symbols
+            matrix_symbol = self.__matrix_symbol
+            # number of matrix symbols
+            matrix_symbol_num = len(matrix_symbol) if matrix_symbol else 0
+            # check
+            if matrix_symbol_num == 0:
+                raise Exception("Matrix symbol is None!")
+
+            # NOTE: item tables
+            # item_tables = {}
+
+            # SECTION: component names
+            # temp key
+            key = " | ".join(component_names)
+
+            # check
+            if self.__matrix_item_keys:
+                if key not in self.__matrix_item_keys:
+                    return None
+
+            # SECTION: matrix items
+            # check
+            if self.matrix_items and isinstance(self.matrix_items, dict):
+                # selected matrix items
+                value = self.matrix_items.get(key, None)
+
+                # if value is None:
+                if value is None or not isinstance(value, list) and len(value) == 0:
+                    return None
+
+                # ? key: components names [str | str]
+                # ? value: components data [str | int | float]
+                # key contains separator [|]
+                if "|" in key:
+                    # split key
+                    key_split = key.split('|')
+                    # check
+                    if len(key_split) != 2:
+                        raise Exception(
+                            "Matrix item key is not in the correct format!")
+
+                    # temp component names
+                    temp_component_names_ = [
+                        name.strip() for name in key_split]
+
+                    # component idx
+                    temp_comp_idx_ = [str(i+1) for i, name in enumerate(
+                        temp_component_names_) if name in component_names]
+
+                    # formula
+                    temp_component_formula_ = []
+
+                    # looping through component names
+                    for name in temp_component_names_:
+                        # check component values
+                        for v in value:
+                            # check
+                            if isinstance(v, list):
+                                if name in v[0:3]:
+                                    # set
+                                    temp_component_formula_.append(v[2])
+
+                    # repeated based on matrix symbol
+                    temp_component_names = temp_component_names_*matrix_symbol_num
+                    # repeated based on matrix symbol
+                    temp_component_formula = temp_component_formula_*matrix_symbol_num
+                    # repeated based on matrix symbol
+                    temp_component_idx = temp_comp_idx_*matrix_symbol_num
+
+                    # NOTE: build row 3
+                    row_3 = ['-', '-', '-']
+                    # update row 3
+                    row_3.extend(temp_component_idx)
+
+                    # NOTE: build row 4
+                    row_4 = ['None', 'None', 'None']
+                    # update row 4
+                    row_4.extend(temp_component_names)
+
+                    # NOTE: build row 5
+                    row_5 = ['None', 'None', 'None']
+                    # update row 5
+                    row_5.extend(temp_component_formula)
+
+                    # NOTE: dataframe data
+                    df_data = [
+                        symbol, unit, row_3, row_4, row_5, *value
+                    ]
+
+                    # create dataframe
+                    df = pd.DataFrame(
+                        columns=columns,
+                        data=df_data,
+                    )
+
+                    # NOTE: set
+                    # item_key = " | ".join(temp_component_names_)
+                    # item_tables[item_key] = df
+
+                # res
+                return df
+            else:
+                # res
+                return None
+        except Exception as e:
+            raise Exception("Generating matrix items failed!, ", e)
+
     def __generate_table_structure(self, table_data: dict[str, Any]):
         '''
         Generate table structure from data table
@@ -98,14 +304,15 @@ class TableMatrixData:
         '''
         try:
             # init
-            self.__table_strcuture = {}
+            self.__table_structure = {}
             # looping through table data
             for key, value in self.table_data.items():
-                if key != 'MATRIX-SYMBOL':
-                    self.__table_strcuture[key] = value
+                if key != 'MATRIX-SYMBOL' and key != 'ITEMS':
+                    # set
+                    self.__table_structure[key] = value
 
             # check
-            if self.__table_strcuture is None:
+            if self.__table_structure is None:
                 raise Exception("Table structure is None!")
         except Exception as e:
             raise Exception("Generating table structure failed!, ", e)
@@ -150,7 +357,7 @@ class TableMatrixData:
         try:
             # NOTE: choose from table data structure all except matrix-symbol
             # dataframe
-            df = pd.DataFrame(self.__table_strcuture)
+            df = pd.DataFrame(self.__table_structure)
             # add ID column
             df.insert(0, 'ID', range(1, len(df) + 1))
             # arrange columns
@@ -314,7 +521,11 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Getting matrix property failed!, ", e)
 
-    def ij(self, property: str, symbol_format: Literal['alphabetic', 'numeric'] = 'alphabetic',
+    def ij(self,
+           property: str,
+           symbol_format: Literal[
+               'alphabetic', 'numeric'
+           ] = 'alphabetic',
            message: Optional[str] = None) -> DataResult:
         '''
         Get a component property from data table structure (matrix data)
@@ -387,9 +598,12 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Getting matrix property failed!, ", e)
 
-    def get_matrix_property(self, property: str, component_names: list[str],
-                            symbol_format: Literal['alphabetic',
-                                                   'numeric'] = 'alphabetic',
+    def get_matrix_property(self,
+                            property: str,
+                            component_names: list[str],
+                            symbol_format: Literal[
+                                'alphabetic', 'numeric'
+                            ] = 'alphabetic',
                             message: str = 'Get a component property from data table structure') -> DataResult:
         '''
         Get a component property from data table structure
@@ -412,8 +626,21 @@ class TableMatrixData:
         # warn("get_matrix_property is deprecated, use ij method instead",
         #      DeprecationWarning, stacklevel=2)
 
+        # SECTION: check matrix items
+        matrix_item_ = self.__generate_table_items(component_names)
+        print(matrix_item_)
+
         # SECTION: matrix structure (all data)
-        matrix_table = self.matrix_table
+        matrix_table_ = self.matrix_table
+        print(matrix_table_)
+
+        # check
+        if matrix_item_ is not None:
+            # set
+            matrix_table = matrix_item_
+        else:
+            # set
+            matrix_table = matrix_table_
 
         # check dataframe
         if not isinstance(matrix_table, pd.DataFrame):

@@ -13,10 +13,11 @@ DESCRIPTION: content
 DATA: []
 
 MATRIX-SYMBOL:
-    - a
-    - b
-    - c
-    - alpha
+
+- a
+- b
+- c
+- alpha
 
 EQUATIONS:
 
@@ -78,10 +79,11 @@ DESCRIPTION: content
 DATA: []
 
 MATRIX-SYMBOL:
-    - a
-    - b
-    - c
-    - alpha
+
+- a
+- b
+- c
+- alpha
 
 EQUATIONS:
 

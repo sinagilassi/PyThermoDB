@@ -66,7 +66,9 @@ class TableReference(ManageData):
         _, df, _, _ = self.get_tables(databook_id-1)
         return df
 
-    def load_table(self, databook_id: int, table_id: int) -> pd.DataFrame:
+    def load_table(self,
+                   databook_id: int,
+                   table_id: int) -> pd.DataFrame:
         """
         Load a `csv file` in this directory
 
@@ -244,7 +246,12 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def search_tables(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str | list[str], query: bool = False) -> pd.DataFrame:
+    def search_tables(self,
+                      databook_id: int,
+                      table_id: int,
+                      column_name: str | list[str],
+                      lookup: str | list[str],
+                      query: bool = False) -> pd.DataFrame:
         """
         Search tables in this directory
 
@@ -289,7 +296,12 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table searching error {e}")
 
-    def search_table(self, databook_id: int, table_id: int, column_name: str | list, lookup: str, query: bool = False) -> pd.DataFrame:
+    def search_table(self,
+                     databook_id: int,
+                     table_id: int,
+                     column_name: str | list,
+                     lookup: str,
+                     query: bool = False) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -346,7 +358,12 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Searching table error {e}")
 
-    def search_matrix_table(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str, query: bool = False) -> pd.DataFrame:
+    def search_matrix_table(self,
+                            databook_id: int,
+                            table_id: int,
+                            column_name: str | list[str],
+                            lookup: str,
+                            query: bool = False) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -398,8 +415,13 @@ class TableReference(ManageData):
         else:
             return pd.DataFrame()
 
-    def make_payload(self, databook_id: int, table_id: int, column_name: str | list[str], lookup: str,
-                     query: bool = False, matrix_tb: bool = False) -> PayLoadType | None:
+    def make_payload(self,
+                     databook_id: int,
+                     table_id: int,
+                     column_name: str | list[str],
+                     lookup: str,
+                     query: bool = False,
+                     matrix_tb: bool = False) -> PayLoadType | None:
         '''
         Make standard data
 
@@ -595,7 +617,8 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f'Searching component error {e}')
 
-    async def list_all_components(self, column_name: str = 'Name') -> tuple[list[str], list[dict[str, str | int]]]:
+    async def list_all_components(self,
+                                  column_name: str = 'Name') -> tuple[list[str], list[dict[str, str | int]]]:
         """
         List all components in all databooks.
 
@@ -666,7 +689,9 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f'Listing all components error {e}')
 
-    def retrieve_data(self, table_data: DataBookTableTypes, table_type: str):
+    def retrieve_data(self,
+                      table_data: DataBookTableTypes,
+                      table_type: str):
         '''
         Retrieve data from table data based on table type
 
