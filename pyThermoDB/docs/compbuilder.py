@@ -307,7 +307,9 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def check_property(self, thermo_name: str) -> TableData | TableMatrixData:
+    def check_property(self,
+                       thermo_name: str
+                       ) -> TableData | TableMatrixData:
         '''
         Check properties
 
@@ -327,7 +329,9 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def select_property(self, thermo_name: str) -> TableData | TableMatrixData:
+    def select_property(self,
+                        thermo_name: str
+                        ) -> TableData | TableMatrixData:
         '''
         Select a thermodynamic property
 
@@ -362,7 +366,9 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def check_function(self, name: str) -> TableEquation | TableMatrixEquation:
+    def check_function(self,
+                       name: str
+                       ) -> TableEquation | TableMatrixEquation:
         '''
         Check functions
 
@@ -382,7 +388,9 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def select_function(self, function_name: str) -> TableEquation | TableMatrixEquation:
+    def select_function(self,
+                        function_name: str
+                        ) -> TableEquation | TableMatrixEquation:
         '''
         Select a thermodynamic function
 
@@ -402,7 +410,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a function failed!, ', e)
 
-    def select(self, thermo_name: str) -> TableData | TableMatrixData | TableEquation | TableMatrixEquation:
+    def select(self,
+               thermo_name: str
+               ) -> Union[
+                   TableData,
+                   TableMatrixData,
+                   TableEquation,
+                   TableMatrixEquation
+    ]:
         '''
         Select a thermodynamic property used for both functions and properties registered in the thermodb
 
@@ -442,7 +457,9 @@ class CompBuilder(CompExporter):
     def retrieve(self,
                  property_source: str,
                  message: Optional[str] = None,
-                 symbol_format: Literal['alphabetic', 'numeric'] = 'alphabetic'):
+                 symbol_format: Literal[
+                     'alphabetic', 'numeric'
+                 ] = 'alphabetic'):
         '''
         Retrieve a thermodynamic property from the thermodb for only TableData and TableMatrixData
 
@@ -533,7 +550,10 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Retrieving failed!, ", e)
 
-    def save(self, filename: str, file_path: Optional[str] = None) -> bool:
+    def save(self,
+             filename: str,
+             file_path: Optional[str] = None
+             ) -> bool:
         """
         Saves the instance to a file using pickle
 
