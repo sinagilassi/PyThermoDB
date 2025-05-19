@@ -31,6 +31,7 @@ class TableMatrixData:
                  table_data,
                  matrix_table=None,
                  matrix_symbol: Optional[List[str]] = None):
+        # set values
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data  # NOTE: reference template (yml)
@@ -395,7 +396,11 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Matrix data structure failed!, ", e)
 
-    def get_matrix_table(self, mode: Literal['all', 'selected'] = 'all') -> pd.DataFrame:
+    def get_matrix_table(self,
+                         mode: Literal[
+                             'all', 'selected'
+                         ] = 'all'
+                         ) -> pd.DataFrame:
         '''
         Get matrix table data
 
