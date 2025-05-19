@@ -18,9 +18,14 @@ print(f"Parent directory: {parent_dir}")
 yml_file = 'NRTL Non-randomness parameters-inline-2-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
+# NOTE: md file
+md_file = 'NRTL Non-randomness parameters-inline-2-1.md'
+md_file = 'NRTL Non-randomness parameters-inline-2-2.md'
+md_path = os.path.join(parent_dir, md_file)
+
 # custom ref
 ref = {
-    'reference': [yml_path],
+    'reference': [md_path],
 }
 
 # ====================================
@@ -128,7 +133,7 @@ print(prop_matrix, type(prop_matrix))
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_2_inline"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_md_1_inline"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()

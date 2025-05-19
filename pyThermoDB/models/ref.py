@@ -15,6 +15,8 @@ class DataBookTableTypes(TypedDict):
     table_type: Optional[str]
     table_values: Optional[List[Any] | Dict[str, Any]]
     table_structure: Optional[Dict[str, Any]]
+    table_items: Optional[Dict[str, Any]]
+    external_references: Optional[List[str]]
 
 
 class PayLoadType(TypedDict):

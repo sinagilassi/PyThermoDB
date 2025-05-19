@@ -192,18 +192,33 @@ class TableData:
         if isinstance(property, str):
             # df = df[property_name]
             # look up prop_data dict
+            prop_data_keys_ = [key.lower() for key in self.prop_data.keys()]
+
             # check key exists
-            if property in self.prop_data.keys():
-                get_data = self.prop_data[property]
+            if property in prop_data_keys_:
+                # loop through prop_data dict
+                for key, value in self.prop_data.items():
+                    # check key
+                    if property.lower() == key.lower():
+                        # value found
+                        get_data = self.prop_data[key]
+                        # property name
+                        property = key
+                        break
+                # get_data = self.prop_data[property]
             else:
+                # NOTE: symbol
                 # check symbol value in each item
                 for key, value in self.prop_data.items():
+                    # check if property is in the symbol
                     if property == value['symbol']:
                         # value found
                         get_data = self.prop_data[key]
                         # property name
                         property = key
                         break
+
+            # ! check if property found
             if get_data is None:
                 raise ValueError(f"Property '{property}' not found!")
             # series

@@ -21,7 +21,7 @@ print(db_list)
 # TABLE LIST
 # ===============================
 # table list
-tb_lists = tdb.list_tables(1, res_format='dict')
+tb_lists = tdb.list_tables(7, res_format='dict')
 print(tb_lists)
 
 # ===============================
@@ -70,6 +70,7 @@ print(data_table.data_structure())
 # ====================================
 # check component availability in the databook and table
 comp1 = "carbon Dioxide"
+comp1 = "Acetylene"
 # CO2_check_availability = tdb.check_component(comp1, 1, 2)
 
 # load comp data
