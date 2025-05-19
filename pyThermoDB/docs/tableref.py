@@ -68,9 +68,13 @@ class TableReference(ManageData):
 
     def load_table(self,
                    databook_id: int,
-                   table_id: int) -> pd.DataFrame:
+                   table_id: int
+                   ) -> pd.DataFrame | Dict[str, pd.DataFrame]:
         """
-        Load a `csv file` in this directory
+        Load a `csv file` from app directory or external reference
+        and convert it to a pandas dataframe.
+        If the table is a matrix data, it will return a dictionary of dataframes.
+        If the table is a data or equations, it will return a single dataframe.
 
         Parameters
         ----------
@@ -81,12 +85,13 @@ class TableReference(ManageData):
 
         Returns
         -------
-        df : pandas DataFrame
-            dataframe of excel file
+        pandas DataFrame | Dict[str, pandas DataFrame]
+            pandas DataFrame or Dict of pandas DataFrames
         """
         try:
             # init vars
             file_data = None
+            file_item_data = None
             file_path = None
 
             # NOTE:
@@ -237,10 +242,14 @@ class TableReference(ManageData):
                         # SECTION: items
                         if items and values is None:
                             # init values
-                            values__ = []
+                            values_dict = {}
 
                             # loop through items
                             for item in items:
+
+                                # init values
+                                values__ = []
+
                                 # looping through item
                                 for k, v in item.items():
                                     # check
@@ -248,17 +257,44 @@ class TableReference(ManageData):
                                         # add
                                         values__.append(v)
 
-                            # flatten
-                            values_ = [
-                                item for sublist in values__ for item in sublist]
+                                # std key format
+                                k = k.split('|')
+                                # check
+                                if len(k) != 2:
+                                    raise Exception(
+                                        f"Table data is None for {file_name}.")
+
+                                # strip keys
+                                k = [i.strip() for i in k]
+                                # std key format
+                                k = f"{k[0]} | {k[1]}"
+
+                                # save item values
+                                values_dict[str(k)] = values__
 
                             # NOTE: add to file data
-                            file_data = []
                             # ! add to dataframe header
-                            # file_data.append(columns)
-                            file_data.append(symbol)
-                            file_data.append(unit)
-                            file_data.extend(values_)
+                            # file_item_data.append(columns)
+
+                            # df dict
+                            df_dict = {}
+
+                            # loop through items
+                            for k, v in values_dict.items():
+                                # df data
+                                file_item_data = []
+
+                                # add symbol
+                                file_item_data.append(symbol)
+                                # add unit
+                                file_item_data.append(unit)
+                                # flatten item values
+                                v_ = [d for sublist in v for d in sublist]
+                                file_item_data.append(v_)
+
+                                # build df
+                                df_dict[k] = pd.DataFrame(
+                                    file_item_data, columns=columns)
 
                     elif tb_type == TableTypes.EQUATIONS.value:
                         # ! equations
@@ -280,15 +316,16 @@ class TableReference(ManageData):
             # check
             if file_path is not None:
                 # create dataframe
-                df = pd.read_csv(file_path)
-            elif file_data is not None:
+                return pd.read_csv(file_path)
+            elif file_data is not None and file_item_data is None:
                 # create dataframe
-                df = pd.DataFrame(file_data, columns=columns)
+                return pd.DataFrame(file_data, columns=columns)
+            elif file_item_data is not None and file_data is None:
+                # create dataframe
+                return df_dict
             else:
                 raise Exception(f"{file_name} does not exist.")
 
-            # res
-            return df
         except FileNotFoundError:
             raise FileNotFoundError(
                 f"File {file_name} not found in {self.path}")
@@ -374,36 +411,41 @@ class TableReference(ManageData):
             # SECTION: tb
             # NOTE: load table data/equations (all data)
             df = self.load_table(databook_id, table_id)
-            # print(df)
 
-            # take first three rows
-            df_info = df.iloc[:2, :]
+            # NOTE: check dataframe
+            if isinstance(df, pd.DataFrame):
+                # take first three rows
+                df_info = df.iloc[:2, :]
 
-            # SECTION: filter
-            if isinstance(column_name, str) and query is False:
-                # create filter
-                df_filter = df[df[column_name].str.lower() == lookup.lower()]
-            # query
-            elif isinstance(column_name, str) and query is True:
-                # create filter
-                df_filter = df.query(column_name)
-            # list
-            elif isinstance(column_name, list) and isinstance(lookup, list):
-                # use query
-                _querys = []
-                for i in range(len(column_name)):
-                    _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
-                # make query
-                _query_set = ' & '.join(_querys)
+                # SECTION: filter
+                if isinstance(column_name, str) and query is False:
+                    # create filter
+                    df_filter = df[df[column_name].str.lower() ==
+                                   lookup.lower()]
                 # query
-                df_filter = df.query(_query_set)
+                elif isinstance(column_name, str) and query is True:
+                    # create filter
+                    df_filter = df.query(column_name)
+                # list
+                elif isinstance(column_name, list) and isinstance(lookup, list):
+                    # use query
+                    _querys = []
+                    for i in range(len(column_name)):
+                        _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                    # make query
+                    _query_set = ' & '.join(_querys)
+                    # query
+                    df_filter = df.query(_query_set)
 
-            # SECTION: combine dfs
-            result = pd.concat([df_info, df_filter])
-            if not df_filter.empty:
-                return result
+                # SECTION: combine dfs
+                result = pd.concat([df_info, df_filter])
+                if not df_filter.empty:
+                    return result
+                else:
+                    return pd.DataFrame()
             else:
-                return pd.DataFrame()
+                raise Exception(
+                    f"Table data is not a pandas dataframe for {databook_id} and {table_id}.")
         except Exception as e:
             raise Exception(f"Searching table error {e}")
 
@@ -432,37 +474,43 @@ class TableReference(ManageData):
         result : pandas Series
             result of search
         '''
-        # tb
+        # NOTE: load tb
         df = self.load_table(databook_id, table_id)
-        # take first three rows
-        df_info = df.iloc[:4, :]
 
-        # search matrix table
-        # filter
-        if isinstance(column_name, str) and query is False:
-            # create filter
-            df_filter = df[df[column_name].str.lower() == lookup.lower()]
-        # query
-        elif isinstance(column_name, str) and query is True:
-            # create filter
-            df_filter = df.query(column_name)
-        # list
-        elif isinstance(column_name, list) and isinstance(lookup, list):
-            # use query
-            _querys = []
-            for i in range(len(column_name)):
-                _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
-            # make query
-            _query_set = ' & '.join(_querys)
+        # NOTE: check dataframe
+        if isinstance(df, pd.DataFrame):
+            # REVIEW: take first three rows
+            df_info = df.iloc[:4, :]
+
+            # search matrix table
+            # filter
+            if isinstance(column_name, str) and query is False:
+                # create filter
+                df_filter = df[df[column_name].str.lower() == lookup.lower()]
             # query
-            df_filter = df.query(_query_set)
+            elif isinstance(column_name, str) and query is True:
+                # create filter
+                df_filter = df.query(column_name)
+            # list
+            elif isinstance(column_name, list) and isinstance(lookup, list):
+                # use query
+                _querys = []
+                for i in range(len(column_name)):
+                    _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                # make query
+                _query_set = ' & '.join(_querys)
+                # query
+                df_filter = df.query(_query_set)
 
-            # combine dfs
-        result = pd.concat([df_info, df_filter])
-        if not df_filter.empty:
-            return result
+                # combine dfs
+            result = pd.concat([df_info, df_filter])
+            if not df_filter.empty:
+                return result
+            else:
+                return pd.DataFrame()
         else:
-            return pd.DataFrame()
+            raise Exception(
+                f"Table data is not a pandas dataframe for {databook_id} and {table_id}.")
 
     def make_payload(self,
                      databook_id: int,

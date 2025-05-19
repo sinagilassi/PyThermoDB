@@ -1,7 +1,7 @@
 # import packages/modules
 import os
 import pandas as pd
-from typing import List, Dict, Optional, Literal, Union, Tuple
+from typing import List, Dict, Optional, Literal, Union, Tuple, Hashable
 import json
 import asyncio
 import webbrowser
@@ -700,7 +700,10 @@ class ThermoDB(ManageData):
                    table: str | int,
                    res_format: Literal[
                        'dataframe', 'list', 'json'
-                   ] = 'dataframe') -> pd.DataFrame | List[Dict[str, Optional[float | int | str]]] | str:
+                   ] = 'dataframe'
+                   ) -> pd.DataFrame | List[
+                       Dict[Hashable, Optional[float | int | str]]
+    ] | str | Dict[str, pd.DataFrame]:
         '''
         Get all table elements (display a table)
 
@@ -729,25 +732,34 @@ class ThermoDB(ManageData):
             # table id
             table_id = tb_id + 1
 
-            # set api
+            # SECTION: set api
             TableReferenceC = TableReference(custom_ref=self.custom_ref)
-            # load table
+            # REVIEW: load table
             tb_data = TableReferenceC.load_table(databook_id, table_id)
 
-            # convert to list of dicts
-            tb_list_dict = tb_data.to_dict(orient='records')
-            # to json
-            tb_json = tb_data.to_json(orient='records')
+            # NOTE: check tb_data
+            if isinstance(tb_data, pd.DataFrame):
+                # ! dataframe
+                # convert to list of dicts
+                tb_list_dict = tb_data.to_dict(orient='records')
+                # to json
+                tb_json = tb_data.to_json(orient='records')
 
-            # NOTE: check res_format
-            if res_format == 'dataframe':
+                # NOTE: check res_format
+                if res_format == 'dataframe':
+                    return tb_data
+                elif res_format == 'list':
+                    return tb_list_dict
+                elif res_format == 'json':
+                    return tb_json
+                else:
+                    raise ValueError('Invalid res_format')
+            elif isinstance(tb_data, dict):
+                # ! dict of dataframes
+                # return a dict of dataframe
                 return tb_data
-            elif res_format == 'list':
-                return tb_list_dict
-            elif res_format == 'json':
-                return tb_json
             else:
-                raise ValueError('Invalid res_format')
+                raise ValueError('Invalid table data format')
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
@@ -1709,7 +1721,7 @@ class ThermoDB(ManageData):
             # table id
             table_id = tb_id + 1
 
-            # NOTE
+            # SECTION: create matrix-data
             # ! retrieve all data from matrix-table (csv file)
             # matrix table
             matrix_table = self.table_data(databook, table)
@@ -1761,9 +1773,9 @@ class ThermoDB(ManageData):
                     eqs = self.matrix_equation_load(
                         databook_id, table_id)
 
-                    # update trans_data
+                    # NOTE: update trans_data
                     eqs.trans_data_pack = transform_api_data
-                    # matrix table (data template)
+                    # NOTE: matrix table (data template)
                     eqs.matrix_table = matrix_table
 
                     # equation init
@@ -1874,13 +1886,13 @@ class ThermoDB(ManageData):
                         # check type
                         if isinstance(dts, TableMatrixData):
                             if hasattr(dts, 'trans_data_pack') and hasattr(dts, 'prop_data_pack'):
-                                # update trans_data
+                                # NOTE: update trans_data
                                 dts.trans_data_pack = transform_api_data
-                                # prop data
+                                # NOTE: prop data
                                 dts.prop_data_pack = transform_api_data
-                                # matrix table
+                                # NOTE: matrix table
                                 dts.matrix_table = matrix_table
-                                # matrix element
+                                # NOTE: matrix element
                                 dts.matrix_elements = component_names
 
                                 # res
