@@ -23,6 +23,7 @@ print(f"Parent directory: {parent_dir}")
 thermodb_file = 'thermodb_nrtl_methanol_ethanol_2_inline.pkl'
 # md inline
 thermodb_file = "thermodb_nrtl_methanol_ethanol_md_1_inline.pkl"
+thermodb_file = "thermodb_nrtl_methanol_ethanol_md_2_inline.pkl"
 # path
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
@@ -90,12 +91,20 @@ print(alpha_ij)
 # ! ij matrix
 mat_ = nrtl_alpha_data.mat('alpha', [comp2, comp1])
 print(mat_)
+mat_ = nrtl_alpha_data.mat('alpha', [comp1, comp2])
+print(mat_)
 
 mat_ = nrtl_alpha_data.mat('a', [comp2, comp1])
+print(mat_)
+mat_ = nrtl_alpha_data.mat('a', [comp1, comp2])
 print(mat_)
 
 mat_ = nrtl_alpha_data.mat('b', [comp2, comp1])
 print(mat_)
+mat_ = nrtl_alpha_data.mat('b', [comp1, comp2])
+print(mat_)
 
 mat_ = nrtl_alpha_data.mat('c', [comp2, comp1])
+print(mat_)
+mat_ = nrtl_alpha_data.mat('c', [comp1, comp2])
 print(mat_)

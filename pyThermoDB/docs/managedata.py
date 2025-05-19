@@ -344,7 +344,11 @@ class ManageData():
                     external_references = table_data.get(
                         'EXTERNAL-REFERENCES', None)
 
-                    # * check
+                    # SECTION: reference indicators
+                    # ? DATA,
+                    # ? EQUATIONS,
+                    # ? MATRIX-DATA OR MATRIX-SYMBOL,
+                    # ? MATRIX-EQUATIONS
                     # ! check EQUATIONS exists
                     if 'EQUATIONS' in table_data:
                         # eq

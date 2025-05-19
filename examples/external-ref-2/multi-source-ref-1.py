@@ -171,9 +171,11 @@ EXTERNAL-REFERENCES:
 """
 
 # custom ref
-# ref = {'reference': [file_contents]}
+ref = {'reference': [file_contents]}
 # md ref
 ref = {'reference': [md_path]}
+# yml ref
+# ref = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -324,7 +326,7 @@ thermo_db.add_data('heat-capacity', comp1_eq_2)
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-md-1.pkl'
+thermodb_file = f'{comp1.upper()}-md-1.pkl'
 
 # save
 thermo_db.save(thermodb_file, file_path=parent_dir)

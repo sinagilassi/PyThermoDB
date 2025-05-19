@@ -754,10 +754,6 @@ class ThermoDB(ManageData):
                     return tb_json
                 else:
                     raise ValueError('Invalid res_format')
-            elif isinstance(tb_data, dict):
-                # ! dict of dataframes
-                # return a dict of dataframe
-                return tb_data
             else:
                 raise ValueError('Invalid table data format')
         except Exception as e:
@@ -765,7 +761,8 @@ class ThermoDB(ManageData):
 
     def equation_load(self,
                       databook: int | str,
-                      table: int | str) -> TableEquation:
+                      table: int | str
+                      ) -> TableEquation:
         '''
         Display table header columns and other info
 
@@ -840,7 +837,8 @@ class ThermoDB(ManageData):
 
     def data_load(self,
                   databook: int | str,
-                  table: int | str) -> TableData:
+                  table: int | str
+                  ) -> TableData:
         '''
         Display table header columns and other info
 
@@ -923,7 +921,8 @@ class ThermoDB(ManageData):
 
     def matrix_equation_load(self,
                              databook: int | str,
-                             table: int | str) -> TableMatrixEquation:
+                             table: int | str
+                             ) -> TableMatrixEquation:
         '''
         Display table header columns and other info
 
@@ -982,7 +981,8 @@ class ThermoDB(ManageData):
 
     def matrix_data_load(self,
                          databook: int | str,
-                         table: int | str) -> TableMatrixData:
+                         table: int | str
+                         ) -> TableMatrixData:
         '''
         Gives table contents as:
 
@@ -1795,7 +1795,8 @@ class ThermoDB(ManageData):
                           databook: int | str,
                           table: int | str,
                           column_name: Optional[str | list[str]] = None,
-                          query: bool = False) -> TableMatrixData:
+                          query: bool = False
+                          ) -> TableMatrixData:
         '''
         Build matrix data as:
             step1: get thermo matrix data
