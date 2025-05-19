@@ -16,8 +16,10 @@ print(f"Parent directory: {parent_dir}")
 
 # files
 # yml_file = 'NRTL Non-randomness parameters-inline-2-1.yml'
-# ! new format
+# ! new format (values)
 yml_file = 'NRTL Non-randomness parameters-inline-2-2.yml'
+# ! new format (items)
+yml_file = 'NRTL Non-randomness parameters-inline-2-3.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # NOTE: md file
