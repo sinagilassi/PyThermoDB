@@ -69,7 +69,7 @@ class TableReference(ManageData):
     def load_table(self,
                    databook_id: int,
                    table_id: int
-                   ) -> pd.DataFrame | Dict[str, pd.DataFrame]:
+                   ) -> pd.DataFrame:
         """
         Load a `csv file` from app directory or external reference
         and convert it to a pandas dataframe.
@@ -85,8 +85,8 @@ class TableReference(ManageData):
 
         Returns
         -------
-        pandas DataFrame | Dict[str, pandas DataFrame]
-            pandas DataFrame or Dict of pandas DataFrames
+        pandas DataFrame
+            pandas DataFrame
         """
         try:
             # init vars
@@ -214,7 +214,7 @@ class TableReference(ManageData):
                         matrix_symbol_len = len(matrix_symbol)
 
                         # SECTION: values
-                        if values:
+                        if values and isinstance(values, list):
                             # # size of matrix symbols
                             # component_idx_len = len(values) - 2
 
@@ -228,6 +228,27 @@ class TableReference(ManageData):
 
                             # # updated values
                             # values_ = [header_, *values]
+                            # NOTE: check columns contains Mixture
+                            # check
+                            if any(col.lower() == 'mixture' for col in columns):
+                                # loop through values
+                                for i in range(len(values)):
+                                    # mixture name
+                                    mixture_name = values[i][1]
+
+                                    # split mixture name
+                                    mixture_name = mixture_name.split('|')
+                                    # check
+                                    if len(mixture_name) != 2:
+                                        raise Exception(
+                                            f"Table data is None for {file_name}.")
+                                    # strip keys
+                                    mixture_name = [i.strip()
+                                                    for i in mixture_name]
+                                    # std key format
+                                    mixture_name = f"{mixture_name[0]} | {mixture_name[1]}"
+                                    # update values
+                                    values[i][1] = mixture_name
 
                             values_ = [*values]
 
@@ -240,61 +261,61 @@ class TableReference(ManageData):
                             file_data.extend(values_)
 
                         # SECTION: items
-                        if items and values is None:
-                            # init values
-                            values_dict = {}
+                        # if items and values is None:
+                        #     # init values
+                        #     values_dict = {}
 
-                            # loop through items
-                            for item in items:
+                        #     # loop through items
+                        #     for item in items:
 
-                                # init values
-                                values__ = []
+                        #         # init values
+                        #         values__ = []
 
-                                # looping through item
-                                for k, v in item.items():
-                                    # check
-                                    if v:
-                                        # add
-                                        values__.append(v)
+                        #         # looping through item
+                        #         for k, v in item.items():
+                        #             # check
+                        #             if v:
+                        #                 # add
+                        #                 values__.append(v)
 
-                                # std key format
-                                k = k.split('|')
-                                # check
-                                if len(k) != 2:
-                                    raise Exception(
-                                        f"Table data is None for {file_name}.")
+                        #         # std key format
+                        #         k = k.split('|')
+                        #         # check
+                        #         if len(k) != 2:
+                        #             raise Exception(
+                        #                 f"Table data is None for {file_name}.")
 
-                                # strip keys
-                                k = [i.strip() for i in k]
-                                # std key format
-                                k = f"{k[0]} | {k[1]}"
+                        #         # strip keys
+                        #         k = [i.strip() for i in k]
+                        #         # std key format
+                        #         k = f"{k[0]} | {k[1]}"
 
-                                # save item values
-                                values_dict[str(k)] = values__
+                        #         # save item values
+                        #         values_dict[str(k)] = values__
 
-                            # NOTE: add to file data
-                            # ! add to dataframe header
-                            # file_item_data.append(columns)
+                        #     # NOTE: add to file data
+                        #     # ! add to dataframe header
+                        #     # file_item_data.append(columns)
 
-                            # df dict
-                            df_dict = {}
+                        #     # df dict
+                        #     df_dict = {}
 
-                            # loop through items
-                            for k, v in values_dict.items():
-                                # df data
-                                file_item_data = []
+                        #     # loop through items
+                        #     for k, v in values_dict.items():
+                        #         # df data
+                        #         file_item_data = []
 
-                                # add symbol
-                                file_item_data.append(symbol)
-                                # add unit
-                                file_item_data.append(unit)
-                                # flatten item values
-                                v_ = [d for sublist in v for d in sublist]
-                                file_item_data.append(v_)
+                        #         # add symbol
+                        #         file_item_data.append(symbol)
+                        #         # add unit
+                        #         file_item_data.append(unit)
+                        #         # flatten item values
+                        #         v_ = [d for sublist in v for d in sublist]
+                        #         file_item_data.append(v_)
 
-                                # build df
-                                df_dict[k] = pd.DataFrame(
-                                    file_item_data, columns=columns)
+                        #         # build df
+                        #         df_dict[k] = pd.DataFrame(
+                        #             file_item_data, columns=columns)
 
                     elif tb_type == TableTypes.EQUATIONS.value:
                         # ! equations
@@ -322,7 +343,9 @@ class TableReference(ManageData):
                 return pd.DataFrame(file_data, columns=columns)
             elif file_item_data is not None and file_data is None:
                 # create dataframe
-                return df_dict
+                # return df_dict
+                raise Exception(
+                    f"Table data is None for {file_name}.")
             else:
                 raise Exception(f"{file_name} does not exist.")
 

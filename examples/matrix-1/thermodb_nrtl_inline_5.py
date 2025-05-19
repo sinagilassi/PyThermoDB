@@ -18,19 +18,19 @@ print(f"Parent directory: {parent_dir}")
 # yml_file = 'NRTL Non-randomness parameters-inline-2-1.yml'
 # ! new format (values)
 yml_file = 'NRTL Non-randomness parameters-inline-2-2.yml'
-# ! new format (items)
+# ! new format (values)
 yml_file = 'NRTL Non-randomness parameters-inline-2-3.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # NOTE: md file
 md_file = 'NRTL Non-randomness parameters-inline-2-1.md'
 md_file = 'NRTL Non-randomness parameters-inline-2-2.md'
-md_file = 'NRTL Non-randomness parameters-inline-2-3.md'
+# md_file = 'NRTL Non-randomness parameters-inline-2-3.md'
 md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
 ref = {
-    'reference': [yml_path],
+    'reference': [md_path],
 }
 
 # ====================================
@@ -98,10 +98,14 @@ print(nrtl_alpha.matrix_data_structure())
 
 # matrix data
 print(nrtl_alpha.get_matrix_property("a_i_j",
-                                     [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
+                                     [comp1, comp2],
+                                     symbol_format='alphabetic',
+                                     message="NRTL Alpha value"))
 
 print(nrtl_alpha.get_matrix_property("b_i_j",
-                                     [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
+                                     [comp1, comp2],
+                                     symbol_format='alphabetic',
+                                     message="NRTL Alpha value"))
 
 # property name using ij method
 prop_name = f"a_{comp1}_{comp2}"
@@ -119,26 +123,47 @@ prop_name = f"a | {comp1} | {comp2}"
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
 
+print("*" * 20)
 prop_name = f"b | {comp1} | {comp2}"
 # get values
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
 
+print("*" * 20)
 prop_name = f"c | {comp1} | {comp2}"
 # get values
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
+print(prop_matrix, type(prop_matrix))
+mat_ = nrtl_alpha.mat('c', [comp1, comp2])
+print(mat_)
+# get values
+prop_name = f"c | {comp2} | {comp1}"
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
+print(prop_matrix, type(prop_matrix))
+# ! ij matrix
+mat_ = nrtl_alpha.mat('c', [comp2, comp1])
+print(mat_)
+print("*" * 20)
 
 prop_name = f"alpha | {comp1} | {comp2}"
 # get values
 prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
 print(prop_matrix, type(prop_matrix))
 
+# ! ij matrix
+mat_ = nrtl_alpha.mat('alpha', [comp2, comp1])
+print(mat_)
+print("*" * 20)
+
 # ====================================
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_md_1_inline"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_md_2_inline"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()

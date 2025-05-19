@@ -551,7 +551,8 @@ class TableMatrixData:
            symbol_format: Literal[
                'alphabetic', 'numeric'
            ] = 'alphabetic',
-           message: Optional[str] = None) -> DataResult:
+           message: Optional[str] = None,
+           **kwargs) -> DataResult:
         '''
         Get a component property from data table structure (matrix data)
 
@@ -563,6 +564,9 @@ class TableMatrixData:
             symbol format alphabetic or numeric (default: alphabetic)
         message : str
             message (default: None)
+        **kwargs : dict
+            additional arguments
+            - mixture_name: str
 
         Returns
         -------
@@ -615,9 +619,20 @@ class TableMatrixData:
             if message is None:
                 message = f"Get {prop_name} property from matrix data table structure"
 
+            # NOTE: set mixture name
+            # mixture name
+            mixture_name = kwargs.get('mixture_name', None)
+            # check
+            if mixture_name is None:
+                mixture_name = f"{comp1} | {comp2}"
+
             # get matrix property
             matrix_property = self.get_matrix_property(
-                prop_name, [comp1, comp2], symbol_format, message)
+                property=prop_name,
+                component_names=[comp1, comp2],
+                symbol_format=symbol_format,
+                message=message,
+                mixture_name=mixture_name)
 
             return matrix_property
         except Exception as e:
@@ -629,7 +644,9 @@ class TableMatrixData:
                             symbol_format: Literal[
                                 'alphabetic', 'numeric'
                             ] = 'alphabetic',
-                            message: str = 'Get a component property from data table structure') -> DataResult:
+                            message: str = 'Get a component property from data table structure',
+                            **kwargs
+                            ) -> DataResult:
         '''
         Get a component property from data table structure
 
@@ -641,20 +658,26 @@ class TableMatrixData:
             component names such as ['ethanol', 'methanol']
         symbol_format : str
             symbol format alphabetic or numeric (default: alphabetic)
+        message : str
+            message (default: None)
+        **kwargs : dict
+            additional arguments
+            - mixture_name: str, mixture name
 
         Returns
         -------
         DataResult
             component property
         '''
-        # NOTE: warning deprecated method
-        # warn("get_matrix_property is deprecated, use ij method instead",
-        #      DeprecationWarning, stacklevel=2)
+        # NOTE: mixture_components
+        mixture_name = kwargs.get('mixture_name', None)
 
         # NOTE: check matrix mode
         if self.matrix_mode == 'ITEMS':
             # SECTION: check matrix items
-            matrix_table = self.__generate_table_items(component_names)
+            # matrix_table = self.__generate_table_items(component_names)
+            raise Exception(
+                "Matrix items are not available! Please use the matrix table instead!")
 
         elif self.matrix_mode == 'VALUES':
             # SECTION: matrix structure (all data)
@@ -670,7 +693,48 @@ class TableMatrixData:
         # column name
         matrix_table_column_name = list(matrix_table.columns)
 
-        # NOTE: component names
+        # SECTION: check columns names
+        # Function to normalize mixtures
+        def normalize_mixture(mix):
+            parts = [x.strip() for x in mix.split('|')]
+            parts.sort()
+            return ' | '.join(parts)
+
+        # mixture
+        if any(col.lower() == 'mixture' for col in matrix_table_column_name):
+            # check
+            if mixture_name is None:
+                # set
+                mixture_name = " | ".join(component_names)
+
+            # sorted
+            mixture_name = normalize_mixture(mixture_name)
+
+            # build dataframe for the mixture
+            # Extract header + row1 + row2
+            header_rows = matrix_table.iloc[:2]  # row 0 and 1
+
+            matrix_table['normalized_mixture'] = matrix_table['Mixture'].apply(
+                normalize_mixture)
+
+            # Filter rows where 'mixture' == specific_name
+            filtered_rows = matrix_table[
+                matrix_table['normalized_mixture'] == mixture_name
+            ]
+
+            # Combine into new DataFrame
+            # (remove duplicates if overlap with header_rows)
+            matrix_table = pd.concat(
+                [header_rows, filtered_rows]
+            ).drop_duplicates().reset_index(drop=True)
+
+            # drop the normalized_mixture column
+            matrix_table = matrix_table.drop(columns=['normalized_mixture'])
+
+        # log
+        # print(matrix_table)
+
+        # SECTION: component names
         comp_i = 1
         matrix_table_component = {}
         # looping through Name column
@@ -686,7 +750,7 @@ class TableMatrixData:
         # matrix table component keys
         matrix_table_component_names = list(matrix_table_component.keys())
 
-        # get component data (row)
+        # SECTION: get component data (row)
         matrix_table_comp_data = {}
         # looping through component
         for i in range(matrix_table_component_no):
@@ -713,7 +777,7 @@ class TableMatrixData:
             _component_name = _data['Name']
             matrix_table_comp_data[_component_name] = _data
 
-        # ! manage property
+        # SECTION: manage property
         if isinstance(property, str) and property.endswith('_i_j'):
             # find the columns
             _property = property.split('_')
@@ -884,6 +948,10 @@ class TableMatrixData:
             else:
                 raise Exception("Symbol delimiter not recognized!")
 
+            # NOTE: define mixture
+            # mixture name
+            mixture_name = f"{components[0]} | {components[1]}"
+
             # NOTE: extract data
             for i in range(len(components)):
                 for j in range(len(components)):
@@ -892,7 +960,9 @@ class TableMatrixData:
                     prop_ = f"{prop_name}_{key}"
 
                     # get property
-                    val = self.ij(prop_).get('value')
+                    val = self.ij(
+                        prop_,
+                        mixture_name=mixture_name).get('value')
 
                     # set
                     key_comp = f"{components[i]}{symbol_delimiter_set}{components[j]}"
@@ -915,7 +985,9 @@ class TableMatrixData:
     def mat(self,
             property_name: str,
             component_names: list[str],
-            symbol_format: Literal['alphabetic', 'numeric'] = 'numeric'):
+            symbol_format: Literal[
+                'alphabetic', 'numeric'
+            ] = 'numeric'):
         '''
         Get matrix data
 
@@ -958,6 +1030,9 @@ class TableMatrixData:
             # matrix data dict
             mat_ij_dict: Dict[str, str | float | int | None] = {}
 
+            # NOTE: mixture name
+            mixture_name = f"{components[0]} | {components[1]}"
+
             # looping through component names
             for i in range(component_num):
                 for j in range(component_num):
@@ -965,7 +1040,10 @@ class TableMatrixData:
                     key = f"{components[i]}_{components[j]}"
                     prop_ = f"{property_name}_{key}"
                     # get matrix property
-                    matrix_property = self.ij(prop_)
+                    matrix_property = self.ij(
+                        prop_,
+                        mixture_name=mixture_name
+                    )
 
                     # set value
                     mat_ij[i][j] = matrix_property['value']
