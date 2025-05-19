@@ -155,16 +155,20 @@ class TableReference(ManageData):
                         raise Exception(
                             f"Table data is None for {file_name}.")
 
-                    # values
+                    # SECTION: used by matrix data
+                    # NOTE: table_values
                     values = tb.get('table_values', None)
-                    # check
-                    if values is None:
-                        raise Exception(
-                            f"Table data is None for {file_name}.")
+                    # NOTE: table_items
+                    items = tb.get('table_items', None)
 
                     # NOTE: load values
                     if tb_type == TableTypes.DATA.value:
                         # ! data & matrix data
+
+                        # check
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
 
                         # NOTE: add to file data
                         file_data = []
@@ -176,7 +180,17 @@ class TableReference(ManageData):
 
                     elif tb_type == TableTypes.MATRIX_DATA.value:
                         # ! matrix data
-                        # matrix data
+
+                        # NOTE: values or items
+                        # check
+                        if values is None:
+                            # check items
+                            if items is None:
+                                # ! raise exception as no values or items
+                                raise Exception(
+                                    f"Table data is None for {file_name}.")
+
+                        # NOTE: matrix data
                         matrix_data = tb.get('matrix_data', None)
                         # check
                         if matrix_data is None:
@@ -194,30 +208,65 @@ class TableReference(ManageData):
                         # size of matrix symbols
                         matrix_symbol_len = len(matrix_symbol)
 
-                        # size of matrix symbols
-                        component_idx_len = len(values) - 2
+                        # SECTION: values
+                        if values:
+                            # # size of matrix symbols
+                            # component_idx_len = len(values) - 2
 
-                        # ! No., Name, Formula are necessary for matrix data
-                        header_ = ['-', '-', '-']
-                        component_idx = [str(i) for i in range(
-                            1, component_idx_len+1)]*matrix_symbol_len
+                            # # ! No., Name, Formula are necessary for matrix data
+                            # header_ = ['None', 'None', 'None']
+                            # component_idx = [str(i) for i in range(
+                            #     1, component_idx_len+1)]*matrix_symbol_len
 
-                        # updated header
-                        header_ = header_ + component_idx
+                            # # updated header
+                            # header_ = header_ + component_idx
 
-                        # updated values
-                        values_ = [header_, *values]
+                            # # updated values
+                            # values_ = [header_, *values]
 
-                        # NOTE: add to file data
-                        file_data = []
-                        # ! add to dataframe header
-                        # file_data.append(columns)
-                        file_data.append(symbol)
-                        file_data.append(unit)
-                        file_data.extend(values_)
+                            values_ = [*values]
+
+                            # NOTE: add to file data
+                            file_data = []
+                            # ! add to dataframe header
+                            # file_data.append(columns)
+                            file_data.append(symbol)
+                            file_data.append(unit)
+                            file_data.extend(values_)
+
+                        # SECTION: items
+                        if items and values is None:
+                            # init values
+                            values__ = []
+
+                            # loop through items
+                            for item in items:
+                                # looping through item
+                                for k, v in item.items():
+                                    # check
+                                    if v:
+                                        # add
+                                        values__.append(v)
+
+                            # flatten
+                            values_ = [
+                                item for sublist in values__ for item in sublist]
+
+                            # NOTE: add to file data
+                            file_data = []
+                            # ! add to dataframe header
+                            # file_data.append(columns)
+                            file_data.append(symbol)
+                            file_data.append(unit)
+                            file_data.extend(values_)
 
                     elif tb_type == TableTypes.EQUATIONS.value:
                         # ! equations
+
+                        # check
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
 
                         # NOTE: make file data
                         file_data = []

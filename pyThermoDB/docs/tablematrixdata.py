@@ -19,9 +19,11 @@ class TableMatrixData:
     # matrix elements
     __matrix_elements = None
     # matrix items
-    __matrix_items: Optional[Dict[str, List[str | int | float]]] = None
+    __matrix_items: Optional[List[Dict[str, List[str | int | float]]]] = None
     # matrix item keys
     __matrix_item_keys: Optional[List[str]] = None
+    # matrix mode
+    matrix_mode: Literal['VALUES', 'ITEMS'] = 'VALUES'
 
     def __init__(self,
                  databook_name: str | int,
@@ -105,7 +107,7 @@ class TableMatrixData:
     @property
     def matrix_items(self):
         """Return matrix items if valid, otherwise None."""
-        if isinstance(self.__matrix_items, dict) and self.__matrix_items:
+        if isinstance(self.__matrix_items, list) and self.__matrix_items:
             return self.__matrix_items
         return None
 
@@ -118,30 +120,51 @@ class TableMatrixData:
         """Set matrix items"""
         # init
         self.__matrix_item_keys = []
-        self.__matrix_items = {}
+        self.__matrix_items = []
 
         # check
         if matrix_items is not None:
             # check
-            if isinstance(matrix_items, dict):
+            if isinstance(matrix_items, list) and len(matrix_items) > 0:
 
                 # looping through matrix items
-                for key, value in matrix_items.items():
-                    # check
-                    if "|" in key:
-                        # split key
-                        key_split = key.split('|')
+                for item in matrix_items:
+                    # looping through item
+                    for key, value in item.items():
                         # check
-                        if len(key_split) != 2:
-                            raise Exception(
-                                "Matrix item key is not in the correct format!")
+                        if "|" in key:
+                            # split key
+                            key_split = key.split('|')
+                            # check
+                            if len(key_split) != 2:
+                                raise Exception(
+                                    "Matrix item key is not in the correct format!")
 
-                        # std key
-                        key_std = " | ".join(key_split)
-                        # set
-                        self.__matrix_item_keys.append(key_std)
-                        # set
-                        self.__matrix_items[key_std] = value
+                            # strip
+                            key_split = [name.strip() for name in key_split]
+                            # std key
+                            key_std = " | ".join(key_split)
+
+                            # NOTE: build component-n | component-n
+                            keys_identical = []
+                            # looping through component names
+                            for name in key_split:
+                                # create key
+                                key_identical = f"{name.strip()} | {name.strip()}"
+                                # set
+                                keys_identical.append(key_identical)
+
+                            # set
+                            self.__matrix_item_keys.append(key_std)
+                            self.__matrix_item_keys.extend(keys_identical)
+                            # set
+                            self.__matrix_items.append({
+                                key_std: value
+                            })
+
+                # NOTE: update matrix mode
+                if len(matrix_items) > 0:
+                    self.matrix_mode = 'ITEMS'
             else:
                 # set
                 self.__matrix_item_keys = []
@@ -182,9 +205,9 @@ class TableMatrixData:
                 raise Exception("Table structure is None!")
 
             # extract
-            columns = table_structure['STRUCTURE'].get('COLUMNS', None)
-            symbol = table_structure['STRUCTURE'].get('SYMBOL', None)
-            unit = table_structure['STRUCTURE'].get('UNIT', None)
+            columns = table_structure.get('COLUMNS', None)
+            symbol = table_structure.get('SYMBOL', None)
+            unit = table_structure.get('UNIT', None)
 
             # NOTE: matrix symbols
             matrix_symbol = self.__matrix_symbol
@@ -198,6 +221,8 @@ class TableMatrixData:
             # item_tables = {}
 
             # SECTION: component names
+            # set strip
+            component_names = [name.strip() for name in component_names]
             # temp key
             key = " | ".join(component_names)
 
@@ -626,23 +651,19 @@ class TableMatrixData:
         # warn("get_matrix_property is deprecated, use ij method instead",
         #      DeprecationWarning, stacklevel=2)
 
-        # SECTION: check matrix items
-        matrix_item_ = self.__generate_table_items(component_names)
-        print(matrix_item_)
+        # NOTE: check matrix mode
+        if self.matrix_mode == 'ITEMS':
+            # SECTION: check matrix items
+            matrix_table = self.__generate_table_items(component_names)
 
-        # SECTION: matrix structure (all data)
-        matrix_table_ = self.matrix_table
-        print(matrix_table_)
+        elif self.matrix_mode == 'VALUES':
+            # SECTION: matrix structure (all data)
+            matrix_table = self.matrix_table
 
-        # check
-        if matrix_item_ is not None:
-            # set
-            matrix_table = matrix_item_
         else:
-            # set
-            matrix_table = matrix_table_
+            raise Exception("Matrix mode is not recognized!")
 
-        # check dataframe
+        # ! check dataframe
         if not isinstance(matrix_table, pd.DataFrame):
             raise Exception("Matrix data is not a dataframe!")
 
@@ -780,7 +801,15 @@ class TableMatrixData:
         else:
             raise ValueError(f"Property format {property} not recognized.")
 
-    def ijs(self, property: str, res_format: Literal['alphabetic', 'numeric'] = 'alphabetic', symbol_delimiter: Literal["|", "_"] = "|") -> Dict[str, float | int] | np.ndarray:
+    def ijs(self,
+            property: str,
+            res_format: Literal[
+                'alphabetic', 'numeric'
+            ] = 'alphabetic',
+            symbol_delimiter: Literal[
+                "|", "_"
+            ] = "|"
+            ) -> Dict[str, float | int] | np.ndarray:
         '''
         Generate a dictionary for ij property
 
