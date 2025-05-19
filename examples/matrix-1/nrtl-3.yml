@@ -1,13 +1,13 @@
 REFERENCES:
     NRTL:
       TABLES:
-        Non-randomness parameters of the NRTL equation-2:
-          MATRIX-SYMBOL: 
+        Non-randomness parameters of the NRTL equation-2-1:
+          MATRIX-SYMBOL:
             - Alpha
             - Beta
             - Delta
           MATRIX-DATA:
-            COLUMNS: 
+            COLUMNS:
               - No.
               - Name
               - Formula
@@ -38,7 +38,7 @@ REFERENCES:
               - None
               - None
               - 1
-              - 1 
+              - 1
               - 1
               - 1
               - 1
@@ -51,7 +51,7 @@ REFERENCES:
               - None
               - None
               - 1
-              - 1 
+              - 1
               - 1
               - 1
               - 1
@@ -60,7 +60,7 @@ REFERENCES:
               - 1
               - 1
         Interaction parameters of the NRTL equation-2:
-          MATRIX-SYMBOL: 
+          MATRIX-SYMBOL:
             - tau
           MATRIX-EQUATIONS:
             EQ-1:

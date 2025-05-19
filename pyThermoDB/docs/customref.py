@@ -495,7 +495,7 @@ class CustomRef:
         )
         if items_match:
             items_content = items_match.group(1).strip()
-            items = {}
+            items = []
             # Updated regex to capture all elements starting with - item:
             item_pattern = (
                 # Match any item names starting with "- "
@@ -511,10 +511,18 @@ class CustomRef:
 
             for item_name, item_content in item_blocks:
                 item_values = re.findall(r'- \[(.*?)\]', item_content)
-                items[item_name.strip()] = [
+                _item_res = [
                     [value.strip() for value in row.split(',')]
                     for row in item_values
                 ]
+
+                # item name
+                item_name = str(item_name).strip()
+
+                # append
+                items.append({
+                    item_name: _item_res
+                })
 
             result['ITEMS'] = items
 

@@ -15,17 +15,20 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
 # files
-yml_file = 'NRTL Non-randomness parameters-inline-2-1.yml'
+# yml_file = 'NRTL Non-randomness parameters-inline-2-1.yml'
+# ! new format
+yml_file = 'NRTL Non-randomness parameters-inline-2-2.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # NOTE: md file
 md_file = 'NRTL Non-randomness parameters-inline-2-1.md'
 md_file = 'NRTL Non-randomness parameters-inline-2-2.md'
+md_file = 'NRTL Non-randomness parameters-inline-2-3.md'
 md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
 ref = {
-    'reference': [md_path],
+    'reference': [yml_path],
 }
 
 # ====================================

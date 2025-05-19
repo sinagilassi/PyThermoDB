@@ -17,7 +17,8 @@ print(f"Parent directory: {parent_dir}")
 yml_file = 'nrtl-3.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 # csv files (data/equation tables)
-csv_file_1 = 'Non-randomness parameters of the NRTL equation-2.csv'
+# ! new format
+csv_file_1 = 'Non-randomness parameters of the NRTL equation-2-1.csv'
 csv_file_2 = 'Interaction parameters of the NRTL equation-2.csv'
 csv_path_1 = os.path.join(parent_dir, csv_file_1)
 csv_path_2 = os.path.join(parent_dir, csv_file_2)
@@ -36,35 +37,35 @@ thermo_db = ptdb.init(custom_reference=ref)
 # ====================================
 # GET DATABOOK LIST
 # ====================================
-# db_list = thermo_db.list_databooks()
-# print(db_list)
+db_list = thermo_db.list_databooks()
+print(db_list)
 
 # ====================================
 # SELECT A DATABOOK
 # ====================================
 # table list
-# tb_list = thermo_db.list_tables('NRTL')
-# print(tb_list)
+tb_list = thermo_db.list_tables('NRTL')
+print(tb_list)
 
 # # select a table
-# tb = thermo_db.select_table(
-#     'NRTL', 'Non-randomness parameters of the NRTL equation')
-# print(tb)
+tb = thermo_db.select_table(
+    'NRTL', 'Non-randomness parameters of the NRTL equation-2-1')
+print(tb)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-# tb_info = thermo_db.table_info(
-#     'NRTL', "Non-randomness parameters of the NRTL equation")
-# print(tb_info)
+tb_info = thermo_db.table_info(
+    'NRTL', "Non-randomness parameters of the NRTL equation-2-1")
+print(tb_info)
 
 # ====================================
 # LOAD TABLE
 # ====================================
-# # load equation
+# load equation
 # tb_eq = thermo_db.equation_load(3, 1)
-# # equation structure
+# equation structure
 # tb_eq_structure = tb_eq.eq_structure(1)
 # pp(tb_eq_structure)
 
@@ -92,10 +93,10 @@ components = [comp1, comp2, comp3]
 # ====================================
 # LOAD MATRIX DATA
 # ====================================
-# tb_data_df = thermo_db.table_data(
-#     'NRTL', 2)
-# print(type(tb_data_df))
-# pp(tb_data_df)
+tb_data_df = thermo_db.table_data(
+    'NRTL', 1)
+print(type(tb_data_df))
+pp(tb_data_df)
 
 
 # ====================================
@@ -103,7 +104,7 @@ components = [comp1, comp2, comp3]
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_thermo_property(
-    [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation-2")
+    [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation-2-1")
 
 # matrix table
 print(nrtl_alpha.matrix_table)

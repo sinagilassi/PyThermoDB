@@ -426,6 +426,8 @@ class ManageData():
                     # ! check MATRIX-DATA
                     elif ('MATRIX-DATA' in table_data) or ('MATRIX-SYMBOL' in table_data):
                         # matrix-data (data)
+                        # NOTE: matrix-data
+                        # including COLUMNS, SYMBOL, UNIT, CONVERSION, MATRIX-SYMBOL
                         matrix_data = table_data.get('MATRIX-DATA', {})
 
                         # NOTE: matrix-symbol
@@ -441,13 +443,6 @@ class ManageData():
                         # embedded symbol
                         if table_items:
                             matrix_data['ITEMS'] = table_items
-
-                        # NOTE: table structure
-                        table_structure = table_data.get('STRUCTURE', None)
-
-                        # embedded structure
-                        if table_structure:
-                            matrix_data['STRUCTURE'] = table_structure
 
                         # save
                         tables.append({
