@@ -175,7 +175,7 @@ ref = {'reference': [file_contents]}
 # md ref
 ref = {'reference': [md_path]}
 # yml ref
-# ref = {'reference': [yml_path]}
+ref = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -309,24 +309,117 @@ res_ = comp1_eq_2.cal(T=290)
 print(res_)
 
 # ====================================
+# CHECK COMPONENT AVAILABILITY IN A TABLE
+# ====================================
+# check component availability in the databook and table
+comp1 = "methanol"
+# COMP1_check_availability = thermo_db.check_component(
+#     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
+
+comp2 = "ethanol"
+# COMP1_check_availability = thermo_db.check_component(
+#     comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
+
+components = [comp1, comp2]
+
+# ====================================
+# BUILD MATRIX DATA
+# ====================================
+# NOTE: build a matrix data
+nrtl_alpha = thermo_db.build_thermo_property(
+    [comp1, comp2], 'CUSTOM-REF-1', "NRTL Non-randomness parameters-2")
+
+# matrix table
+print(nrtl_alpha.matrix_table)
+# matrix table
+res_ = nrtl_alpha.get_matrix_table(mode='selected')
+print(res_, type(res_))
+
+# symbol
+print(nrtl_alpha.matrix_symbol)
+
+print(nrtl_alpha.matrix_data_structure())
+
+# matrix data
+print(nrtl_alpha.get_matrix_property("a_i_j",
+                                     [comp1, comp2],
+                                     symbol_format='alphabetic',
+                                     message="NRTL Alpha value"))
+
+print(nrtl_alpha.get_matrix_property("b_i_j",
+                                     [comp1, comp2],
+                                     symbol_format='alphabetic',
+                                     message="NRTL Alpha value"))
+
+# property name using ij method
+prop_name = f"a_{comp1}_{comp2}"
+print(prop_name)
+res_1 = nrtl_alpha.ij(prop_name)
+print(res_1)
+print(res_1.get('value'))
+
+# get property value using the matrix data
+# format 1
+# prop_name = f"dg_{comp1}_{comp2}"
+# format 2
+prop_name = f"a | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+
+print("*" * 20)
+prop_name = f"b | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+
+print("*" * 20)
+prop_name = f"c | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
+print(prop_matrix, type(prop_matrix))
+mat_ = nrtl_alpha.mat('c', [comp1, comp2])
+print(mat_)
+# get values
+prop_name = f"c | {comp2} | {comp1}"
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
+print(prop_matrix, type(prop_matrix))
+# ! ij matrix
+mat_ = nrtl_alpha.mat('c', [comp2, comp1])
+print(mat_)
+print("*" * 20)
+
+prop_name = f"alpha | {comp1} | {comp2}"
+# get values
+prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
+print(prop_matrix, type(prop_matrix))
+
+# ! ij matrix
+mat_ = nrtl_alpha.mat('alpha', [comp2, comp1])
+print(mat_)
+print("*" * 20)
+
+# ====================================
 # BUILD THERMODB
 # ====================================
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
 print(type(thermo_db))
 
-# add TableData
+# NOTE: add TableData
 thermo_db.add_data('general', data_1)
-# add TableEquation
+# NOTE: add TableEquation
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
-# add TableEquation
+# NOTE: add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq_2)
-# add string
-# thermo_db.add_data('dHf', {'dHf_IG': 152})
-# export
-# thermo_db.export_data_structure(comp1)
+# NOTE: add TableMatrixData
+thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
 
-thermodb_file = f'{comp1.upper()}-md-1.pkl'
+thermodb_file = f'{comp1}-yml-3.pkl'
 
 # save
 thermo_db.save(thermodb_file, file_path=parent_dir)
