@@ -992,7 +992,8 @@ class TableMatrixData:
             component_names: list[str],
             symbol_format: Literal[
                 'alphabetic', 'numeric'
-            ] = 'numeric'):
+            ] = 'numeric'
+            ) -> Dict[str, str | float | int] | np.ndarray:
         '''
         Get matrix data
 
@@ -1033,7 +1034,7 @@ class TableMatrixData:
             mat_ij = np.zeros((component_num, component_num))
 
             # matrix data dict
-            mat_ij_dict: Dict[str, str | float | int | None] = {}
+            mat_ij_dict: Dict[str, str | float | int] = {}
 
             # NOTE: mixture name
             mixture_name = f"{components[0]} | {components[1]}"
@@ -1055,7 +1056,8 @@ class TableMatrixData:
 
                     # set dict
                     key_dict = f"{components[i]} | {components[j]}"
-                    mat_ij_dict[key_dict] = matrix_property['value']
+                    # ? return 0 if value is None
+                    mat_ij_dict[key_dict] = matrix_property['value'] or 0
 
             # check
             if mat_ij is None:
