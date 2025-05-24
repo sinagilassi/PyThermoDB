@@ -19,7 +19,7 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
 # ref
-thermodb_file = 'thermodb_nrtl_ethanol_butyl-methyl-ether_1.pkl'
+thermodb_file = 'thermodb_nrtl_ethanol_butyl-methyl-ether_2.pkl'
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
 
@@ -51,6 +51,13 @@ print(nrtl_alpha_data.matrix_symbol)
 
 # heat of formation at 298.15K
 print(nrtl_alpha_data.matrix_data_structure())
+
+# matrix elements
+print(nrtl_alpha_data.matrix_elements)
+
+print(nrtl_alpha_data.table_data)
+
+print(nrtl_alpha_data.table_structure)
 
 # old format
 print(nrtl_alpha_data.get_matrix_property("alpha_i_j",
