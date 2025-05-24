@@ -22,7 +22,7 @@ md_file = 'str-ref-1.md'
 md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
-ref = {'reference': [yml_path]}
+ref = {'reference': [md_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -103,7 +103,7 @@ print(tb_eq.eqs_structure())
 # ====================================
 # check component availability in the databook and table
 # comp1 = "Carbon Dioxide"
-comp1 = "carbon dioxide"
+comp1 = "Methylbutyl ether"
 # COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query
@@ -142,18 +142,18 @@ res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
 # ! build equation
-comp1_eq_2 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+# comp1_eq_2 = thermo_db.build_thermo_property(
+#     [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 
-# equation details
-print(comp1_eq_2.equation_parms())
-print(comp1_eq_2.equation_args())
-print(comp1_eq_2.equation_body())
-print(comp1_eq_2.equation_return())
+# # equation details
+# print(comp1_eq_2.equation_parms())
+# print(comp1_eq_2.equation_args())
+# print(comp1_eq_2.equation_body())
+# print(comp1_eq_2.equation_return())
 
-# cal
-res_ = comp1_eq_2.cal(T=290)
-print(res_)
+# # cal
+# res_ = comp1_eq_2.cal(T=290)
+# print(res_)
 
 # ====================================
 # BUILD THERMODB
@@ -163,17 +163,17 @@ thermo_db = ptdb.build_thermodb()
 print(type(thermo_db))
 
 # add TableData
-thermo_db.add_data('general', data_1)
+thermo_db.add_data('general-data', data_1)
 # add TableEquation
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # add TableEquation
-thermo_db.add_data('heat-capacity', comp1_eq_2)
+# thermo_db.add_data('heat-capacity', comp1_eq_2)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-yml-3.pkl'
+thermodb_file = f'{comp1}-1.pkl'
 
 # save
 thermo_db.save(thermodb_file, file_path=parent_dir)

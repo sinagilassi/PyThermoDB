@@ -94,6 +94,9 @@ print(nrtl_alpha.matrix_symbol)
 
 print(nrtl_alpha.matrix_data_structure())
 
+print(nrtl_alpha.table_structure)
+
+# NOTE: properties
 print(nrtl_alpha.get_property('alpha_i_1', comp1))
 
 
@@ -129,7 +132,7 @@ print(prop_matrix, type(prop_matrix))
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_1"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_2"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()

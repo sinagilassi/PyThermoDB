@@ -12,7 +12,7 @@ class TableMatrixData:
     __trans_data = {}
     __prop_data = {}
     __matrix_symbol = None
-    __table_structure = None
+    _table_structure = {}
     # pack
     __trans_data_pack = {}
     __prop_data_pack = {}
@@ -51,7 +51,7 @@ class TableMatrixData:
                 self.__set_matrix_items(items_)
 
         # NOTE: table structure
-        self.__generate_table_structure(self.table_data)
+        self._table_structure = self._generate_table_structure(self.table_data)
 
     @property
     def trans_data_pack(self):
@@ -116,6 +116,11 @@ class TableMatrixData:
     def matrix_item_keys(self):
         """Get matrix item keys"""
         return self.__matrix_item_keys
+
+    @property
+    def table_structure(self):
+        """Get table structure"""
+        return self._table_structure
 
     def __set_matrix_items(self, matrix_items):
         """Set matrix items"""
@@ -200,7 +205,7 @@ class TableMatrixData:
         '''
         try:
             # NOTE: matrix structure
-            table_structure = self.__table_structure
+            table_structure = self._table_structure
             # check
             if table_structure is None:
                 raise Exception("Table structure is None!")
@@ -319,7 +324,7 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Generating matrix items failed!, ", e)
 
-    def __generate_table_structure(self, table_data: dict[str, Any]):
+    def _generate_table_structure(self, table_data: dict[str, Any]):
         '''
         Generate table structure from data table
 
@@ -330,16 +335,19 @@ class TableMatrixData:
         '''
         try:
             # init
-            self.__table_structure = {}
+            table_structure = {}
             # looping through table data
             for key, value in self.table_data.items():
                 if key != 'MATRIX-SYMBOL' and key != 'ITEMS':
                     # set
-                    self.__table_structure[key] = value
+                    table_structure[key] = value
 
             # check
-            if self.__table_structure is None:
+            if table_structure is None:
                 raise Exception("Table structure is None!")
+
+            # res
+            return table_structure
         except Exception as e:
             raise Exception("Generating table structure failed!, ", e)
 
@@ -383,7 +391,7 @@ class TableMatrixData:
         try:
             # NOTE: choose from table data structure all except matrix-symbol
             # dataframe
-            df = pd.DataFrame(self.__table_structure)
+            df = pd.DataFrame(self._table_structure)
             # add ID column
             df.insert(0, 'ID', range(1, len(df) + 1))
             # arrange columns
