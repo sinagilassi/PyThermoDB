@@ -24,10 +24,6 @@
 
 ::: pyThermoDB.docs.managedata
 
-## equationbuilder
-
-::: pyThermoDB.docs.equationbuilder
-
 ## customref
 
 ::: pyThermoDB.docs.customref

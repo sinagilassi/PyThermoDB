@@ -35,11 +35,11 @@ setup(
     license='MIT',
     license_files=[],
     install_requires=['pandas', 'requests',
-                      'urllib3', 'numpy', 'PyYAML', 'sympy'],
+                      'urllib3', 'numpy', 'PyYAML'],
     extras_require={
         'web': ['jinja2'],
     },
-    keywords=['python', 'chemical engineering', 'thermodynamics',
+    keywords=['chemical engineering', 'thermodynamics',
               'PyThermoDB', 'thermodynamic data'],
     classifiers=[
         "Development Status :: 1 - Planning",

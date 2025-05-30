@@ -1,13 +1,10 @@
 # import packages/modules
 import pandas as pd
 import math
-import sympy as sp
 import numpy as np
-import re
-from typing import Optional, Union, List, Dict, Any, Literal
+from typing import Literal
 # local
 from ..models import EquationResult
-from .equationbuilder import EquationBuilder
 from ..utils import format_eq_data
 
 
@@ -31,9 +28,14 @@ class TableMatrixEquation:
     # bulk data
     __trans_data_pack = {}
 
-    def __init__(self, databook_name, table_name: str, equations: list, matrix_table=None):
-        self.databook_name = databook_name # databook name
-        self.table_name = table_name # table name
+    def __init__(self,
+                 databook_name,
+                 table_name: str,
+                 equations: list,
+                 matrix_table=None):
+        # set
+        self.databook_name = databook_name  # databook name
+        self.table_name = table_name  # table name
         self.equations = equations  # * from reference yml
         self.matrix_table = matrix_table  # * from csv
 
@@ -150,11 +152,15 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, message: str = '', decimal_accuracy: int = 4, 
-            sympy_format: bool = False, 
-            filter_elements: list = [], 
-            output_format: Literal['alphabetic', 'numeric'] = 'numeric',
-            **args) -> EquationResult:
+    def cal(self,
+            message: str = '',
+            decimal_accuracy: int = 4,
+            filter_elements: list = [],
+            output_format: Literal[
+                'alphabetic', 'numeric'
+            ] = 'numeric',
+            **args
+            ) -> EquationResult:
         '''
         Execute a function
 
@@ -164,10 +170,10 @@ class TableMatrixEquation:
             message to be printed
         decimal_accuracy : int
             decimal accuracy (default is 4)
-        sympy_format : bool
-            @deprecated() whether to return sympy format (default is False) 
         filter_elements : list[str], optional
             list of elements to be calculated (default is None)
+        output_format : Literal['alphabetic', 'numeric'], optional
+            output format, either 'alphabetic' or 'numeric' (default is 'numeric')
         args : dict
             a dictionary contains variable names and values as
 
@@ -184,7 +190,7 @@ class TableMatrixEquation:
         try:
             # equation info
             eq_info = self.eq_info()
-            
+
             # add table name and databook
             eq_src = {
                 'table_name': self.table_name,
@@ -202,19 +208,17 @@ class TableMatrixEquation:
             res_comp = {}
             res_filtered = None
             res_comp_filtered = None
-            # check
-            if sympy_format:
-                res = self.eqExe_sympy(self.body, _parms, args=args)
-            else:
-                res = self.eqExe(self.body, _parms, args=args)
+
+            # NOTE: execute equation
+            res = self.eqExe(self.body, _parms, args=args)
 
             if res is not None:
                 res = np.round(res, decimal_accuracy)
-                
+
                 # SECTION
                 # element no
                 element_no = len(self.matrix_elements)
-                
+
                 # extract from res
                 for i in range(element_no):
                     for j in range(element_no):
@@ -224,24 +228,25 @@ class TableMatrixEquation:
                         value = res[i][j]
                         # set
                         res_comp[key] = value
-                                
+
                 # SECTION
                 # check
                 if len(filter_elements) != 0:
                     # check at least 2 elements
                     if len(filter_elements) < 2:
                         raise Exception('At least 2 elements required!')
-                    
+
                     # init
                     res_comp_filtered = {}
-                    
+
                     # filter
                     filtered_elements_no = len(filter_elements)
-                    
-                    # init 
-                    res_filtered = np.zeros(filtered_elements_no*filtered_elements_no)
+
+                    # init
+                    res_filtered = np.zeros(
+                        filtered_elements_no*filtered_elements_no)
                     k = 0
-                    
+
                     # extract from res
                     for element_1 in filter_elements:
                         for element_2 in filter_elements:
@@ -253,13 +258,14 @@ class TableMatrixEquation:
                             res_comp_filtered[key_] = value
                             # set filtered value
                             res_filtered[k] = value
-                            
+
                             # increment
                             k += 1
-                                
+
                     # reshape
-                    res_filtered = np.array(res_filtered).reshape(filtered_elements_no, filtered_elements_no)
-            
+                    res_filtered = np.array(res_filtered).reshape(
+                        filtered_elements_no, filtered_elements_no)
+
             # SECTION
             # set message
             if message == '':
@@ -271,10 +277,10 @@ class TableMatrixEquation:
                 res_ = res_filtered if res_filtered is not None else res
             elif output_format == 'alphabetic':
                 # set
-                res_ = res_comp_filtered if res_comp_filtered is not None else res_comp 
+                res_ = res_comp_filtered if res_comp_filtered is not None else res_comp
             else:
                 raise Exception('Output format not supported!')
-            
+
             eq_data = format_eq_data(res_, eq_info, message or 'No message', )
 
             return eq_data
@@ -375,7 +381,8 @@ class TableMatrixEquation:
         '''
         try:
             # check
-            if self.body_first_derivative is None or self.body_first_derivative == 'None':
+            if (self.body_first_derivative is None or
+                    self.body_first_derivative == 'None'):
                 print('The first derivative not defined!')
 
             # build parms dict
@@ -407,7 +414,8 @@ class TableMatrixEquation:
         '''
         try:
             # check
-            if self.body_second_derivative is None or self.body_second_derivative == 'None':
+            if (self.body_second_derivative is None or
+                    self.body_second_derivative == 'None'):
                 print('The second derivative not defined!')
 
             # build parms dict
@@ -951,54 +959,6 @@ class TableMatrixEquation:
             return namespace['res']
         except Exception as e:
             raise Exception("Calculation failed!, ", e)
-
-    def eqExe_sympy(self, body, parms, args):
-        '''
-        Execute the function having args, parameters and body
-
-        Parameters
-        ----------
-        body : str
-            function body
-        parms : dict
-            parameters
-        args : dict
-            args
-
-        Returns
-        -------
-        res : float
-            calculation result
-        '''
-        # str input
-        str_input = []
-        # std body
-        body = body.replace("res =", "")
-        body = body.replace("res=", "")
-        body = body.strip()
-        # check
-        if self.args is not None:
-            # check list
-            for key, value in self.args.items():
-                if 'symbol' in value:
-                    symbol = value['symbol']
-                    str_input.append(symbol)
-        # check
-        if self.parms is not None:
-            for key, value in self.parms.items():
-                if 'symbol' in value:
-                    symbol = value['symbol']
-                    str_input.append(symbol)
-
-        # convert to string
-        str_input = ' '.join(str_input)
-        # init EquationBuilder
-        eq_builder = EquationBuilder(str_input)
-        # all parameters and variables
-        all_parms = {**parms, **args}
-        # execute equation
-        res = eq_builder.evaluate_expression(body, **all_parms)
-        return res
 
     def to_dict(self):
         '''
