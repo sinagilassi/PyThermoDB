@@ -1,13 +1,10 @@
 # import packages/modules
 import pandas as pd
 import math
-import sympy as sp
-import yaml
 import json
 from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult
-from .equationbuilder import EquationBuilder
 from ..utils import format_eq_data
 
 
@@ -359,7 +356,10 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self, message: str = '', decimal_accuracy: int = 4, sympy_format: bool = False, **args) -> EquationResult:
+    def cal(self,
+            message: str = '',
+            decimal_accuracy: int = 4,
+            **args) -> EquationResult:
         '''
         Execute a function
 
@@ -369,8 +369,6 @@ class TableEquation:
             message to be printed
         decimal_accuracy : int
             decimal accuracy (default is 4)
-        sympy_format : bool
-            @deprecated() whether to return sympy format (default is False)
         args : dict
             a dictionary contains variable names and values as
 
@@ -399,11 +397,13 @@ class TableEquation:
         # execute equation
         # res
         res = None
-        # check
-        if sympy_format:
-            res = self.eqExe_sympy(self.body, _parms, args=args)
-        else:
-            res = self.eqExe(self.body, _parms, args=args)
+
+        # NOTE: execute equation
+        # check body
+        if self.body is None or self.body == 'None':
+            raise Exception('Equation body not defined!')
+
+        res = self.eqExe(self.body, _parms, args=args)
 
         if res is not None:
             res = round(res, decimal_accuracy)
@@ -510,7 +510,8 @@ class TableEquation:
         '''
         try:
             # check
-            if self.body_first_derivative is None or self.body_first_derivative == 'None':
+            if (self.body_first_derivative is None or
+                    self.body_first_derivative == 'None'):
                 print('The first derivative not defined!')
 
             # build parms dict
@@ -542,7 +543,8 @@ class TableEquation:
         '''
         try:
             # check
-            if self.body_second_derivative is None or self.body_second_derivative == 'None':
+            if (self.body_second_derivative is None or
+                    self.body_second_derivative == 'None'):
                 print('The second derivative not defined!')
 
             # build parms dict
@@ -784,54 +786,6 @@ class TableEquation:
         exec(body, namespace)
         # Return the result
         return namespace['res']
-
-    def eqExe_sympy(self, body, parms, args):
-        '''
-        Execute the function having args, parameters and body
-
-        Parameters
-        ----------
-        body : str
-            function body
-        parms : dict
-            parameters
-        args : dict
-            args
-
-        Returns
-        -------
-        res : float
-            calculation result
-        '''
-        # str input
-        str_input = []
-        # std body
-        body = body.replace("res =", "")
-        body = body.replace("res=", "")
-        body = body.strip()
-        # check
-        if self.args is not None:
-            # check list
-            for key, value in self.args.items():
-                if 'symbol' in value:
-                    symbol = value['symbol']
-                    str_input.append(symbol)
-        # check
-        if self.parms is not None:
-            for key, value in self.parms.items():
-                if 'symbol' in value:
-                    symbol = value['symbol']
-                    str_input.append(symbol)
-
-        # convert to string
-        str_input = ' '.join(str_input)
-        # init EquationBuilder
-        eq_builder = EquationBuilder(str_input)
-        # all parameters and variables
-        all_parms = {**parms, **args}
-        # execute equation
-        res = eq_builder.evaluate_expression(body, **all_parms)
-        return res
 
     def to_dict(self):
         '''
