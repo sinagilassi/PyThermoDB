@@ -102,8 +102,8 @@ print(tb_eq.eqs_structure())
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-# comp1 = "Carbon Dioxide"
-comp1 = "Methylbutyl ether"
+comp1 = "Carbon Dioxide"
+# comp1 = "Methylbutyl ether"
 # COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query

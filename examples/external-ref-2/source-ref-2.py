@@ -168,11 +168,11 @@ thermo_db.add_data('heat-capacity', comp1_eq_2)
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-yml-4.pkl'
-thermodb_path = os.path.join(os.getcwd(), 'tests')
+thermodb_file = f'{comp1}-yml-5.pkl'
+# thermodb_path = os.path.join(os.getcwd(), 'tests')
 
 # save
-# thermo_db.save(thermodb_file, file_path=thermodb_path)
+thermo_db.save(thermodb_file, file_path=parent_dir)
 
 # check
 # print(thermo_db.check())
@@ -182,7 +182,7 @@ thermodb_path = os.path.join(os.getcwd(), 'tests')
 # ====================================
 # load a thermodb
 thermo_db_loaded = ptdb.load_thermodb(
-    os.path.join(thermodb_path, thermodb_file))
+    os.path.join(parent_dir, thermodb_file))
 print(type(thermo_db_loaded))
 
 # check
