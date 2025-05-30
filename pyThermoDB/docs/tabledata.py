@@ -194,12 +194,15 @@ class TableData:
             # look up prop_data dict
             prop_data_keys_ = [key.lower() for key in self.prop_data.keys()]
 
+            # NOTE: property lower
+            property_ = property.lower()
+
             # check key exists
-            if property in prop_data_keys_:
+            if property_ in prop_data_keys_:
                 # loop through prop_data dict
                 for key, value in self.prop_data.items():
                     # check key
-                    if property.lower() == key.lower():
+                    if property_ == key.lower():
                         # value found
                         get_data = self.prop_data[key]
                         # property name
