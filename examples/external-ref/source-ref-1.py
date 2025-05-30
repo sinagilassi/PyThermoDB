@@ -11,8 +11,9 @@ print(ptdb.__version__)
 # CUSTOM REFERENCES
 # ====================================
 # files
-yml_file = 'tests\\external-ref\\source-ref-1.yml'
+yml_file = 'examples\\external-ref\\source-ref-1.yml'
 yml_path = os.path.join(os.getcwd(), yml_file)
+print(yml_path)
 
 # custom ref
 ref = {'reference': [yml_path]}
@@ -165,8 +166,9 @@ thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-1.pkl'
-thermodb_path = os.path.join(os.getcwd(), 'tests', 'external-ref', 'thermodb')
+thermodb_file = f'{comp1}-2.pkl'
+thermodb_path = os.path.join(
+    os.getcwd(), 'examples', 'external-ref', 'thermodb')
 
 # save
 thermo_db.save(thermodb_file, file_path=thermodb_path)
