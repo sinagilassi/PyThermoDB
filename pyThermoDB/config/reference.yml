@@ -68,9 +68,9 @@ REFERENCES:
             - Formula
             - CAS-number
             - molecular-weight
-            - ideal-gas-enthalpy-of-formation
-            - ideal-gas-Gibbs-energy-of-formation
-            - ideal-gas-entropy
+            - enthalpy-of-formation
+            - gibbs-energy-of-formation
+            - standard-entropy
             - standard-net-enthalpy-of-combustion
           SYMBOL:
             - None
@@ -87,21 +87,21 @@ REFERENCES:
             - None
             - None
             - None
-            - K
-            - J/kmol
-            - J/kmol
-            - J/kmol.K
-            - J/kmol
+            - g/mol
+            - kJ/mol
+            - kJ/mol
+            - kJ/mol.K
+            - kJ/mol
           CONVERSION:
             - None
             - None
             - None
             - None
-            - None
-            - 1E-07
-            - 1E-07
-            - 1E-05
-            - 1E-09
+            - 1
+            - 1
+            - 1
+            - 1
+            - 1
       TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds:
         TABLE-ID: 3
         DESCRIPTION:
@@ -134,10 +134,10 @@ REFERENCES:
             - None
             - None
             - None
+            - g/mol
             - K
             - MPa
             - m3/kmol
-            - None
             - None
             - None
           CONVERSION:
