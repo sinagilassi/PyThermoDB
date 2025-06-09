@@ -1,7 +1,7 @@
 # import packages/modules
 import os
 import pandas as pd
-from typing import Optional, Dict, Union, Any, List
+from typing import Optional, Dict, Union, Any, List, Literal
 import glob
 import asyncio
 # local
@@ -54,17 +54,45 @@ class TableReference(ManageData):
         _, df, _ = self.get_databooks()
         return df
 
-    def list_tables(self, databook_id: int) -> pd.DataFrame:
+    def list_tables(self,
+                    databook: int | str,
+                    res_format: Literal[
+                        'list', 'dataframe', 'json', 'dict'
+                    ] = 'dataframe'
+                    ) -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
         '''
-        List tables
+        List all tables in the selected databook
 
         Parameters
         ----------
-        databook_id : int
-            databook id
+        databook : int | str
+            databook id or name
+        res_format : Literal['list', 'dataframe', 'json']
+            Format of the returned data. Defaults to 'dataframe'.
+
+        Returns
+        -------
+        table list : list | pandas.DataFrame | str | dict[str, str]
+            list of tables
         '''
-        _, df, _, _ = self.get_tables(databook_id-1)
-        return df
+        try:
+            # manual databook setting
+            db, db_name, db_id = self.find_databook(databook)
+            # table list
+            res = self.get_tables(db_name)
+            # check
+            if res_format == 'list':
+                return res[0]
+            elif res_format == 'dataframe':
+                return res[1]
+            elif res_format == 'json':
+                return res[2]
+            elif res_format == 'dict':
+                return res[3]
+            else:
+                raise ValueError('Invalid res_format')
+        except Exception as e:
+            raise Exception("Table loading error!,", e)
 
     def load_table(self,
                    databook_id: int,
@@ -392,12 +420,22 @@ class TableReference(ManageData):
             df = None
 
             # check tb_type
-            if tb_type == TableTypes.DATA.value or tb_type == TableTypes.EQUATIONS.value:
-                df = self.search_table(databook_id, table_id,
-                                       column_name, lookup, query=query)
-            elif tb_type == TableTypes.MATRIX_DATA.value or tb_type == TableTypes.MATRIX_EQUATIONS.value:
-                df = self.search_matrix_table(databook_id, table_id,
-                                              column_name, lookup, query=query)
+            if (tb_type == TableTypes.DATA.value or
+                    tb_type == TableTypes.EQUATIONS.value):
+                # ! search table
+                df = self.search_table(databook_id,
+                                       table_id,
+                                       column_name,
+                                       lookup,
+                                       query=query)
+            elif (tb_type == TableTypes.MATRIX_DATA.value or
+                  tb_type == TableTypes.MATRIX_EQUATIONS.value):
+                # ! search matrix table
+                df = self.search_matrix_table(databook_id,
+                                              table_id,
+                                              column_name,
+                                              lookup,
+                                              query=query)
             else:
                 raise Exception(f"Table type {tb_type} is not supported.")
 
@@ -409,7 +447,7 @@ class TableReference(ManageData):
                      databook_id: int,
                      table_id: int,
                      column_name: str | list,
-                     lookup: str,
+                     lookup: str | list[str],
                      query: bool = False) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
@@ -442,21 +480,30 @@ class TableReference(ManageData):
 
                 # SECTION: filter
                 if isinstance(column_name, str) and query is False:
+                    # NOTE: check query
                     # create filter
+                    # NOTE: check lookup
+                    if not isinstance(lookup, str):
+                        raise ValueError(
+                            f"Lookup value must be a string for {databook_id} and {table_id}.")
+
                     df_filter = df[df[column_name].str.lower() ==
                                    lookup.lower()]
-                # query
                 elif isinstance(column_name, str) and query is True:
+                    # NOTE: check query
                     # create filter
                     df_filter = df.query(column_name)
-                # list
-                elif isinstance(column_name, list) and isinstance(lookup, list):
+
+                elif (isinstance(column_name, list) and
+                      isinstance(lookup, list)
+                      ):
+                    # NOTE: check lookup
                     # use query
-                    _querys = []
+                    _query = []
                     for i in range(len(column_name)):
-                        _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                        _query.append(f'`{column_name[i]}` == "{lookup[i]}"')
                     # make query
-                    _query_set = ' & '.join(_querys)
+                    _query_set = ' & '.join(_query)
                     # query
                     df_filter = df.query(_query_set)
 

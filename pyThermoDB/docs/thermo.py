@@ -157,7 +157,8 @@ class ThermoDB(ManageData):
                     databook: int | str,
                     res_format: Literal[
                         'list', 'dataframe', 'json', 'dict'
-                    ] = 'dataframe') -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
+                    ] = 'dataframe'
+                    ) -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
         '''
         List all tables in the selected databook
 
@@ -170,7 +171,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        table list : list | pandas.DataFrame | str
+        table list : list | pandas.DataFrame | str | dict[str, str]
             list of tables
         '''
         try:
