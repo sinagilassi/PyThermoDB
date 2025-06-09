@@ -10,7 +10,9 @@ from .docs import (
 )
 
 
-def init(custom_reference: Optional[Dict[str, List[str]]] = None) -> ThermoDB:
+def init(
+    custom_reference: Optional[Dict[str, List[str]]] = None
+) -> ThermoDB:
     '''
     Initialize thermodb app to check and build thermodynamic data and equations.
 
