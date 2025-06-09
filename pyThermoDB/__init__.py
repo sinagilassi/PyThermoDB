@@ -1,11 +1,19 @@
+from .config import __version__, __author__, __description__
+from .docs import (
+    ThermoDB, CompBuilder,
+    TableData, TableEquation,
+    TableMatrixData, TableMatrixEquation
+)
 from .app import (
-    init, ref, __version__, build_thermodb, load_thermodb,
-    __author__, __description__, TableData, TableEquation,
-    TableMatrixData, TableMatrixEquation, ThermoDB, CompBuilder
+    init, ref, build_thermodb, load_thermodb,
+    build_component_thermodb, build_components_thermodb
 )
 
-__all__ = ['init',
-           'ref', '__version__', 'build_thermodb', 'load_thermodb',
-           '__author__', '__description__',
-           'TableData', 'TableEquation', 'TableMatrixData',
-           'TableMatrixEquation', 'ThermoDB', 'CompBuilder']
+__all__ = [
+    '__version__', '__author__', '__description__',
+    'ThermoDB', 'CompBuilder',
+    'TableData', 'TableEquation',
+    'TableMatrixData', 'TableMatrixEquation',
+    'init', 'ref', 'build_thermodb', 'load_thermodb',
+    'build_component_thermodb', 'build_components_thermodb'
+]

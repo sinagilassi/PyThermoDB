@@ -20,10 +20,14 @@ class CompBuilder(CompExporter):
     __data = {}
     # thermodb name (optional)
     __thermodb_name: str | None = None
+    # message
+    __message: str | None = None
     # thermodb version
     build_version = __version__
 
-    def __init__(self, thermodb_name: Optional[str] = None):
+    def __init__(self,
+                 thermodb_name: Optional[str] = None,
+                 message: Optional[str] = None):
         '''
         Initialize CompBuilder object
 
@@ -36,6 +40,11 @@ class CompBuilder(CompExporter):
         super().__init__()
         # set name
         self.__thermodb_name = thermodb_name
+        # set message
+        self.__message = message if message is not None else 'CompBuilder instance created!'
+
+        # ! reset data
+        self.__data = {}
 
     @property
     def thermodb_name(self) -> str | None:
@@ -52,6 +61,22 @@ class CompBuilder(CompExporter):
             # return default name
             return 'thermodb'
         return self.__thermodb_name
+
+    @property
+    def message(self) -> str:
+        '''
+        Get message
+
+        Returns
+        -------
+        str
+            message
+        '''
+        # check message
+        if self.__message is None:
+            # return default message
+            return 'CompBuilder instance created!'
+        return self.__message
 
     def add_data(self, name: str, value: Union[TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation]):
         '''
