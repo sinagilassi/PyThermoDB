@@ -34,8 +34,10 @@ setup(
     # Add license file
     license='MIT',
     license_files=[],
-    install_requires=['pandas', 'requests',
-                      'urllib3', 'numpy', 'PyYAML'],
+    install_requires=['pandas',
+                      'requests',
+                      'numpy',
+                      'PyYAML'],
     extras_require={
         'web': ['jinja2'],
     },
