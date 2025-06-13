@@ -1,6 +1,6 @@
 # import packages/modules
 import pyThermoDB as ptdb
-from pprint import pprint as pp
+from rich import print
 
 
 # dir
@@ -41,10 +41,10 @@ print(tb_info)
 # ===============================
 # load equation to check
 vapor_pressure_tb = tdb.equation_load(3, 1)
-pp(vapor_pressure_tb.eq_structure(1))
+print(vapor_pressure_tb.eq_structure(1))
 # load data to check
 data_table = tdb.data_load(3, 2)
-pp(data_table.data_structure())
+print(data_table.data_structure())
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -73,19 +73,21 @@ COMP1_check_availability = tdb.check_component(
 # ====================================
 # build data
 comp1_data = tdb.build_data(comp1, 3, 2)
-pp(comp1_data.data_structure())
+print(comp1_data.data_structure())
 
-pp(comp1_data.get_property(5))
-pp(comp1_data.get_property(6))
+print(comp1_data.get_property(5))
+print(comp1_data.get_property(6))
 # ====================================
 # BUILD EQUATION
 # ====================================
 # build an equation
 comp1_eq = tdb.build_equation(comp1, 3, 1)
 
-pp(comp1_eq.args)
-pp(comp1_eq.returns)
-pp(comp1_eq.body_integral)
+print(comp1_eq.args)
+print(comp1_eq.returns)
+print(comp1_eq.body_integral)
+print(comp1_eq.custom_integral)
+
 
 # res = comp1_eq.cal(T=298.15)
 # pp(res)
