@@ -420,22 +420,30 @@ class TableReference(ManageData):
             df = None
 
             # check tb_type
-            if (tb_type == TableTypes.DATA.value or
-                    tb_type == TableTypes.EQUATIONS.value):
+            if (
+                tb_type == TableTypes.DATA.value or
+                    tb_type == TableTypes.EQUATIONS.value
+            ):
                 # ! search table
-                df = self.search_table(databook_id,
-                                       table_id,
-                                       column_name,
-                                       lookup,
-                                       query=query)
-            elif (tb_type == TableTypes.MATRIX_DATA.value or
-                  tb_type == TableTypes.MATRIX_EQUATIONS.value):
+                df = self.search_table(
+                    databook_id,
+                    table_id,
+                    column_name,
+                    lookup,
+                    query=query
+                )
+            elif (
+                tb_type == TableTypes.MATRIX_DATA.value or
+                tb_type == TableTypes.MATRIX_EQUATIONS.value
+            ):
                 # ! search matrix table
-                df = self.search_matrix_table(databook_id,
-                                              table_id,
-                                              column_name,
-                                              lookup,
-                                              query=query)
+                df = self.search_matrix_table(
+                    databook_id,
+                    table_id,
+                    column_name,
+                    lookup,
+                    query=query
+                )
             else:
                 raise Exception(f"Table type {tb_type} is not supported.")
 
@@ -523,8 +531,9 @@ class TableReference(ManageData):
                             databook_id: int,
                             table_id: int,
                             column_name: str | list[str],
-                            lookup: str,
-                            query: bool = False) -> pd.DataFrame:
+                            lookup: str | list[str],
+                            query: bool = False
+                            ) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -538,6 +547,8 @@ class TableReference(ManageData):
             column name
         lookup : str
             value to look up for
+        query : bool, optional
+            if True, then use query method, by default False
 
         Returns
         -------
@@ -547,33 +558,82 @@ class TableReference(ManageData):
         # NOTE: load tb
         df = self.load_table(databook_id, table_id)
 
+        # NOTE: search mode
+        search_mode = False
+
         # NOTE: check dataframe
         if isinstance(df, pd.DataFrame):
-            # REVIEW: take first three rows
-            df_info = df.iloc[:4, :]
-
-            # search matrix table
+            # NOTE: search matrix table
             # filter
-            if isinstance(column_name, str) and query is False:
+            if (
+                isinstance(column_name, str) and
+                isinstance(lookup, str) and
+                    query is False
+            ):
                 # create filter
                 df_filter = df[df[column_name].str.lower() == lookup.lower()]
+            if (
+                isinstance(column_name, str) and
+                    isinstance(lookup, list)
+            ):
+                # create filter
+                # df_filter = df[df[column_name].isin(lookup)]
+
+                # set
+                search_mode = True
+
+                lookup_normalized = [str(x).strip().lower() for x in lookup]
+                df_filter = df[df[column_name].str.strip(
+                ).str.lower().isin(lookup_normalized)]
             # query
-            elif isinstance(column_name, str) and query is True:
+            elif (
+                isinstance(column_name, str) and
+                query is True
+            ):
                 # create filter
                 df_filter = df.query(column_name)
             # list
-            elif isinstance(column_name, list) and isinstance(lookup, list):
+            elif (
+                isinstance(column_name, list) and
+                isinstance(lookup, list)
+            ):
                 # use query
-                _querys = []
+                _queries = []
                 for i in range(len(column_name)):
-                    _querys.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                    _queries.append(f'`{column_name[i]}` == "{lookup[i]}"')
                 # make query
-                _query_set = ' & '.join(_querys)
+                _query_set = ' & '.join(_queries)
                 # query
                 df_filter = df.query(_query_set)
+            # else:
+            #     raise ValueError(
+            #         f"Column name and lookup formats are not valid.")
 
-                # combine dfs
+            # NOTE: df_filter analysis
+            # check if df_filter is empty
+            if df_filter.empty:
+                # raise exception
+                raise Exception(
+                    f"No data found for {databook_id} and {table_id} with column name {column_name} and lookup {lookup}.")
+
+            # records number
+            records_number = df_filter.shape[0]
+
+            # FIXME: take first three rows
+            if records_number == 2 and search_mode == False:
+                df_info = df.iloc[:4, :]
+            elif records_number == 2 and search_mode == True:
+                # empty df_info
+                df_info = pd.DataFrame(columns=df.columns)
+            elif records_number == 4:
+                df_info = df.iloc[:2, :]
+            else:
+                df_info = df.iloc[:4, :]
+
+            # NOTE: combine dfs
             result = pd.concat([df_info, df_filter])
+
+            # NOTE: check
             if not df_filter.empty:
                 return result
             else:
@@ -588,7 +648,8 @@ class TableReference(ManageData):
                      column_name: str | list[str],
                      lookup: str,
                      query: bool = False,
-                     matrix_tb: bool = False) -> PayLoadType | None:
+                     matrix_tb: bool = False
+                     ) -> PayLoadType | None:
         '''
         Make standard data
 
@@ -622,11 +683,21 @@ class TableReference(ManageData):
         try:
             # SECTION: check
             if matrix_tb:
-                df = self.search_matrix_table(databook_id, table_id,
-                                              column_name, lookup=lookup, query=query)
+                df = self.search_matrix_table(
+                    databook_id,
+                    table_id,
+                    column_name,
+                    lookup=lookup,
+                    query=query
+                )
             else:
-                df = self.search_table(databook_id, table_id,
-                                       column_name, lookup=lookup, query=query)
+                df = self.search_table(
+                    databook_id,
+                    table_id,
+                    column_name,
+                    lookup=lookup,
+                    query=query
+                )
 
             # SECTION: check
             if len(df) > 0:
@@ -652,7 +723,11 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Making payload error {e}")
 
-    async def search_component(self, search_terms: list[str], search_mode: str, column_names: list[str] = ['Name', 'Formula']) -> list[dict]:
+    async def search_component(self,
+                               search_terms: list[str],
+                               search_mode: str,
+                               column_names: list[str] = ['Name', 'Formula']
+                               ) -> list[dict]:
         """
         Search a component in all databooks
 

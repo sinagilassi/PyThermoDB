@@ -266,6 +266,21 @@ def build_component_thermodb(
                 raise ValueError(
                     f"Table '{table_}' for property '{prop_name}' is not found in the databook '{databook_}'.")
 
+            # NOTE: check component
+            component_checker_ = thermodb.check_component(
+                component_name=component_name,
+                databook=databook_,
+                table=table_,
+                res_format='dict'
+            )
+
+            # check
+            if not isinstance(component_checker_, dict):
+                raise TypeError("Component checker must be a dictionary")
+
+            if not component_checker_['availability']:
+                continue  # skip if component is not available in the table
+
             # NOTE: build thermodb items
             item_ = thermodb.build_thermo_property(
                 [component_name],
@@ -414,6 +429,21 @@ def build_components_thermodb(
             if table_data_type != 'Matrix-Data':
                 raise ValueError(
                     f"Table '{table_}' for property '{prop_name}' is not a matrix data table.")
+
+            # NOTE: check component
+            component_checker_ = thermodb.check_component(
+                component_name=component_names,
+                databook=databook_,
+                table=table_,
+                res_format='dict'
+            )
+
+            # check
+            if not isinstance(component_checker_, dict):
+                raise TypeError("Component checker must be a dictionary")
+
+            if not component_checker_['availability']:
+                continue  # skip if component is not available in the table
 
             # NOTE: build thermodb items
             item_ = thermodb.build_thermo_property(

@@ -114,7 +114,6 @@ STRUCTURE:
 
 VALUES:
 
-- [1,'carbon dioxide','CO2','g',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
 - [2,'carbon monoxide','CO','g',45.698,-1076.6,-4.8814,7.57E-05,2,68.15,1.54E+04,132.92,3.49E+06,1]
 - [3,'hydrogen','H2','g',12.69,-94.9,1.1125,3.29E-04,2,13.95,7.21E+03,33.19,1.32E+06,1]
 - [4,'methanol','CH3OH','g',82.718,-6904.5,-8.8622,7.47E-06,2,175.47,1.11E-01,512.5,8.15E+06,1]
@@ -169,7 +168,41 @@ EXTERNAL-REFERENCES:
 
 - url1
 - url2
+
+### NRTL Non-randomness parameters-2
+
+TABLE-ID: 5
+
+DESCRIPTION: This table provides the NRTL non-randomness parameters for the NRTL equation.
+
+MATRIX-SYMBOL:
+
+- a
+- b
+- c
+- alpha
+
+STRUCTURE:
+
+- COLUMNS: [No.,Mixture,Name,Formula,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+- SYMBOL: [None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+- UNIT: [None,None,None,None,1,1,1,1,1,1,1,1]
+
+VALUES:
+
+- [1,methanol|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+- [2,methanol|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+- [1,methane|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+- [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+
+
+EXTERNAL-REFERENCES:
+
+- url1
+- url2
 """
+
+# - [1,'carbon dioxide','CO2','g',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
 
 # custom ref
 ref = {'reference': [file_contents]}
@@ -218,7 +251,7 @@ property_source_2 = {
 
 
 thermodb_components_ = ptdb.build_components_thermodb(
-    component_names=['ethanol', 'methanol'],
+    component_names=['ethanol', 'methanol3'],
     property_source=property_source_2,
     custom_reference=ref)
 # check

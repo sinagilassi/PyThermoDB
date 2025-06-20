@@ -1221,24 +1221,38 @@ class ThermoDB(ManageData):
         '''
         try:
             # check databook_id and table_id are number or not
-            if isNumber(databook_id) and isNumber(table_id):
+            if (
+                isNumber(databook_id) and
+                isNumber(table_id)
+            ):
                 # set api
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
-                # search
+
+                # NOTE: search
                 df = TableReferenceC.search_tables(
-                    databook_id, table_id, column_name, component_name,
-                    query=query)
-                # check availability
+                    databook_id,
+                    table_id,
+                    column_name,
+                    component_name,
+                    query=query
+                )
+
+                # NOTE: check availability
                 if len(df) > 0:
                     # get databook
-                    databook_name = self.list_databooks(res_format='list')[
-                        databook_id-1]
+                    databook_name = self.list_databooks(
+                        res_format='list'
+                    )[
+                        databook_id-1
+                    ]
                     # get table
                     # table_name = self.list_tables(databook=databook_id, res_format='list')[
                     #     table_id-1][0]
 
                     table_name_ = self.list_tables(
-                        databook=databook_id, res_format='list')
+                        databook=databook_id,
+                        res_format='list'
+                    )
 
                     # heck
                     if isinstance(table_name_, list):
@@ -1262,14 +1276,16 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def get_component_data(self,
-                           component_name: str,
-                           databook_id: int,
-                           table_id: int,
-                           column_name: Optional[str | list[str]] = None,
-                           dataframe: bool = False,
-                           query: bool = False,
-                           matrix_tb: bool = False):
+    def get_component_data(
+        self,
+        component_name: str,
+        databook_id: int,
+        table_id: int,
+        column_name: Optional[str | list[str]] = None,
+        dataframe: bool = False,
+        query: bool = False,
+        matrix_tb: bool = False
+    ):
         '''
         Get component data from database (api|local csvs)
 
@@ -1308,8 +1324,14 @@ class ThermoDB(ManageData):
                 return None
             elif self.data_source == 'local':
                 component_data = self.get_component_data_local(
-                    component_name, databook_id, table_id, column_name,
-                    dataframe=dataframe, query=query, matrix_tb=matrix_tb)
+                    component_name,
+                    databook_id,
+                    table_id,
+                    column_name,
+                    dataframe=dataframe,
+                    query=query,
+                    matrix_tb=matrix_tb
+                )
             else:
                 raise Exception('Data source error!')
             # res
@@ -1363,14 +1385,16 @@ class ThermoDB(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
-    def get_component_data_local(self,
-                                 component_name: str,
-                                 databook_id: int,
-                                 table_id: int,
-                                 column_name: str | list[str],
-                                 dataframe: bool = False,
-                                 query: bool = False,
-                                 matrix_tb: bool = False):
+    def get_component_data_local(
+        self,
+        component_name: str,
+        databook_id: int,
+        table_id: int,
+        column_name: str | list[str],
+        dataframe: bool = False,
+        query: bool = False,
+        matrix_tb: bool = False
+    ):
         '''
         Get component data from database (local csv files)
 
@@ -1401,19 +1425,28 @@ class ThermoDB(ManageData):
             if isNumber(databook_id) and isNumber(table_id):
                 # set api
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
-                # search
+
+                # NOTE: search
                 payload = TableReferenceC.make_payload(
-                    databook_id, table_id, column_name, component_name,
-                    query=query, matrix_tb=matrix_tb)
-                # check availability
+                    databook_id,
+                    table_id,
+                    column_name,
+                    component_name,
+                    query=query,
+                    matrix_tb=matrix_tb
+                )
+
+                # NOTE: check availability
                 if payload:
                     # check
                     if len(payload) > 0:
                         if dataframe:
-                            df = pd.DataFrame(payload,
-                                              columns=[
-                                                  'header', 'symbol', 'records', 'unit'
-                                              ])
+                            df = pd.DataFrame(
+                                payload,
+                                columns=[
+                                    'header', 'symbol', 'records', 'unit'
+                                ]
+                            )
                             return df
                         else:
                             return payload
@@ -1462,14 +1495,20 @@ class ThermoDB(ManageData):
                         raise Exception('Only one component name required!')
                     # build equation
                     return self.build_equation(
-                        component_names[0], databook, table)
+                        component_names[0],
+                        databook,
+                        table
+                    )
                 elif tb_info_res_['Type'] == 'Data':  # ! data
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
                     # build data
                     return self.build_data(
-                        component_names[0], databook, table)
+                        component_names[0],
+                        databook,
+                        table
+                    )
                 elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
                     # check
                     if len(component_names) < 2:
@@ -1477,7 +1516,10 @@ class ThermoDB(ManageData):
                             'At least two component names required!')
                     # build matrix-equation
                     return self.build_matrix_equation(
-                        component_names, databook, table)
+                        component_names,
+                        databook,
+                        table
+                    )
                 elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
                     # check
                     if len(component_names) < 2:
@@ -1485,7 +1527,10 @@ class ThermoDB(ManageData):
                             'At least two component names required!')
                     # build matrix-data
                     return self.build_matrix_data(
-                        component_names, databook, table)
+                        component_names,
+                        databook,
+                        table
+                    )
                 else:
                     raise Exception('No data/equation found!')
             else:
@@ -1848,11 +1893,18 @@ class ThermoDB(ManageData):
 
             # SECTION: get data from api
             component_data_pack = []
+
+            # looping through components
             for component_name in component_names:
-                component_data = self.get_component_data(component_name.strip(),
-                                                         databook_id, table_id,
-                                                         column_name=column_name,
-                                                         query=query, matrix_tb=True)
+                # get data
+                component_data = self.get_component_data(
+                    component_name.strip(),
+                    databook_id,
+                    table_id,
+                    column_name=column_name,
+                    query=query,
+                    matrix_tb=True
+                )
                 # save
                 component_data_pack.append({
                     'component_name': str(component_name).strip(),
