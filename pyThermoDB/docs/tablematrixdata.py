@@ -651,15 +651,16 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Getting matrix property failed!, ", e)
 
-    def get_matrix_property(self,
-                            property: str,
-                            component_names: list[str],
-                            symbol_format: Literal[
-                                'alphabetic', 'numeric'
-                            ] = 'alphabetic',
-                            message: str = 'Get a component property from data table structure',
-                            **kwargs
-                            ) -> DataResult:
+    def get_matrix_property(
+        self,
+        property: str,
+        component_names: list[str],
+        symbol_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'alphabetic',
+        message: str = 'Get a component property from data table structure',
+        **kwargs
+    ) -> DataResult:
         '''
         Get a component property from data table structure
 
