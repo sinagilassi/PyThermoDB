@@ -1461,10 +1461,12 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
-    def build_thermo_property(self,
-                              component_names: list[str],
-                              databook: int | str,
-                              table: int | str):
+    def build_thermo_property(
+        self,
+        component_names: list[str],
+        databook: int | str,
+        table: int | str
+    ):
         """
         Build a thermodynamic property including data, equation, matrix-data and matrix-equation.
 
