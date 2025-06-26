@@ -5,8 +5,14 @@
 import os
 import yaml
 import pandas as pd
-from typing import TypedDict, List, Optional, Literal, Tuple, Dict, Union, Any
-from pathlib import Path
+import logging
+from typing import (
+    List,
+    Optional,
+    Literal,
+    Dict,
+    Any
+)
 import json
 import re
 # local
@@ -137,6 +143,35 @@ class ManageData():
         # <class 'dict'>
         # print(type(reference))
         return reference
+
+    @staticmethod
+    def load_custom_reference(custom_ref: CustomRef) -> dict[str, dict]:
+        '''
+        Load custom reference data from file
+
+        Parameters
+        ----------
+        custom_ref : CustomRef | None
+            custom reference object
+
+        Returns
+        -------
+        dict[str, dict]
+            custom reference data
+        '''
+        try:
+            # NOTE: check custom_ref
+            if not isinstance(custom_ref, CustomRef):
+                logging.warning("Custom reference is not provided or invalid!")
+                return {}
+
+            # NOTE: load custom reference
+            if custom_ref:
+                return custom_ref.load_ref()
+            else:
+                return {}
+        except Exception as e:
+            logging.error(f"Error loading custom reference: {e}")
 
     def select_reference(self, reference: str) -> dict:
         '''
