@@ -1,13 +1,58 @@
 # import packages/modules
-# external
-from typing import Optional, Dict, List, Union, Any
+import logging
+from typing import (
+    Optional,
+    Dict,
+    List,
+    Any
+)
 # internal
 from .docs import (
     ThermoDB,
     TableReference,
     CustomRef,
-    CompBuilder
+    CompBuilder,
+    ManageData
 )
+
+
+def load_custom_reference(
+    custom_reference: Dict[str, List[str]]
+) -> Dict[str, Any]:
+    '''
+    Load custom reference (external reference) to check and build thermodynamic data and equations.
+
+    Parameters
+    ----------
+    custom_reference : dict
+        Custom reference dictionary to check, by default None
+
+    Returns
+    -------
+    bool
+        True if the custom reference is valid, False otherwise.
+
+    '''
+    try:
+        # NOTE: build custom reference
+        CustomRefC = CustomRef(custom_reference)
+        # check ref
+        CustomRefC.init_ref()
+
+        # NOTE: load custom reference
+        reference = ManageData.load_custom_reference(
+            custom_ref=CustomRefC
+        )
+
+        # res
+        if not isinstance(reference, dict):
+            logging.error("Custom reference is not valid or empty!")
+            return {}
+
+        # return
+        return reference
+    except Exception as e:
+        raise Exception(f"Checking custom reference failed! {e}")
 
 
 def init(

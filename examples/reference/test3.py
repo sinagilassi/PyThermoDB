@@ -1,6 +1,7 @@
 # import packages/modules
 import os
 import pyThermoDB as ptdb
+from rich import print
 
 # get versions
 print(ptdb.__version__)
@@ -174,6 +175,12 @@ ref1 = {'reference': [file_contents]}
 ref2 = {'reference': [md_path]}
 # yml ref
 ref3 = {'reference': [yml_path]}
+
+# ===============================
+# SECTION: CHECK CUSTOM REFERENCE
+# ===============================
+custom_reference_loaded = ptdb.load_custom_reference(custom_reference=ref1)
+print(custom_reference_loaded)
 
 # ===============================
 # SECTION: REFERENCE
