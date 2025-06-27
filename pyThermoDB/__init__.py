@@ -19,5 +19,5 @@ __all__ = [
     'init', 'ref', 'build_thermodb', 'load_thermodb',
     'build_component_thermodb', 'build_components_thermodb',
     'ManageData', 'CustomRef',
-    'load_custom_reference'
+    'load_custom_reference',
 ]

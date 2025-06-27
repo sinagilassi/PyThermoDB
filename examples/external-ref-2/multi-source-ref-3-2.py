@@ -2,7 +2,8 @@
 import os
 from rich import print
 import pyThermoDB as ptdb
-from pyThermoDB import TableData, TableEquation, TableMatrixData
+from pyThermoDB.docs import TableData, TableEquation, TableMatrixData
+from pyThermoDB.references import ReferenceConfig
 
 # get versions
 # print(pt.get_version())
@@ -232,21 +233,38 @@ reference_config = {
 
 # string
 reference_config_yml = """
-heat-capacity:
-  databook: CUSTOM-REF-1
-  table: Ideal-Gas-Molar-Heat-Capacity
-  symbol: Cp_IG
-vapor-pressure:
-  databook: CUSTOM-REF-1
-  table: Vapor-Pressure
-  symbol: VaPr
-general:
-  databook: CUSTOM-REF-1
-  table: General-Data
-  symbols:
-    Pc: Pc
-    Tc: Tc
-    AcFa: AcFa
+CO2:
+  heat-capacity:
+    databook: CUSTOM-REF-1
+    table: Ideal-Gas-Molar-Heat-Capacity
+    symbol: Cp_IG
+  vapor-pressure:
+    databook: CUSTOM-REF-1
+    table: Vapor-Pressure
+    symbol: VaPr
+  general:
+    databook: CUSTOM-REF-1
+    table: General-Data
+    symbols:
+      Pc: Pc
+      Tc: Tc
+      AcFa: AcFa
+CO:
+  heat-capacity:
+    databook: CUSTOM-REF-1
+    table: Ideal-Gas-Molar-Heat-Capacity
+    symbol: Cp_IG
+  vapor-pressure:
+    databook: CUSTOM-REF-1
+    table: Vapor-Pressure
+    symbol: VaPr
+  general:
+    databook: CUSTOM-REF-1
+    table: General-Data
+    symbols:
+      Pc: Pc
+      Tc: Tc
+      AcFa: AcFa
 """
 
 # string [md format]
@@ -275,12 +293,40 @@ general:
   - Pc: Pc
   - Tc: Tc
   - AcFa: AcFa
+
+## CO
+
+heat-capacity:
+
+- databook: CUSTOM-REF-1
+- table: ideal-gas-molar-heat-capacity
+- symbol: Cp_IG
+
+vapor-pressure:
+
+- databook: CUSTOM-REF-1
+- table: vapor-pressure
+- symbol: VaPr
+
+general:
+
+- databook: CUSTOM-REF-1
+- table: general-data
+- symbols:
+  - Pc: Pc
+  - Tc: Tc
+  - AcFa: AcFa
 """
+
+# NOTE: convert reference config to dict
+reference_config = ReferenceConfig().set_reference_config(
+    reference_config=reference_config_md)
+
 
 # build component thermodb
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
-    reference_config=reference_config_md,
+    reference_config=reference_config,
     custom_reference=ref)
 
 #  check
