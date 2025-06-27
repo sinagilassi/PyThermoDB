@@ -7,8 +7,7 @@ from .docs import (
 )
 from .app import (
     init, ref, build_thermodb, load_thermodb,
-    build_component_thermodb, build_components_thermodb,
-    load_custom_reference
+    build_component_thermodb, build_components_thermodb
 )
 
 __all__ = [
@@ -19,5 +18,4 @@ __all__ = [
     'init', 'ref', 'build_thermodb', 'load_thermodb',
     'build_component_thermodb', 'build_components_thermodb',
     'ManageData', 'CustomRef',
-    'load_custom_reference',
 ]

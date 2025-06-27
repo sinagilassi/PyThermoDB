@@ -210,6 +210,9 @@ class ManageData():
                         logging.warning(
                             "Invalid file format! Use 'txt' or 'yml'.")
                         return {}
+                else:
+                    # set name
+                    file_name = file_name.strip() + f".{file_format}"
 
                 if save_to_file:
                     # build the full file path using directory and file_name
