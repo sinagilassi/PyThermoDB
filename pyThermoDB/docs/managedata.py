@@ -145,7 +145,13 @@ class ManageData():
         return reference
 
     @staticmethod
-    def load_custom_reference(custom_ref: CustomRef) -> dict[str, dict]:
+    def load_custom_reference(
+        custom_ref: CustomRef,
+        save_to_file: bool = False,
+        file_format: Literal['txt', 'yml'] = 'txt',
+        file_name: Optional[str] = None,
+        output_dir: Optional[str] = None
+    ) -> Dict[str, Any] | None:
         '''
         Load custom reference data from file
 
@@ -153,6 +159,14 @@ class ManageData():
         ----------
         custom_ref : CustomRef | None
             custom reference object
+        save_to_file : bool, optional
+            If True, save the custom reference to a txt file, by default False
+        file_format : Literal['txt', 'yml'], optional
+            Format of the file to save the custom reference, by default 'txt'. Options are 'txt' or 'yml'.
+        file_name : str, optional
+            Name of the file to save the custom reference, by default None.
+        output_dir : str, optional
+            Directory to save the custom reference file, by default None.
 
         Returns
         -------
@@ -167,11 +181,61 @@ class ManageData():
 
             # NOTE: load custom reference
             if custom_ref:
-                return custom_ref.load_ref()
+                # check if directory is provided
+                if output_dir is None:
+                    # use current working directory
+                    output_dir = os.getcwd()
+
+                # check if directory exists
+                if not os.path.exists(output_dir):
+                    # create directory
+                    os.makedirs(output_dir)
+
+                # NOTE: load custom reference
+                ref = custom_ref.load_ref()
+
+                # check if ref is empty
+                if not ref:
+                    logging.warning("Custom reference is empty!")
+                    return {}
+
+                # check if file_name is provided
+                if file_name is None:
+                    # use default file name
+                    if file_format == 'txt':
+                        file_name = "custom_reference.txt"
+                    elif file_format == 'yml':
+                        file_name = "custom_reference.yml"
+                    else:
+                        logging.warning(
+                            "Invalid file format! Use 'txt' or 'yml'.")
+                        return {}
+
+                if save_to_file:
+                    # build the full file path using directory and file_name
+                    file_path = os.path.join(output_dir, file_name)
+
+                    # check file format
+                    if file_format == 'txt':
+                        # ! to txt file
+                        with open(file_path, "w") as f:
+                            # `indent=4` for nice formatting
+                            json.dump(ref, f, indent=4)
+                    elif file_format == 'yml':
+                        # ! to yaml file
+                        with open(file_path, "w") as f:
+                            # `default_flow_style=False` for nice formatting
+                            yaml.dump(ref, f, sort_keys=False)
+                    else:
+                        logging.warning(
+                            "Invalid file format! Use 'txt' or 'yml'.")
+
+                return ref
             else:
                 return {}
         except Exception as e:
             logging.error(f"Error loading custom reference: {e}")
+            return {}
 
     def select_reference(self, reference: str) -> dict:
         '''
