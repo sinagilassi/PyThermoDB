@@ -5,7 +5,8 @@ from typing import (
     Dict,
     List,
     Any,
-    Literal
+    Literal,
+    Union
 )
 # internal
 from .docs import (
@@ -15,6 +16,7 @@ from .docs import (
     CompBuilder,
     ManageData
 )
+from .references import ReferenceConfig
 
 
 def load_custom_reference(
@@ -240,7 +242,7 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
 
 def build_component_thermodb(
     component_name: str,
-    property_source: Dict[str, Dict[str, str]],
+    reference_config: Union[Dict[str, Dict[str, str]], str],
     thermodb_name: Optional[str] = None,
     custom_reference: Optional[Dict[str, List[str]]] = None,
     message: Optional[str] = None
@@ -252,7 +254,7 @@ def build_component_thermodb(
     ----------
     component_name : str
         Name of the component to build thermodynamic databook for.
-    property_source : Dict[str, Dict[str, Any]]
+    reference_config : Dict[str, Dict[str, Any]] | str
         Dictionary containing properties of the component to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
@@ -266,7 +268,7 @@ def build_component_thermodb(
     Property dict should contain the following format:
 
     ```python
-    property_source = {
+    reference_config = {
         'heat-capacity': {
             'databook': 'CUSTOM-REF-1',
             'table': 'Ideal-Gas-Molar-Heat-Capacity',
@@ -287,11 +289,21 @@ def build_component_thermodb(
         if not isinstance(component_name, str):
             raise TypeError("component_name must be a string")
 
-        # property_source check
-        if not isinstance(property_source, dict):
-            raise TypeError("property must be a dictionary")
+        # reference_config check
+        if not isinstance(reference_config, (dict, str)):
+            raise TypeError("property must be a dictionary or a string")
 
-        # SECTION: build thermodb
+        # NOTE: check if reference_config is a string
+        if isinstance(reference_config, str):
+            # ! init ReferenceConfig
+            ReferenceConfig_ = ReferenceConfig()
+            # convert to dict
+            reference_config = \
+                ReferenceConfig_.set_reference_config(
+                    reference_config
+                )
+
+            # SECTION: build thermodb
         thermodb = init(custom_reference=custom_reference)
 
         # init res
@@ -303,7 +315,7 @@ def build_component_thermodb(
             raise TypeError("Databook list must be a list")
 
         # check both databook and table
-        for prop_name, prop_idx in property_source.items():
+        for prop_name, prop_idx in reference_config.items():
             # property name
             prop_name = prop_name.strip()
 
@@ -369,7 +381,7 @@ def build_component_thermodb(
             thermodb_name = component_name
         # NOTE: check message
         if message is None:
-            prop_names_list = ', '.join(list(property_source.keys()))
+            prop_names_list = ', '.join(list(reference_config.keys()))
             message = f"Thermodb including {prop_names_list} for component: {component_name}"
 
         # init thermodb
@@ -382,7 +394,8 @@ def build_component_thermodb(
         for prop_name, prop_value in res.items():
             # add item to thermodb
             thermodb_comp.add_data(
-                prop_name, prop_value
+                prop_name,
+                prop_value
             )
 
         # NOTE: build
@@ -398,7 +411,7 @@ def build_component_thermodb(
 
 def build_components_thermodb(
     component_names: List[str],
-    property_source: Dict[str, Dict[str, str]],
+    reference_config: Dict[str, Dict[str, str]],
     thermodb_name: Optional[str] = None,
     custom_reference: Optional[Dict[str, List[str]]] = None,
     message: Optional[str] = None
@@ -410,7 +423,7 @@ def build_components_thermodb(
     ----------
     component_names : List[str]
         List of component names (binary system) to build thermodynamic databook for.
-    property_source : Dict[str, Dict[str, Any]]
+    reference_config : Dict[str, Dict[str, Any]]
         Dictionary containing properties of the components to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
@@ -432,12 +445,12 @@ def build_components_thermodb(
             raise ValueError(
                 "Only binary systems are supported, provide exactly two component names.")
 
-        # property_source check
-        if not isinstance(property_source, dict):
+        # reference_config check
+        if not isinstance(reference_config, dict):
             raise TypeError("property must be a dictionary")
 
         # property names
-        property_names = list(property_source.keys())
+        property_names = list(reference_config.keys())
 
         # SECTION: build thermodb
         thermodb = init(custom_reference=custom_reference)
@@ -451,7 +464,7 @@ def build_components_thermodb(
             raise TypeError("Databook list must be a list")
 
         # check both databook and table
-        for prop_name, prop_idx in property_source.items():
+        for prop_name, prop_idx in reference_config.items():
             # property name
             prop_name = prop_name.strip()
 

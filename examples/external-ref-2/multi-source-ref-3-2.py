@@ -113,7 +113,7 @@ STRUCTURE:
 - UNIT: [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
 
 VALUES:
-
+- [1,'carbon dioxide','CO2','g',4.193,-1.352,0.002,0.0003,0.0,194.65,5.73E+04,304.21,7.39E+06,1]
 - [2,'carbon monoxide','CO','g',45.698,-1076.6,-4.8814,7.57E-05,2,68.15,1.54E+04,132.92,3.49E+06,1]
 - [3,'hydrogen','H2','g',12.69,-94.9,1.1125,3.29E-04,2,13.95,7.21E+03,33.19,1.32E+06,1]
 - [4,'methanol','CH3OH','g',82.718,-6904.5,-8.8622,7.47E-06,2,175.47,1.11E-01,512.5,8.15E+06,1]
@@ -215,7 +215,7 @@ ref = {'reference': [file_contents]}
 # BUILD COMPONENT THERMODB
 # ====================================
 # property
-property_source = {
+reference_config = {
     'heat-capacity': {
         'databook': 'CUSTOM-REF-1',
         'table': 'Ideal-Gas-Molar-Heat-Capacity',
@@ -229,9 +229,58 @@ property_source = {
         'table': 'General-Data',
     },
 }
+
+# string
+reference_config_yml = """
+heat-capacity:
+  databook: CUSTOM-REF-1
+  table: Ideal-Gas-Molar-Heat-Capacity
+  symbol: Cp_IG
+vapor-pressure:
+  databook: CUSTOM-REF-1
+  table: Vapor-Pressure
+  symbol: VaPr
+general:
+  databook: CUSTOM-REF-1
+  table: General-Data
+  symbols:
+    Pc: Pc
+    Tc: Tc
+    AcFa: AcFa
+"""
+
+# string [md format]
+reference_config_md = """
+# Configs
+
+## CO2
+
+heat-capacity:
+
+- databook: CUSTOM-REF-1
+- table: ideal-gas-molar-heat-capacity
+- symbol: Cp_IG
+
+vapor-pressure:
+
+- databook: CUSTOM-REF-1
+- table: vapor-pressure
+- symbol: VaPr
+
+general:
+
+- databook: CUSTOM-REF-1
+- table: general-data
+- symbols:
+  - Pc: Pc
+  - Tc: Tc
+  - AcFa: AcFa
+"""
+
+# build component thermodb
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
-    property_source=property_source,
+    reference_config=reference_config_md,
     custom_reference=ref)
 
 #  check
@@ -242,17 +291,17 @@ print(thermodb_component_.message)
 # BUILD COMPONENTS THERMODB
 # ====================================
 # property
-property_source_2 = {
+reference_config_2 = {
     'nrtl': {
         'databook': 'CUSTOM-REF-1',
         'table': "NRTL Non-randomness parameters-2"
     }
 }
 
-
+# build components thermodb
 thermodb_components_ = ptdb.build_components_thermodb(
-    component_names=['ethanol', 'methanol3'],
-    property_source=property_source_2,
+    component_names=['ethanol', 'methanol'],
+    reference_config=reference_config_2,
     custom_reference=ref)
 # check
 print(thermodb_components_.check())
