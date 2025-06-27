@@ -24,41 +24,41 @@ class Convertor:
         Returns:
             str: Format of the input string ('yaml', 'json', or 'markdown').
         """
-        # Try JSON
-        try:
-            json.loads(data)
-            return "json"
-        except (json.JSONDecodeError, TypeError):
-            pass
-
-        # Try YAML (note: YAML can parse JSON too, so test JSON first)
-        try:
-            yaml.safe_load(data)
-            return "yaml"
-        except yaml.YAMLError:
-            pass
-
-        # Robust Markdown detection with regex
+        # SECTION: Robust Markdown detection with regex
         markdown_patterns = [
             r'^#{1,6} ',                # Headers (#, ##, ###, etc.)
-            r'^\*{1,2}[^*]+\*{1,2}',    # Bold or italic
-            r'^- ',                    # Unordered list
-            r'^\d+\.',                 # Ordered list
-            r'^> ',                    # Blockquote
-            r'`{1,3}[^`]+`{1,3}',      # Inline or fenced code
-            r'\[.*\]\(.*\)',           # Links
-            r'!\[.*\]\(.*\)',          # Images
-            r'^---$',                  # Horizontal rule
+            # r'^\*{1,2}[^*]+\*{1,2}',    # Bold or italic
+            # r'^- ',                    # Unordered list
+            # r'^\d+\.',                 # Ordered list
+            # r'^> ',                    # Blockquote
+            # r'`{1,3}[^`]+`{1,3}',      # Inline or fenced code
+            # r'\[.*\]\(.*\)',           # Links
+            # r'!\[.*\]\(.*\)',          # Images
+            # r'^---$',                  # Horizontal rule
         ]
 
         for pattern in markdown_patterns:
             if re.search(pattern, data, re.MULTILINE):
                 return "markdown"
 
+        # # SECTION: Try JSON
+        try:
+            json.loads(data)
+            return "json"
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # # SECTION: Try YAML (note: YAML can parse JSON too, so test JSON first)
+        try:
+            yaml.safe_load(data)
+            return "yaml"
+        except yaml.YAMLError:
+            pass
+
         # Default fallback
         return "unknown"
 
-    def str_to_dict(self, data: str) -> dict:
+    def str_to_dict(self, data: str, format: str) -> dict:
         """
         Convert a string in YAML or JSON format to a Python dictionary.
 
@@ -72,24 +72,15 @@ class Convertor:
         dict
             The converted data as a Python dictionary.
         """
-        # SECTION: format check]
-        format = self.which_format(data)
-
-        if format == "unknown":
-            logging.error(
-                "Unknown format. Please provide data in YAML or JSON format.")
-            return {}
-
         # SECTION: convert
         normalized_format = format.lower()
+
+        # NOTE: We assume that the input data is already in a valid format
         try:
             if normalized_format == "yaml":
                 return yaml.safe_load(data)
             elif normalized_format == "json":
                 return json.loads(data)
-            elif normalized_format == "markdown":
-                # For markdown, we can return a simple dict with the raw data
-                return self.md_to_dict(data)
             else:
                 logging.error(f"Unsupported format: {format}")
                 raise ValueError(f"Unsupported format: {format}")
@@ -98,75 +89,75 @@ class Convertor:
             logging.error(f"Error parsing {format} data: {e}")
             raise ValueError(f"Invalid {format} data") from e
 
-    def md_to_dict(self, data: str) -> dict:
-        """
-        Convert a Markdown string to a Python dictionary.
+    # def md_to_dict(self, data: str) -> dict:
+    #     """
+    #     Convert a Markdown string to a Python dictionary.
 
-        Parameters
-        ----------
-        data : str
-            The input Markdown string.
+    #     Parameters
+    #     ----------
+    #     data : str
+    #         The input Markdown string.
 
-        Returns
-        -------
-        dict
-            The converted data as a Python dictionary.
-        """
-        try:
-            lines = data.strip().splitlines()
-            config = {}
-            current_comp = None
-            current_section = None
-            i = 0
+    #     Returns
+    #     -------
+    #     dict
+    #         The converted data as a Python dictionary.
+    #     """
+    #     try:
+    #         lines = data.strip().splitlines()
+    #         config = {}
+    #         current_comp = None
+    #         current_section = None
+    #         i = 0
 
-            while i < len(lines):
-                line = lines[i].strip()
+    #         while i < len(lines):
+    #             line = lines[i].strip()
 
-                if line.startswith("## "):
-                    current_comp = line[3:].strip()
-                    config[current_comp] = {}
-                    i += 1
+    #             if line.startswith("## "):
+    #                 current_comp = line[3:].strip()
+    #                 config[current_comp] = {}
+    #                 i += 1
 
-                elif line.endswith(":") and not line.startswith("-"):
-                    current_section = line[:-1].strip()
-                    config[current_comp][current_section] = {}
-                    i += 1
+    #             elif line.endswith(":") and not line.startswith("-"):
+    #                 current_section = line[:-1].strip()
+    #                 config[current_comp][current_section] = {}
+    #                 i += 1
 
-                    while i < len(lines) and lines[i].strip() == "":
-                        i += 1
+    #                 while i < len(lines) and lines[i].strip() == "":
+    #                     i += 1
 
-                    while i < len(lines):
-                        subline = lines[i]
-                        stripped = subline.strip()
+    #                 while i < len(lines):
+    #                     subline = lines[i]
+    #                     stripped = subline.strip()
 
-                        if not stripped or stripped.startswith("##") or (not stripped.startswith("-") and stripped.endswith(":")):
-                            break
+    #                     if not stripped or stripped.startswith("##") or (not stripped.startswith("-") and stripped.endswith(":")):
+    #                         break
 
-                        if stripped.startswith("- "):
-                            item = stripped[2:]
-                            if item.endswith(":"):
-                                nested_key = item[:-1].strip()
-                                config[current_comp][current_section][nested_key] = {}
-                                i += 1
-                                while i < len(lines) and lines[i].startswith("  - "):
-                                    subitem_line = lines[i].strip()[2:]
-                                    if ":" in subitem_line:
-                                        subkey, subval = map(
-                                            str.strip, subitem_line.split(":", 1))
-                                        config[current_comp][current_section][nested_key][subkey] = subval
-                                    i += 1
-                            elif ":" in item:
-                                key, val = map(str.strip, item.split(":", 1))
-                                config[current_comp][current_section][key] = val
-                                i += 1
-                            else:
-                                i += 1
-                        else:
-                            i += 1
-                else:
-                    i += 1
+    #                     if stripped.startswith("- "):
+    #                         item = stripped[2:]
+    #                         if item.endswith(":"):
+    #                             nested_key = item[:-1].strip()
+    #                             config[current_comp][current_section][nested_key] = {}
+    #                             i += 1
+    #                             while i < len(lines) and lines[i].startswith("  - "):
+    #                                 subitem_line = lines[i].strip()[2:]
+    #                                 if ":" in subitem_line:
+    #                                     subkey, subval = map(
+    #                                         str.strip, subitem_line.split(":", 1))
+    #                                     config[current_comp][current_section][nested_key][subkey] = subval
+    #                                 i += 1
+    #                         elif ":" in item:
+    #                             key, val = map(str.strip, item.split(":", 1))
+    #                             config[current_comp][current_section][key] = val
+    #                             i += 1
+    #                         else:
+    #                             i += 1
+    #                     else:
+    #                         i += 1
+    #             else:
+    #                 i += 1
 
-            return config
-        except Exception as e:
-            logging.error(f"Error converting Markdown to dict: {e}")
-            return {}
+    #         return config
+    #     except Exception as e:
+    #         logging.error(f"Error converting Markdown to dict: {e}")
+    #         return {}
