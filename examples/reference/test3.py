@@ -1,6 +1,7 @@
 # import packages/modules
 import os
 import pyThermoDB as ptdb
+from pyThermoDB.references import load_custom_reference
 from rich import print
 
 # get versions
@@ -179,10 +180,11 @@ ref3 = {'reference': [yml_path]}
 # ===============================
 # SECTION: CHECK CUSTOM REFERENCE
 # ===============================
-custom_reference_loaded = ptdb.load_custom_reference(
+custom_reference_loaded = load_custom_reference(
     custom_reference=ref1,
     save_to_file=True,
-    file_format='yml',
+    file_format='txt',
+    file_name='custom_ref1',
     output_dir=parent_dir,
 )
 
