@@ -179,7 +179,13 @@ ref3 = {'reference': [yml_path]}
 # ===============================
 # SECTION: CHECK CUSTOM REFERENCE
 # ===============================
-custom_reference_loaded = ptdb.load_custom_reference(custom_reference=ref1)
+custom_reference_loaded = ptdb.load_custom_reference(
+    custom_reference=ref1,
+    save_to_file=True,
+    file_format='yml',
+    output_dir=parent_dir,
+)
+
 print(custom_reference_loaded)
 
 # ===============================

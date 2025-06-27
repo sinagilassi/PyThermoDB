@@ -4,7 +4,8 @@ from typing import (
     Optional,
     Dict,
     List,
-    Any
+    Any,
+    Literal
 )
 # internal
 from .docs import (
@@ -17,7 +18,11 @@ from .docs import (
 
 
 def load_custom_reference(
-    custom_reference: Dict[str, List[str]]
+    custom_reference: Dict[str, List[str]],
+    save_to_file: bool = False,
+    file_format: Literal['txt', 'yml'] = 'txt',
+    file_name: Optional[str] = None,
+    output_dir: Optional[str] = None
 ) -> Dict[str, Any]:
     '''
     Load custom reference (external reference) to check and build thermodynamic data and equations.
@@ -25,23 +30,44 @@ def load_custom_reference(
     Parameters
     ----------
     custom_reference : dict
-        Custom reference dictionary to check, by default None
+        Custom reference dictionary to check.
+    save_to_file : bool, optional
+        If True, save the custom reference to a txt file, by default False.
+    file_format : Literal['txt', 'yml'], optional
+        Format of the file to save the custom reference, by default 'txt'. Options are 'txt' or 'yml'.
+    file_name : str, optional
+        Name of the file to save the custom reference, by default None. If not specified,
+    directory : str, optional
+        Directory to save the custom reference file, by default None. The file will be saved in the current working directory if not specified.
 
     Returns
     -------
     bool
         True if the custom reference is valid, False otherwise.
-
     '''
     try:
-        # NOTE: build custom reference
+        # SECTION: check custom reference
+        if not isinstance(custom_reference, dict):
+            logging.error("Custom reference must be a dictionary!")
+            return {}
+
+        # check if custom_reference is empty
+        if not custom_reference:
+            logging.error("Custom reference is empty!")
+            return {}
+
+        # SECTION: build custom reference
         CustomRefC = CustomRef(custom_reference)
         # check ref
         CustomRefC.init_ref()
 
-        # NOTE: load custom reference
+        # SECTION: load custom reference
         reference = ManageData.load_custom_reference(
-            custom_ref=CustomRefC
+            custom_ref=CustomRefC,
+            save_to_file=save_to_file,
+            file_format=file_format,
+            file_name=file_name,
+            output_dir=output_dir
         )
 
         # res
@@ -52,7 +78,8 @@ def load_custom_reference(
         # return
         return reference
     except Exception as e:
-        raise Exception(f"Checking custom reference failed! {e}")
+        logging.error(f"Loading custom reference failed! {e}")
+        return {}
 
 
 def init(
