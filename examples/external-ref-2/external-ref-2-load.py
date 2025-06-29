@@ -8,33 +8,25 @@ import pyThermoDB as ptdb
 print(ptdb.__version__)
 
 # ====================================
-# ! SET FILES
+# CUSTOM REFERENCES
 # ====================================
-# component
-comp1 = 'toluene'
+# parent directory
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+print(f"Parent directory: {parent_dir}")
 
-thermodb_file = f'{comp1}-3.pkl'
-thermodb_path = os.path.join(
-    os.getcwd(),
-    'examples',
-    'external-ref',
-    'thermodb'
-)
+# file
+thermodb_file = 'toluene-1.pkl'
 
 # ====================================
-# ! LOAD THERMODB
+# LOAD THERMODB
 # ====================================
 # load a thermodb
 thermo_db_loaded = ptdb.load_thermodb(
-    os.path.join(thermodb_path, thermodb_file))
+    os.path.join(parent_dir, thermodb_file))
 print(type(thermo_db_loaded))
 
 # check
 print(thermo_db_loaded.check())
-
-# check properties
-print(thermo_db_loaded.check_properties())
-
 
 # ====================================
 # SELECT PROPERTY
@@ -54,13 +46,7 @@ print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 # SELECT A FUNCTION
 # ====================================
 # select function
-# func1_ = thermo_db_loaded.select_function('heat-capacity')
-# print(type(func1_))
-# print(func1_.args)
-# print(func1_.cal(T=295.15, message="heat capacity result"))
-
-# select function
-func2_ = thermo_db_loaded.select_function('vapor-pressure')
-print(type(func2_))
-print(func2_.args)
-print(func2_.cal(T=295.15, message="vapor pressure result"))
+func1_ = thermo_db_loaded.select_function('vapor-pressure')
+print(type(func1_))
+print(func1_.args)
+print(func1_.cal(T=295.15, message="vapor pressure result"))
