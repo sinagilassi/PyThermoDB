@@ -397,6 +397,33 @@ class ManageData():
         except Exception as e:
             raise Exception(f"description loading error! {e}")
 
+    def get_descriptions_by_databook(self, databook: str) -> dict:
+        '''
+        Get descriptions by databook
+
+        Parameters
+        ----------
+        databook : str
+            databook name
+
+        Returns
+        -------
+        descriptions : dict
+            descriptions of the databook
+        '''
+        try:
+            # check
+            if databook not in self.__description:
+                raise ValueError(f"Databook {databook} not found!")
+
+            # get descriptions
+            descriptions = self.__description[databook]
+
+            # return
+            return descriptions
+        except Exception as e:
+            raise Exception(f"description loading error! {e}")
+
     def get_databook_bulk(self) -> dict[str, list[DataBookTableTypes]]:
         '''
         Get databook bulk
@@ -624,7 +651,13 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
-    def get_databook_id(self, databook: str, res_format: Literal['str', 'json', 'dict', 'int'] = 'json') -> str | int | dict[str, str]:
+    def get_databook_id(
+        self,
+        databook: str,
+        res_format: Literal[
+            'str', 'json', 'dict', 'int'
+        ] = 'json'
+    ) -> str | int | dict[str, str]:
         '''
         Get databook id
 
