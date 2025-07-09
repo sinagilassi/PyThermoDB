@@ -167,6 +167,54 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Descriptions loading error! {e}")
 
+    def databook_info(
+        self,
+        databook: int | str,
+        res_format: Literal[
+            'dict', 'str', 'json'
+        ] = 'json'
+    ) -> Dict[str, str | Dict[str, str]] | str:
+        '''
+        Get information about a databook.
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        res_format : Literal['dict', 'json']
+            Format of the returned data. Defaults to 'dict'.
+
+        Returns
+        -------
+        res : Dict[str, str | Dict[str, str]] | str
+            Dictionary containing databook information or a string representation.
+            - 'DATABOOK-ID': ID of the databook.
+            - 'DATABOOK-NAME': Name of the databook.
+            - 'DESCRIPTION': Description of the databook.
+        '''
+        try:
+            # find databook
+            db, db_name, db_id = self.find_databook(databook)
+
+            # get databook info
+            res = self.get_descriptions_by_databook(db_name)
+
+            # check
+            if res_format == 'dict':
+                return res
+            elif res_format == 'str':
+                # convert to json
+                return str(res)
+            elif res_format == 'json':
+                # convert to json
+                return json.dumps(res, indent=4)
+            else:
+                logging.error('Invalid res_format')
+
+            return res
+        except Exception as e:
+            raise Exception(f"Databook info loading error! {e}")
+
     def list_databooks(
             self,
             res_format: Literal[
