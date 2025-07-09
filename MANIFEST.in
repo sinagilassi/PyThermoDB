@@ -1,1 +1,5 @@
+include pyThermoDB/templates/*.html
+include pyThermoDB/static/*
+include pyThermoDB/static/**/*
+recursive-include pyThermoDB/templates *
 recursive-include pyThermoDB/static *
