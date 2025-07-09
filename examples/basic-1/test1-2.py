@@ -43,6 +43,13 @@ print(len(component_info))
 db_list = tdb.list_databooks(res_format='json')
 print(db_list)
 
+# databook info
+db_info = tdb.databook_info(
+    'Chemical Thermodynamics for Process Simulation',
+    res_format='json'
+)
+print(db_info)
+
 
 # ===============================
 # DATABOOK ID

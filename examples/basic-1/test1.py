@@ -65,6 +65,7 @@ print(type(res_))
 # ===============================
 # load equation to check
 vapor_pressure_tb = tdb.equation_load(1, 4)
+
 print(vapor_pressure_tb.eq_structure(1))
 # load data to check
 data_table = tdb.data_load(1, 2)
