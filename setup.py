@@ -38,11 +38,12 @@ setup(
     include_package_data=True,  # Make sure to include non-Python files
     # Add both config and data files
     package_data={
-        '': [
+        'pyThermoDB': [
             'config/*.yml',
             'data/*.csv',
             'templates/*.html',
-            'static/*'
+            'static/*',
+            'static/**/*'  # Include subdirectories
         ]
     },
     # Add license file
