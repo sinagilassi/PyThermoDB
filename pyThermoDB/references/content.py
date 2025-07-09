@@ -1,6 +1,11 @@
 # import libs
-from typing import Dict, List, Any, Union, Optional, Literal
-import json
+from typing import (
+    Dict,
+    List,
+    Any,
+    Optional,
+    Literal
+)
 import logging
 # local
 from ..utils import Convertor
@@ -51,7 +56,10 @@ class ReferenceContent:
             # check
             if normalized_format == "markdown":
                 # For markdown, we can return a simple dict with the raw data
-                return self.md_to_dict(reference_config)
+                # return self.md_to_dict(reference_config)
+                logging.error(
+                    "Markdown format is not supported for reference content.")
+                return {}
             elif normalized_format in ["yaml", "json"]:
                 return self.Convertor_.str_to_dict(
                     reference_config,

@@ -32,7 +32,7 @@ print(component_list)
 print(len(component_list))
 
 # component info
-component_info = tdb.list_component_info(res_format='json')
+component_info = tdb.list_components_info(res_format='json')
 print(component_info)
 print(len(component_info))
 

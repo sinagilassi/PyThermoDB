@@ -198,7 +198,7 @@ property_source = {
 }
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
-    property_source=property_source,
+    reference_config=property_source,
     custom_reference=ref)
 
 #  check

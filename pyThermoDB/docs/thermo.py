@@ -1,9 +1,16 @@
 # import packages/modules
+import logging
 import os
 import pandas as pd
-from typing import List, Dict, Optional, Literal, Union, Tuple, Hashable
+from typing import (
+    List,
+    Dict,
+    Optional,
+    Literal,
+    Union,
+    Hashable
+)
 import json
-import asyncio
 import webbrowser
 import tempfile
 # from jinja2 import Environment, FileSystemLoader
@@ -23,6 +30,40 @@ from ..data import TableTypes
 from ..models import DataBookTableTypes
 # web app
 from ..ui import Launcher
+
+# SECTION: types
+ComponentSearch = Union[
+    list[dict[str, str]],
+    pd.DataFrame,
+    str,
+    dict[str, str | dict[str, str]]
+]
+
+ListComponents = Union[
+    list[str],
+    dict[str, list[str]],
+    str
+]
+
+ListComponentsInfo = Union[
+    list[dict[str, str | int]],
+    dict[str, dict[str, str | int]],
+    str
+]
+
+ListDatabookDescriptions = Union[
+    dict[str, str | dict[str, str]],
+    list[str],
+    str,
+    pd.DataFrame
+]
+
+ThermoProperty = Union[
+    TableEquation,
+    TableData,
+    TableMatrixEquation,
+    TableMatrixData
+]
 
 
 class ThermoDB(ManageData):
@@ -56,10 +97,11 @@ class ThermoDB(ManageData):
     def selected_tb(self, value):
         self.__selected_tb = value
 
-    def list_symbols(self,
-                     res_format: Literal[
-                         'dict', 'list', 'dataframe', 'json'
-                     ] = 'dataframe'):
+    def list_symbols(
+            self,
+            res_format: Literal[
+                'dict', 'list', 'dataframe', 'json'
+            ] = 'dataframe'):
         '''
         List all symbols
 
@@ -87,17 +129,24 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Symbols loading error! {e}")
 
-    def list_descriptions(self,
-                          res_format: Literal[
-                              'dict', 'list', 'dataframe', 'json'
-                          ] = 'dataframe'):
+    def list_descriptions(
+            self,
+            res_format: Literal[
+                'dict', 'list', 'dataframe', 'json'
+            ] = 'dataframe'
+    ) -> ListDatabookDescriptions:
         '''
-        List all descriptions
+        List all descriptions of databooks and tables
 
         Parameters
         ----------
         res_format : Literal['dict', 'list', 'dataframe', 'json']
             Format of the returned data. Defaults to 'dataframe'.
+
+        Returns
+        -------
+        res : ListDatabookDescriptions
+            List of descriptions in the specified format.
         '''
         try:
             # load descriptions
@@ -118,10 +167,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Descriptions loading error! {e}")
 
-    def list_databooks(self,
-                       res_format: Literal[
-                           'list', 'dataframe', 'json'
-                       ] = 'dataframe'):
+    def list_databooks(
+            self,
+            res_format: Literal[
+                'list', 'dataframe', 'json'
+            ] = 'dataframe'):
         '''
         List all databooks
 
@@ -193,9 +243,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception("Table loading error!,", e)
 
-    def select_table(self,
-                     databook: int | str,
-                     table: int | str) -> DataBookTableTypes:
+    def select_table(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> DataBookTableTypes:
         '''
         Select a table structure
 
@@ -257,14 +309,33 @@ class ThermoDB(ManageData):
             raise Exception(
                 f"An error occurred while selecting the table: {e}")
 
-    def table_description(self,
-                          databook: int | str,
-                          table: int | str,
-                          res_format: Literal[
-                              'str', 'json', 'dict'
-                          ] = 'str') -> str | dict:
+    def table_description(
+        self,
+        databook: int | str,
+        table: int | str,
+        res_format: Literal[
+            'str', 'json', 'dict'
+        ] = 'str'
+    ) -> str | dict:
         '''
         Get information about a databook.
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+        res_format : Literal['str', 'json', 'dict']
+            Format of the returned data. Defaults to 'str'.
+
+        Returns
+        -------
+        str | dict
+            Description of the table in the specified format.
+            - 'str': Returns the description as a string.
+            - 'dict': Returns a dictionary with the description.
+            - 'json': Returns a JSON string with the description.
         '''
         try:
             # get the tb
@@ -301,13 +372,14 @@ class ThermoDB(ManageData):
             raise Exception(
                 f"An error occurred while getting the databook info: {e}")
 
-    def table_info(self,
-                   databook: int | str,
-                   table: int | str,
-                   res_format: Literal[
-                       'dict', 'dataframe', 'json'
-                   ] = 'dataframe'
-                   ) -> dict[str, int | str] | pd.DataFrame | str:
+    def table_info(
+        self,
+        databook: int | str,
+        table: int | str,
+        res_format: Literal[
+            'dict', 'dataframe', 'json'
+        ] = 'dataframe'
+    ) -> dict[str, int | str] | pd.DataFrame | str:
         '''
         Gives table contents as:
 
@@ -616,8 +688,14 @@ class ThermoDB(ManageData):
                     return rendered_html
 
                 # generate HTML content for the requested page
-                html_content = render_page(db_name, tb_name, tb_res,
-                                           page=1, rows_per_page=50, theme='light')
+                html_content = render_page(
+                    db_name,
+                    tb_name,
+                    tb_res,
+                    page=1,
+                    rows_per_page=50,
+                    theme='light'
+                )
 
                 # temporary file to store the HTML content
                 with tempfile.NamedTemporaryFile(
@@ -696,14 +774,15 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error displaying tables: {e}")
 
-    def table_data(self,
-                   databook: str | int,
-                   table: str | int,
-                   res_format: Literal[
-                       'dataframe', 'list', 'json'
-                   ] = 'dataframe'
-                   ) -> pd.DataFrame | List[
-                       Dict[Hashable, Optional[float | int | str]]
+    def table_data(
+        self,
+        databook: str | int,
+        table: str | int,
+        res_format: Literal[
+            'dataframe', 'list', 'json'
+        ] = 'dataframe'
+    ) -> pd.DataFrame | List[
+        Dict[Hashable, Optional[float | int | str]]
     ] | str | Dict[str, pd.DataFrame]:
         '''
         Get all table elements (display a table)
@@ -760,10 +839,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
-    def equation_load(self,
-                      databook: int | str,
-                      table: int | str
-                      ) -> TableEquation:
+    def equation_load(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableEquation:
         '''
         Display table header columns and other info
 
@@ -825,9 +905,13 @@ class ThermoDB(ManageData):
                         table_equations.append(item)
 
                     # create table equation
-                    return TableEquation(db_name, table_name, table_equations,
-                                         table_values=table_values,
-                                         table_structure=table_structure)
+                    return TableEquation(
+                        db_name,
+                        table_name,
+                        table_equations,
+                        table_values=table_values,
+                        table_structure=table_structure
+                    )
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -836,10 +920,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def data_load(self,
-                  databook: int | str,
-                  table: int | str
-                  ) -> TableData:
+    def data_load(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableData:
         '''
         Display table header columns and other info
 
@@ -910,9 +995,13 @@ class ThermoDB(ManageData):
                         raise ValueError("Table data is empty!")
 
                     # data no
-                    return TableData(db_name, table_name, table_data,
-                                     table_values=table_values,
-                                     table_structure=table_structure)
+                    return TableData(
+                        db_name,
+                        table_name,
+                        table_data,
+                        table_values=table_values,
+                        table_structure=table_structure
+                    )
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -920,10 +1009,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_equation_load(self,
-                             databook: int | str,
-                             table: int | str
-                             ) -> TableMatrixEquation:
+    def matrix_equation_load(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableMatrixEquation:
         '''
         Display table header columns and other info
 
@@ -980,10 +1070,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def matrix_data_load(self,
-                         databook: int | str,
-                         table: int | str
-                         ) -> TableMatrixData:
+    def matrix_data_load(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableMatrixData:
         '''
         Gives table contents as:
 
@@ -1035,15 +1126,17 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def check_component(self,
-                        component_name: str | list[str],
-                        databook: int | str,
-                        table: int | str,
-                        column_name: Optional[str | list[str]] = None,
-                        query: bool = False,
-                        res_format: Literal[
-                            'dict', 'json', 'str'
-                        ] = 'json') -> Union[str, dict[str, str]]:
+    def check_component(
+            self,
+            component_name: str | list[str],
+            databook: int | str,
+            table: int | str,
+            column_name: Optional[str | list[str]] = None,
+            query: bool = False,
+            res_format: Literal[
+                'dict', 'json', 'str'
+            ] = 'json'
+    ) -> Union[str, dict[str, str]]:
         '''
         Check a component availability in the selected databook and table
 
@@ -1126,10 +1219,11 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
-    def check_component_api(self,
-                            component_name: str | list,
-                            databook_id: int,
-                            table_id: int):
+    def check_component_api(
+            self,
+            component_name: str | list,
+            databook_id: int,
+            table_id: int):
         '''
         Check component availability in the selected databook and table
 
@@ -1168,7 +1262,11 @@ class ThermoDB(ManageData):
                     #     table_id-1][0]
 
                     list_tables_ = self.list_tables(
-                        databook=databook_id, res_format='list')
+                        databook=databook_id,
+                        res_format='list'
+                    )
+
+                    # set
                     table_id_ = table_id - 1
 
                     # check
@@ -1178,26 +1276,30 @@ class ThermoDB(ManageData):
                         table_name = "Obsolete Table"
 
                     # check
-                    if component_name.upper() in compListUpper:
-                        print(
-                            f"[{component_name}] available in [{table_name}] | [{databook_name}]")
-                    else:
-                        print(f"{component_name} is not available.")
+                    # if component_name.upper() in compListUpper:
+                    #     print(
+                    #         f"[{component_name}] available in [{table_name}] | [{databook_name}]")
+                    # else:
+                    #     print(f"{component_name} is not available.")
                 else:
                     print("API error. Please try again later.")
+
+                return None
             else:
                 raise Exception(
                     "Invalid input. Please check the input type (databook_id and table_id).")
         except Exception as e:
             raise Exception(f'Checking data error {e}')
 
-    def check_component_local(self,
-                              component_name: str | list,
-                              databook_id: int,
-                              table_id: int,
-                              column_name: str | list[str],
-                              query: bool = False,
-                              verbose: bool = False) -> bool:
+    def check_component_local(
+        self,
+        component_name: str | list,
+        databook_id: int,
+        table_id: int,
+        column_name: str | list[str],
+        query: bool = False,
+        verbose: bool = False
+    ) -> bool:
         '''
         Check component availability in the selected databook and table
 
@@ -1339,10 +1441,13 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Loading data failed {e}")
 
-    def get_component_data_api(self,
-                               component_name,
-                               databook_id, table_id,
-                               dataframe=False):
+    def get_component_data_api(
+            self,
+            component_name: str,
+            databook_id: int,
+            table_id: int,
+            dataframe: bool = False
+    ):
         '''
         Get component data from database (api)
 
@@ -1466,7 +1571,7 @@ class ThermoDB(ManageData):
         component_names: list[str],
         databook: int | str,
         table: int | str
-    ):
+    ) -> ThermoProperty:
         """
         Build a thermodynamic property including data, equation, matrix-data and matrix-equation.
 
@@ -1481,8 +1586,12 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        object : TableEquation | TableData | TableMatrixEquation | TableMatrixData
+        ThermoProperty
             table object with data loaded
+            - TableEquation
+            - TableData
+            - TableMatrixEquation
+            - TableMatrixData
         """
         try:
             # detect table type
@@ -1540,12 +1649,14 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
 
-    def build_equation(self,
-                       component_name: str,
-                       databook: int | str,
-                       table: int | str,
-                       column_name: Optional[str | list[str]] = None,
-                       query: bool = False) -> TableEquation:
+    def build_equation(
+        self,
+        component_name: str,
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+        query: bool = False
+    ) -> TableEquation:
         '''
         Build equation for as:
             step1: get thermo data for a component
@@ -1561,6 +1672,8 @@ class ThermoDB(ManageData):
             table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
+        query : bool
+            query to search a dataframe
 
         Returns
         -------
@@ -1629,12 +1742,14 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building equation error {e}')
 
-    def build_data(self,
-                   component_name: str,
-                   databook: int | str,
-                   table: int | str,
-                   column_name: Optional[str | list[str]] = None,
-                   query: bool = False) -> TableData:
+    def build_data(
+        self,
+        component_name: str,
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+        query: bool = False
+    ) -> TableData:
         '''
         Build data as:
             step1: get thermo data for a component
@@ -1649,11 +1764,13 @@ class ThermoDB(ManageData):
             table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
+        query : bool
+            query to search a dataframe
 
         Returns
         -------
-        dt: object
-            data object
+        TableData
+            table data object
         '''
         try:
             # check search option
@@ -1721,12 +1838,14 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building data error {e}')
 
-    def build_matrix_equation(self,
-                              component_names: list[str],
-                              databook: int | str,
-                              table: int | str,
-                              column_name: Optional[str | list[str]] = None,
-                              query: bool = False) -> TableMatrixEquation:
+    def build_matrix_equation(
+        self,
+        component_names: list[str],
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+        query: bool = False
+    ) -> TableMatrixEquation:
         '''
         Build matrix-equation for as:
             step1: get thermo data for a component
@@ -1784,10 +1903,14 @@ class ThermoDB(ManageData):
                 component_name = str(component_name).strip()
 
                 # get data from api
-                component_data = self.get_component_data(component_name,
-                                                         databook_id, table_id,
-                                                         column_name=column_name,
-                                                         query=query, matrix_tb=True)
+                component_data = self.get_component_data(
+                    component_name,
+                    databook_id,
+                    table_id,
+                    column_name=column_name,
+                    query=query,
+                    matrix_tb=True
+                )
                 # save
                 component_data_pack.append({
                     'component_name': component_name,
@@ -1838,13 +1961,14 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix-equation error {e}')
 
-    def build_matrix_data(self,
-                          component_names: list[str],
-                          databook: int | str,
-                          table: int | str,
-                          column_name: Optional[str | list[str]] = None,
-                          query: bool = False
-                          ) -> TableMatrixData:
+    def build_matrix_data(
+        self,
+        component_names: list[str],
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+        query: bool = False
+    ) -> TableMatrixData:
         '''
         Build matrix data as:
             step1: get thermo matrix data
@@ -1862,8 +1986,8 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        dt: object
-            data object
+        TableMatrixData
+            matrix-data object
         '''
         try:
             # check component list
@@ -1967,11 +2091,12 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
 
-    async def __search_databook(self,
-                                search_terms: list[str],
-                                search_mode: str,
-                                column_names: list[str] = ['Name', 'Formula']
-                                ) -> list[dict[str, str]]:
+    def __search_databook(
+        self,
+        search_terms: list[str],
+        search_mode: str,
+        column_names: list[str] = ['Name', 'Formula']
+    ) -> list[dict[str, str]]:
         """
         Search a term through all databook for instance a component name
 
@@ -1979,13 +2104,15 @@ class ThermoDB(ManageData):
         ----------
         search_terms : list[str]
             search terms as list, e.g. ['Carbon dioxide','CO2']
+        search_mode : Literal['exact', 'similar']
+            search mode, 'exact' or 'similar'
         column_names : list[str]
             column names to search, e.g. ['Name', 'Formula']
 
         Returns
         -------
-        str
-            search results
+        list[dict[str, str]]
+            search results as list of dictionaries, each dictionary contains
         """
         try:
             # set table reference
@@ -1993,7 +2120,7 @@ class ThermoDB(ManageData):
             TableReferenceC = TableReference(custom_ref=self.custom_ref)
 
             # search
-            res = await TableReferenceC.search_component(
+            res = TableReferenceC.search_component(
                 search_terms, search_mode, column_names=column_names)
 
             return res
@@ -2001,18 +2128,19 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Search databook error {e}')
 
-    def search_databook(self,
-                        search_terms: list[str],
-                        column_names: list[str] = ['Name', 'Formula'],
-                        res_format: Literal[
-                            'list', 'dataframe', 'json', 'dict'
-                        ] = 'dict',
-                        search_mode: Literal[
-                            'exact', 'similar'
-                        ] = 'exact'):
+    def search_databook(
+            self,
+            search_terms: list[str],
+            column_names: list[str] = ['Name', 'Formula'],
+            res_format: Literal[
+                'list', 'dataframe', 'json', 'dict'
+            ] = 'dict',
+            search_mode: Literal[
+                'exact', 'similar'
+            ] = 'exact'
+    ) -> ComponentSearch:
         """
         Search a term through all databook for instance a component name
-        This is a blocking function, use __search_databook for async version
 
         Parameters
         ----------
@@ -2020,22 +2148,30 @@ class ThermoDB(ManageData):
             search terms as list, e.g. ['Carbon dioxide','CO2']
         column_names : list[str]
             column names to search, e.g. ['Name', 'Formula']
+        res_format : Literal['list', 'dataframe', 'json', 'dict']
+            result format, 'list', 'dataframe', 'json' or 'dict'
+        search_mode : Literal['exact', 'similar']
+            search mode, 'exact' or 'similar'
 
         Returns
         -------
-        str
+        ComponentSearchResult
             search results
         """
         try:
             # call async function
-            res = asyncio.run(self.__search_databook(
-                search_terms, search_mode, column_names))
+            res = self.__search_databook(
+                search_terms,
+                search_mode,
+                column_names
+            )
 
             # check
             if len(res) == 0:
-                return {
-                    'message': f'No results found for the search terms : {search_terms}, search mode : {search_mode}',
-                }
+                logging.warning(
+                    f'No results found for the search terms: {search_terms}, search mode: {search_mode}'
+                )
+                return []
 
             # dict
             res_dict = {f'record-{i+1}': item for i, item in enumerate(res)}
@@ -2046,18 +2182,16 @@ class ThermoDB(ManageData):
                 }, **res_dict
             )
 
-            # json
-            res_json = json.dumps(res_dict, indent=4)
-            # dataframe
-            res_df = pd.DataFrame(res)
-
+            # NOTE: result settings
             # check res_format
             if res_format == 'list':
                 return res
             elif res_format == 'dataframe':
-                return res_df
+                # dataframe
+                return pd.DataFrame(res)
             elif res_format == 'json':
-                return res_json
+                # json
+                return json.dumps(res_dict, indent=4)
             elif res_format == 'dict':
                 return res_dict
             else:
@@ -2065,7 +2199,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Search databook error {e}')
 
-    async def __list_components(self):
+    def __list_components(self):
         """
         List all components in the databook
         """
@@ -2075,24 +2209,35 @@ class ThermoDB(ManageData):
             TableReferenceC = TableReference(custom_ref=self.custom_ref)
 
             # search
-            res = await TableReferenceC.list_all_components()
+            res = TableReferenceC.list_all_components()
 
             return res
 
         except Exception as e:
             raise Exception(f'Search databook error {e}')
 
-    def list_components(self,
-                        res_format: Literal[
-                            'list', 'dict', 'json'
-                        ] = 'dict'
-                        ) -> list[str] | dict[str, list[str]] | str:
+    def list_components(
+        self,
+        res_format: Literal[
+            'list', 'dict', 'json'
+        ] = 'dict'
+    ) -> ListComponents:
         """
         List all components in the databook
+
+        Parameters
+        ----------
+        res_format : Literal['list', 'dict', 'json']
+            result format, 'list', 'dict' or 'json'
+
+        Returns
+        -------
+        ListComponents
+            list of components in the databook
         """
         try:
-            # from async
-            res, _ = asyncio.run(self.__list_components())
+            # exec
+            res, _ = self.__list_components()
 
             # res dict
             res_dict = {
@@ -2115,16 +2260,28 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Listing component error {e}')
 
-    def list_component_info(self,
-                            res_format: Literal[
-                                'list', 'dict', 'json'
-                            ] = 'dict'):
+    def list_components_info(
+            self,
+            res_format: Literal[
+                'list', 'dict', 'json'
+            ] = 'dict'
+    ) -> ListComponentsInfo:
         """
-        List all components in the databook
+        List components information in the databook
+
+        Parameters
+        ----------
+        res_format : Literal['list', 'dict', 'json']
+            result format, 'list', 'dict' or 'json'
+
+        Returns
+        -------
+        ListComponentsInfo
+            list of components information in the databook
         """
         try:
             # from async
-            _, res = asyncio.run(self.__list_components())
+            _, res = self.__list_components()
 
             # dict
             res_dict = {f'record-{i+1}': item for i, item in enumerate(res)}

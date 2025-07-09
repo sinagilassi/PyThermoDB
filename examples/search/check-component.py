@@ -45,5 +45,9 @@ search_terms = [key1]
 column_names = ['Formula']
 # start search
 search_res = tdb.search_databook(
-    search_terms, res_format='json', search_mode='exact', column_names=column_names)
+    search_terms,
+    res_format='json',
+    search_mode='exact',
+    column_names=column_names
+)
 print(search_res)
