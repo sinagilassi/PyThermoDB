@@ -16,6 +16,8 @@ DESCRIPTION = (
     'provide quick access to essential thermodynamic data.'
 )
 LONG_DESCRIPTION = "The Python Thermodynamics Databook (PyThermoDB) is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants."
+HOME_PAGE = 'https://github.com/sinagilassi/PyThermoDB'
+DOCUMENTATION = 'https://pythermodb.readthedocs.io/en/latest/'
 
 # Setting up
 setup(
@@ -24,25 +26,42 @@ setup(
     author=AUTHOR,
     author_email=EMAIL,
     description=DESCRIPTION,
+    url=HOME_PAGE,
+    project_urls={
+        'Documentation': DOCUMENTATION,
+        'Source': HOME_PAGE,
+        'Tracker': f'{HOME_PAGE}/issues',
+    },
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
     include_package_data=True,  # Make sure to include non-Python files
     # Add both config and data files
-    package_data={'': ['config/*.yml', 'data/*.csv',
-                       'templates/*.html', 'static/*']},
+    package_data={
+        '': [
+            'config/*.yml',
+            'data/*.csv',
+            'templates/*.html',
+            'static/*'
+        ]
+    },
     # Add license file
     license='MIT',
     license_files=[],
-    install_requires=['pandas',
-                      'requests',
-                      'numpy',
-                      'PyYAML'],
+    install_requires=[
+        'pandas',
+        'requests',
+        'numpy',
+        'PyYAML'
+    ],
     extras_require={
         'web': ['jinja2'],
     },
-    keywords=['chemical engineering', 'thermodynamics',
-              'PyThermoDB', 'thermodynamic data'],
+    keywords=[
+        'chemical engineering',
+        'thermodynamics',
+        'thermodynamic data'
+    ],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Education",
