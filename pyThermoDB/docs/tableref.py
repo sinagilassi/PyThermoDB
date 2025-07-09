@@ -1,9 +1,11 @@
 # import packages/modules
 import os
 import pandas as pd
-from typing import Optional, Dict, Union, Any, List, Literal
+from typing import (
+    Optional,
+    Literal
+)
 import glob
-import asyncio
 # local
 from .managedata import ManageData
 from ..data import TableTypes
@@ -54,12 +56,13 @@ class TableReference(ManageData):
         _, df, _ = self.get_databooks()
         return df
 
-    def list_tables(self,
-                    databook: int | str,
-                    res_format: Literal[
-                        'list', 'dataframe', 'json', 'dict'
-                    ] = 'dataframe'
-                    ) -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
+    def list_tables(
+        self,
+        databook: int | str,
+        res_format: Literal[
+            'list', 'dataframe', 'json', 'dict'
+        ] = 'dataframe'
+    ) -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
         '''
         List all tables in the selected databook
 
@@ -94,10 +97,11 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception("Table loading error!,", e)
 
-    def load_table(self,
-                   databook_id: int,
-                   table_id: int
-                   ) -> pd.DataFrame:
+    def load_table(
+        self,
+        databook_id: int,
+        table_id: int
+    ) -> pd.DataFrame:
         """
         Load a `csv file` from app directory or external reference
         and convert it to a pandas dataframe.
@@ -383,12 +387,14 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def search_tables(self,
-                      databook_id: int,
-                      table_id: int,
-                      column_name: str | list[str],
-                      lookup: str | list[str],
-                      query: bool = False) -> pd.DataFrame:
+    def search_tables(
+            self,
+            databook_id: int,
+            table_id: int,
+            column_name: str | list[str],
+            lookup: str | list[str],
+            query: bool = False
+    ) -> pd.DataFrame:
         """
         Search tables in this directory
 
@@ -451,12 +457,14 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table searching error {e}")
 
-    def search_table(self,
-                     databook_id: int,
-                     table_id: int,
-                     column_name: str | list,
-                     lookup: str | list[str],
-                     query: bool = False) -> pd.DataFrame:
+    def search_table(
+        self,
+        databook_id: int,
+        table_id: int,
+        column_name: str | list,
+        lookup: str | list[str],
+        query: bool = False
+    ) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -527,13 +535,14 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Searching table error {e}")
 
-    def search_matrix_table(self,
-                            databook_id: int,
-                            table_id: int,
-                            column_name: str | list[str],
-                            lookup: str | list[str],
-                            query: bool = False
-                            ) -> pd.DataFrame:
+    def search_matrix_table(
+        self,
+        databook_id: int,
+        table_id: int,
+        column_name: str | list[str],
+        lookup: str | list[str],
+        query: bool = False
+    ) -> pd.DataFrame:
         '''
         Search inside csv file which is converted to pandas dataframe
 
@@ -642,14 +651,15 @@ class TableReference(ManageData):
             raise Exception(
                 f"Table data is not a pandas dataframe for {databook_id} and {table_id}.")
 
-    def make_payload(self,
-                     databook_id: int,
-                     table_id: int,
-                     column_name: str | list[str],
-                     lookup: str,
-                     query: bool = False,
-                     matrix_tb: bool = False
-                     ) -> PayLoadType | None:
+    def make_payload(
+        self,
+        databook_id: int,
+        table_id: int,
+        column_name: str | list[str],
+        lookup: str,
+        query: bool = False,
+        matrix_tb: bool = False
+    ) -> PayLoadType | None:
         '''
         Make standard data
 
@@ -723,11 +733,12 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Making payload error {e}")
 
-    async def search_component(self,
-                               search_terms: list[str],
-                               search_mode: str,
-                               column_names: list[str] = ['Name', 'Formula']
-                               ) -> list[dict]:
+    def search_component(
+        self,
+        search_terms: list[str],
+        search_mode: str,
+        column_names: list[str] = ['Name', 'Formula']
+    ) -> list[dict]:
         """
         Search a component in all databooks
 
@@ -859,8 +870,10 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f'Searching component error {e}')
 
-    async def list_all_components(self,
-                                  column_name: str = 'Name') -> tuple[list[str], list[dict[str, str | int]]]:
+    def list_all_components(
+        self,
+        column_name: str = 'Name'
+    ) -> tuple[list[str], list[dict[str, str | int]]]:
         """
         List all components in all databooks.
 
@@ -931,9 +944,10 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f'Listing all components error {e}')
 
-    def retrieve_data(self,
-                      table_data: DataBookTableTypes,
-                      table_type: str):
+    def retrieve_data(
+            self,
+            table_data: DataBookTableTypes,
+            table_type: str):
         '''
         Retrieve data from table data based on table type
 

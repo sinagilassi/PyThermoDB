@@ -1,6 +1,7 @@
 # import packages/modules
 import pyThermoDB as ptdb
 from rich import print
+from pyThermoDB.docs import TableData
 
 # versions
 print(ptdb.__version__)
@@ -32,8 +33,10 @@ tb_select = tdb.select_table(1, 2)
 print(tb_select)
 
 tb_select = tdb.select_table(
-    1, 'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, '
-       'Entropies, and Net Enthalpies of Combustion')
+    1,
+    'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, '
+    'Entropies, and Net Enthalpies of Combustion'
+)
 print(tb_select)
 
 # display a table
@@ -79,10 +82,11 @@ comp1 = "carbon Dioxide"
 # print(comp_data)
 
 # check component
-CO2_check_availability = tdb.check_component(comp1,
-                                             "Perry's Chemical Engineers' Handbook",
-                                             'TABLE 2-153 Heat Capacities of Inorganic '
-                                             'and Organic Liquids')
+CO2_check_availability = tdb.check_component(
+    comp1,
+    "Perry's Chemical Engineers' Handbook",
+    'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
+)
 print(CO2_check_availability)
 
 
@@ -91,6 +95,12 @@ print(CO2_check_availability)
 # ====================================
 # build thermo property
 CO2_data_0 = tdb.build_thermo_property([comp1], 1, 2)
+print(type(CO2_data_0))
+if not isinstance(CO2_data_0, TableData):
+    raise TypeError(
+        f"Expected TableData, got {type(CO2_data_0)} instead."
+    )
+# log
 print(CO2_data_0.data_structure())
 # get property
 res_ = CO2_data_0.get_property(5)
