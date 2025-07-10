@@ -14,9 +14,9 @@ def isNumber(value):
 
 def uppercaseStringList(value):
     '''
-    upercase string list
+    uppercase string list
 
-    args: 
+    args:
         value: string list
 
     returns:
