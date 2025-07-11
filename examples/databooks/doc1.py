@@ -2,6 +2,7 @@
 import os
 from rich import print
 from pyThermoDB.references import ThermoDatabook
+import pyThermoDB as ptdb
 
 # SECTION: create a new databook instance
 databook = ThermoDatabook("CO2 Hydrogenation")
@@ -57,3 +58,5 @@ print(f"Databook Contents: {databook_contents}")
 # save the contents to a file
 output_file = os.path.join(current_dir, "CO2_Hydrogenation_Databook.yml")
 databook.save_contents(output_file, res_format='yml')
+
+# SECTION: custom reference

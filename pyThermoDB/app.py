@@ -1,4 +1,5 @@
 # import packages/modules
+import logging
 from typing import (
     Optional,
     Dict,
@@ -174,8 +175,8 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
 def build_component_thermodb(
     component_name: str,
     reference_config: Union[Dict[str, Dict[str, str]], str],
-    thermodb_name: Optional[str] = None,
     custom_reference: Optional[Dict[str, List[str]]] = None,
+    thermodb_name: Optional[str] = None,
     message: Optional[str] = None
 ):
     '''
@@ -220,7 +221,7 @@ def build_component_thermodb(
         if not isinstance(component_name, str):
             raise TypeError("component_name must be a string")
 
-        # reference_config check
+        # NOTE: reference_config check
         if not isinstance(reference_config, (dict, str)):
             raise TypeError("property must be a dictionary or a string")
 
@@ -229,10 +230,22 @@ def build_component_thermodb(
             # ! init ReferenceConfig
             ReferenceConfig_ = ReferenceConfig()
             # convert to dict
-            reference_config = \
+            reference_config_ = \
                 ReferenceConfig_.set_reference_config(
                     reference_config
                 )
+
+            # ! extract component reference config
+            reference_config = reference_config_.get(component_name, {})
+            # check if reference_config is empty
+            if not reference_config:
+                raise ValueError(
+                    f"No reference config found for component '{component_name}' in the provided reference config."
+                )
+
+        # check if reference_config is a dict
+        if not isinstance(reference_config, dict):
+            raise TypeError("reference_config must be a dictionary")
 
             # SECTION: build thermodb
         thermodb = init(custom_reference=custom_reference)
