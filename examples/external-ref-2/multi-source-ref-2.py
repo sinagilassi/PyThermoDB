@@ -173,9 +173,9 @@ EXTERNAL-REFERENCES:
 # custom ref
 ref = {'reference': [file_contents]}
 # md ref
-ref = {'reference': [md_path]}
+# ref = {'reference': [md_path]}
 # yml ref
-ref = {'reference': [yml_path]}
+# ref = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB

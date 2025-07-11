@@ -1,4 +1,5 @@
 # import packages/modules
+from typing import Dict, List, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
@@ -172,7 +173,7 @@ EXTERNAL-REFERENCES:
 """
 
 # custom ref
-ref = {'reference': [file_contents]}
+ref: Dict[str, List[str | Dict[str, Any]]] = {'reference': [file_contents]}
 # md ref
 # ref = {'reference': [md_path]}
 # yml ref
@@ -199,7 +200,8 @@ property_source = {
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=property_source,
-    custom_reference=ref)
+    custom_reference=ref
+)
 
 #  check
 print(thermodb_component_.check())
@@ -219,7 +221,7 @@ property_source_2 = {
 
 thermodb_components_ = ptdb.build_components_thermodb(
     component_names=['ethanol', 'methanol'],
-    property_source=property_source_2,
+    reference_config=property_source_2,
     custom_reference=ref)
 # check
 print(thermodb_components_.check())
