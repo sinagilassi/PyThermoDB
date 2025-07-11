@@ -1,4 +1,5 @@
 # import packages/modules
+import logging
 import os
 import yaml
 import re
@@ -55,7 +56,8 @@ class CustomRef:
 
             # check ref keys [yml, reference, csv, tables, symbols]
             if len(ref_keys) == 0:
-                raise Exception("No reference keys found.")
+                logging.warning("No reference keys found.")
+                raise RuntimeError("No reference keys found.")
 
             # NOTE: check data mode
             # ! only one key is allowed
@@ -68,7 +70,7 @@ class CustomRef:
             # res
             return 'NORMAL'
         except Exception as e:
-            raise Exception(f"Setting data mode failed! {e}")
+            raise RuntimeError(f"Setting data mode failed! {e}")
 
     def init_ref(self) -> bool:
         '''
@@ -238,16 +240,19 @@ class CustomRef:
                         raise Exception(
                             "No data in the file number %d" % i)
 
-                    # check if content is a dict
+                    # NOTE: check if content is a dict
                     if isinstance(content, dict):
+                        # ! dict
                         # extract data
                         temp_data = content
                     else:
-                        # NOTE: check content format
+                        # ! str
+                        # ? check content format
                         content_format = self.check_content_format(content)
 
                         # NOTE: extract data
                         if content_format == 'yml':
+                            # ! yml
                             # load data
                             temp_data = yaml.load(
                                 content, Loader=yaml.FullLoader)
@@ -257,6 +262,7 @@ class CustomRef:
                                     "No data in the content number %d" % i)
 
                         elif content_format == 'markdown':
+                            # ! markdown
                             # parse markdown
                             temp_data = self.parse_markdown(content)
                         else:

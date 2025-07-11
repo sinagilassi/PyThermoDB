@@ -177,7 +177,10 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
 
 def build_component_thermodb(
     component_name: str,
-    reference_config: Union[Dict[str, Dict[str, str]], str],
+    reference_config: Union[
+        Dict[str, Dict[str, str]],
+        str
+    ],
     custom_reference: Optional[
         Dict[
             str,
@@ -208,6 +211,7 @@ def build_component_thermodb(
     Property dict should contain the following format:
 
     ```python
+    # Dict[str, Dict[str, str]]
     reference_config = {
         'heat-capacity': {
             'databook': 'CUSTOM-REF-1',
@@ -251,11 +255,11 @@ def build_component_thermodb(
                     f"No reference config found for component '{component_name}' in the provided reference config."
                 )
 
-        # check if reference_config is a dict
+        # NOTE: check if reference_config is a dict
         if not isinstance(reference_config, dict):
             raise TypeError("reference_config must be a dictionary")
 
-            # SECTION: build thermodb
+        # SECTION: build thermodb
         thermodb = init(custom_reference=custom_reference)
 
         # init res
@@ -266,7 +270,7 @@ def build_component_thermodb(
         if not isinstance(databook_list, list):
             raise TypeError("Databook list must be a list")
 
-        # check both databook and table
+        # SECTION: check both databook and table
         for prop_name, prop_idx in reference_config.items():
             # property name
             prop_name = prop_name.strip()
