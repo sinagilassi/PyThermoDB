@@ -20,7 +20,7 @@ class CustomRef:
         self.md_files: list[str] = []
 
         # NOTE: raw content
-        self.contents: List[str] | None = None
+        self.contents: List[str | dict] | None = None
 
         # NOTE: paths
         self.yml_paths: list[str] = []
@@ -34,7 +34,12 @@ class CustomRef:
         # NOTE: data mode
         self.data_mode: Literal['NORMAL', 'VALUES'] = self.set_data_mode()
 
-    def set_data_mode(self, data_mode: Literal['NORMAL', 'VALUES'] = 'NORMAL'):
+    def set_data_mode(
+        self,
+        data_mode: Literal[
+            'NORMAL', 'VALUES'
+        ] = 'NORMAL'
+    ):
         '''
         Set data mode
 
@@ -88,7 +93,7 @@ class CustomRef:
         '''
         try:
             # SECTION: extract data
-            # reference
+            # NOTE: reference
             yml_files = self.ref.get('yml') or self.ref.get('reference') or []
             md_files = self.ref.get('md') or self.ref.get('reference') or []
             # tables
@@ -105,8 +110,10 @@ class CustomRef:
                 raise Exception("No csv files to update.")
 
             # NOTE: check file extension
-            yml_files = [x for x in yml_files if x.endswith('.yml')]
-            md_files = [x for x in md_files if x.endswith('.md')]
+            # ! yml files
+            yml_files = [x for x in yml_files if str(x).endswith('.yml')]
+            # ! md files
+            md_files = [x for x in md_files if str(x).endswith('.md')]
 
             # NOTE: check string format
             if len(yml_files) == 0 and len(md_files) == 0:
@@ -231,9 +238,32 @@ class CustomRef:
                         raise Exception(
                             "No data in the file number %d" % i)
 
-                    # extract data
-                    temp_data = self.parse_markdown(content)
-                    # merge data
+                    # check if content is a dict
+                    if isinstance(content, dict):
+                        # extract data
+                        temp_data = content
+                    else:
+                        # NOTE: check content format
+                        content_format = self.check_content_format(content)
+
+                        # NOTE: extract data
+                        if content_format == 'yml':
+                            # load data
+                            temp_data = yaml.load(
+                                content, Loader=yaml.FullLoader)
+                            # check
+                            if temp_data is None:
+                                raise Exception(
+                                    "No data in the content number %d" % i)
+
+                        elif content_format == 'markdown':
+                            # parse markdown
+                            temp_data = self.parse_markdown(content)
+                        else:
+                            raise Exception(
+                                f"Content format {content_format} not recognized.")
+
+                    # NOTE: merge data
                     data.update(temp_data['REFERENCES'])
 
             # res
@@ -541,7 +571,7 @@ class CustomRef:
 
         return result
 
-    def content_manager(self, content: List[str]):
+    def content_manager(self, content: List[str | dict]) -> List[str | dict]:
         '''
         Manage content
 
@@ -552,7 +582,7 @@ class CustomRef:
 
         Returns
         -------
-        content : str
+        content : str | dict
             content
         '''
         try:
@@ -567,3 +597,39 @@ class CustomRef:
             return content
         except Exception as e:
             raise Exception(f"Content manager failed! {e}")
+
+    def check_content_format(self, content: str | dict) -> str:
+        """
+        Check the format of the content and return markdown or yml.
+
+        Parameters
+        ----------
+        content : str
+            The content to check.
+
+        Returns
+        -------
+        str
+            'markdown' if the content is in markdown format, 'yml' otherwise.
+        """
+        try:
+            # NOTE: If content is a dictionary, convert it to a string
+            if isinstance(content, dict):
+                return 'dict'
+
+            # NOTE: set content to string
+            content = str(content)
+
+            # Regex to match a line starting with optional spaces, then # REFERENCES
+            pattern = r"^\s*#\s*REFERENCES\s*$"
+
+            # check if the content matches the markdown pattern
+            if re.search(pattern, content, re.MULTILINE | re.IGNORECASE):
+                return 'markdown'
+            # Check if the content is in YAML format
+            elif yaml.safe_load(content) is not None:
+                return 'yml'
+            else:
+                raise ValueError("Content format not recognized.")
+        except Exception as e:
+            raise Exception(f"Checking content format failed! {e}")

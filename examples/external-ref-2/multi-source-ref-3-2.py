@@ -1,4 +1,5 @@
 # import packages/modules
+from typing import Dict, List, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
@@ -206,7 +207,7 @@ EXTERNAL-REFERENCES:
 # - [1,'carbon dioxide','CO2','g',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
 
 # custom ref
-ref = {'reference': [file_contents]}
+ref: Dict[str, Any] = {'reference': [file_contents]}
 # md ref
 # ref = {'reference': [md_path]}
 # yml ref

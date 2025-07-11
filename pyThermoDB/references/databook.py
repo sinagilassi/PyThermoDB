@@ -83,6 +83,13 @@ class ThermoDatabook():
         """
         return self._databook_id
 
+    @databook_id.setter
+    def databook_id(self, databook_id: int):
+        """
+        Sets the databook id.
+        """
+        self._databook_id = databook_id
+
     @property
     def description(self) -> str:
         """

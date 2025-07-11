@@ -4,7 +4,8 @@ from typing import (
     Optional,
     Dict,
     List,
-    Union
+    Union,
+    Any
 )
 # internal
 from .docs import (
@@ -17,14 +18,16 @@ from .references import ReferenceConfig
 
 
 def init(
-    custom_reference: Optional[Dict[str, List[str]]] = None
+    custom_reference: Optional[
+        Dict[str, List[str | Dict[str, Any]]]
+    ] = None
 ) -> ThermoDB:
     '''
     Initialize thermodb app to check and build thermodynamic data and equations.
 
     Parameters
     ----------
-    custom_reference : dict
+    custom_reference : dict | None, optional
         set-up external reference (custom reference) dict for databook and tables (check examples)
 
     Returns
@@ -175,7 +178,12 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
 def build_component_thermodb(
     component_name: str,
     reference_config: Union[Dict[str, Dict[str, str]], str],
-    custom_reference: Optional[Dict[str, List[str]]] = None,
+    custom_reference: Optional[
+        Dict[
+            str,
+            List[str | Dict[str, Any]]
+        ]
+    ] = None,
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None
 ):
@@ -190,7 +198,7 @@ def build_component_thermodb(
         Dictionary containing properties of the component to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
-    custom_reference : Optional[Dict[str, List[str]]], optional
+    custom_reference : Optional[Dict[str, List[str | dict]]], optional
         Custom reference dictionary for external references, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
@@ -357,7 +365,7 @@ def build_components_thermodb(
     component_names: List[str],
     reference_config: Dict[str, Dict[str, str]],
     thermodb_name: Optional[str] = None,
-    custom_reference: Optional[Dict[str, List[str]]] = None,
+    custom_reference: Optional[Dict[str, List[str | dict]]] = None,
     message: Optional[str] = None
 ):
     '''
@@ -371,7 +379,7 @@ def build_components_thermodb(
         Dictionary containing properties of the components to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
-    custom_reference : Optional[Dict[str, List[str]]], optional
+    custom_reference : Optional[Dict[str, List[str | dict]]], optional
         Custom reference dictionary for external references, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
