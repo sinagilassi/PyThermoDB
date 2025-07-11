@@ -233,7 +233,7 @@ reference_config = {
 
 # string
 reference_config_yml = """
-CO2:
+carbon dioxide:
   heat-capacity:
     databook: CUSTOM-REF-1
     table: Ideal-Gas-Molar-Heat-Capacity
@@ -271,7 +271,7 @@ CO:
 reference_config_md = """
 # Configs
 
-## CO2
+## carbon dioxide
 
 heat-capacity:
 
@@ -321,6 +321,9 @@ general:
 # NOTE: convert reference config to dict
 reference_config = ReferenceConfig().set_reference_config(
     reference_config=reference_config_md)
+
+# no change
+reference_config = reference_config_yml
 
 
 # build component thermodb
