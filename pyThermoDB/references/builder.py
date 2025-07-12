@@ -235,3 +235,58 @@ class TableBuilder:
         body_lines.append(result_line)
 
         return body_lines
+
+    @staticmethod
+    def analyze_equation(
+        body: List[str]
+    ) -> Dict[str, Any]:
+        """
+        Analyze the equation body to extract metadata.
+
+        Parameters
+        ----------
+        body : List[str]
+            The equation body to analyze.
+
+        Returns
+        -------
+        Dict[str, Any]
+            A dictionary containing the metadata extracted from the equation body.
+            - returns
+            - parms
+            - args
+        """
+        try:
+            pass
+            results = {"returns": [], "parms": [], "args": []}
+
+            # Patterns for res[], parms[], args[]
+            patterns = {
+                "returns": r"res\['([^']+)'\]",
+                "parms": r"parms\['([^']+)'\]",
+                "args": r"args\['([^']+)'\]"
+            }
+
+            for key, pattern in patterns.items():
+                found = set()  # avoid duplicates
+                for line in body:
+                    matches = re.findall(pattern, line)
+                    for match in matches:
+                        if match not in found:
+                            parts = [p.strip() for p in match.split("|")]
+                            # Pad with None if missing parts
+                            while len(parts) < 3:
+                                parts.append(None)
+                            results[key].append({
+                                "name": parts[0],
+                                "symbol": parts[1],
+                                "unit": parts[2]
+                            })
+
+                            # Avoid duplicates
+                            found.add(match)
+
+            return results
+        except Exception as e:
+            logging.error(f"Error analyzing equation: {e}")
+            raise ValueError("Failed to analyze equation body.") from e

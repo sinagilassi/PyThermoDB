@@ -5,10 +5,12 @@ from typing import (
     Optional,
     Dict,
     List,
-    Any
+    Any,
+    Literal
 )
-from ..docs import CustomRef
 # locals
+from ..docs import CustomRef
+from .builder import TableBuilder
 
 
 class ReferenceChecker:
@@ -70,7 +72,9 @@ class ReferenceChecker:
         """
         return self._reference
 
-    def load_reference(self) -> Optional[Dict[str, List[str | Dict[str, Any]]]]:
+    def load_reference(
+        self
+    ) -> Optional[Dict[str, List[str | Dict[str, Any]]]]:
         """
         Load the custom reference.
 
@@ -93,7 +97,10 @@ class ReferenceChecker:
             logging.error(f"Error loading custom reference: {e}")
             return None
 
-    def get_databook(self, databook_name: str) -> Optional[Dict[str, Any]]:
+    def get_databook(
+        self,
+        databook_name: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Get a databook from the custom reference.
         """
@@ -116,7 +123,9 @@ class ReferenceChecker:
             logging.error(f"Error getting databooks: {e}")
             return None
 
-    def get_databook_names(self) -> List[str]:
+    def get_databook_names(
+        self
+    ) -> List[str]:
         """
         Get the names of all databooks in the custom reference.
 
@@ -167,7 +176,10 @@ class ReferenceChecker:
             logging.error(f"Error getting databook tables: {e}")
             return None
 
-    def get_databook_table_names(self, databook_name: str) -> List[str]:
+    def get_databook_table_names(
+        self,
+        databook_name: str
+    ) -> List[str]:
         """
         Get the names of all tables in a specific databook.
 
@@ -197,6 +209,43 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting databook table names: {e}")
             return []
+
+    def get_table_type(
+        self,
+        databook_name: str,
+        table_name: str
+    ):
+        """
+        Get the type of the table.
+
+        Returns
+        -------
+        str
+            The type of the table.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: check table
+            # NOTE: based on EQUATIONS
+            if 'EQUATIONS' in table:
+                return 'EQUATIONS'
+
+            # NOTE: based on MATRIX-SYMBOLS
+            if 'MATRIX-SYMBOL' in table:
+                return 'DATA'
+
+            if 'DATA' in table:
+                return 'DATA'
+        except Exception as e:
+            logging.error(f"Error getting table type: {e}")
+            return None
 
     def get_databook_table(
         self,
@@ -335,7 +384,7 @@ class ReferenceChecker:
         databook_name: str,
         table_name: str,
         column_names: List[str] = ['Name', 'Formula', 'State']
-    ):
+    ) -> Optional[Dict[str, Dict[str, Any]]]:
         """
         Get the components registered in a specific table in a databook.
 
@@ -350,7 +399,8 @@ class ReferenceChecker:
 
         Returns
         -------
-
+        Optional[Dict[str, Dict[str, Any]]]
+            A dictionary containing the components if they exist, otherwise None.
         """
         try:
             # NOTE: get table values
@@ -423,13 +473,18 @@ class ReferenceChecker:
 
                 # extract components based on column indices
                 # component name
-                component_name = row[column_indices[0]
-                                     ] if column_indices else None
+                component_name = row[
+                    column_indices[0]
+                ] if column_indices else None
                 # component formula
-                component_formula = row[column_indices[1]] if len(
+                component_formula = row[
+                    column_indices[1]
+                ] if len(
                     column_indices) > 1 else None
                 # component state
-                component_state = row[column_indices[2]] if len(
+                component_state = row[
+                    column_indices[2]
+                ] if len(
                     column_indices) > 2 else None
 
                 # add component to components dictionary
@@ -442,4 +497,458 @@ class ReferenceChecker:
             return components
         except Exception as e:
             logging.error(f"Error getting table components: {e}")
+            return None
+
+    def get_table_data(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> Optional[List[Dict[str, Any]]]:
+        """
+        Get the data of a specific table in a databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        Optional[List[Dict[str, Any]]]
+            A list of dictionaries containing the table data if it exists, otherwise None.
+        """
+        try:
+            # SECTION: get table values
+            table_values = self.get_table_values(databook_name, table_name)
+
+            if table_values is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: get table structure
+            table_structure = self.get_table_structure(
+                databook_name, table_name)
+
+            if table_structure is None:
+                logging.error(
+                    f"Table '{table_name}' does not contain 'STRUCTURE' key.")
+                return None
+
+            # table header
+            table_header = table_structure.get('COLUMNS', [])
+
+            if not isinstance(table_header, list):
+                logging.error("Table structure 'COLUMNS' must be a list.")
+                return None
+
+            # SECTION: convert table values to list of dictionaries
+            table_data = []
+
+            # iterate through each row in table_values
+            for row in table_values:
+                # check if row is a list
+                if not isinstance(row, list):
+                    logging.error("Table values must be a list of lists.")
+                    return None
+
+                # create a dictionary for each row
+                row_data = {}
+                for idx, value in enumerate(row):
+                    # check if idx is within the bounds of table_header
+                    if idx < len(table_header):
+                        row_data[table_header[idx]] = value.strip(
+                        ) if isinstance(value, str) else value
+
+                # append the row data to table_data
+                table_data.append(row_data)
+
+            return table_data
+
+        except Exception as e:
+            logging.error(f"Error getting table data: {e}")
+            return None
+
+    def get_components_data(
+        self,
+        databook_name: str,
+        table_name: str,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State'
+    ) -> Optional[Dict[str, Dict[str, Any]]]:
+        """
+        Get the components data from a specific table in a databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Name-State'.
+
+        Returns
+        -------
+
+        """
+        try:
+            # SECTION: get table data
+            table_data = self.get_table_data(databook_name, table_name)
+
+            if table_data is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: build components data
+            components_data = {}
+
+            # iterate through each row in table_data
+            for row in table_data:
+                # check if row is a dictionary
+                if not isinstance(row, dict):
+                    logging.error("Table data must be a list of dictionaries.")
+                    return None
+
+                # check component_key
+                if component_key == 'Name-State':
+                    # key
+                    key = f"{row.get('Name', '')}-{row.get('State', '')}".strip()
+                    # values
+                elif component_key == 'Formula-State':
+                    # key
+                    key = f"{row.get('Formula', '')}-{row.get('State', '')}".strip()
+                else:
+                    logging.error(
+                        f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
+                    return None
+
+                # save all values
+                components_data[key] = row
+
+            # return components data
+            return components_data
+        except Exception as e:
+            logging.error(f"Error getting components data: {e}")
+            return None
+
+    def generate_reference_link(
+        self,
+        databook_name: str,
+    ) -> Dict[str, Any]:
+        """
+        Generate a reference link for a component.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+
+        Returns
+        -------
+        Dict[str, Any]
+            A dictionary containing the reference link for the component.
+        """
+        try:
+            # SECTION: get tables
+            tables = self.get_databook_tables(databook_name)
+
+            # check if tables are valid
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return {}
+
+            # SECTION: construct the reference config
+            reference_config = {
+                'DATA': {},
+                'EQUATIONS': {},
+            }
+
+            # iterate through each table
+            for table_name, table in tables.items():
+                # NOTE: table type
+                table_type = self.get_table_type(databook_name, table_name)
+                if table_type is None:
+                    logging.error(f"Table type for '{table_name}' not found.")
+                    continue
+
+                # get table structure
+                structure = table.get('STRUCTURE', None)
+                if not isinstance(structure, dict):
+                    logging.error(
+                        f"Structure for table '{table_name}' is not a dictionary.")
+                    continue
+
+                if structure is None:
+                    logging.error(
+                        f"Structure for table '{table_name}' not found.")
+                    continue
+
+                # get columns
+                columns = structure.get('COLUMNS', [])
+                if not isinstance(columns, list):
+                    logging.error(
+                        f"Columns for table '{table_name}' are not a list.")
+                    continue
+
+                # get symbols
+                symbols = structure.get('SYMBOL', [])
+                if not isinstance(symbols, list):
+                    logging.error(
+                        f"Symbols for table '{table_name}' are not a list.")
+                    continue
+
+                # check table type
+                if table_type == 'DATA':
+                    # ! DATA
+                    # iterate through each column and symbols
+                    for col, symbol in zip(columns, symbols):
+                        # check if symbol is None
+                        if symbol is not None and symbol not in ['None', '']:
+                            # NOTE: strip and convert to string if not already
+                            # ? column and symbol must be strings
+                            col = col.strip() if isinstance(col, str) else str(col).strip()
+                            symbol = symbol.strip() if isinstance(symbol, str) else str(symbol).strip()
+
+                            # add to reference config
+                            reference_config['DATA'].update(
+                                {
+                                    symbol: symbol
+                                }
+                            )
+
+                elif table_type == 'EQUATIONS':
+                    # ! EQUATIONS
+                    # get table equations
+                    equations = table.get('EQUATIONS', None)
+                    if not isinstance(equations, dict):
+                        logging.error(
+                            f"Equations for table '{table_name}' are not a dictionary.")
+                        continue
+
+                    if equations is None:
+                        logging.error(
+                            f"Equations for table '{table_name}' not found.")
+                        continue
+
+                    # select the first equation
+                    eq_1 = equations.get('EQ-1', None)
+                    if not isinstance(eq_1, dict):
+                        logging.error(
+                            f"Equation 'EQ-1' for table '{table_name}' is not a dictionary.")
+                        continue
+
+                    # NOTE: equation body
+                    equation_body = eq_1.get('BODY', None)
+
+                    # check if equation body is empty
+                    if (
+                        not equation_body or
+                        not isinstance(equation_body, list)
+                    ):
+                        logging.warning(
+                            f"Equation body for '{table_name}' is empty, or not a list.")
+                        continue
+
+                    # ! analyze the equation body
+                    equation_analyzer_res = TableBuilder.analyze_equation(
+                        equation_body,
+                    )
+
+                    if not equation_analyzer_res:
+                        logging.warning(
+                            f"No valid components found in equation body for '{table_name}'.")
+                        continue
+
+                    # get equation return
+                    equation_return = equation_analyzer_res.get(
+                        'returns', None)
+
+                    if equation_return is None:
+                        logging.warning(
+                            f"No return value found in equation body for '{table_name}'.")
+                        continue
+
+                    # check if equation_return is a list
+                    if not isinstance(equation_return, list):
+                        logging.error(
+                            f"Equation return for '{table_name}' is not a list.")
+                        continue
+
+                    # NOTE: set
+                    return_name = equation_return[0].get('name', None)
+                    return_symbol = equation_return[0].get('symbol', None)
+
+                    # check if return_name and return_symbol are valid
+                    if return_name is None or return_symbol is None:
+                        logging.error(
+                            f"Return name or symbol not found in equation body for '{table_name}'.")
+                        continue
+
+                    # add to reference config
+                    reference_config['EQUATIONS'].update(
+                        {
+                            return_name: return_symbol
+                        }
+                    )
+
+            # return the reference config
+            return reference_config
+        except Exception as e:
+            logging.error(f"Error generating reference config: {e}")
+            return {}
+
+    def check_component_availability(
+        self,
+        component_name: str,
+        component_formula: str,
+        component_state: str,
+        databook_name: str
+    ) -> Dict[str, Union[bool, str]]:
+        """
+        Check if a component is available in the specified databook.
+
+        Parameters
+        ----------
+        component_name : str
+            The name of the component.
+        component_formula : str
+            The formula of the component.
+        component_state : str
+            The state of the component.
+        databook_name : str
+            The name of the databook.
+
+        Returns
+        -------
+        Dict[str, Union[bool, str]]
+            A dictionary indicating whether the component is available in the databook.
+        """
+        try:
+            # NOTE: init
+            res = {}
+
+            # SECTION: get tables
+            tables = self.get_databook_tables(databook_name)
+
+            # check if tables are valid
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return {'available': False, 'message': 'No tables found.'}
+
+            # SECTION: iterate through each table
+            for table_name, table in tables.items():
+                # NOTE: get table components
+                components = self.get_table_components(
+                    databook_name,
+                    table_name
+                )
+
+                if components is None:
+                    logging.error(
+                        f"Components not found for table '{table_name}' in databook '{databook_name}'.")
+                    continue
+
+                # component records
+                component_records = components.get(
+                    component_name,
+                    None
+                )
+
+                if component_records is None:
+                    logging.warning(
+                        f"Component '{component_name}' not found in table '{table_name}'.")
+                    continue
+
+                # check if component_records is a dictionary
+                if not isinstance(component_records, dict):
+                    logging.error(
+                        f"Component records for '{component_name}' in table '{table_name}' are not a dictionary.")
+                    continue
+
+                # set
+                formula = component_records.get('Formula', None)
+                state = component_records.get('State', None)
+
+                # NOTE: check if component records are valid
+                if not formula or not state:
+                    logging.error(
+                        f"Component records for '{component_name}' in table '{table_name}' are missing 'Formula' or 'State'.")
+                    continue
+
+                # check if component matches the formula and state
+                if (
+                    formula == component_formula and
+                    state == component_state
+                ):
+                    # add
+                    res[table_name] = True
+                else:
+                    # add
+                    res[table_name] = False
+
+            # res
+            return res
+
+        except Exception as e:
+            logging.error(f"Error checking component availability: {e}")
+            return {'available': False, 'message': str(e)}
+
+    def get_component_reference_config(
+        self,
+        component_name: str,
+        component_formula: str,
+        component_state: str,
+        databook_name: str
+    ):
+        """
+        Get the reference including the databook name and table name for a component.
+
+        Parameters
+        ----------
+        component_name : str
+            The name of the component.
+        component_formula : str
+            The formula of the component.
+        component_state : str
+            The state of the component.
+        databook_name : str
+            The name of the databook.
+        """
+        try:
+            # SECTION: check component availability
+            availability = self.check_component_availability(
+                component_name,
+                component_formula,
+                component_state,
+                databook_name
+            )
+
+            # NOTE: init result
+            res = {}
+
+            # iterate through each table in availability
+            for table_name, is_available in availability.items():
+                if is_available:
+                    # add to result
+                    res_availability = {
+                        'databook': databook_name,
+                        'table': table_name,
+                    }
+
+                    # add to result
+                    res[table_name] = res_availability
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Component '{component_name}' with formula '{component_formula}' and state '{component_state}' not found in databook '{databook_name}'.")
+                return None
+
+            # return the result
+            return res
+        except Exception as e:
+            logging.error(f"Error getting component reference: {e}")
             return None

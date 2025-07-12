@@ -87,7 +87,7 @@ ref = {'reference': [references]}
 # NOTE: BUILD COMPONENT THERMODB
 # ====================================
 # property
-property_source = {
+reference_config = {
     'vapor-pressure': {
         'databook': 'CO2-Hydrogenation-Databook',
         'table': 'Vapor-Pressure',
@@ -99,7 +99,7 @@ property_source = {
 }
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
-    reference_config=property_source,
+    reference_config=reference_config,
     custom_reference=ref)
 
 #  check
