@@ -174,5 +174,6 @@ load_ = load_custom_reference(
 print(load_)
 
 # SECTION: check custom reference
-check_ = load_reference_from_str(REFERENCE_CONTENT)
-print(check_)
+load_str_ = load_reference_from_str(REFERENCE_CONTENT)
+print(type(load_str_))
+print(load_str_)
