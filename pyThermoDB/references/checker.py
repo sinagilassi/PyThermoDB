@@ -72,6 +72,12 @@ class ReferenceChecker:
         """
         return self._reference
 
+    def check_reference_format(self):
+        """
+        Check the format of the custom reference. Tree Traversal, DFS and BFS
+        """
+        pass
+
     def load_reference(
         self
     ) -> Optional[Dict[str, List[str | Dict[str, Any]]]]:
@@ -84,6 +90,9 @@ class ReferenceChecker:
             The custom reference if it exists, otherwise None.
         """
         try:
+            # SECTION: check format of custom_reference
+            # REVIEW: check_reference_format
+
             # SECTION: initialize CustomRef
             CustomRef_ = CustomRef(self.custom_reference)
             # check ref

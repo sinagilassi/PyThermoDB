@@ -193,5 +193,3 @@ reference_config_ = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1',
 )
 print(f"Reference Link: {reference_config_}")
-
-# SECTION: generate reference config
