@@ -188,27 +188,45 @@ print(f"Databook Table Names: {databook_table_names_}")
 
 # SECTION: get databook table
 databook_table_ = ReferenceChecker_.get_databook_table(
-    'CUSTOM-REF-1', 'general-data'
+    'CUSTOM-REF-1',
+    'general-data'
 )
 print(f"Databook Table: {databook_table_}")
 
 # SECTION: get databook table values
 databook_table_values_ = ReferenceChecker_.get_table_values(
-    'CUSTOM-REF-1', 'general-data'
+    'CUSTOM-REF-1',
+    'general-data'
 )
 print(f"Databook Table Values: {databook_table_values_}")
 
+# SECTION: get table description
+table_description_ = ReferenceChecker_.get_table_description(
+    'CUSTOM-REF-1',
+    'general-data'
+)
+print(f"Table Description: {table_description_}")
+
 # SECTION: get table components
 table_components_ = ReferenceChecker_.get_table_components(
-    'CUSTOM-REF-1', 'general-data'
+    'CUSTOM-REF-1',
+    'general-data'
 )
 print(f"Table Components: {table_components_}")
 
 # SECTION: get table data
 table_data_ = ReferenceChecker_.get_table_data(
-    'CUSTOM-REF-1', 'general-data'
+    'CUSTOM-REF-1',
+    'general-data'
 )
 print(f"Table Data: {table_data_}")
+
+# SECTION: get table equations
+table_equations_ = ReferenceChecker_.get_table_equations(
+    'CUSTOM-REF-1',
+    'ideal-gas-heat-capacity'
+)
+print(f"Table Equations: {table_equations_}")
 
 # SECTION: get components data
 components_data_ = ReferenceChecker_.get_components_data(
@@ -217,6 +235,13 @@ components_data_ = ReferenceChecker_.get_components_data(
     component_key='Name-State'
 )
 print(f"Components Data: {components_data_}")
+
+# SECTION: get table matrix symbols
+table_matrix_symbols_ = ReferenceChecker_.get_table_matrix_symbols(
+    'CUSTOM-REF-1',
+    'NRTL Non-randomness parameters-1'
+)
+print(f"Table Matrix Symbols: {table_matrix_symbols_}")
 
 # SECTION: get table types
 # NOTE: all table types

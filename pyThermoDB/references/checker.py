@@ -423,6 +423,47 @@ class ReferenceChecker:
             logging.error(f"Error getting table values: {e}")
             return None
 
+    def get_table_description(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> Optional[str]:
+        """
+        Get the description of a specific table in a databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        Optional[str]
+            A string containing the description of the table if it exists, otherwise None.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # check if table has 'DESCRIPTION' key
+            if not isinstance(table, dict) or 'DESCRIPTION' not in table:
+                logging.error(
+                    f"Table '{table_name}' does not contain 'DESCRIPTION' key.")
+                return None
+
+            # return the description
+            return table['DESCRIPTION']
+        except Exception as e:
+            logging.error(f"Error getting table description: {e}")
+            return None
+
     def get_table_structure(
             self,
             databook_name: str,
@@ -653,6 +694,88 @@ class ReferenceChecker:
 
         except Exception as e:
             logging.error(f"Error getting table data: {e}")
+            return None
+
+    def get_table_equations(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get the equations of a specific table in a databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the equations of the table if it exists, otherwise None.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # check if table has 'EQUATIONS' key
+            if not isinstance(table, dict) or 'EQUATIONS' not in table:
+                logging.error(
+                    f"Table '{table_name}' does not contain 'EQUATIONS' key.")
+                return None
+
+            # return the equations
+            return table['EQUATIONS']
+        except Exception as e:
+            logging.error(f"Error getting table equations: {e}")
+            return None
+
+    def get_table_matrix_symbols(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> Optional[List[str]]:
+        """
+        Get the matrix symbols of a specific table in a databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        Optional[List[str]]
+            A list of matrix symbols if they exist, otherwise None.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # check if table has 'MATRIX-SYMBOL' key
+            if not isinstance(table, dict) or 'MATRIX-SYMBOL' not in table:
+                logging.error(
+                    f"Table '{table_name}' does not contain 'MATRIX-SYMBOL' key.")
+                return None
+
+            # return the matrix symbols
+            return table['MATRIX-SYMBOL']
+        except Exception as e:
+            logging.error(f"Error getting table matrix symbols: {e}")
             return None
 
     def get_components_data(
