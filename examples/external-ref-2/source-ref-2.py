@@ -1,4 +1,5 @@
 # import packages/modules
+from typing import Dict, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
@@ -18,7 +19,7 @@ yml_file = 'source-ref-4.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # custom ref
-ref = {'reference': [yml_path]}
+ref: Dict[str, Any] = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB

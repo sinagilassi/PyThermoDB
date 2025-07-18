@@ -255,7 +255,10 @@ class CustomRef:
                             # ! yml
                             # load data
                             temp_data = yaml.load(
-                                content, Loader=yaml.FullLoader)
+                                content,
+                                Loader=yaml.FullLoader
+                            )
+
                             # check
                             if temp_data is None:
                                 raise Exception(

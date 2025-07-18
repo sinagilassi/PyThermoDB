@@ -1,4 +1,5 @@
 # import packages/modules
+from typing import Dict, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
@@ -22,7 +23,7 @@ md_file = 'str-ref-1.md'
 md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
-ref = {'reference': [md_path]}
+ref: Dict[str, Any] = {'reference': [md_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB

@@ -1,5 +1,5 @@
 # import packages/modules
-from typing import Dict, Any, List
+from typing import Dict, Any
 import pyThermoDB as ptdb
 import os
 from rich import print

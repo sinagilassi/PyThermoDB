@@ -3,7 +3,7 @@ from .content import ReferenceContent, load_custom_reference
 from .databook import ThermoDatabook
 from .reference import ThermoReference
 from .checker import ReferenceChecker
-from .main import check_custom_reference
+from .main import check_custom_reference, load_reference_from_str
 
 __all__ = [
     "ReferenceConfig",
@@ -12,5 +12,6 @@ __all__ = [
     "ThermoDatabook",
     "ThermoReference",
     "ReferenceChecker",
-    "check_custom_reference"
+    "check_custom_reference",
+    "load_reference_from_str"
 ]
