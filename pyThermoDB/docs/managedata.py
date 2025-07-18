@@ -191,7 +191,7 @@ class ManageData():
                     # create directory
                     os.makedirs(output_dir)
 
-                # NOTE: load custom reference
+                # SECTION: load custom reference
                 ref = custom_ref.load_ref()
 
                 # check if ref is empty
