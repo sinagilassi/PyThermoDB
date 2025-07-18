@@ -1,6 +1,6 @@
 # import libs
 from rich import print
-from pyThermoDB.references import check_custom_reference, ReferenceChecker
+from pyThermoDB.references import ReferenceChecker
 
 # SECTION: reference content
 REFERENCE_CONTENT = """

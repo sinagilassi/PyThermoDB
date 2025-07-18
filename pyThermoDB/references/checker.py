@@ -256,6 +256,44 @@ class ReferenceChecker:
             logging.error(f"Error getting table type: {e}")
             return None
 
+    def get_all_tables_types(
+        self
+    ) -> Optional[Dict[str, str]]:
+        """
+        Get the types of all tables in the reference.
+
+        Returns
+        -------
+        Optional[Dict[str, str]]
+            A dictionary containing table names as keys and their types as values if it exists, otherwise None.
+        """
+        try:
+            # get databook names
+            databook_names = self.get_databook_names()
+
+            if not databook_names:
+                logging.error("No databooks found in the reference.")
+                return None
+
+            # SECTION: get table types
+            table_types = {}
+            for databook_name in databook_names:
+                tables = self.get_databook_tables(databook_name)
+                if tables is None:
+                    logging.error(
+                        f"No tables found for databook: {databook_name}")
+                    continue
+
+                for table_name in tables.keys():
+                    table_type = self.get_table_type(databook_name, table_name)
+                    if table_type is not None:
+                        table_types[f"{table_name}"] = table_type
+
+            return table_types
+        except Exception as e:
+            logging.error(f"Error getting reference tables types: {e}")
+            return None
+
     def get_databook_table(
         self,
         databook_name: str,
@@ -305,6 +343,43 @@ class ReferenceChecker:
             return tables[table_name]
         except Exception as e:
             logging.error(f"Error getting table values: {e}")
+            return None
+
+    def get_databook_tables_types(
+        self,
+        databook_name: str
+    ) -> Optional[Dict[str, str]]:
+        """
+        Get the types of all tables in a specific databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+
+        Returns
+        -------
+        Optional[Dict[str, str]]
+            A dictionary containing table names as keys and their types as values if it exists, otherwise None.
+        """
+        try:
+            # get databook tables
+            tables = self.get_databook_tables(databook_name)
+
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return None
+
+            # SECTION: get table types
+            table_types = {}
+            for table_name in tables.keys():
+                table_type = self.get_table_type(databook_name, table_name)
+                if table_type is not None:
+                    table_types[table_name] = table_type
+
+            return table_types
+        except Exception as e:
+            logging.error(f"Error getting databook table types: {e}")
             return None
 
     def get_table_values(
