@@ -1,6 +1,6 @@
 # import libs
-from rich import print
 from pyThermoDB.references import check_custom_reference, ReferenceChecker
+from rich import print
 
 # SECTION: reference content
 REFERENCE_CONTENT = """
@@ -8,14 +8,14 @@ REFERENCES:
     CUSTOM-REF-1:
       DATABOOK-ID: 1
       TABLES:
-        Ideal-Gas-Molar-Heat-Capacity:
+        ideal-gas-heat-capacity:
           TABLE-ID: 1
           DESCRIPTION:
             This table provides the heat capacity at constant pressure of ideal gas (Cp_IG) in J/mol.K as a function of temperature (T) in K.
           EQUATIONS:
             EQ-1:
               BODY:
-                - res['heat capacity of ideal gas | Cp_IG | J/mol.K'] = (parms['a0 | a0 | 1'] + parms['a1 | a1 | 1E3']*args['temperature | T | K'] + parms['a2 | a2 | 1E5']*(args['temperature | T | K']**2) + parms['a3 | a3 | 1E8']*(args['temperature | T | K']**3) + parms['a4 | a4 | 1E11']*(args['temperature | T | K']**4))*parms['Universal-Gas-Constant | R | J/mol.K']
+                - res['ideal-gas-heat-capacity | Cp_IG | J/mol.K'] = (parms['a0 | a0 | 1'] + parms['a1 | a1 | 1E3']*args['temperature | T | K'] + parms['a2 | a2 | 1E5']*(args['temperature | T | K']**2) + parms['a3 | a3 | 1E8']*(args['temperature | T | K']**3) + parms['a4 | a4 | 1E11']*(args['temperature | T | K']**4))*parms['Universal-Gas-Constant | R | J/mol.K']
               BODY-INTEGRAL:
                   - A1 = parms['a0 | a0 | 1']*args['temperature | T1 | K']
                   - B1 = (parms['a1 | a1 | 1E3']/2)*(args['temperature | T1 | K']**2)
@@ -55,7 +55,7 @@ REFERENCES:
             - [14,'benzene','C6H6','l',3.551,-6.184,14.365,-19.807,8.234,8.314,1]
             - [15,'nitrogen','N2','g',3.539,-0.261,0.007,0.157,-0.099,8.314,1]
             - [16,'ethane','C2H6','g',4.178,-4.427,5.660,-6.651,2.487,8.314,1]
-        General-Data:
+        general-data:
           TABLE-ID: 2
           DESCRIPTION:
             This table provides the general data of different chemical species participating in the CO2 hydrogenation reaction and includes molecular weight (MW) in g/mol, critical temperature (Tc) in K, critical pressure (Pc) in MPa, and critical molar volume (Vc) in m3/kmol. The table also includes the critical compressibility factor (Zc), acentric factor (AcFa), enthalpy of formation (EnFo) in kJ/mol, and Gibbs energy of formation (GiEnFo) in kJ/mol. The chemical state of the species is also provided in the table and hence the enthalpy of formation and Gibbs energy of formation are provided for the ideal gas and liquid state are designated as EnFo_IG, GiEnFo_IG, EnFo_LIQ, and GiEnFo_LIQ, respectively.
@@ -82,7 +82,7 @@ REFERENCES:
             - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
             - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
-        Vapor-Pressure:
+        vapor-pressure:
           TABLE-ID: 3
           DESCRIPTION:
             This table provides the vapor pressure (P) in Pa as a function of temperature (T) in K.
@@ -188,51 +188,62 @@ print(f"Databook Table Names: {databook_table_names_}")
 
 # SECTION: get databook table
 databook_table_ = ReferenceChecker_.get_databook_table(
-    'CUSTOM-REF-1', 'General-Data'
+    'CUSTOM-REF-1', 'general-data'
 )
 print(f"Databook Table: {databook_table_}")
 
 # SECTION: get databook table values
 databook_table_values_ = ReferenceChecker_.get_table_values(
-    'CUSTOM-REF-1', 'General-Data'
+    'CUSTOM-REF-1', 'general-data'
 )
 print(f"Databook Table Values: {databook_table_values_}")
 
 # SECTION: get table components
 table_components_ = ReferenceChecker_.get_table_components(
-    'CUSTOM-REF-1', 'General-Data'
+    'CUSTOM-REF-1', 'general-data'
 )
 print(f"Table Components: {table_components_}")
 
 # SECTION: get table data
 table_data_ = ReferenceChecker_.get_table_data(
-    'CUSTOM-REF-1', 'General-Data'
+    'CUSTOM-REF-1', 'general-data'
 )
 print(f"Table Data: {table_data_}")
 
 # SECTION: get components data
 components_data_ = ReferenceChecker_.get_components_data(
     'CUSTOM-REF-1',
-    'General-Data',
+    'general-data',
     component_key='Name-State'
 )
 print(f"Components Data: {components_data_}")
 
 # SECTION: get table types
+# NOTE: all table types
+all_table_types_ = ReferenceChecker_.get_all_tables_types()
+print(f"All Table Types: {all_table_types_}")
+
+# NOTE: databook table types
 table_types_ = ReferenceChecker_.get_table_type(
     'CUSTOM-REF-1',
-    'General-Data'
+    'general-data'
 )
 print(f"Table Types: {table_types_}")
 
 table_types_ = ReferenceChecker_.get_table_type(
     'CUSTOM-REF-1',
-    'Ideal-Gas-Molar-Heat-Capacity'
+    'ideal-gas-heat-capacity'
 )
 print(f"Table Types: {table_types_}")
 
 table_types_ = ReferenceChecker_.get_table_type(
     'CUSTOM-REF-1',
-    'Vapor-Pressure'
+    'vapor-pressure'
 )
 print(f"Table Types: {table_types_}")
+
+# SECTION: get databook tables types
+databook_tables_types_ = ReferenceChecker_.get_databook_tables_types(
+    'CUSTOM-REF-1'
+)
+print(f"Databook Tables Types: {databook_tables_types_}")
