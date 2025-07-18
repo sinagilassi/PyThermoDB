@@ -234,6 +234,22 @@ reference_config = {
 
 # string
 reference_config_yml = """
+ALL:
+  heat-capacity:
+    databook: CUSTOM-REF-1
+    table: Ideal-Gas-Molar-Heat-Capacity
+    symbol: Cp_IG
+  vapor-pressure:
+    databook: CUSTOM-REF-1
+    table: Vapor-Pressure
+    symbol: VaPr
+  general:
+    databook: CUSTOM-REF-1
+    table: General-Data
+    symbols:
+      Pc: Pc
+      Tc: Tc
+      AcFa: AcFa
 carbon dioxide:
   heat-capacity:
     databook: CUSTOM-REF-1
@@ -321,7 +337,9 @@ general:
 
 # NOTE: convert reference config to dict
 reference_config = ReferenceConfig().set_reference_config(
-    reference_config=reference_config_md)
+    reference_config=reference_config_yml
+)
+print(f"Reference Config: {reference_config}")
 
 # no change
 reference_config = reference_config_yml
