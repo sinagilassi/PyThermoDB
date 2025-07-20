@@ -169,7 +169,7 @@ component_name = 'carbon dioxide'
 component_formula = 'CO2'
 component_state = 'g'
 
-# check component availability
+# NOTE: check component availability
 check_result = ReferenceChecker_.check_component_availability(
     component_name=component_name,
     component_formula=component_formula,
@@ -178,7 +178,7 @@ check_result = ReferenceChecker_.check_component_availability(
 )
 print(f"Check Result: {check_result}")
 
-# get component reference config
+# NOTE: get component reference config
 component_reference_config = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
     component_formula=component_formula,
@@ -187,9 +187,15 @@ component_reference_config = ReferenceChecker_.get_component_reference_config(
 )
 print(f"Component Reference Config: {component_reference_config}")
 
-
 # SECTION: generate reference link (ALL)
-reference_config_ = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1',
+reference_link_ = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1'
 )
-print(f"Reference Link: {reference_config_}")
+print(f"Reference Link: {reference_link_}")
+
+# SECTION: generate reference link (specific table)
+reference_link_specific = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    table_names='NRTL Non-randomness parameters-1'
+)
+print(f"Reference Link (Specific Table): {reference_link_specific}")
