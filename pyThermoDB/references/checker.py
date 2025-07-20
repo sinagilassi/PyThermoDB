@@ -844,6 +844,7 @@ class ReferenceChecker:
     def generate_reference_link(
         self,
         databook_name: str,
+        table_names: Optional[str | List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Generate a reference link for a component.
@@ -852,6 +853,8 @@ class ReferenceChecker:
         ----------
         databook_name : str
             The name of the databook.
+        table_names : Optional[str | List[str]], optional
+            The name(s) of the table(s) to include in the reference link, by default None.
 
         Returns
         -------
@@ -873,6 +876,28 @@ class ReferenceChecker:
                 'EQUATIONS': {},
             }
 
+            # NOTE: check if table_name is provided
+            if table_names is not None:
+                # convert table_name to list if it is a string
+                if isinstance(table_names, str):
+                    table_names = [table_names]
+
+                # strip table names
+                table_names = [name.strip() for name in table_names]
+
+                # init tables
+                tables_ = {}
+                # iterate through each table name
+                for name in table_names:
+                    # check if name exists in tables
+                    if name in tables.keys():
+                        # add to tables
+                        tables_[name] = tables[name]
+
+                # update tables
+                tables = tables_
+
+            # NOTE: go through each table content
             # iterate through each table
             for table_name, table in tables.items():
                 # NOTE: table type
@@ -880,6 +905,9 @@ class ReferenceChecker:
                 if table_type is None:
                     logging.error(f"Table type for '{table_name}' not found.")
                     continue
+
+                # matrix symbols
+                matrix_symbols = table.get('MATRIX-SYMBOL', None)
 
                 # get table structure
                 structure = table.get('STRUCTURE', None)
@@ -909,22 +937,40 @@ class ReferenceChecker:
 
                 # check table type
                 if table_type == 'DATA':
-                    # ! DATA
-                    # iterate through each column and symbols
-                    for col, symbol in zip(columns, symbols):
-                        # check if symbol is None
-                        if symbol is not None and symbol not in ['None', '']:
-                            # NOTE: strip and convert to string if not already
-                            # ? column and symbol must be strings
-                            col = col.strip() if isinstance(col, str) else str(col).strip()
-                            symbol = symbol.strip() if isinstance(symbol, str) else str(symbol).strip()
+                    # check
+                    if not matrix_symbols:
+                        # ! DATA
+                        # iterate through each column and symbols
+                        for col, symbol in zip(columns, symbols):
+                            # check if symbol is None
+                            if symbol is not None and symbol not in ['None', '']:
+                                # NOTE: strip and convert to string if not already
+                                # ? column and symbol must be strings
+                                col = col.strip() if isinstance(col, str) else str(col).strip()
+                                symbol = symbol.strip() if isinstance(symbol, str) else str(symbol).strip()
 
-                            # add to reference config
-                            reference_config['DATA'].update(
-                                {
-                                    symbol: symbol
-                                }
-                            )
+                                # add to reference config
+                                reference_config['DATA'].update(
+                                    {
+                                        col: symbol
+                                    }
+                                )
+                    else:
+                        # ! MATRIX-SYMBOL
+                        # iterate through each matrix symbol
+                        for symbol in matrix_symbols:
+                            # check if symbol is None
+                            if symbol is not None and symbol not in ['None', '']:
+                                # NOTE: strip and convert to string if not already
+                                # ? symbol must be a string
+                                symbol = symbol.strip() if isinstance(symbol, str) else str(symbol).strip()
+
+                                # add to reference config
+                                reference_config['DATA'].update(
+                                    {
+                                        symbol: symbol
+                                    }
+                                )
 
                 elif table_type == 'EQUATIONS':
                     # ! EQUATIONS
@@ -1000,6 +1046,19 @@ class ReferenceChecker:
                             return_name: return_symbol
                         }
                     )
+
+            # SECTION: check if reference config is empty
+            if reference_config['DATA'] == {}:
+                # add dummy data
+                reference_config['DATA'] = {
+                    'status': 'No Links Provided'
+                }
+
+            if reference_config['EQUATIONS'] == {}:
+                # add dummy equations
+                reference_config['EQUATIONS'] = {
+                    'status': 'No Links Provided'
+                }
 
             # return the reference config
             return reference_config
