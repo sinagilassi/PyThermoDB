@@ -193,6 +193,31 @@ reference_link_ = ReferenceChecker_.generate_reference_link(
 )
 print(f"Reference Link: {reference_link_}")
 
+# SECTION: generate reference link (specific component)
+reference_link_component = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state
+)
+print(f"Reference Link ({component_name}): {reference_link_component}")
+
+# SECTION: generate reference link (specific component not exists)
+# component not exists
+component_name_not_exists = 'Dimethyl ether'
+component_formula_not_exists = 'C2H6O'
+component_state_not_exists = 'l'
+
+reference_link_component = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    component_name=component_name_not_exists,
+    component_formula=component_formula_not_exists,
+    component_state=component_state_not_exists
+)
+print(
+    f"Reference Link ({component_name_not_exists}): {reference_link_component}"
+)
+
 # SECTION: generate reference link (specific table)
 reference_link_specific = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1',
