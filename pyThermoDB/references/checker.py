@@ -845,6 +845,9 @@ class ReferenceChecker:
         self,
         databook_name: str,
         table_names: Optional[str | List[str]] = None,
+        component_name: Optional[str] = None,
+        component_formula: Optional[str] = None,
+        component_state: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Generate a reference link for a component.
@@ -855,6 +858,12 @@ class ReferenceChecker:
             The name of the databook.
         table_names : Optional[str | List[str]], optional
             The name(s) of the table(s) to include in the reference link, by default None.
+        component_name : Optional[str], optional
+            The name of the component to include in the reference link, by default None.
+        component_formula : Optional[str], optional
+            The formula of the component to include in the reference link, by default None.
+        component_state : Optional[str], optional
+            The state of the component to include in the reference link, by default None.
 
         Returns
         -------
@@ -897,9 +906,25 @@ class ReferenceChecker:
                 # update tables
                 tables = tables_
 
-            # NOTE: go through each table content
+            # SECTION: go through each table content
             # iterate through each table
             for table_name, table in tables.items():
+                # NOTE: check component availability
+                if component_name and component_formula and component_state:
+                    # check if component is available in the table
+                    component_availability = self.check_component_availability(
+                        component_name,
+                        component_formula,
+                        component_state,
+                        databook_name
+                    )
+
+                    # check if component is available in the table
+                    if not component_availability.get(table_name, False):
+                        logging.warning(
+                            f"Component '{component_name}' with formula '{component_formula}' and state '{component_state}' not found in table '{table_name}'.")
+                        continue
+
                 # NOTE: table type
                 table_type = self.get_table_type(databook_name, table_name)
                 if table_type is None:
