@@ -48,6 +48,10 @@ db_info = tdb.databook_info(
     'Chemical Thermodynamics for Process Simulation',
     res_format='json'
 )
+db_info = tdb.databook_info(
+    "1",
+    res_format='json'
+)
 print(db_info)
 
 
