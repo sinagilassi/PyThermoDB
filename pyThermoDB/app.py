@@ -260,7 +260,9 @@ def build_component_thermodb(
             raise TypeError("reference_config must be a dictionary")
 
         # SECTION: build thermodb
-        thermodb = init(custom_reference=custom_reference)
+        thermodb = init(
+            custom_reference=custom_reference
+        )
 
         # init res
         res = {}
@@ -284,13 +286,16 @@ def build_component_thermodb(
                 raise ValueError(
                     f"Databook '{databook_}' for property '{prop_name}' is not found in the databook list.")
 
-            # tables
+            # NOTE: tables
             table_dict_ = thermodb.list_tables(
-                databook=databook_, res_format='dict')
+                databook=databook_,
+                res_format='dict'
+            )
             # check
             if not isinstance(table_dict_, dict):
                 raise TypeError("Table list must be a list")
-            # table list
+
+            # ! table list
             table_list_ = list(table_dict_.values())
             if not isinstance(table_list_, list) or not table_list_:
                 raise TypeError("Table list must be a list")
@@ -303,8 +308,11 @@ def build_component_thermodb(
 
             # check table
             if table_ not in table_list_:
-                raise ValueError(
-                    f"Table '{table_}' for property '{prop_name}' is not found in the databook '{databook_}'.")
+                logging.error(
+                    f"Table '{table_}' for property '{prop_name}' is not found in the databook '{databook_}'."
+                )
+                # ? skip if table is not found
+                continue
 
             # NOTE: check component
             component_checker_ = thermodb.check_component(
