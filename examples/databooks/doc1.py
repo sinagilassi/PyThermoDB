@@ -68,10 +68,14 @@ ThermoReference_.add_databook(databook)
 # build references
 ThermoReference_.build_references()
 
-# get references
+# NOTE: get references
 references = ThermoReference_.get_references(res_format='yml')
 # references = ThermoReference_.get_references(res_format='dict')
 print(f"References: {references}")
+
+# NOTE: save references to a file
+# output_file = os.path.join(current_dir, "CO2_Hydrogenation_References.yml")
+# ThermoReference_.save_references(file_path=output_file, res_format='yml')
 
 
 # SECTION: initialize own thermo db
@@ -100,7 +104,8 @@ reference_config = {
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=reference_config,
-    custom_reference=ref)
+    custom_reference=ref
+)
 
 #  check
 print(thermodb_component_.check())
