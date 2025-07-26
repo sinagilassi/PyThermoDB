@@ -158,6 +158,58 @@ class ThermoDatabook():
             logging.error(f"Error adding data table '{table_name}': {e}")
             raise
 
+    def add_matrix_data_table(
+        self,
+        table_name: str,
+        data: str,
+        description: Optional[str] = None
+    ):
+        """
+        Adds a `matrix-data` table to the databook.
+
+        Parameters
+        ----------
+        table_name : str
+            The name of the table to be added.
+        data : str
+            The data (csv format) to be added to the table.
+        description : Optional[str], optional
+            The description of the table, by default None.
+        """
+        try:
+            # SECTION: validate inputs
+            # check if table already exists
+            if table_name in self._tables:
+                raise ValueError(
+                    f"Matrix data table '{table_name}' already exists.")
+
+            # check if data is valid
+            if not data:
+                raise ValueError("Data cannot be empty.")
+
+            # SECTION: create a new table instance
+            new_table = ThermoTable(
+                name=table_name,
+                data=data,
+                id=self._table_id,
+                types="matrix-data",
+                description=description
+            )
+
+            # append the new table to the tables list
+            self._tables[table_name] = new_table
+
+            # increment table id
+            self._table_id += 1
+
+            # log success
+            logging.info(
+                f"Matrix data table '{table_name}' added successfully.")
+        except Exception as e:
+            logging.error(
+                f"Error adding matrix data table '{table_name}': {e}")
+            raise
+
     def add_equation_table(
         self,
         table_name: str,
@@ -400,7 +452,14 @@ class ThermoDatabook():
 
             # return the contents in the specified format
             if res_format == 'yml':
-                transformed_ = yaml.dump(self._contents, sort_keys=False)
+                transformed_ = yaml.safe_dump(
+                    self._contents,
+                    sort_keys=False,
+                    default_flow_style=False,
+                    allow_unicode=True,
+                    indent=4,
+                    width=88
+                )
                 return transformed_
             elif res_format == 'dict':
 
@@ -435,15 +494,27 @@ class ThermoDatabook():
                 raise ValueError("res_format must be 'dict' or 'yml'.")
 
             # get the contents in the specified format
-            contents = self.get_contents(res_format=res_format)
+            contents = self.get_contents(res_format='dict')
 
-            # serialize if dict
+            # serialize contents based on format
             if res_format == 'dict':
-                contents = json.dumps(contents, indent=2)
+                serialized_contents = json.dumps(
+                    contents,
+                    indent=2
+                )
+            elif res_format == 'yml':
+                serialized_contents = yaml.safe_dump(
+                    contents,
+                    sort_keys=False,
+                    default_flow_style=False,
+                    allow_unicode=True,
+                    indent=4,
+                    width=88
+                )
 
-            # write to file
+            # write serialized contents to file
             with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(str(contents))
+                f.write(serialized_contents)
 
             logging.info(
                 f"Databook contents saved to {file_path} successfully.")

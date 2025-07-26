@@ -233,6 +233,8 @@ class ThermoTable(TableBuilder):
                 self._build_data_table()
             elif self._types == "equation":
                 self._build_equation_table()
+            elif self._types == "matrix-data":
+                self._build_data_table()
             else:
                 raise ValueError(f"Unsupported table type: {self.types}")
         except ValueError as ve:
@@ -242,6 +244,21 @@ class ThermoTable(TableBuilder):
     def _build_data_table(self):
         """
         Builds the data table from the extracted data.
+
+        Notes
+        -----
+        The table structure is as:
+        {
+            "TABLE-NAME": {
+                "TABLE-ID": int,
+                "DESCRIPTION": str,
+                "DATA": list,
+                "MATRIX-SYMBOL": list,
+                "STRUCTURE": dict,
+                "VALUES": list,
+                "ITEMS": list
+            }
+        }
         """
         try:
             # SECTION: build the data table
@@ -260,12 +277,23 @@ class ThermoTable(TableBuilder):
             TABLE[TABLE_NAME] = {
                 'TABLE-ID': self.get_table_id,
                 'DESCRIPTION': self.description,
-                'DATA': [],
-                'MATRIX-SYMBOL': [],
+                # 'DATA': [],
+                # 'MATRIX-SYMBOL': [],
                 'STRUCTURE': self.structure,
                 'VALUES': self.values,
                 'ITEMS': []
             }
+
+            # NOTE: check types
+            if self._types == "data":
+                # NOTE: set data
+                TABLE[TABLE_NAME]['DATA'] = []
+            elif self._types == "matrix-data":
+                # NOTE: set matrix symbol
+                TABLE[TABLE_NAME]['MATRIX-SYMBOL'] = self.matrix_symbol
+            else:
+                raise ValueError(
+                    f"Unsupported table type for data table: {self._types}")
 
             # NOTE: copy the table
             self.table = TABLE
@@ -279,6 +307,27 @@ class ThermoTable(TableBuilder):
     def _build_equation_table(self):
         """
         Builds the equation table from the extracted data.
+
+        Notes
+        -----
+        The table structure is as:
+        {
+            "TABLE-NAME": {
+                "TABLE-ID": int,
+                "DESCRIPTION": str,
+                "EQUATIONS": {
+                    "EQ-1": {
+                        "BODY": str,
+                        "BODY-INTEGRAL": str,
+                        "BODY-FIRST-DERIVATIVE": str,
+                        "BODY-SECOND-DERIVATIVE": str
+                    }
+                },
+                "STRUCTURE": dict,
+                "VALUES": list,
+                "ITEMS": list
+            }
+        }
         """
         try:
             # SECTION: build the data table
@@ -325,8 +374,8 @@ class ThermoTable(TableBuilder):
             TABLE[TABLE_NAME] = {
                 'TABLE-ID': self.get_table_id,
                 'DESCRIPTION': self.description,
-                'DATA': [],
-                'MATRIX-SYMBOL': [],
+                # 'DATA': [],
+                # 'MATRIX-SYMBOL': [],
                 'EQUATIONS': equation_structure,
                 'STRUCTURE': self.structure,
                 'VALUES': self.values,

@@ -5,7 +5,6 @@ from typing import (
     Dict,
     Literal,
     Any,
-    List,
     Optional
 )
 # locals
@@ -71,10 +70,62 @@ class ThermoReference:
             return yaml.safe_dump(
                 self._references,
                 sort_keys=False,
-                default_flow_style=False
+                default_flow_style=False,
+                allow_unicode=True,
+                indent=4,
+                width=88
             )
         else:
             raise ValueError("Invalid format. Use 'dict' or 'yml'.")
+
+    def save_references(
+        self,
+        file_path: str,
+        res_format: Literal['dict', 'yml'] = 'yml'
+    ) -> None:
+        """
+        Save the references to a file.
+
+        Parameters
+        ----------
+
+        file_path : str
+            The path to the file where references will be saved.
+        res_format : Literal['dict', 'yml'], optional
+            The format of the result, by default 'yml'.
+
+        Returns
+        -------
+        None
+        """
+        try:
+            # get references in the specified format
+            references = self.get_references(res_format='dict')
+
+            # write to file
+            with open(file_path, 'w', encoding='utf-8') as file:
+                if res_format == 'yml':
+                    # convert dict to YAML string with better formatting
+                    yaml.safe_dump(
+                        references,
+                        file,
+                        sort_keys=False,
+                        default_flow_style=False,
+                        allow_unicode=True,
+                        indent=4,
+                        width=88
+                    )
+                elif res_format == 'dict':
+                    import pprint
+                    file.write(pprint.pformat(references, indent=4))
+                else:
+                    raise ValueError("Invalid format. Use 'dict' or 'yml'.")
+
+            logging.info(f"References saved to {file_path} successfully.")
+
+        except Exception as e:
+            logging.error(f"Error saving references: {e}")
+            raise
 
     def create_databook(
         self,
