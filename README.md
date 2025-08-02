@@ -2,7 +2,11 @@
 
 ![PyThermoDB](https://drive.google.com/uc?export=view&id=1TIiM1HU39V4KayN87g66y3iPfrXXidPM)
 
-![Downloads](https://img.shields.io/pypi/dm/PyThermoDB) ![PyPI](https://img.shields.io/pypi/v/PyThermoDB) ![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg) ![License](https://img.shields.io/pypi/l/PyThermoDB) ![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
+[![PyPI Downloads](https://static.pepy.tech/badge/pythermodb/month)](https://pepy.tech/projects/pythermodb)
+![PyPI](https://img.shields.io/pypi/v/PyThermoDB)
+![Python Version](https://img.shields.io/pypi/pyversions/PyThermoDB.svg)
+![License](https://img.shields.io/pypi/l/PyThermoDB)
+![Read the Docs](https://img.shields.io/readthedocs/pythermodb)
 
 PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data. Whether you're a student, researcher, or engineer, this package serves as a valuable resource for retrieving thermodynamic properties, equations, and constants from your `custom thermodynamic database` (csv files).
 
