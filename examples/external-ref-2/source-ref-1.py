@@ -19,11 +19,11 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 yml_file = 'str-ref-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
-md_file = 'str-ref-1.md'
-md_path = os.path.join(parent_dir, md_file)
+# md_file = 'str-ref-1.md'
+# md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
-ref: Dict[str, Any] = {'reference': [md_path]}
+ref: Dict[str, Any] = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -143,18 +143,18 @@ res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
 # ! build equation
-# comp1_eq_2 = thermo_db.build_thermo_property(
-#     [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+comp1_eq_2 = thermo_db.build_thermo_property(
+    [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 
-# # equation details
-# print(comp1_eq_2.equation_parms())
-# print(comp1_eq_2.equation_args())
-# print(comp1_eq_2.equation_body())
-# print(comp1_eq_2.equation_return())
+# equation details
+print(comp1_eq_2.equation_parms())
+print(comp1_eq_2.equation_args())
+print(comp1_eq_2.equation_body())
+print(comp1_eq_2.equation_return())
 
-# # cal
-# res_ = comp1_eq_2.cal(T=290)
-# print(res_)
+# cal
+res_ = comp1_eq_2.cal(T=290)
+print(res_)
 
 # ====================================
 # BUILD THERMODB
@@ -168,7 +168,7 @@ thermo_db.add_data('general-data', data_1)
 # add TableEquation
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # add TableEquation
-# thermo_db.add_data('heat-capacity', comp1_eq_2)
+thermo_db.add_data('heat-capacity', comp1_eq_2)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
@@ -196,7 +196,7 @@ print(thermo_db_loaded.check())
 # ====================================
 # SELECT PROPERTY
 # ====================================
-prop1_ = thermo_db_loaded.select('general')
+prop1_ = thermo_db_loaded.select('general-data')
 print(type(prop1_))
 print(prop1_.prop_data)
 
@@ -204,7 +204,7 @@ print(prop1_.prop_data)
 print(prop1_.get_property('MW'))
 
 # new format
-_src = 'general | MW'
+_src = 'general-data | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
 # ====================================
