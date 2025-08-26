@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "PyThermoDB"
+version = "1.11.12"
+description = "PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Sina Gilassi", email = "sina.gilassi@gmail.com"}
+]
+keywords = [
+    "chemical-engineering",
+    "thermodynamics",
+    "thermodynamic-data",
+    "thermodynamic-equations",
+    "thermodynamic-properties",
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: Unix",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+    "pandas",
+    "requests",
+    "numpy",
+    "PyYAML"
+]
+
+[project.urls]
+Homepage = "https://github.com/sinagilassi/PyThermoDB"
+Documentation = "https://pythermodb.readthedocs.io/en/latest/"
+Source = "https://github.com/sinagilassi/PyThermoDB"
+Tracker = "https://github.com/sinagilassi/PyThermoDB/issues"
+
+[project.optional-dependencies]
+web = ["jinja2"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = [
+    "tests",
+    "tests.*",
+    "examples",
+    "examples.*",
+    "notebooks",
+    "notebooks.*",
+    "statics",
+    "statics.*"
+]
+
+[tool.setuptools.package-data]
+pyThermoDB = [
+    "config/*.yml",
+    "data/*.csv",
+    "templates/*.html",
+    "static/*",
+    "static/**/*"
+]
