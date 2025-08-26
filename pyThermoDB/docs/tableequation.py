@@ -28,9 +28,14 @@ class TableEquation:
     # selected equation id
     eq_id: int = -1
 
-    def __init__(self, databook_name, table_name, equations,
-                 table_values: Optional[List | Dict] = None,
-                 table_structure: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        databook_name,
+        table_name,
+        equations,
+        table_values: Optional[List | Dict] = None,
+        table_structure: Optional[Dict[str, Any]] = None
+    ):
         '''
         Initialize the TableEquation class.
 
@@ -356,10 +361,12 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self,
-            message: str = '',
-            decimal_accuracy: int = 4,
-            **args) -> EquationResult:
+    def cal(
+        self,
+        message: str = '',
+        decimal_accuracy: int = 4,
+        **args
+    ) -> EquationResult:
         '''
         Execute a function
 
@@ -393,7 +400,7 @@ class TableEquation:
         eq_info.update(eq_src)
 
         # build parms dict
-        _parms = self.load_parms()
+        _parms = self.load_parms_v2()
         # execute equation
         # res
         res = None
@@ -437,7 +444,7 @@ class TableEquation:
         >>> print(res)
         '''
         # build parms dict
-        _parms = self.load_parms()
+        _parms = self.load_parms_v2()
         # execute equation
         res = self.eqExe(self.body_integral, _parms, args=args)
         return res
@@ -473,7 +480,7 @@ class TableEquation:
                 raise Exception('Equation name not found!')
 
             # build parms dict
-            _parms = self.load_parms()
+            _parms = self.load_parms_v2()
 
             # check
             if len(self._custom_integral) > 0:
@@ -515,7 +522,7 @@ class TableEquation:
                 print('The first derivative not defined!')
 
             # build parms dict
-            _parms = self.load_parms()
+            _parms = self.load_parms_v2()
             # execute equation
             res = self.eqExe(self.body_first_derivative, _parms, args=args)
             return res
@@ -548,7 +555,7 @@ class TableEquation:
                 print('The second derivative not defined!')
 
             # build parms dict
-            _parms = self.load_parms()
+            _parms = self.load_parms_v2()
             # execute equation
             res = self.eqExe(self.body_second_derivative, _parms, args=args)
             return res
@@ -569,17 +576,56 @@ class TableEquation:
                 # NOTE: loaded parms (taken from reference)
                 _parms_name = list(self.parms.keys())
                 # from symbol
-                _parms_name = [value['symbol']
-                               for key, value in self.parms.items()]
+                _parms_name = [
+                    value['symbol']
+                    for key, value in self.parms.items()
+                ]
 
                 # NOTE: create params dict
-                _parms = {value['symbol']: float(value['value'] or 0)/float(value['unit'] or 1)
-                          for key, value in trans_data.items() if value['symbol'] in _parms_name}
+                _parms = {
+                    value['symbol']:
+                    float(value['value'] or 0)/float(value['unit'] or 1)
+                    for key, value in trans_data.items() if value['symbol'] in _parms_name
+                }
             else:
                 _parms = {}
             return _parms
         except Exception as e:
             raise Exception("Loading equation parameters failed!, ", e)
+
+    def load_parms_v2(self):
+        """
+        Load parameter values and store in a dict.
+        These parameters are constant values defined in an equation.
+        """
+        try:
+            trans_data = self.trans_data
+
+            if isinstance(self.parms, dict):
+                # Get the list of symbols we need
+                parm_symbols = [v["symbol"] for v in self.parms.values()]
+
+                def safe_float(x, default=1.0):
+                    """Return float(x) if numeric, else default."""
+                    try:
+                        return float(x)
+                    except (ValueError, TypeError):
+                        return default
+
+                # Build params dict
+                parms = {
+                    v["symbol"]: float(v.get("value", 0)) /
+                    safe_float(v.get("unit"), 1.0)
+                    for v in trans_data.values()
+                    if v["symbol"] in parm_symbols
+                }
+            else:
+                parms = {}
+
+            return parms
+
+        except Exception as e:
+            raise Exception("Loading equation parameters failed!") from e
 
     def equation_body(self):
         '''
@@ -753,7 +799,7 @@ class TableEquation:
 
         # check params
         if len(self.parms) > 0:
-            self.__parms_values = self.load_parms()
+            self.__parms_values = self.load_parms_v2()
 
     def eqExe(self, body, parms, args):
         '''
