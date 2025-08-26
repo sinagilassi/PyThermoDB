@@ -34,7 +34,12 @@ setup(
     },
     long_description_content_type="text/markdown",
     long_description=long_description,
-    packages=find_packages(exclude=['tests', '*.tests', '*.tests.*']),
+    packages=find_packages(exclude=[
+        'tests', '*.tests', '*.tests.*',
+        'examples', '*.examples', '*.examples.*',
+        'notebooks', '*.notebooks', '*.notebooks.*',
+        'statics', '*.statics', '*.statics.*'
+    ]),
     include_package_data=True,  # Make sure to include non-Python files
     # Add both config and data files
     package_data={
