@@ -49,6 +49,8 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 exclude = [
+    "venv",
+    "venv.*",
     "tests",
     "tests.*",
     "examples",
