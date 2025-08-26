@@ -9,3 +9,5 @@ global-exclude tests/*
 global-exclude examples/*
 global-exclude notebooks/*
 global-exclude statics/*
+global-exclude private/*
+global-exclude app/*
