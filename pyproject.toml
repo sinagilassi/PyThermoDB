@@ -56,7 +56,11 @@ exclude = [
     "notebooks",
     "notebooks.*",
     "statics",
-    "statics.*"
+    "statics.*",
+    "private",
+    "private.*",
+    "app",
+    "app.*"
 ]
 
 [tool.setuptools.package-data]
