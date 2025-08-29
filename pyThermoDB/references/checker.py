@@ -841,6 +841,90 @@ class ReferenceChecker:
             logging.error(f"Error getting components data: {e}")
             return None
 
+    def get_component_data(
+        self,
+        component_name: str,
+        component_formula: str,
+        component_state: str,
+        databook_name: str,
+        table_name: str,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State'
+    ):
+        """
+        Get the data of a specific component from a specific table in a databook.
+
+        Parameters
+        ----------
+        component_name : str
+            The name of the component.
+        component_formula : str
+            The formula of the component.
+        component_state : str
+            The state of the component.
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Name-State'.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the component data if it exists, otherwise None.
+
+        Notes
+        -----
+        The search is `case-insensitive` and ignores leading/trailing whitespace.
+        """
+        try:
+            # SECTION: get table data
+            table_data = self.get_table_data(databook_name, table_name)
+
+            # check if table data is valid
+            if table_data is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: find component data
+            for row in table_data:
+                # check if row is a dictionary
+                if not isinstance(row, dict):
+                    logging.error("Table data must be a list of dictionaries.")
+                    return None
+
+                # check component_key
+                if component_key == 'Name-State':
+                    # check if component matches
+                    if (
+                        row.get('Name', '').strip().lower() == component_name.strip().lower() and
+                        row.get('State', '').strip().lower(
+                        ) == component_state.strip().lower()
+                    ):
+                        return row
+                elif component_key == 'Formula-State':
+                    # check if component matches
+                    if (
+                        row.get('Formula', '').strip().lower() == component_formula.strip().lower() and
+                        row.get('State', '').strip().lower(
+                        ) == component_state.strip().lower()
+                    ):
+                        return row
+                else:
+                    logging.error(
+                        f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
+                    return None
+
+            # if component not found
+            logging.warning(
+                f"Component '{component_name}' with formula '{component_formula}' and state '{component_state}' not found in table '{table_name}'.")
+
+            return None
+        except Exception as e:
+            logging.error(f"Error getting component data: {e}")
+            return None
+
     def generate_reference_link(
         self,
         databook_name: str,
@@ -1096,7 +1180,8 @@ class ReferenceChecker:
         component_name: str,
         component_formula: str,
         component_state: str,
-        databook_name: str
+        databook_name: str,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
     ) -> Dict[str, Union[bool, str]]:
         """
         Check if a component is available in the specified databook.
@@ -1111,15 +1196,26 @@ class ReferenceChecker:
             The state of the component.
         databook_name : str
             The name of the databook.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
 
         Returns
         -------
         Dict[str, Union[bool, str]]
             A dictionary indicating whether the component is available in the databook.
+
+        Notes
+        -----
+        The search is `case-insensitive` and ignores leading/trailing whitespace.
         """
         try:
             # NOTE: init
             res = {}
+
+            # NOTE: standardize component inputs
+            component_name = component_name.strip().lower()
+            component_formula = component_formula.strip().lower()
+            component_state = component_state.strip().lower()
 
             # SECTION: get tables
             tables = self.get_databook_tables(databook_name)
@@ -1159,26 +1255,47 @@ class ReferenceChecker:
                         f"Component records for '{component_name}' in table '{table_name}' are not a dictionary.")
                     continue
 
-                # set
+                # NOTE: set name, formula and state from component records - case-insensitive
+                name = component_records.get('Name', None)
                 formula = component_records.get('Formula', None)
                 state = component_records.get('State', None)
 
                 # NOTE: check if component records are valid
-                if not formula or not state:
+                if component_key == 'Name-State' and (name is None or state is None):
+                    logging.error(
+                        f"Component records for '{component_name}' in table '{table_name}' are missing 'Name' or 'State.")
+                    continue
+
+                if component_key == 'Formula-State' and (formula is None or state is None):
                     logging.error(
                         f"Component records for '{component_name}' in table '{table_name}' are missing 'Formula' or 'State'.")
                     continue
 
-                # check if component matches the formula and state
-                if (
-                    formula == component_formula and
-                    state == component_state
-                ):
-                    # add
-                    res[table_name] = True
+                # SECTION: check if component matches the formula and state
+                if component_key == 'Name-State' and (name is not None and state is not None):
+                    if (
+                        name.lower().strip() == component_name and
+                        state.lower().strip() == component_state
+                    ):
+                        # add
+                        res[table_name] = True
+                    else:
+                        # add
+                        res[table_name] = False
+                elif component_key == 'Formula-State' and (formula is not None and state is not None):
+                    if (
+                        formula.lower().strip() == component_formula and
+                        state.lower().strip() == component_state
+                    ):
+                        # add
+                        res[table_name] = True
+                    else:
+                        # add
+                        res[table_name] = False
                 else:
-                    # add
-                    res[table_name] = False
+                    logging.error(
+                        f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
+                    return {'available': False, 'message': 'Invalid component_key.'}
 
             # res
             return res
