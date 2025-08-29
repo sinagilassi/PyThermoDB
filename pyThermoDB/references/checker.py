@@ -1181,6 +1181,7 @@ class ReferenceChecker:
         component_formula: str,
         component_state: str,
         databook_name: str,
+        table_name: Optional[str] = None,
         component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
     ) -> Dict[str, Union[bool, str]]:
         """
@@ -1196,6 +1197,8 @@ class ReferenceChecker:
             The state of the component.
         databook_name : str
             The name of the databook.
+        table_name : Optional[str], optional
+            The name of the table to check, by default None (checks all tables).
         component_key : Literal['Name-State', 'Formula-State'], optional
             The key to use for the components, by default 'Formula-State'.
 
@@ -1224,6 +1227,20 @@ class ReferenceChecker:
             if tables is None:
                 logging.error(f"No tables found for databook: {databook_name}")
                 return {'available': False, 'message': 'No tables found.'}
+
+            # NOTE: check if table_name is provided
+            if table_name is not None:
+                # strip table name
+                table_name = table_name.strip()
+
+                # check if table_name exists in tables
+                if table_name in tables.keys():
+                    # update tables to only include the specified table
+                    tables = {table_name: tables[table_name]}
+                else:
+                    logging.error(
+                        f"Table '{table_name}' not found in databook '{databook_name}'.")
+                    return {'available': False, 'message': f"Table '{table_name}' not found."}
 
             # SECTION: iterate through each table
             for table_name, table in tables.items():
