@@ -179,6 +179,17 @@ check_result = ReferenceChecker_.check_component_availability(
 )
 print(f"Check Result: {check_result}")
 
+# to check in only one table
+check_result = ReferenceChecker_.check_component_availability(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    table_name='general-data',
+    component_key='Formula-State'
+)
+print(f"Check Result: {check_result}")
+
 # NOTE: get component data
 components_data_ = ReferenceChecker_.get_component_data(
     component_name=component_name,
