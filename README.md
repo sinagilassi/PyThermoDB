@@ -17,6 +17,14 @@ PyThermoDB is a lightweight and user-friendly Python package designed to provide
 - 🧩 **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - 🌐 **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
+## 🤖 PyThermoAI
+
+[PyThermoAI](https://github.com/sinagilassi/PyThermoAI) is an intelligent Python package that revolutionizes thermodynamic data acquisition and processing by leveraging advanced AI agents and web search capabilities.
+
+Built with LangGraph for creating sophisticated multi-agent workflows, PyThermoAI employs intelligent agents to collect thermodynamic data and equations. The system utilizes Tavily as its primary web search engine, enabling agents to efficiently discover and retrieve thermodynamic data from authoritative online sources. These agents can search for thermodynamic data and automatically convert the results into PyThermoDB reference formats, streamlining the process of building and updating your custom thermodynamic database.
+
+![PyThermoAI Architecture](https://drive.google.com/uc?export=view&id=1osFnvr4dl0iLtnHhdhr_5EWLK0QGGabh)
+
 ## 📓 Interactive Notebooks with Binder
 
 Try PyThermoDB directly in your browser without any installation using Binder. You can find examples regarding the following contents:
