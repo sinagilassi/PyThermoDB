@@ -175,8 +175,20 @@ check_result = ReferenceChecker_.check_component_availability(
     component_formula=component_formula,
     component_state=component_state,
     databook_name='CUSTOM-REF-1',
+    component_key='Formula-State'
 )
 print(f"Check Result: {check_result}")
+
+# NOTE: get component data
+components_data_ = ReferenceChecker_.get_component_data(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    table_name='general-data',
+    component_key='Name-State'
+)
+print(f"Components Data: {components_data_}")
 
 # NOTE: get component reference config
 component_reference_config = ReferenceChecker_.get_component_reference_config(

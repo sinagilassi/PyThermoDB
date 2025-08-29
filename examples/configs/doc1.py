@@ -272,3 +272,18 @@ databook_tables_types_ = ReferenceChecker_.get_databook_tables_types(
     'CUSTOM-REF-1'
 )
 print(f"Databook Tables Types: {databook_tables_types_}")
+
+# SECTION: get component data
+# NOTE: component data by name and state
+component_name = 'carbon dioxide'
+component_formula = 'CO2'
+component_state = 'g'
+components_data_ = ReferenceChecker_.get_component_data(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    table_name='general-data',
+    component_key='Name-State'
+)
+print(f"Components Data: {components_data_}")
