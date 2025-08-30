@@ -467,7 +467,8 @@ class ReferenceChecker:
     def get_table_structure(
             self,
             databook_name: str,
-            table_name: str):
+            table_name: str
+    ) -> Optional[Dict[str, Any]]:
         """
         Get the structure of a specific table in a databook.
 
@@ -735,6 +736,101 @@ class ReferenceChecker:
             return table['EQUATIONS']
         except Exception as e:
             logging.error(f"Error getting table equations: {e}")
+            return None
+
+    def get_table_equation_details(
+        self,
+        databook_name: str,
+        table_name: str
+    ):
+        """
+        Get the equation details of a specific table in a databook from the STRUCTURE.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        Optional[str]
+            A string containing the equation symbol if it exists, otherwise None.
+        """
+        try:
+            # SECTION: get table structure
+            table_structure = self.get_table_structure(
+                databook_name, table_name)
+
+            if table_structure is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: get table type
+            table_type = self.get_table_type(databook_name, table_name)
+
+            # check if table type is valid
+            if table_type is None:
+                logging.error(
+                    f"Table '{table_name}' type not found in databook '{databook_name}'.")
+                return None
+
+            # check if table type is 'EQUATIONS'
+            if table_type != 'EQUATIONS':
+                logging.error(
+                    f"Table '{table_name}' is not of type 'EQUATIONS'.")
+                return None
+
+            # SECTION: check structure dict for COLUMNS and SYMBOL
+            if not isinstance(table_structure, dict):
+                logging.error("Table structure must be a dictionary.")
+                return None
+
+            if 'COLUMNS' not in table_structure or 'SYMBOL' not in table_structure:
+                logging.error(
+                    f"Table '{table_name}' structure must contain 'COLUMNS' and 'SYMBOL' keys.")
+                return None
+
+            # NOTE: symbol
+            symbol = table_structure['SYMBOL']
+            # check if symbol is a list
+            if not isinstance(symbol, list):
+                logging.error("Table structure 'SYMBOL' must be a list.")
+                return None
+
+            # NOTE: columns
+            columns = table_structure['COLUMNS']
+            # check if columns is a list
+            if not isinstance(columns, list):
+                logging.error("Table structure 'COLUMNS' must be a list.")
+                return None
+
+            # find index where COLUMNS has 'Eq' or 'eq'
+            if 'Eq' in columns:
+                eq_index = columns.index('Eq')
+            elif 'eq' in columns:
+                eq_index = columns.index('eq')
+            else:
+                logging.error(
+                    f"Table '{table_name}' structure 'COLUMNS' must contain 'Eq' or 'eq'.")
+                return None
+
+            # check if eq_index is within the bounds of symbol
+            if eq_index >= len(symbol):
+                logging.error(
+                    f"Table '{table_name}' structure 'SYMBOL' does not have an entry for 'Eq' or 'eq'.")
+                return None
+
+            # get the symbol at eq_index
+            table_equation_symbol = str(symbol[eq_index])
+
+            # return the symbol
+            return table_equation_symbol
+
+        except Exception as e:
+            logging.error(f"Error getting table equation symbol: {e}")
             return None
 
     def get_table_matrix_symbols(
@@ -1326,7 +1422,8 @@ class ReferenceChecker:
         component_name: str,
         component_formula: str,
         component_state: str,
-        databook_name: str
+        databook_name: str,
+        symbol: Optional[bool] = False
     ):
         """
         Get the reference including the databook name and table name for a component.
@@ -1341,6 +1438,17 @@ class ReferenceChecker:
             The state of the component.
         databook_name : str
             The name of the databook.
+        symbol : Optional[bool], optional
+            Whether to include the label in the reference, by default False.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the reference config if the component exists, otherwise None.
+
+        Notes
+        -----
+
         """
         try:
             # SECTION: check component availability
@@ -1357,6 +1465,16 @@ class ReferenceChecker:
             # iterate through each table in availability
             for table_name, is_available in availability.items():
                 if is_available:
+                    # ! table type
+                    table_type = self.get_table_type(databook_name, table_name)
+
+                    if table_type is None:
+                        logging.error(
+                            f"Table type for '{table_name}' not found.")
+                        continue
+
+                    # ! get symbols
+
                     # add to result
                     res_availability = {
                         'databook': databook_name,
