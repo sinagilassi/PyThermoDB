@@ -211,7 +211,8 @@ reference_config = {
     },
 }
 
-# string
+# NOTE: string (yml format)
+# symbol
 reference_config_yml = """
 ALL:
   heat-capacity:
@@ -328,7 +329,8 @@ reference_config = reference_config_yml
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=reference_config,
-    custom_reference=ref)
+    custom_reference=ref
+)
 
 #  check
 print(thermodb_component_.check())
