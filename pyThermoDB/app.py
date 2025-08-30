@@ -330,6 +330,7 @@ def build_component_thermodb(
                 continue  # skip if component is not available in the table
 
             # NOTE: build thermodb items
+            # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
             item_ = thermodb.build_thermo_property(
                 [component_name],
                 databook_,
