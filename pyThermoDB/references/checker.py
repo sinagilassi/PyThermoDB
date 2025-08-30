@@ -697,6 +697,109 @@ class ReferenceChecker:
             logging.error(f"Error getting table data: {e}")
             return None
 
+    def get_table_data_details(
+        self,
+        databook_name: str,
+        table_name: str
+    ):
+        '''
+        Get the data details (property name and symbols) of a specific table in a databook from the STRUCTURE.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        Optional[List[str]]
+            A list containing the data symbols if they exist, otherwise None.
+        '''
+        try:
+            # SECTION: get table structure
+            table_structure = self.get_table_structure(
+                databook_name,
+                table_name
+            )
+
+            if table_structure is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: get table type
+            table_type = self.get_table_type(databook_name, table_name)
+
+            # check if table type is valid
+            if table_type is None:
+                logging.error(
+                    f"Table '{table_name}' type not found in databook '{databook_name}'.")
+                return None
+
+            # check if table type is 'DATA' or 'EQUATIONS'
+            if table_type != 'DATA':
+                logging.error(
+                    f"Table '{table_name}' is not of type 'DATA'.")
+                return None
+
+            # SECTION: check structure dict for COLUMNS and SYMBOL
+            if not isinstance(table_structure, dict):
+                logging.error("Table structure must be a dictionary.")
+                return None
+
+            if 'COLUMNS' not in table_structure or 'SYMBOL' not in table_structure:
+                logging.error(
+                    f"Table '{table_name}' structure must contain 'COLUMNS' and 'SYMBOL' keys.")
+                return None
+
+            # NOTE: symbol
+            symbol = table_structure['SYMBOL']
+            # check if symbol is a list
+            if not isinstance(symbol, list):
+                logging.error("Table structure 'SYMBOL' must be a list.")
+                return None
+
+            # NOTE: columns
+            columns = table_structure['COLUMNS']
+            # check if columns is a list
+            if not isinstance(columns, list):
+                logging.error("Table structure 'COLUMNS' must be a list.")
+                return None
+
+            # check if lengths of symbol and columns match
+            if len(symbol) != len(columns):
+                logging.error(
+                    f"Table '{table_name}' structure 'SYMBOL' and 'COLUMNS' lengths do not match.")
+                return None
+
+            # NOTE: result init
+            res = {}
+
+            # iterate through columns and symbol
+            for idx, col in enumerate(columns):
+                # symbol at idx
+                symbol_ = symbol[idx]
+                if (
+                    symbol_ is not None and
+                    str(symbol_).strip() != '' and
+                    str(symbol_).strip().lower() != 'none'
+                ):
+                    # set
+                    res[col] = symbol_
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Table '{table_name}' structure 'SYMBOL' is empty.")
+                return {}
+            # return the symbols
+            return res
+        except Exception as e:
+            logging.error(f"Error getting table data details: {e}")
+            return None
+
     def get_table_equations(
         self,
         databook_name: str,
