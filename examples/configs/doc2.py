@@ -207,6 +207,7 @@ component_reference_config = ReferenceChecker_.get_component_reference_config(
     component_formula=component_formula,
     component_state=component_state,
     databook_name='CUSTOM-REF-1',
+    add_label=True,
 )
 print(f"Component Reference Config: {component_reference_config}")
 
