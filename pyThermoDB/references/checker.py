@@ -256,6 +256,45 @@ class ReferenceChecker:
             logging.error(f"Error getting table type: {e}")
             return None
 
+    def is_matrix_table(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> bool:
+        """
+        Check if the table is a matrix table.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        bool
+            True if the table is a matrix table, otherwise False.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return False
+
+            # check if table has 'MATRIX-SYMBOL' key
+            if not isinstance(table, dict) or 'MATRIX-SYMBOL' not in table:
+                return False
+
+            # if 'MATRIX-SYMBOL' key exists, return True
+            return True
+        except Exception as e:
+            logging.error(f"Error checking if table is matrix: {e}")
+            return False
+
     def get_all_tables_types(
         self
     ) -> Optional[Dict[str, str]]:
@@ -1526,7 +1565,7 @@ class ReferenceChecker:
         component_formula: str,
         component_state: str,
         databook_name: str,
-        symbol: Optional[bool] = False
+        add_label: Optional[bool] = False
     ):
         """
         Get the reference including the databook name and table name for a component.
@@ -1541,7 +1580,7 @@ class ReferenceChecker:
             The state of the component.
         databook_name : str
             The name of the databook.
-        symbol : Optional[bool], optional
+        add_label : Optional[bool], optional
             Whether to include the label in the reference, by default False.
 
         Returns
@@ -1568,6 +1607,9 @@ class ReferenceChecker:
             # iterate through each table in availability
             for table_name, is_available in availability.items():
                 if is_available:
+                    # reset res_availability
+                    res_availability = {}
+
                     # ! table type
                     table_type = self.get_table_type(databook_name, table_name)
 
@@ -1577,12 +1619,48 @@ class ReferenceChecker:
                         continue
 
                     # ! get symbols
+                    if table_type == 'DATA':
+                        symbols = self.get_table_data_details(
+                            databook_name,
+                            table_name
+                        )
 
-                    # add to result
-                    res_availability = {
-                        'databook': databook_name,
-                        'table': table_name,
-                    }
+                        # set
+                        res_availability = {
+                            'databook': databook_name,
+                            'table': table_name,
+                            'mode': table_type,
+                            'labels': symbols
+                        }
+                    elif table_type == 'EQUATIONS':
+                        symbol = self.get_table_equation_details(
+                            databook_name,
+                            table_name
+                        )
+
+                        # set
+                        res_availability = {
+                            'databook': databook_name,
+                            'table': table_name,
+                            'mode': table_type,
+                            'label': symbol
+                        }
+
+                    elif table_type == 'DATA-MATRIX':
+                        # REVIEW: implement get_table_matrix_details
+                        symbols = {}
+
+                        # add to result
+                        res_availability = {
+                            'databook': databook_name,
+                            'table': table_name,
+                            'mode': table_type,
+                            'labels': symbols
+                        }
+                    else:
+                        logging.error(
+                            f"Invalid table type '{table_type}' for table '{table_name}'.")
+                        symbols = {}
 
                     # add to result
                     res[table_name] = res_availability
