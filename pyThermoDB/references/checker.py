@@ -1620,10 +1620,24 @@ class ReferenceChecker:
 
                     # ! get symbols
                     if table_type == 'DATA':
-                        symbols = self.get_table_data_details(
+                        # check if table is matrix
+                        is_matrix = self.is_matrix_table(
                             databook_name,
                             table_name
                         )
+
+                        # get symbols
+                        if is_matrix:
+                            # REVIEW
+                            symbols = self.get_table_matrix_symbols(
+                                databook_name,
+                                table_name
+                            )
+                        else:
+                            symbols = self.get_table_data_details(
+                                databook_name,
+                                table_name
+                            )
 
                         # set
                         res_availability = {
@@ -1645,22 +1659,10 @@ class ReferenceChecker:
                             'mode': table_type,
                             'label': symbol
                         }
-
-                    elif table_type == 'DATA-MATRIX':
-                        # REVIEW: implement get_table_matrix_details
-                        symbols = {}
-
-                        # add to result
-                        res_availability = {
-                            'databook': databook_name,
-                            'table': table_name,
-                            'mode': table_type,
-                            'labels': symbols
-                        }
                     else:
                         logging.error(
                             f"Invalid table type '{table_type}' for table '{table_name}'.")
-                        symbols = {}
+                        continue
 
                     # add to result
                     res[table_name] = res_availability
