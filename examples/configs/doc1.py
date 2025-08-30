@@ -228,6 +228,13 @@ table_equations_ = ReferenceChecker_.get_table_equations(
 )
 print(f"Table Equations: {table_equations_}")
 
+# SECTION: get table equation details
+table_equation_details_ = ReferenceChecker_.get_table_equation_details(
+    'CUSTOM-REF-1',
+    'ideal-gas-heat-capacity'
+)
+print(f"Table Equation Details: {table_equation_details_}")
+
 # SECTION: get components data
 components_data_ = ReferenceChecker_.get_components_data(
     'CUSTOM-REF-1',
