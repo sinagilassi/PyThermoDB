@@ -11,6 +11,7 @@ from typing import (
 # locals
 from ..docs import CustomRef
 from .builder import TableBuilder
+from .symbols_controller import SymbolController
 
 
 class ReferenceChecker:
@@ -1565,7 +1566,9 @@ class ReferenceChecker:
         component_formula: str,
         component_state: str,
         databook_name: str,
-        add_label: Optional[bool] = False
+        add_label: Optional[bool] = False,
+        check_labels: Optional[bool] = False,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
     ):
         """
         Get the reference including the databook name and table name for a component.
@@ -1582,6 +1585,10 @@ class ReferenceChecker:
             The name of the databook.
         add_label : Optional[bool], optional
             Whether to include the label in the reference, by default False.
+        check_labels : Optional[bool], optional
+            Whether to check if the labels are valid, by default False.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
 
         Returns
         -------
@@ -1598,8 +1605,22 @@ class ReferenceChecker:
                 component_name,
                 component_formula,
                 component_state,
-                databook_name
+                databook_name,
+                component_key=component_key
             )
+
+            # SECTION: symbol settings
+            # init symbols
+            symbols = None
+            if check_labels:
+                # init symbol controller
+                symbol_controller = SymbolController()
+                # set
+                symbols = symbol_controller.symbols
+                # check if symbols is valid
+                if symbols is None:
+                    logging.error("Symbols not found.")
+                    return None
 
             # NOTE: init result
             res = {}
@@ -1638,6 +1659,11 @@ class ReferenceChecker:
                                 databook_name,
                                 table_name
                             )
+                            # ! check symbols
+                            if check_labels and symbols is not None:
+                                # convert to list if not already
+                                symbols_: List[str] = list(symbols.values())
+                                symbol_controller.check_symbols(symbols_)
 
                         # set
                         res_availability = {
@@ -1651,6 +1677,10 @@ class ReferenceChecker:
                             databook_name,
                             table_name
                         )
+
+                        # ! check symbol
+                        if check_labels and symbol is not None:
+                            symbol_controller.check_symbols([symbol])
 
                         # set
                         res_availability = {
@@ -1677,4 +1707,85 @@ class ReferenceChecker:
             return res
         except Exception as e:
             logging.error(f"Error getting component reference: {e}")
+            return None
+
+    def get_component_reference_configs(
+        self,
+        component_name: str,
+        component_formula: str,
+        component_state: str,
+        add_label: Optional[bool] = False,
+        check_labels: Optional[bool] = False,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
+    ):
+        """
+        Get the reference including the databook name and table name for a component
+        across all databooks.
+
+        Parameters
+        ----------
+        component_name : str
+            The name of the component.
+        component_formula : str
+            The formula of the component.
+        component_state : str
+            The state of the component.
+        add_label : Optional[bool], optional
+            Whether to include the label in the reference, by default False.
+        check_labels : Optional[bool], optional
+            Whether to check if the labels are valid, by default False.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the reference config if the component exists, otherwise None.
+
+        Notes
+        -----
+
+        """
+        try:
+            # SECTION: init result
+            res = {}
+
+            # NOTE: databook names
+            databook_names = self.get_databook_names()
+            # check
+            if not databook_names:
+                logging.error("No databooks found.")
+                return None
+
+            # SECTION: iterate through each databook
+            for databook_name in databook_names:
+                # get component reference config for each databook
+                res_databook = self.get_component_reference_config(
+                    component_name,
+                    component_formula,
+                    component_state,
+                    databook_name=databook_name,
+                    add_label=add_label,
+                    check_labels=check_labels,
+                    component_key=component_key
+                )
+
+                if res_databook is not None:
+                    # iterate through each table in res_databook
+                    for table_name, table_info in res_databook.items():
+                        # create a unique key for each table in the result
+                        databook_table_key = f"{databook_name}::{table_name}"
+                        # add to result with unique key
+                        res[databook_table_key] = table_info
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Component '{component_name}' with formula '{component_formula}' and state '{component_state}' not found in any databook.")
+                return None
+
+            # return the result
+            return res
+        except Exception as e:
+            logging.error(f"Error getting component references: {e}")
             return None
