@@ -5,7 +5,14 @@ from typing import (
     Dict,
     List,
     Union,
-    Any
+    Any,
+    Literal,
+)
+from pydantic import (
+    BaseModel,
+    Field,
+    ConfigDict,
+    model_validator
 )
 # internal
 from .docs import (
@@ -14,7 +21,28 @@ from .docs import (
     CustomRef,
     CompBuilder,
 )
-from .references import ReferenceConfig
+from .references import ReferenceConfig, ReferenceChecker
+from .models import Component
+
+
+class ComponentThermoDB(BaseModel):
+    """
+    Model for component thermodynamic database (ThermoDB).
+
+    Attributes
+    ----------
+    component: Component
+        The component for which the thermodynamic database is built.
+    thermodb: CompBuilder
+        The thermodynamic database builder instance.
+    """
+    component: Component
+    thermodb: CompBuilder
+    reference_configs: Dict[str, Any]
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+    )
 
 
 def init(
@@ -534,3 +562,198 @@ def build_components_thermodb(
         return thermodb_comp
     except Exception as e:
         raise Exception(f"Building {component_names} thermodb failed! {e}")
+
+
+def build_component_thermodb_from_reference(
+    component_name: str,
+    component_formula: str,
+    component_state: str,
+    reference_content: str,
+    component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State',
+    add_label: Optional[bool] = True,
+    check_labels: Optional[bool] = True,
+    thermodb_name: Optional[str] = None,
+    message: Optional[str] = None,
+    **kwargs
+) -> ComponentThermoDB:
+    '''
+    Build component thermodynamic databook (thermodb) including data and equations.
+
+    Parameters
+    ----------
+    component_name : str
+        Name of the component to build thermodynamic databook for.
+    component_formula : str
+        Chemical formula of the component.
+    component_state : str
+        Physical state of the component (e.g., 'liquid', 'gas').
+    reference_content : str
+        String content of the reference (YAML format) containing databook and tables.
+    component_key : Literal['Name-State', 'Formula-State'], optional
+        Key to identify the component in the reference content, by default 'Formula-State'
+    add_label : Optional[bool], optional
+        Whether to add labels to the component reference config, by default True
+    check_labels : Optional[bool], optional
+        Whether to check labels in the component reference config, by default True
+    thermodb_name : Optional[str], optional
+        Name of the thermodynamic databook to be built, by default None
+    message : Optional[str], optional
+        A short description of the component thermodynamic databook, by default None
+    **kwargs
+        Additional keyword arguments.
+
+    Returns
+    -------
+    ComponentThermoDB : object
+        ComponentThermoDB object used for building component thermodynamic databook
+
+    Notes
+    -----
+    - The `reference_content` should be a valid YAML string containing the necessary databook and table information.
+    - The function utilizes the `ReferenceChecker` class to parse and validate the reference content.
+    - The built `ComponentThermoDB` object includes the component details, the thermodynamic databook, and the reference configuration used.
+    - The `add_label` and `check_labels` parameters help in managing the reference configuration for the component. In this context, labels defined in the reference are compared with the PyThermoDB labels (symbols) to ensure consistency.
+    '''
+    try:
+        # NOTE: check inputs
+        if not isinstance(component_name, str):
+            raise TypeError("component_name must be a string")
+        if not isinstance(component_formula, str):
+            raise TypeError("component_formula must be a string")
+        if not isinstance(component_state, str):
+            raise TypeError("component_state must be a string")
+
+        # init component
+        component_ = Component(
+            name=component_name,
+            formula=component_formula,
+            state=component_state,
+        )
+
+        # SECTION: create ReferenceChecker instance
+        ReferenceChecker_ = ReferenceChecker(reference_content)
+
+        # NOTE: load all databooks
+        databooks: List[str] = ReferenceChecker_.get_databook_names()
+
+        # check databooks
+        if not isinstance(databooks, list) or not databooks:
+            raise ValueError("No databooks found in the reference content.")
+
+        # init component reference config
+        component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+            component_name=component_name,
+            component_formula=component_formula,
+            component_state=component_state,
+            add_label=add_label,
+            check_labels=check_labels,
+            component_key=component_key
+        )
+
+        # NOTE: check if reference_config is a dict
+        if not isinstance(component_reference_configs, dict):
+            raise TypeError("reference_config must be a dictionary")
+
+        # SECTION: build thermodb
+        # set reference
+        ref: Dict[str, Any] = {'reference': [reference_content]}
+
+        thermodb = init(
+            custom_reference=ref
+        )
+
+        # init res
+        res = {}
+
+        # NOTE: databook list
+        databook_list = thermodb.list_databooks(res_format='list')
+        if not isinstance(databook_list, list):
+            raise TypeError("Databook list must be a list")
+
+        # SECTION: check both databook and table
+        for prop_name, prop_idx in component_reference_configs.items():
+            # property name
+            prop_name = prop_name.strip()
+
+            # ! databook
+            databook_ = prop_idx.get('databook', None)
+            if databook_ is None:
+                raise ValueError(
+                    f"Databook for property '{prop_name}' is not specified.")
+
+            # ! table
+            table_ = prop_idx.get('table', None)
+            if table_ is None:
+                raise ValueError(
+                    f"Table for property '{prop_name}' is not specified.")
+
+            # NOTE: check component
+            component_checker_ = ReferenceChecker_.check_component_availability(
+                component_name=component_name,
+                component_formula=component_formula,
+                component_state=component_state,
+                databook_name=databook_,
+                table_name=table_,
+                component_key=component_key
+            )
+
+            # check
+            if not isinstance(component_checker_, dict):
+                raise TypeError("Component checker must be a dictionary")
+
+            if not component_checker_[table_]:
+                continue  # skip if component is not available in the table
+
+            # NOTE: build thermodb items
+            # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
+            item_ = thermodb.build_components_thermo_property(
+                components=[component_],
+                databook=databook_,
+                table=table_,
+            )
+
+            # save
+            res[prop_name] = item_
+
+        # SECTION: build component thermodb
+        # NOTE: check thermodb_name
+        if thermodb_name is None:
+            thermodb_name = component_name
+        # NOTE: check message
+        if message is None:
+            prop_names_list = ', '.join(
+                list(component_reference_configs.keys()))
+            message = f"Thermodb including {prop_names_list} for component: {component_name}"
+
+        # init thermodb
+        thermodb_comp = build_thermodb(
+            thermodb_name=thermodb_name,
+            message=message
+        )
+
+        # add items to thermodb
+        for prop_name, prop_value in res.items():
+            # add item to thermodb
+            thermodb_comp.add_data(
+                prop_name,
+                prop_value
+            )
+
+        # NOTE: build
+        thermodb_comp.build()
+
+        # SECTION: ComponentThermoDB settings
+
+        # init ComponentThermoDB
+        component_thermodb = ComponentThermoDB(
+            component=component_,
+            thermodb=thermodb_comp,
+            reference_configs=component_reference_configs,
+        )
+
+        # return
+        return component_thermodb
+
+        # SECTION: init
+    except Exception as e:
+        raise Exception(f"Building {component_name} thermodb failed! {e}")
