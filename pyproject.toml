@@ -29,10 +29,12 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "pandas",
-    "requests",
-    "numpy",
-    "PyYAML"
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "pandas>=2.3.2",
+    "requests>=2.32.5",
+    "numpy>=2.3.2",
+    "PyYAML>=6.0.2",
 ]
 
 [project.urls]
