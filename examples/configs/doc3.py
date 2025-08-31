@@ -1,6 +1,6 @@
 # import libs
+from pyThermoDB import build_component_thermodb_from_reference
 from rich import print
-from pyThermoDB.references import ReferenceChecker
 
 # SECTION: reference content
 REFERENCE_CONTENT = """
@@ -158,135 +158,25 @@ REFERENCES:
             - [2,methanol|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
             - [1,methane|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
             - [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
-    CUSTOM-REF-2:
-      DATABOOK-ID: 2
-      TABLES:
-        general-data-2:
-          TABLE-ID: 2
-          DESCRIPTION:
-            This table provides the general data of different chemical species participating in the CO2 hydrogenation reaction and includes molecular weight (MW) in g/mol, critical temperature (Tc) in K, critical pressure (Pc) in MPa, and critical molar volume (Vc) in m3/kmol. The table also includes the critical compressibility factor (Zc), acentric factor (AcFa), enthalpy of formation (EnFo) in kJ/mol, and Gibbs energy of formation (GiEnFo) in kJ/mol. The chemical state of the species is also provided in the table and hence the enthalpy of formation and Gibbs energy of formation are provided for the ideal gas and liquid state are designated as EnFo_IG, GiEnFo_IG, EnFo_LIQ, and GiEnFo_LIQ, respectively.
-          DATA: []
-          STRUCTURE:
-            COLUMNS: [No.,Name,Formula,State,Molecular-Weight,Critical-Temperature,Critical-Pressure,Critical-Molar-Volume,Critical-Compressibility-Factor,Acentric-Factor,Enthalpy-of-Formation,Gibbs-Energy-of-Formation]
-            SYMBOL: [None,None,None,None,MW,Tc,Pc,Vc,Zc,AcFa,EnFo,GiEnFo]
-            UNIT: [None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
-            CONVERSION: [None,None,None,None,1,1,1,1,1,1,1,1]
-          VALUES:
-            - [100,'carbon dioxide','CO2','g',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
-            - [2,'carbon monoxide','CO','g',28.01,132.92,3.499,0.0944,0.299,0.0482,-110.5,-137.2]
-            - [3,'hydrogen','H2','g',2.016,33.19,1.313,0.064147,0.305,-0.216,0,0]
-            - [4,'methanol','CH3OH','g',32.04,512.5,8.084,0.117,0.222,0.5658,-200.7,-162]
-            - [5,'water','H2O','g',18.01,647.096,22.064,0.0559472,0.229,0.3449,-241.8,-228.6]
-            - [6,'acetylene','C2H2','g',26.037,308.3,6.138,0.112,0.268,0.1912,227.5,210.0]
-            - [7,'ethanol','C2H6O','l',46.068,514,6.137,0.168,0.241,0.6436,-277.70,-174.80]
-            - [8,'n-butane','C4H10','g',58.122,425.12,3.796,0.255,0.274,0.2002,-125.80,-16.60]
-            - [9,'methane','CH4','g',16.042,190.564,4.599,0.0986,0.286,0.0115,-74.50,-50.50]
-            - [10,'propane','C3H8','g',44.096,369.83,4.248,0.2,0.276,0.1523,-104.70,-24.30]
-            - [11,'1-butene','C4H8','g',56.106,419.5,4.02,0.241,0.278,0.1845,1.20,70.30]
-            - [12,"1,3-Butadiene",'C4H6','g',54.090,425,4.32,0.221,0.27,0.1950,109.20,149.80]
-            - [13,'ethylene','C2H4','g',28.053,282.34,5.041,0.131,0.281,0.0862,52.50,68.50]
-            - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
-            - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
-            - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
-
 """
-
-
-# SECTION: create ReferenceChecker instance
-ReferenceChecker_ = ReferenceChecker(REFERENCE_CONTENT)
 
 # SECTION: check component availability
 component_name = 'carbon dioxide'
 component_formula = 'CO2'
 component_state = 'g'
 
-# NOTE: check component availability
-check_result = ReferenceChecker_.check_component_availability(
+# SECTION: build component thermodb
+thermodb_component_ = build_component_thermodb_from_reference(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    component_key='Formula-State'
+    reference_content=REFERENCE_CONTENT,
 )
-print(f"Check Result: {check_result}")
+print(f"thermodb_component_: {thermodb_component_}")
 
-# to check in only one table
-check_result = ReferenceChecker_.check_component_availability(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    table_name='general-data',
-    component_key='Formula-State'
-)
-print(f"Check Result: {check_result}")
+# NOTE: thermodb
+thermodb_ = thermodb_component_.thermodb
+print(f"thermodb_: {thermodb_}")
 
-# NOTE: get component data
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    table_name='general-data',
-    component_key='Name-State'
-)
-print(f"Components Data: {components_data_}")
-
-# NOTE: get component reference config
-component_reference_config = ReferenceChecker_.get_component_reference_config(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    add_label=True,
-    check_labels=True
-)
-print(f"Component Reference Config: {component_reference_config}")
-
-# NOTE: get component reference configs
-component_reference_configs = ReferenceChecker_.get_component_reference_configs(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    add_label=True,
-    check_labels=True
-)
-print(f"Component Reference Configs: {component_reference_configs}")
-
-# SECTION: generate reference link (ALL)
-reference_link_ = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1'
-)
-print(f"Reference Link: {reference_link_}")
-
-# SECTION: generate reference link (specific component)
-reference_link_component = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1',
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state
-)
-print(f"Reference Link ({component_name}): {reference_link_component}")
-
-# SECTION: generate reference link (specific component not exists)
-# component not exists
-component_name_not_exists = 'Dimethyl ether'
-component_formula_not_exists = 'C2H6O'
-component_state_not_exists = 'l'
-
-reference_link_component = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1',
-    component_name=component_name_not_exists,
-    component_formula=component_formula_not_exists,
-    component_state=component_state_not_exists
-)
-print(
-    f"Reference Link ({component_name_not_exists}): {reference_link_component}"
-)
-
-# SECTION: generate reference link (specific table)
-reference_link_specific = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1',
-    table_names='NRTL Non-randomness parameters-1'
-)
-print(f"Reference Link (Specific Table): {reference_link_specific}")
+# check
+print(f"thermodb checks: {thermodb_.check()}")
