@@ -159,8 +159,9 @@ class TableReference(ManageData):
                 if len(path_external) > 0:
                     # check csv paths
                     # csv file names
-                    file_names = [os.path.basename(path)
-                                  for path in path_external]
+                    file_names = [
+                        os.path.basename(path) for path in path_external
+                    ]
                     # check csv file
                     for item in file_names:
                         if item == file_name:
@@ -291,63 +292,6 @@ class TableReference(ManageData):
                             file_data.append(symbol)
                             file_data.append(unit)
                             file_data.extend(values_)
-
-                        # SECTION: items
-                        # if items and values is None:
-                        #     # init values
-                        #     values_dict = {}
-
-                        #     # loop through items
-                        #     for item in items:
-
-                        #         # init values
-                        #         values__ = []
-
-                        #         # looping through item
-                        #         for k, v in item.items():
-                        #             # check
-                        #             if v:
-                        #                 # add
-                        #                 values__.append(v)
-
-                        #         # std key format
-                        #         k = k.split('|')
-                        #         # check
-                        #         if len(k) != 2:
-                        #             raise Exception(
-                        #                 f"Table data is None for {file_name}.")
-
-                        #         # strip keys
-                        #         k = [i.strip() for i in k]
-                        #         # std key format
-                        #         k = f"{k[0]} | {k[1]}"
-
-                        #         # save item values
-                        #         values_dict[str(k)] = values__
-
-                        #     # NOTE: add to file data
-                        #     # ! add to dataframe header
-                        #     # file_item_data.append(columns)
-
-                        #     # df dict
-                        #     df_dict = {}
-
-                        #     # loop through items
-                        #     for k, v in values_dict.items():
-                        #         # df data
-                        #         file_item_data = []
-
-                        #         # add symbol
-                        #         file_item_data.append(symbol)
-                        #         # add unit
-                        #         file_item_data.append(unit)
-                        #         # flatten item values
-                        #         v_ = [d for sublist in v for d in sublist]
-                        #         file_item_data.append(v_)
-
-                        #         # build df
-                        #         df_dict[k] = pd.DataFrame(
-                        #             file_item_data, columns=columns)
 
                     elif tb_type == TableTypes.EQUATIONS.value:
                         # ! equations
@@ -503,16 +447,18 @@ class TableReference(ManageData):
                         raise ValueError(
                             f"Lookup value must be a string for {databook_id} and {table_id}.")
 
-                    df_filter = df[df[column_name].str.lower() ==
-                                   lookup.lower()]
+                    df_filter = df[
+                        df[column_name].str.lower() == lookup.lower()
+                    ]
                 elif isinstance(column_name, str) and query is True:
                     # NOTE: check query
                     # create filter
                     df_filter = df.query(column_name)
 
-                elif (isinstance(column_name, list) and
-                      isinstance(lookup, list)
-                      ):
+                elif (
+                    isinstance(column_name, list) and
+                    isinstance(lookup, list)
+                ):
                     # NOTE: check lookup
                     # use query
                     _query = []
@@ -656,7 +602,7 @@ class TableReference(ManageData):
         databook_id: int,
         table_id: int,
         column_name: str | list[str],
-        lookup: str,
+        lookup: str | list[str],
         query: bool = False,
         matrix_tb: bool = False
     ) -> PayLoadType | None:
