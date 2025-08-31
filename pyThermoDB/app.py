@@ -36,9 +36,22 @@ class ComponentThermoDB(BaseModel):
     thermodb: CompBuilder
         The thermodynamic database builder instance.
     """
-    component: Component
-    thermodb: CompBuilder
-    reference_configs: Dict[str, Any]
+    component: Component = Field(
+        ...,
+        description="The component for which the thermodynamic database is built."
+    )
+    thermodb: CompBuilder = Field(
+        ...,
+        description="The thermodynamic database builder instance."
+    )
+    reference_configs: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Reference configuration used for building the thermodynamic database."
+    )
+    labels: Optional[List[str]] = Field(
+        default=None,
+        description="List of labels used in the reference config."
+    )
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -662,8 +675,10 @@ def build_component_thermodb_from_reference(
             custom_reference=ref
         )
 
-        # init res
+        # NOTE: init res
         res = {}
+        # labels
+        labels = []
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
@@ -686,6 +701,21 @@ def build_component_thermodb_from_reference(
             if table_ is None:
                 raise ValueError(
                     f"Table for property '{prop_name}' is not specified.")
+
+            # ! label/labels
+            # check label
+            label_ = prop_idx.get('label', None)
+            if label_:
+                # append to labels
+                labels.append(label_)
+            # check labels
+            labels_ = prop_idx.get('labels', None)
+            if labels_ and isinstance(labels_, dict):
+                # extract labels
+                for lbl_key, lbl_val in labels_.items():
+                    if lbl_val and isinstance(lbl_val, str):
+                        # append to labels
+                        labels.append(lbl_val)
 
             # NOTE: check component
             component_checker_ = ReferenceChecker_.check_component_availability(
@@ -743,12 +773,12 @@ def build_component_thermodb_from_reference(
         thermodb_comp.build()
 
         # SECTION: ComponentThermoDB settings
-
         # init ComponentThermoDB
         component_thermodb = ComponentThermoDB(
             component=component_,
             thermodb=thermodb_comp,
             reference_configs=component_reference_configs,
+            labels=labels if labels else None
         )
 
         # return
