@@ -3,6 +3,7 @@ import pyThermoDB as ptdb
 from pprint import pprint as pp
 import os
 from rich import print
+from typing import Dict, Any, List
 
 # version
 print(ptdb.__version__)
@@ -24,7 +25,7 @@ csv_path_1 = os.path.join(parent_dir, csv_file_1)
 csv_path_2 = os.path.join(parent_dir, csv_file_2)
 
 # custom ref
-ref = {
+ref: Dict[str, Any] = {
     'reference': [yml_path],
     'tables': [csv_path_1, csv_path_2]
 }
@@ -49,7 +50,9 @@ print(tb_list)
 
 # # select a table
 tb = thermo_db.select_table(
-    'NRTL', 'Non-randomness parameters of the NRTL equation-2-1')
+    'NRTL',
+    'Non-randomness parameters of the NRTL equation-2-1'
+)
 print(tb)
 
 # ====================================
@@ -57,7 +60,9 @@ print(tb)
 # ====================================
 # display a table
 tb_info = thermo_db.table_info(
-    'NRTL', "Non-randomness parameters of the NRTL equation-2-1")
+    'NRTL',
+    "Non-randomness parameters of the NRTL equation-2-1"
+)
 print(tb_info)
 
 # ====================================
