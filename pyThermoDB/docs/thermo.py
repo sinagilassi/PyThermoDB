@@ -27,7 +27,7 @@ from .tablematrixequation import TableMatrixEquation
 from .tabledata import TableData
 from .tablematrixdata import TableMatrixData
 from ..data import TableTypes
-from ..models import DataBookTableTypes
+from ..models import DataBookTableTypes, Component
 # web app
 from ..ui import Launcher
 
@@ -1434,7 +1434,8 @@ class ThermoDB(ManageData):
         column_name: Optional[str | list[str]] = None,
         dataframe: bool = False,
         query: bool = False,
-        matrix_tb: bool = False
+        matrix_tb: bool = False,
+        component_state: Optional[str] = None
     ):
         '''
         Get component data from database (api|local csvs)
@@ -1447,12 +1448,16 @@ class ThermoDB(ManageData):
             databook id
         table_id : int
             table id
-        column_name : str
+        column_name : str | list, optional
             column name
         dataframe : bool
             return dataframe or not
         query : bool
             query or not
+        matrix_tb : bool
+            matrix table or not
+        component_state : str, optional
+            component state (e.g. 'g', 'l', 's')
 
         Returns
         -------
@@ -1474,10 +1479,11 @@ class ThermoDB(ManageData):
                 return None
             elif self.data_source == 'local':
                 component_data = self.get_component_data_local(
-                    component_name,
-                    databook_id,
-                    table_id,
-                    column_name,
+                    component_name=component_name,
+                    databook_id=databook_id,
+                    table_id=table_id,
+                    column_name=column_name,
+                    component_state=component_state,
                     dataframe=dataframe,
                     query=query,
                     matrix_tb=matrix_tb
@@ -1544,6 +1550,7 @@ class ThermoDB(ManageData):
         databook_id: int,
         table_id: int,
         column_name: str | list[str],
+        component_state: Optional[str] = None,
         dataframe: bool = False,
         query: bool = False,
         matrix_tb: bool = False
@@ -1561,6 +1568,8 @@ class ThermoDB(ManageData):
             table id
         column_name : str
             column name | query to find a record from a dataframe
+        component_state : str, optional
+            component state (e.g. 'g', 'l', 's')
         dataframe : bool
             return dataframe or not
         query : bool
@@ -1579,12 +1588,27 @@ class ThermoDB(ManageData):
                 # set api
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
 
+                # NOTE: set query
+                if component_state is not None:
+                    # ! set column_name
+                    if isinstance(column_name, str):
+                        column_name = [column_name, 'State']
+                    elif isinstance(column_name, list):
+                        if 'State' not in column_name:
+                            column_name.append('State')
+
+                    # ! set query
+                    if isinstance(component_name, str):
+                        lookup = [component_name, component_state]
+                else:
+                    lookup = component_name
+
                 # NOTE: search
                 payload = TableReferenceC.make_payload(
-                    databook_id,
-                    table_id,
-                    column_name,
-                    component_name,
+                    databook_id=databook_id,
+                    table_id=table_id,
+                    column_name=column_name,
+                    lookup=lookup,
                     query=query,
                     matrix_tb=matrix_tb
                 )
@@ -1697,13 +1721,85 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
 
+    def build_components_thermo_property(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+    ):
+        '''
+        Build thermo property for a component including data, equation, matrix-data and matrix-equation.
+
+        Parameters
+        ----------
+        components : str
+            string of component name (e.g. 'Carbon dioxide')
+        component_state : str, optional
+            component state (e.g. 'g', 'l', 's')
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+        column_name : str | list, optional
+            column name (e.g. 'Name') | list as ['Name','State']
+
+        '''
+        try:
+            # NOTE: detect table type
+            tb_info_res_ = self.table_info(databook, table, res_format='dict')
+
+            # SECTION: build thermo property
+            if isinstance(tb_info_res_, dict):
+                # check
+                if tb_info_res_['Type'] == 'Equation':  # ! equation
+                    # build equation
+                    return self.build_equation(
+                        component_name=components[0].name,
+                        databook=databook,
+                        table=table,
+                        component_state=components[0].state,
+                    )
+                elif tb_info_res_['Type'] == 'Data':  # ! data
+                    # check
+                    if len(components) > 1:
+                        raise Exception('Only one component name required!')
+                    # build data
+                    return self.build_data(
+                        component_name=components[0].name,
+                        databook=databook,
+                        table=table,
+                        component_state=components[0].state,
+                    )
+                elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
+                    # check
+                    if len(components) < 2:
+                        raise Exception(
+                            'At least two component names required!')
+
+                    # set component names
+                    component_names_ = [comp.name for comp in components]
+                    # build matrix-data
+                    return self.build_matrix_data(
+                        component_names=component_names_,
+                        databook=databook,
+                        table=table
+                    )
+                else:
+                    raise Exception('No data/equation found!')
+            else:
+                raise Exception('Table loading error!')
+        except Exception as e:
+            raise Exception(f'Building thermo property error {e}')
+
     def build_equation(
         self,
         component_name: str,
         databook: int | str,
         table: int | str,
         column_name: Optional[str | list[str]] = None,
-        query: bool = False
+        query: bool = False,
+        component_state: Optional[str] = None,
     ) -> TableEquation:
         '''
         Build equation for as:
@@ -1722,6 +1818,8 @@ class ThermoDB(ManageData):
             column name (e.g. 'Name') | list as ['Name','state']
         query : bool
             query to search a dataframe
+        component_state : str, optional
+            component state (e.g. 'g', 'l', 's')
 
         Returns
         -------
@@ -1746,15 +1844,19 @@ class ThermoDB(ManageData):
             # get data from api
             # ! dataframe and PayLoadType
             component_data = self.get_component_data(
-                component_name, databook_id, table_id, column_name=column_name,
-                query=query)
+                component_name=component_name,
+                databook_id=databook_id,
+                table_id=table_id,
+                column_name=column_name,
+                query=query,
+                component_state=component_state
+            )
 
             # check loading state
             if component_data is not None:
                 # check availability
                 if len(component_data) > 0:
                     # ! reset data
-                    # ! trans data
                     TransDataC = TransData(component_data)
                     # transform api data
                     TransDataC.trans()
@@ -1796,7 +1898,8 @@ class ThermoDB(ManageData):
         databook: int | str,
         table: int | str,
         column_name: Optional[str | list[str]] = None,
-        query: bool = False
+        query: bool = False,
+        component_state: Optional[str] = None,
     ) -> TableData:
         '''
         Build data as:
@@ -1814,6 +1917,8 @@ class ThermoDB(ManageData):
             column name (e.g. 'Name') | list as ['Name','state']
         query : bool
             query to search a dataframe
+        component_state : str, optional
+            component state (e.g. 'g', 'l', 's')
 
         Returns
         -------
@@ -1838,8 +1943,12 @@ class ThermoDB(ManageData):
             # SECTION: get data from api
             # ! dataframe and PayLoadType
             component_data = self.get_component_data(
-                component_name, databook_id, table_id, column_name=column_name,
-                query=query)
+                component_name,
+                databook_id,
+                table_id,
+                column_name=column_name,
+                query=query
+            )
 
             # check loading state
             if component_data is not None:
