@@ -11,7 +11,7 @@ SYMBOLS:
   melting_temperature: Tm
   acentric_factor: AcFa
   liquid_density: rho_LIQ
-  gas_density: rho_G
+  gas_density: rho_GAS
   vapor_pressure: VaPr
   enthalpy_of_formation: EnFo
   Gibbs_energy_of_formation: GiEnFo
@@ -23,7 +23,8 @@ SYMBOLS:
   ideal_gas_entropy: Ent_IG
   ideal_gas_heat_capacity_at_constant_pressure: Cp_IG
   liquid_heat_capacity_at_constant_pressure: Cp_LIQ
-  solid_heat_capacity: Cp_SOL
+  solid_heat_capacity_at_constant_pressure: Cp_SOL
   enthalpy_of_vaporization: EnVap
   enthalpy_of_fusion: EnFus
+  enthalpy_of_sublimation: EnSub
   standard_net_enthalpies_of_combustion: EnCo_STD
