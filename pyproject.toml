@@ -7,7 +7,7 @@ name = "pyThermoDB"
 version = "1.11.14"
 description = "PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [
@@ -23,7 +23,7 @@ keywords = [
 classifiers = [
     "Development Status :: 1 - Planning",
     "Intended Audience :: Education",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Operating System :: Unix",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
