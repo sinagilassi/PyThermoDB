@@ -3,7 +3,7 @@ import logging
 from typing import (
     Dict,
     Union,
-    Any
+    Any,
 )
 # local
 from .checker import ReferenceChecker
