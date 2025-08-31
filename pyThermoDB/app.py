@@ -35,6 +35,11 @@ class ComponentThermoDB(BaseModel):
         The component for which the thermodynamic database is built.
     thermodb: CompBuilder
         The thermodynamic database builder instance.
+    reference_configs: Dict[str, Any]
+        Reference configuration used for building the thermodynamic database.
+    labels: Optional[List[str]]
+        List of labels used in the reference config.
+
     """
     component: Component = Field(
         ...,
