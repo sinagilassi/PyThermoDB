@@ -1882,7 +1882,7 @@ class ReferenceChecker:
                             f"Table not found in reference config for '{ref_key}'.")
                         continue
                     # get property name from label (assuming the property name is the same as the label)
-                    prop = table  # This can be modified based on actual requirements
+                    prop = ref_key  # This can be modified based on actual requirements
 
                     # add to reference rules
                     if prop not in reference_rules['EQUATIONS']:
