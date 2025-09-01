@@ -1789,3 +1789,114 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting component references: {e}")
             return None
+
+    def generate_reference_rules(
+        self,
+        reference_configs: Dict[str, Any]
+    ) -> Dict[str, Dict[str, str]]:
+        """
+        generate the reference rules for a component based on the provided reference configurations. It consists of two main parts: DATA and EQUATIONS. Each part contains thermodynamic properties and their corresponding symbols (labels).
+
+        Parameters
+        ----------
+        reference_configs : Dict[str, Any]
+            A dictionary containing the reference configurations for the component.
+
+        Returns
+        -------
+        Dict[str, Dict[str, str]]
+            A dictionary containing the reference rules for the component.
+
+        Notes
+        -----
+        The reference_configs dictionary should have the following structure:
+        {
+            'reference_key_1': {
+                'databook': 'Databook Name',
+                'table': 'Table Name',
+                'mode': 'DATA' or 'EQUATIONS',
+                'labels': {
+                    'Property1': 'Symbol1',
+                    'Property2': 'Symbol2',
+                    ...
+                } (for DATA mode)
+                'label': 'Symbol' (for EQUATIONS mode)
+            },
+            ...
+        }
+        """
+        try:
+            # SECTION: init result
+            reference_rules = {
+                'DATA': {},
+                'EQUATIONS': {}
+            }
+
+            # SECTION: iterate through each reference config
+            for ref_key, ref_config in reference_configs.items():
+                # check if ref_config is a dictionary
+                if not isinstance(ref_config, dict):
+                    logging.error(
+                        f"Reference config for '{ref_key}' is not a dictionary.")
+                    continue
+
+                # get mode
+                mode = ref_config.get('mode', None)
+                if mode is None:
+                    logging.error(
+                        f"Mode not found in reference config for '{ref_key}'.")
+                    continue
+
+                # check mode
+                if mode == 'DATA':
+                    # iterate through each label
+                    labels = ref_config.get('labels', None)
+                    if not isinstance(labels, dict):
+                        logging.error(
+                            f"Labels not found or invalid in reference config for '{ref_key}'.")
+                        continue
+
+                    for prop, label in labels.items():
+                        # check if prop and label are valid
+                        if prop is None or label is None or label in ['None', '']:
+                            logging.error(
+                                f"Property or label not found or invalid in reference config for '{ref_key}'.")
+                            continue
+
+                        # add to reference rules
+                        if prop not in reference_rules['DATA']:
+                            reference_rules['DATA'][prop] = label
+
+                elif mode == 'EQUATIONS':
+                    # get label
+                    label = ref_config.get('label', None)
+                    if label is None or label in ['None', '']:
+                        logging.error(
+                            f"Label not found or invalid in reference config for '{ref_key}'.")
+                        continue
+
+                    # table
+                    table = ref_config.get('table', None)
+                    if table is None:
+                        logging.error(
+                            f"Table not found in reference config for '{ref_key}'.")
+                        continue
+                    # get property name from label (assuming the property name is the same as the label)
+                    prop = table  # This can be modified based on actual requirements
+
+                    # add to reference rules
+                    if prop not in reference_rules['EQUATIONS']:
+                        reference_rules['EQUATIONS'][prop] = label
+                else:
+                    logging.error(
+                        f"Invalid mode '{mode}' in reference config for '{ref_key}'.")
+                    continue
+
+            # return the reference rules
+            return reference_rules
+        except Exception as e:
+            logging.error(f"Error building reference rules: {e}")
+            return {
+                'DATA': {},
+                'EQUATIONS': {}
+            }
