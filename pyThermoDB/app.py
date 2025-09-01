@@ -673,8 +673,15 @@ def build_component_thermodb_from_reference(
         )
 
         # NOTE: check if reference_config is a dict
-        if not isinstance(component_reference_configs, dict):
-            raise TypeError("reference_config must be a dictionary")
+        if not isinstance(component_reference_configs, dict) or not component_reference_configs:
+            raise ValueError(
+                f"No reference config found for component '{component_name}' in the provided reference content."
+            )
+
+        # SECTION: generate reference rules
+        reference_rules = ReferenceChecker_.generate_reference_rules(
+            reference_configs=component_reference_configs
+        )
 
         # SECTION: build thermodb
         # set reference
@@ -787,6 +794,7 @@ def build_component_thermodb_from_reference(
             component=component_,
             thermodb=thermodb_comp,
             reference_configs=component_reference_configs,
+            reference_rules=reference_rules,
             labels=labels if labels else None
         )
 
