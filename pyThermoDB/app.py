@@ -53,6 +53,10 @@ class ComponentThermoDB(BaseModel):
         default_factory=dict,
         description="Reference configuration used for building the thermodynamic database."
     )
+    reference_rules: Dict[str, Dict[str, str]] = Field(
+        default_factory=dict,
+        description="Reference rules generated from the reference configuration."
+    )
     labels: Optional[List[str]] = Field(
         default=None,
         description="List of labels used in the reference config."
