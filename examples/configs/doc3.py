@@ -1,5 +1,5 @@
 # import libs
-from pyThermoDB import build_component_thermodb_from_reference
+from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
 from rich import print
 
 # SECTION: reference content
@@ -166,7 +166,7 @@ component_formula = 'CO2'
 component_state = 'g'
 
 # SECTION: build component thermodb
-thermodb_component_ = build_component_thermodb_from_reference(
+thermodb_component_: ComponentThermoDB = build_component_thermodb_from_reference(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,

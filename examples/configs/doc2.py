@@ -253,6 +253,13 @@ component_reference_configs = ReferenceChecker_.get_component_reference_configs(
 )
 print(f"Component Reference Configs: {component_reference_configs}")
 
+# NOTE: generate reference rules
+if component_reference_configs is not None:
+    reference_rules_ = ReferenceChecker_.generate_reference_rules(
+        reference_configs=component_reference_configs
+    )
+    print(f"Reference Rules: {reference_rules_}")
+
 # SECTION: generate reference link (ALL)
 reference_link_ = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1'
