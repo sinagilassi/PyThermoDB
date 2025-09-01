@@ -439,18 +439,25 @@ class TableReference(ManageData):
                 df_info = df.iloc[:2, :]
 
                 # SECTION: filter
-                if isinstance(column_name, str) and query is False:
+                if (
+                    isinstance(column_name, str) and
+                    query is False
+                ):  # ! search by column name
                     # NOTE: check query
                     # create filter
-                    # NOTE: check lookup
+                    # check lookup
                     if not isinstance(lookup, str):
                         raise ValueError(
-                            f"Lookup value must be a string for {databook_id} and {table_id}.")
+                            f"Lookup value must be a string for {databook_id} and {table_id}."
+                        )
 
                     df_filter = df[
                         df[column_name].str.lower() == lookup.lower()
                     ]
-                elif isinstance(column_name, str) and query is True:
+                elif (
+                    isinstance(column_name, str) and
+                    query is True
+                ):  # ! search by query
                     # NOTE: check query
                     # create filter
                     df_filter = df.query(column_name)
@@ -458,19 +465,35 @@ class TableReference(ManageData):
                 elif (
                     isinstance(column_name, list) and
                     isinstance(lookup, list)
-                ):
-                    # NOTE: check lookup
+                ):  # ! search by list of column names
+                    # NOTE: check column names
+                    if len(column_name) != len(lookup):
+                        raise ValueError(
+                            f"Column name and lookup must have the same length for {databook_id} and {table_id}."
+                        )
+
+                    # SECTION: use query
                     # use query
                     _query = []
+
+                    # iterate through column names
                     for i in range(len(column_name)):
                         _query.append(f'`{column_name[i]}` == "{lookup[i]}"')
+
                     # make query
                     _query_set = ' & '.join(_query)
+
                     # query
                     df_filter = df.query(_query_set)
+                else:
+                    raise ValueError(
+                        f"Column name and lookup formats are not valid for {databook_id} and {table_id}."
+                    )
 
                 # SECTION: combine dfs
                 result = pd.concat([df_info, df_filter])
+
+                # NOTE: check
                 if not df_filter.empty:
                     return result
                 else:
