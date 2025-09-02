@@ -154,15 +154,16 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def cal(self,
-            message: str = '',
-            decimal_accuracy: int = 4,
-            filter_elements: list = [],
-            output_format: Literal[
-                'alphabetic', 'numeric'
-            ] = 'numeric',
-            **args
-            ) -> EquationResult:
+    def cal(
+        self,
+        message: str = '',
+        decimal_accuracy: int = 4,
+        filter_elements: list = [],
+        output_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'numeric',
+        **args
+    ) -> EquationResult:
         '''
         Execute a function
 
@@ -177,7 +178,7 @@ class TableMatrixEquation:
         output_format : Literal['alphabetic', 'numeric'], optional
             output format, either 'alphabetic' or 'numeric' (default is 'numeric')
         args : dict
-            a dictionary contains variable names and values as
+            a dictionary contains variable names and values such as T=300, P=1
 
         Returns
         -------
@@ -315,7 +316,11 @@ class TableMatrixEquation:
         res = self.eqExe(self.body_integral, _parms, args=args)
         return res
 
-    def cal_custom_integral(self, equation_name: str, **args):
+    def cal_custom_integral(
+            self,
+            equation_name: str,
+            **args
+    ):
         '''
         Calculate custom integral
 
@@ -465,7 +470,11 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception('Set params matrix failed!, ', e)
 
-    def get_matrix_table_info(self, symbol_id: int = 0, unit_id: int = 1) -> tuple[list, list, list]:
+    def get_matrix_table_info(
+            self,
+            symbol_id: int = 0,
+            unit_id: int = 1
+    ) -> tuple[list, list, list]:
         """
         Get matrix table info
 
@@ -506,7 +515,10 @@ class TableMatrixEquation:
         except Exception as e:
             raise Exception('Get matrix table info failed!, ', e)
 
-    def get_params_symbols(self, symbol_identifier: str = '_i_j'):
+    def get_params_symbols(
+            self,
+            symbol_identifier: str = '_i_j'
+    ):
         """
         Get parms symbols
 
@@ -927,7 +939,12 @@ class TableMatrixEquation:
         if len(self.parms) > 0:
             self.__parms_values = self.load_parms()
 
-    def eqExe(self, body, parms, args):
+    def eqExe(
+            self,
+            body,
+            parms,
+            args
+    ):
         '''
         Execute a function body with provided arguments and parameters.
 
