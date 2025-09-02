@@ -31,6 +31,9 @@ from ..models import DataBookTableTypes, Component
 # web app
 from ..ui import Launcher
 
+# NOTE: logger
+logger = logging.getLogger(__name__)
+
 # SECTION: types
 ComponentSearch = Union[
     list[dict[str, str]],
@@ -1207,14 +1210,15 @@ class ThermoDB(ManageData):
             summary of the component availability
         '''
         try:
-            # check search option
+            # NOTE: check search option
             if column_name is None:
                 column_name = 'Name'
 
-            # check
+            # NOTE: check
             if query:
                 column_name = column_name
 
+            # SECTION: find ids
             # find databook zero-based id (real)
             db, db_name, db_rid = self.find_databook(databook)
             # databook id (non-zero-based id)
@@ -1237,8 +1241,12 @@ class ThermoDB(ManageData):
                     pass
                 elif self.data_source == 'local':
                     res = self.check_component_local(
-                        component_name, databook_id, table_id,
-                        column_name, query=query)
+                        component_name=component_name,
+                        databook_id=databook_id,
+                        table_id=table_id,
+                        column_name=column_name,
+                        query=query
+                    )
                 else:
                     raise Exception('Data source error!')
             else:
@@ -1247,7 +1255,9 @@ class ThermoDB(ManageData):
             # res
             res_dict = {
                 'databook_id': databook_id,
+                'databook_name': db_name,
                 'table_id': table_id,
+                'table_name': tb_name,
                 'component_name': component_name,
                 'availability': res
             }
@@ -1266,6 +1276,135 @@ class ThermoDB(ManageData):
                 raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception(f"Component check error! {e}")
+
+    def is_component_available(
+        self,
+        component: Component,
+        databook: int | str,
+        table: int | str,
+        column_names: List[str] = ['Name', 'Formula'],
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
+        res_format: Literal['dict', 'json', 'str'] = 'dict'
+    ) -> Union[str, dict[str, str]]:
+        '''
+        Check if a component is available in the specified databook and table. A component is defined as:
+        - name-state: carbon dioxide-g
+        - formula-state: CO2-g
+
+        Parameters
+        ----------
+        component : Component
+            The component to check.
+        databook : int | str
+            The databook id or name.
+        table : int | str
+            The table id or name.
+        column_names : List[str], optional
+            List of column names to search in, by default ['Name', 'Formula'].
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
+        res_format : Literal['dict', 'json', 'str'], optional
+            The format of the returned result, by default 'json'.
+
+        Returns
+        -------
+        str | dict[str, str]
+            Summary of the component availability.
+
+        Notes
+        -----
+        - Table should contain columns for 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        '''
+        try:
+            # SECTION: Validate input
+            if not isinstance(component, Component):
+                raise ValueError(
+                    "Invalid component. Must be an instance of Component class.")
+            if (
+                not component.name and
+                not component.formula and
+                not component.state
+            ):
+                raise ValueError(
+                    "Component must have at least a name or a formula.")
+            if not column_names or not isinstance(column_names, list):
+                raise ValueError(
+                    "column_names must be a non-empty list of strings.")
+            if len(column_names) != 2:
+                raise ValueError(
+                    "column_names must contain exactly two elements: ['Name', 'Formula'].")
+
+            # SECTION: Check component_key validity
+            if component_key not in ['Name-State', 'Formula-State']:
+                raise ValueError(
+                    "Invalid component_key. Must be 'Name-State' or 'Formula-State'.")
+
+            # NOTE: create component id band query
+            component_id = None
+            query = None
+
+            # check
+            if component_key == 'Name-State':
+                # set
+                component_id = f"{component.name}-{component.state}"
+                # query
+                query = f'Name.str.lower() == "{component.name.lower()}" and State.str.lower() == "{component.state.lower()}"'
+            elif component_key == 'Formula-State':
+                # set
+                component_id = f"{component.formula}-{component.state}"
+                # query
+                query = f'Formula.str.lower() == "{component.formula.lower()}" and State.str.lower() == "{component.state.lower()}"'
+
+            if component_id is None:
+                raise ValueError("Component ID could not be determined.")
+
+            if query is None:
+                raise ValueError("Query could not be determined.")
+
+            # SECTION: find ids
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id (non-zero-based id)
+            databook_id = db_rid + 1
+
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id (non-zero-based id)
+            table_id = tb_id + 1
+
+            # SECTION: Check if the component exists in the specified databook and table
+            availability = self.check_component_local(
+                component_name=component_id,
+                databook_id=databook_id,
+                table_id=table_id,
+                column_name=query,
+                query=True,
+            )
+
+            # res
+            res_dict = {
+                'databook_id': databook_id,
+                'databook_name': db_name,
+                'table_id': table_id,
+                'table_name': tb_name,
+                'component_name': component_id,
+                'availability': availability
+            }
+
+            # json
+            res_json = json.dumps(res_dict, indent=4)
+
+            # check
+            if res_format == 'json':
+                return res_json
+            elif res_format == 'dict':
+                return res_dict
+            elif res_format == 'str':
+                return res_json
+            else:
+                raise ValueError('Invalid res_format')
+        except Exception as e:
+            raise Exception(f"Error checking component availability: {e}")
 
     def check_component_api(
             self,
@@ -1380,10 +1519,10 @@ class ThermoDB(ManageData):
 
                 # NOTE: search
                 df = TableReferenceC.search_tables(
-                    databook_id,
-                    table_id,
-                    column_name,
-                    component_name,
+                    databook_id=databook_id,
+                    table_id=table_id,
+                    column_name=column_name,
+                    lookup=component_name,  # ! exact match
                     query=query
                 )
 
@@ -1604,14 +1743,18 @@ class ThermoDB(ManageData):
                     lookup = component_name
 
                 # NOTE: search
-                payload = TableReferenceC.make_payload(
-                    databook_id=databook_id,
-                    table_id=table_id,
-                    column_name=column_name,
-                    lookup=lookup,
-                    query=query,
-                    matrix_tb=matrix_tb
-                )
+                try:
+                    payload = TableReferenceC.make_payload(
+                        databook_id=databook_id,
+                        table_id=table_id,
+                        column_name=column_name,
+                        lookup=lookup,
+                        query=query,
+                        matrix_tb=matrix_tb
+                    )
+                except Exception as e:
+                    logging.error(f"Table search error {e}")
+                    payload = None
 
                 # NOTE: check availability
                 if payload:
@@ -1642,7 +1785,8 @@ class ThermoDB(ManageData):
         self,
         component_names: list[str],
         databook: int | str,
-        table: int | str
+        table: int | str,
+        **kwargs
     ) -> ThermoProperty:
         """
         Build a thermodynamic property including data, equation, matrix-data and matrix-equation.
@@ -1655,6 +1799,10 @@ class ThermoDB(ManageData):
             databook id or name
         table : int | str
             table id or name
+        **kwargs
+            Additional keyword arguments to pass to the specific build methods.
+            - component_state : str, optional
+                component state (e.g. 'g', 'l', 's')
 
         Returns
         -------
@@ -1666,31 +1814,45 @@ class ThermoDB(ManageData):
             - TableMatrixData
         """
         try:
-            # detect table type
+            # SECTION: extract kwargs
+            # LINK: column name
+            column_name = kwargs.get('column_name', None)
+            # LINK: query
+            query = kwargs.get('query', False)
+
+            # SECTION: detect table type
             tb_info_res_ = self.table_info(databook, table, res_format='dict')
 
-            # if
+            # SECTION: build thermo property
             if isinstance(tb_info_res_, dict):
                 # check
                 if tb_info_res_['Type'] == 'Equation':  # ! equation
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
+
+                    # component name set
+                    component_name_ = component_names[0]
+
                     # build equation
                     return self.build_equation(
-                        component_names[0],
-                        databook,
-                        table
+                        component_name=component_name_,
+                        databook=databook,
+                        table=table
                     )
                 elif tb_info_res_['Type'] == 'Data':  # ! data
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
+
+                    # component name set
+                    component_name_ = component_names[0]
+
                     # build data
                     return self.build_data(
-                        component_names[0],
-                        databook,
-                        table
+                        component_name=component_name_,
+                        databook=databook,
+                        table=table
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
                     # check
@@ -1726,8 +1888,10 @@ class ThermoDB(ManageData):
         components: List[Component],
         databook: int | str,
         table: int | str,
-        column_name: Optional[str | list[str]] = None,
-    ):
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Name-State',
+    ) -> ThermoProperty:
         '''
         Build thermo property for a component including data, equation, matrix-data and matrix-equation.
 
@@ -1741,9 +1905,24 @@ class ThermoDB(ManageData):
             databook id or name
         table : int | str
             table id or name
-        column_name : str | list, optional
-            column name (e.g. 'Name') | list as ['Name','State']
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
 
+        Returns
+        -------
+        ThermoProperty
+            table object with data loaded
+            - TableEquation
+            - TableData
+            - TableMatrixEquation
+            - TableMatrixData
+
+        Notes
+        -----
+        - Table should contain columns for 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        - For 'Equation' and 'Data' types, only one component should be provided.
+        - For 'Matrix-Equation' and 'Matrix-Data' types, at least two components should be provided.
+        - The `component_key` parameter determines whether to use the component's name or formula along
         '''
         try:
             # NOTE: detect table type
@@ -1753,23 +1932,67 @@ class ThermoDB(ManageData):
             if isinstance(tb_info_res_, dict):
                 # check
                 if tb_info_res_['Type'] == 'Equation':  # ! equation
-                    # build equation
+
+                    # NOTE: check components
+                    if len(components) != 1:
+                        raise Exception('Only one component required!')
+
+                    if not isinstance(components[0], Component):
+                        raise Exception('Invalid component!')
+
+                    # set component id
+                    component_id_ = None
+                    component_state_ = components[0].state
+                    column_id_ = None
+
+                    # NOTE: set component id and column id
+                    if component_key == 'Name-State':
+                        component_id_ = components[0].name
+                        column_id_ = 'Name'
+                    elif component_key == 'Formula-State':
+                        component_id_ = components[0].formula
+                        column_id_ = 'Formula'
+                    else:
+                        raise Exception('Invalid component_key!')
+
+                    # NOTE: build equation
                     return self.build_equation(
-                        component_name=components[0].name,
+                        component_name=component_id_,
                         databook=databook,
                         table=table,
-                        component_state=components[0].state,
+                        column_name=column_id_,
+                        component_state=component_state_,
                     )
                 elif tb_info_res_['Type'] == 'Data':  # ! data
                     # check
                     if len(components) > 1:
                         raise Exception('Only one component name required!')
-                    # build data
+
+                    if not isinstance(components[0], Component):
+                        raise Exception('Invalid component!')
+
+                    # NOTE: set component id
+                    component_id_ = None
+                    component_state_ = components[0].state
+                    column_id_ = None
+
+                    # NOTE: set component id and column id
+                    if component_key == 'Name-State':
+                        component_id_ = components[0].name
+                        column_id_ = 'Name'
+                    elif component_key == 'Formula-State':
+                        component_id_ = components[0].formula
+                        column_id_ = 'Formula'
+                    else:
+                        raise Exception('Invalid component_key!')
+
+                    # NOTE: build data
                     return self.build_data(
-                        component_name=components[0].name,
+                        component_name=component_id_,
                         databook=databook,
                         table=table,
-                        component_state=components[0].state,
+                        column_name=column_id_,
+                        component_state=component_state_,
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
                     # check
@@ -1943,11 +2166,12 @@ class ThermoDB(ManageData):
             # SECTION: get data from api
             # ! dataframe and PayLoadType
             component_data = self.get_component_data(
-                component_name,
-                databook_id,
-                table_id,
+                component_name=component_name,
+                databook_id=databook_id,
+                table_id=table_id,
                 column_name=column_name,
-                query=query
+                query=query,
+                component_state=component_state
             )
 
             # check loading state
