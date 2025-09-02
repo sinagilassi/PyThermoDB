@@ -3,6 +3,8 @@ from typing import Dict, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.models import Component
+
 
 # get versions
 # print(pt.get_version())
@@ -107,30 +109,104 @@ comp1 = "Carbon Dioxide"
 # comp1 = "Methylbutyl ether"
 # COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
-# query
-# query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp1, 3, 2, query, query=True)
+# ! query (Name-State)
+comp1 = "carbon Dioxide"
+state1 = "G"
+column = 'Name'
+query = f"Name.str.lower() == '{comp1.lower()}' and State.str.lower() == '{state1.lower()}'"
+COMP1_check_availability = thermo_db.check_component(
+    component_name=comp1,
+    databook='CUSTOM-REF-1',
+    table='General-Data',
+    column_name=query,
+    query=True,
+    res_format='dict'
+)
+print(COMP1_check_availability)
 
+# ! query (Formula-State)
+comp1 = "CO2"
+# column_formula = 'Formula'
+query = f"Formula.str.lower() == '{comp1.lower()}' and State == 'g'"
+COMP1_check_availability = thermo_db.check_component(
+    component_name=comp1,
+    databook='CUSTOM-REF-1',
+    table='General-Data',
+    column_name=query,
+    query=True,
+    res_format='dict'
+)
+print(COMP1_check_availability)
+
+# ! is component available
+CO2 = Component(
+    name="Carbon dioxide",
+    formula="CO2",
+    state="g"
+)
+is_available = thermo_db.is_component_available(
+    CO2,
+    'CUSTOM-REF-1',
+    'General-Data',
+    component_key='Formula-State',
+)
+print(is_available)
 
 # ====================================
 # BUILD DATA
 # ====================================
-# build data
+# NOTE: build data (older methods)
+comp1 = "Carbon Dioxide"
 data_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'General-Data')
+    [comp1],
+    'CUSTOM-REF-1',
+    'General-Data'
+)
 print(type(data_1))
 
 # retrieve data
 res_ = data_1.get_property("MW")
 print(res_)
 
+# NOTE: build data (newer methods)
+comp1_Component = Component(
+    name="Carbon Dioxide",
+    formula="CO2",
+    state="g"
+)
+
+# ! build data (newer methods, Name-State)
+data_1 = thermo_db.build_components_thermo_property(
+    [comp1_Component],
+    'CUSTOM-REF-1',
+    'General-Data',
+    component_key='Name-State'
+)
+
+res_ = data_1.get_property("MW")
+print(res_)
+
+# ! build data (newer methods, Formula-State)
+data_1 = thermo_db.build_components_thermo_property(
+    [comp1_Component],
+    'CUSTOM-REF-1',
+    'General-Data',
+    component_key='Formula-State'
+)
+
+res_ = data_1.get_property("MW")
+print(res_)
 # ====================================
 # BUILD EQUATION
 # ====================================
-# ! build equation
+# NOTE: build equation
+# ! build equation (older methods)
+comp1 = "Carbon Dioxide"
 comp1_eq_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'Vapor-Pressure')
+    [comp1],
+    'CUSTOM-REF-1',
+    'Vapor-Pressure'
+)
 
 # equation details
 print(comp1_eq_1.equation_parms())
@@ -142,15 +218,48 @@ print(comp1_eq_1.equation_return())
 res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
-# ! build equation
+# ! build equation (newer methods)
+comp1_Component = Component(
+    name="Carbon Dioxide",
+    formula="CO2",
+    state="g"
+)
+comp1_eq_1 = thermo_db.build_components_thermo_property(
+    [comp1_Component],
+    'CUSTOM-REF-1',
+    'Vapor-Pressure',
+    component_key='Name-State'
+)
+
+# cal
+res_ = comp1_eq_1.cal(T=290)
+print(res_)
+
+
+# ! build equation (older methods)
 comp1_eq_2 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+    [comp1],
+    'CUSTOM-REF-1',
+    'Ideal-Gas-Molar-Heat-Capacity'
+)
 
 # equation details
 print(comp1_eq_2.equation_parms())
 print(comp1_eq_2.equation_args())
 print(comp1_eq_2.equation_body())
 print(comp1_eq_2.equation_return())
+
+# cal
+res_ = comp1_eq_2.cal(T=290)
+print(res_)
+
+# ! build equation (newer methods)
+comp1_eq_2 = thermo_db.build_components_thermo_property(
+    [comp1_Component],
+    'CUSTOM-REF-1',
+    'Ideal-Gas-Molar-Heat-Capacity',
+    component_key='Name-State'
+)
 
 # cal
 res_ = comp1_eq_2.cal(T=290)
