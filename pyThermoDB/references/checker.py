@@ -1421,7 +1421,10 @@ class ReferenceChecker:
         component_state: str,
         databook_name: str,
         table_name: Optional[str] = None,
-        component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State',
+        ignore_component_state: Optional[bool] = False
     ) -> Dict[str, Union[bool, str]]:
         """
         Check if a component is available in the specified databook.
@@ -1440,6 +1443,8 @@ class ReferenceChecker:
             The name of the table to check, by default None (checks all tables).
         component_key : Literal['Name-State', 'Formula-State'], optional
             The key to use for the components, by default 'Formula-State'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
 
         Returns
         -------

@@ -460,11 +460,12 @@ class TableReference(ManageData):
                 ):  # ! search by query
                     # NOTE: check query
                     # create filter
-                    df_filter = df.query(column_name)
+                    df_filter = df.query(column_name, engine='python')
 
                 elif (
                     isinstance(column_name, list) and
-                    isinstance(lookup, list)
+                    isinstance(lookup, list) and
+                    query is False
                 ):  # ! search by list of column names
                     # NOTE: check column names
                     if len(column_name) != len(lookup):
@@ -478,13 +479,15 @@ class TableReference(ManageData):
 
                     # iterate through column names
                     for i in range(len(column_name)):
-                        _query.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                        _query.append(
+                            f'{column_name[i]}.str.lower() == "{str(lookup[i]).lower()}"'
+                        )
 
                     # make query
-                    _query_set = ' & '.join(_query)
+                    _query_set = ' and '.join(_query)
 
-                    # query
-                    df_filter = df.query(_query_set)
+                    # NOTE: query
+                    df_filter = df.query(_query_set, engine='python')
                 else:
                     raise ValueError(
                         f"Column name and lookup formats are not valid for {databook_id} and {table_id}."
