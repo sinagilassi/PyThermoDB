@@ -1,7 +1,9 @@
 # import packages/modules
-import pyThermoDB as ptdb
+from typing import Any, Dict
 import os
 from rich import print
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation
 
 # get versions
 print(ptdb.__version__)
@@ -28,8 +30,15 @@ symbol_file = 'custom_symbol_list.yml'
 symbol_path = os.path.join(parent_dir, symbol_file)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [
-    csv_path_1, csv_path_2, csv_path_3], 'symbols': [symbol_path]}
+ref: Dict[str, Any] = {
+    'yml': [yml_path],
+    'csv': [
+        csv_path_1,
+        csv_path_2,
+        csv_path_3
+    ],
+    'symbols': [symbol_path]
+}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -101,8 +110,7 @@ print(comp1_data.data_structure())
 
 print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 # by symbol
-print(float(comp1_data.get_property('gibbs-energy-of-formation')['value']))
-
+print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
 
 # ====================================
 # BUILD EQUATION
@@ -169,7 +177,6 @@ print(VaPr)
 # cal (using sympy)
 # Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
 # pp(Cp_cal)
-
 
 # ====================================
 # SECTION: BUILD THERMODB
