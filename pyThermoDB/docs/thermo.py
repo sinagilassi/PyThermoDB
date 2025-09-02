@@ -1507,6 +1507,11 @@ class ThermoDB(ManageData):
         -------
         object : bool
             component information
+
+        Notes
+        -----
+        - Return True if df is not empty
+        - Return False if df is empty
         '''
         try:
             # check databook_id and table_id are number or not
@@ -1526,33 +1531,12 @@ class ThermoDB(ManageData):
                     query=query
                 )
 
-                print(df)
-
                 # NOTE: check availability
                 if len(df) > 0:
-                    # get databook
-                    databook_name = self.list_databooks(
-                        res_format='list'
-                    )[
-                        databook_id-1
-                    ]
-                    # get table
-                    # table_name = self.list_tables(databook=databook_id, res_format='list')[
-                    #     table_id-1][0]
-
-                    table_name_ = self.list_tables(
-                        databook=databook_id,
-                        res_format='list'
-                    )
-
-                    # heck
-                    if isinstance(table_name_, list):
-                        table_name = table_name_[table_id-1][0]
-
-                    # log
                     if verbose:
                         print(
-                            f"[{component_name}] available in [{table_name}] | [{databook_name}]")
+                            f"[{component_name}] available in [{table_id}] | [{databook_id}]"
+                        )
 
                     # res
                     return True
@@ -1560,6 +1544,7 @@ class ThermoDB(ManageData):
                     # log
                     if verbose:
                         print(f"{component_name} is not available.")
+
                     # res
                     return False
             else:
