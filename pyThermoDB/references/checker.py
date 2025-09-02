@@ -9,7 +9,7 @@ from typing import (
     Literal
 )
 # locals
-from ..docs import CustomRef
+from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
 
