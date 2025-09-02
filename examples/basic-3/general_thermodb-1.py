@@ -1,7 +1,9 @@
 # import packages/modules
-import pyThermoDB as ptdb
 import os
+from typing import Dict, Any
 from rich import print
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation
 
 # dir
 # print(dir(pt))
@@ -36,7 +38,7 @@ print(csv_path_2)
 print(csv_path_3)
 
 # custom ref
-ref = {
+ref: Dict[str, Any] = {
     'reference': [yml_path],
     'tables': [csv_path_1, csv_path_2, csv_path_3]
 }
@@ -95,12 +97,15 @@ COMP1_check_availability = thermo_db.check_component(comp1, databook_name, 3)
 # ====================================
 # build data
 comp1_data = thermo_db.build_data(comp1, databook_name, 2)
+# check
+if not isinstance(comp1_data, TableData):
+    raise TypeError("comp1_data is not an instance of TableData")
+# data structure
 print(comp1_data.data_structure())
-
+# get property
 print(comp1_data.get_property(6))
 # by symbol
 print(float(comp1_data.get_property('dHf_IG')['value']))
-
 
 # ====================================
 # BUILD EQUATION
