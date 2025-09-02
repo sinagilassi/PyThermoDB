@@ -6,6 +6,9 @@ import re
 import ast
 from typing import Literal, List
 
+# NOTE: logger
+logger = logging.getLogger(__name__)
+
 
 class CustomRef:
     '''
@@ -36,18 +39,15 @@ class CustomRef:
         self.data_mode: Literal['NORMAL', 'VALUES'] = self.set_data_mode()
 
     def set_data_mode(
-        self,
-        data_mode: Literal[
-            'NORMAL', 'VALUES'
-        ] = 'NORMAL'
+        self
     ):
         '''
         Set data mode
 
-        Parameters
-        ----------
-        data_mode : str, optional
-            data mode, by default 'NORMAL'
+        Returns
+        -------
+        data_mode : str
+            data mode, 'NORMAL' or 'VALUES'
         '''
         try:
             # ref keys
@@ -183,7 +183,8 @@ class CustomRef:
 
             return True
         except Exception as e:
-            raise Exception(f"updating reference failed! {e}")
+            logger.error(f"updating reference failed! {e}")
+            return False
 
     def load_ref(self) -> dict:
         '''
@@ -326,51 +327,54 @@ class CustomRef:
         dict
             Dictionary containing all the extracted information.
         """
-        # Initialize the result dictionary
-        databook_data = {}
-        result = {}
+        try:
+            # Initialize the result dictionary
+            databook_data = {}
+            result = {}
 
-        # databook name
-        databook_name_match = re.findall(r'## (.*?)(?:\n|$)', content)
-        if databook_name_match:
-            databook_name_ = databook_name_match[0].strip()
-            databook_data[databook_name_] = {}
+            # databook name
+            databook_name_match = re.findall(r'## (.*?)(?:\n|$)', content)
+            if databook_name_match:
+                databook_name_ = databook_name_match[0].strip()
+                databook_data[databook_name_] = {}
 
-        # Extract DATABOOK-ID
-        databook_match = re.search(r'DATABOOK-ID: (.*?)(?:\n|$)', content)
-        if databook_match:
-            result['DATABOOK-ID'] = databook_match.group(1).strip()
+            # Extract DATABOOK-ID
+            databook_match = re.search(r'DATABOOK-ID: (.*?)(?:\n|$)', content)
+            if databook_match:
+                result['DATABOOK-ID'] = databook_match.group(1).strip()
 
-        # Find all tables through ### table-name
-        table_matches = re.findall(r'### (.*?)(?:\n|$)', content)
-        if table_matches:
-            result['TABLES'] = {}
-            for i, table_name in enumerate(table_matches):
-                # Determine the start and end of the table content
-                start_pattern = rf'### {table_name}.*?\n'
-                if i + 1 < len(table_matches):
-                    end_pattern = rf'### {table_matches[i + 1]}'
-                else:
-                    end_pattern = r'\Z'
+            # Find all tables through ### table-name
+            table_matches = re.findall(r'### (.*?)(?:\n|$)', content)
+            if table_matches:
+                result['TABLES'] = {}
+                for i, table_name in enumerate(table_matches):
+                    # Determine the start and end of the table content
+                    start_pattern = rf'### {table_name}.*?\n'
+                    if i + 1 < len(table_matches):
+                        end_pattern = rf'### {table_matches[i + 1]}'
+                    else:
+                        end_pattern = r'\Z'
 
-                table_content_match = re.search(
-                    rf'{start_pattern}(.*?)(?={end_pattern})',
-                    content,
-                    re.DOTALL
-                )
+                    table_content_match = re.search(
+                        rf'{start_pattern}(.*?)(?={end_pattern})',
+                        content,
+                        re.DOTALL
+                    )
 
-                if table_content_match:
-                    table_data = self.parse_markdown_table(
-                        table_content_match.group(0))
-                    # result['TABLES'].append({table_name: table_data})
-                    result['TABLES'][table_name] = table_data
+                    if table_content_match:
+                        table_data = self.parse_markdown_table(
+                            table_content_match.group(0))
+                        # result['TABLES'].append({table_name: table_data})
+                        result['TABLES'][table_name] = table_data
 
-        # update
-        databook_data[databook_name_].update(result)
-        # reference
-        reference = {'REFERENCES': databook_data}
+            # update
+            databook_data[databook_name_].update(result)
+            # reference
+            reference = {'REFERENCES': databook_data}
 
-        return reference
+            return reference
+        except Exception as e:
+            raise Exception(f"Parsing markdown failed! {e}")
 
     def parse_markdown_table(self, content: str):
         """
@@ -580,7 +584,10 @@ class CustomRef:
 
         return result
 
-    def content_manager(self, content: List[str | dict]) -> List[str | dict]:
+    def content_manager(
+            self,
+            content: List[str | dict]
+    ) -> List[str | dict]:
         '''
         Manage content
 
@@ -607,7 +614,10 @@ class CustomRef:
         except Exception as e:
             raise Exception(f"Content manager failed! {e}")
 
-    def check_content_format(self, content: str | dict) -> str:
+    def check_content_format(
+            self,
+            content: str | dict
+    ) -> str:
         """
         Check the format of the content and return markdown or yml.
 

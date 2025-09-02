@@ -19,7 +19,7 @@ import re
 # local
 from ..data import TableTypes
 from ..models import DataBookTableTypes
-from .customref import CustomRef
+from ..loader import CustomRef
 from ..utils import is_str_number
 
 # NOTE: logger
@@ -44,7 +44,10 @@ class ManageData():
     # description
     __description = {}
 
-    def __init__(self, custom_ref: Optional[CustomRef] = None):
+    def __init__(
+            self,
+            custom_ref: Optional[CustomRef] = None
+    ):
         # external reference
         self.custom_ref = custom_ref
         # load reference
