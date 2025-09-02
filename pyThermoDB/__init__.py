@@ -16,6 +16,8 @@ from .app import (
     ref,
     build_thermodb,
     load_thermodb,
+)
+from .thermodb import (
     build_component_thermodb,
     build_components_thermodb,
     build_component_thermodb_from_reference,
