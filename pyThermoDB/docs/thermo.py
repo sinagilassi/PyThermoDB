@@ -1526,6 +1526,8 @@ class ThermoDB(ManageData):
                     query=query
                 )
 
+                print(df)
+
                 # NOTE: check availability
                 if len(df) > 0:
                     # get databook
@@ -1561,9 +1563,12 @@ class ThermoDB(ManageData):
                     # res
                     return False
             else:
-                raise Exception("databook and table id required!")
+                logger.error(
+                    "Invalid input. Please check the input type (databook_id and table_id).")
+                return False
         except Exception as e:
-            raise Exception(f'Reading data error {e}')
+            logger.error(f'Checking data error {e}')
+            return False
 
     def get_component_data(
         self,
@@ -1838,7 +1843,8 @@ class ThermoDB(ManageData):
                     return self.build_equation(
                         component_name=component_name_,
                         databook=databook,
-                        table=table
+                        table=table,
+                        column_name=column_name,
                     )
                 elif tb_info_res_['Type'] == 'Data':  # ! data
                     # check
@@ -1852,7 +1858,8 @@ class ThermoDB(ManageData):
                     return self.build_data(
                         component_name=component_name_,
                         databook=databook,
-                        table=table
+                        table=table,
+                        column_name=column_name,
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
                     # check

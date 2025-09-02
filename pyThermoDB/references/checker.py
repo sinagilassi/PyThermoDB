@@ -13,6 +13,9 @@ from ..docs import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
 
+# NOTE: logger
+logger = logging.getLogger(__name__)
+
 
 class ReferenceChecker:
     """
@@ -1538,53 +1541,117 @@ class ReferenceChecker:
                     if component_key == 'Name-State' and name is not None:
                         if name.lower().strip() == component_name:
                             # add
-                            res[table_name] = True
+                            res[table_name] = {
+                                'available': True,
+                                'ignore_state': None
+                            }
                         else:
                             # add
-                            res[table_name] = False
+                            res[table_name] = {
+                                'available': False,
+                                'ignore_state': None
+                            }
 
-                        # return
-                        return res
+                        # go to next table
+                        continue
                     elif component_key == 'Formula-State' and formula is not None:
                         if formula.lower().strip() == component_formula:
                             # add
-                            res[table_name] = True
+                            res[table_name] = {
+                                'available': True,
+                                'ignore_state': None
+                            }
                         else:
                             # add
-                            res[table_name] = False
+                            res[table_name] = {
+                                'available': False,
+                                'ignore_state': None
+                            }
 
-                        # return
-                        return res
+                        # go to next table
+                        continue
                     else:
                         logging.error(
                             f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
-                        return {'available': False, 'message': 'Invalid component_key.'}
+                        continue
 
                 # SECTION: check if component matches the formula and state
                 if component_key == 'Name-State' and (name is not None and state is not None):
+                    # NOTE: check if state symbol is "-"
+                    if state.strip() == '-':
+                        # if state symbol is "-", ignore state in comparison
+                        if name.lower().strip() == component_name:
+                            # add
+                            res[table_name] = {
+                                'available': True,
+                                'ignore_state': True
+                            }
+                        else:
+                            # add
+                            res[table_name] = {
+                                'available': False,
+                                'ignore_state': True
+                            }
+
+                        # go to next table
+                        continue
+
+                    # ! normal comparison
                     if (
                         name.lower().strip() == component_name and
                         state.lower().strip() == component_state
                     ):
                         # add
-                        res[table_name] = True
+                        res[table_name] = {
+                            'available': True,
+                            'ignore_state': False
+                        }
                     else:
                         # add
-                        res[table_name] = False
+                        res[table_name] = {
+                            'available': False,
+                            'ignore_state': False
+                        }
                 elif component_key == 'Formula-State' and (formula is not None and state is not None):
+                    # NOTE: check if state symbol is "-"
+                    if state.strip() == '-':
+                        # if state symbol is "-", ignore state in comparison
+                        if formula.lower().strip() == component_formula:
+                            # add
+                            res[table_name] = {
+                                'available': True,
+                                'ignore_state': True
+                            }
+                        else:
+                            # add
+                            res[table_name] = {
+                                'available': False,
+                                'ignore_state': True
+                            }
+
+                        # go to next table
+                        continue
+
+                    # ! normal comparison
                     if (
                         formula.lower().strip() == component_formula and
                         state.lower().strip() == component_state
                     ):
                         # add
-                        res[table_name] = True
+                        res[table_name] = {
+                            'available': True,
+                            'ignore_state': False
+                        }
                     else:
                         # add
-                        res[table_name] = False
+                        res[table_name] = {
+                            'available': False,
+                            'ignore_state': False
+                        }
                 else:
                     logging.error(
                         f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
-                    return {'available': False, 'message': 'Invalid component_key.'}
+                    continue
 
             # res
             return res

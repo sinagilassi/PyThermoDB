@@ -356,6 +356,8 @@ class TableReference(ManageData):
             column name
         lookup : str
             value to look up for
+        query : bool, optional
+            if True, then use query method, by default False
 
         Returns
         -------
@@ -372,7 +374,7 @@ class TableReference(ManageData):
             # check tb_type
             if (
                 tb_type == TableTypes.DATA.value or
-                    tb_type == TableTypes.EQUATIONS.value
+                tb_type == TableTypes.EQUATIONS.value
             ):
                 # ! search table
                 df = self.search_table(
