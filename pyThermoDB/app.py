@@ -11,8 +11,8 @@ from .docs import (
     ThermoDB,
     TableReference,
     CustomRef,
-    CompBuilder,
 )
+from .builder import CompBuilder
 
 
 # NOTE: logger
@@ -75,7 +75,9 @@ def init(
 
 
 def ref(
-    custom_reference: Optional[Dict[str, List[str]]] = None
+    custom_reference: Optional[
+        Dict[str, List[str]]
+    ] = None
 ) -> TableReference:
     '''
     Checking references (custom reference) object including databook and tables to display data
