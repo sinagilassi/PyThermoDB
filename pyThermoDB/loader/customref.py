@@ -19,6 +19,7 @@ class CustomRef:
         self.ref = ref
 
         # NOTE: files
+        self.src_files: list[str] = []
         self.yml_files: list[str] = []
         self.csv_files: list[str] = []
         self.md_files: list[str] = []
@@ -101,29 +102,42 @@ class CustomRef:
 
             # SECTION: extract data
             # NOTE: reference
-            yml_files = self.ref.get('reference') or []
-            md_files = self.ref.get('reference') or []
+            src_files = self.ref.get('yml') or self.ref.get('md')
+
+            # check
+            if src_files is None:
+                src_files = self.ref.get('reference')
+            # check
+            if src_files is None:
+                raise Exception("No reference files found.")
+            # set
+            self.src_files = src_files
+            # check type
+            if not isinstance(src_files, list):
+                raise Exception("Reference files must be a list.")
+            if len(src_files) == 0:
+                raise Exception("No reference files found.")
+
             # NOTE: tables
             csv_files = self.ref.get('csv') or self.ref.get('tables') or []
             # NOTE: symbols (optional)
             symbol_files = self.ref.get('symbols') or []
 
             # SECTION: check files exist
-            if len(yml_files) == 0:
-                raise Exception("No yml files to update.")
-            if len(md_files) == 0:
-                raise Exception("No md files to update.")
+            # NOTE: csv files only for NORMAL mode (yml + csv)
             if len(csv_files) == 0 and self.data_mode == 'NORMAL':
                 raise Exception("No csv files to update.")
 
-            # NOTE: check file extension
+            # SECTION: extract files from source files
+            # NOTE: check file types
             # ! yml files
-            yml_files = [x for x in yml_files if str(x).endswith('.yml')]
+            yml_files = [x for x in self.src_files if str(x).endswith('.yml')]
             # ! md files
-            md_files = [x for x in md_files if str(x).endswith('.md')]
+            md_files = [x for x in self.src_files if str(x).endswith('.md')]
 
             # SECTION: check string format
             # NOTE: if no yml/md files, check content
+            # ! only for VALUES mode
             if len(yml_files) == 0 and len(md_files) == 0:
                 # get content
                 contents_ = self.ref.get('reference')
@@ -133,7 +147,7 @@ class CustomRef:
                     self.contents = self.content_manager(contents_)
 
             # SECTION: check file path
-            # ! yml files
+            # NOTE: yml files
             if len(yml_files) > 0:
                 for yml_file in yml_files:
                     if not os.path.exists(yml_file):
@@ -144,7 +158,7 @@ class CustomRef:
                             # get path
                             self.yml_paths.append(os.path.abspath(yml_file))
 
-            # ! md files
+            # NOTE: md files
             if len(md_files) > 0:
                 for md_file in md_files:
                     if not os.path.exists(md_file):
