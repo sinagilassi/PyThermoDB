@@ -26,6 +26,9 @@ from .references import ReferenceConfig, ReferenceChecker
 from .models import Component
 from .utils import set_component_id, set_component_query
 
+# NOTE: logger
+logger = logging.getLogger(__name__)
+
 
 class ComponentThermoDB(BaseModel):
     """
@@ -981,14 +984,41 @@ def build_component_thermodb_from_reference(
             if not component_checker_[table_]:
                 continue  # skip if component is not available in the table
 
-            # NOTE: build thermodb items
+            # availability
+            table_check = component_checker_[table_]
+            if isinstance(table_check, dict):
+                availability_ = table_check.get('available', False)
+                ignore_state_ = table_check.get('ignore_state', False)
+            else:
+                availability_ = False
+                ignore_state_ = False
+
+            if not availability_:
+                continue  # skip if component is not available in the table
+
+            # SECTION: build thermodb items
             # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
-            item_ = thermodb.build_components_thermo_property(
-                components=[component_],
-                databook=databook_,
-                table=table_,
-                component_key=component_key
-            )
+            # NOTE: ignore state during the build if specified
+            if ignore_state_:
+                # ! set component name based on key
+                component_name_ = component_name if component_key == 'Name-State' else component_formula
+                column_name_ = 'Name' if component_key == 'Name-State' else 'Formula'
+
+                # ! build_thermo_property
+                item_ = thermodb.build_thermo_property(
+                    [component_name_],
+                    databook=databook_,
+                    table=table_,
+                    column_name=column_name_
+                )
+            else:
+                # ! build_components_thermo_property
+                item_ = thermodb.build_components_thermo_property(
+                    components=[component_],
+                    databook=databook_,
+                    table=table_,
+                    component_key=component_key
+                )
 
             # save
             res[prop_name] = item_
