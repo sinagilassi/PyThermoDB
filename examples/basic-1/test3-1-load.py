@@ -3,19 +3,22 @@ import os
 from rich import print
 import pyThermoDB as ptdb
 
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# version
 print(ptdb.__version__)
 
 # ====================================
 # LOAD THERMODB
 # ====================================
+# current dir
+current_dir = os.getcwd()
+print(current_dir)
+# file path
+current_path = os.path.dirname(os.path.abspath(__file__))
+print(current_path)
 # ref # property name
 file_name = 'CO2-enthalpy-of-formation'
 thermodb_file = f'{file_name}.pkl'
-thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
+thermodb_path = os.path.join(current_path, thermodb_file)
 print(thermodb_path)
 
 # ====================================
