@@ -1532,6 +1532,34 @@ class ReferenceChecker:
                         f"Component records for '{component_name}' in table '{table_name}' are missing 'Formula' or 'State'.")
                     continue
 
+                # SECTION: ignore component state if specified
+                if ignore_component_state:
+                    # NOTE: if ignoring state, only check name or formula
+                    if component_key == 'Name-State' and name is not None:
+                        if name.lower().strip() == component_name:
+                            # add
+                            res[table_name] = True
+                        else:
+                            # add
+                            res[table_name] = False
+
+                        # return
+                        return res
+                    elif component_key == 'Formula-State' and formula is not None:
+                        if formula.lower().strip() == component_formula:
+                            # add
+                            res[table_name] = True
+                        else:
+                            # add
+                            res[table_name] = False
+
+                        # return
+                        return res
+                    else:
+                        logging.error(
+                            f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
+                        return {'available': False, 'message': 'Invalid component_key.'}
+
                 # SECTION: check if component matches the formula and state
                 if component_key == 'Name-State' and (name is not None and state is not None):
                     if (
