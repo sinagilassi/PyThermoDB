@@ -5,12 +5,10 @@ from .core import (
     TableData,
     TableMatrixData
 )
-from .docs import (
-    ThermoDB,
-    CompBuilder,
-    ManageData,
-    CustomRef
-)
+from .docs import ThermoDB
+from .builder import CompBuilder
+from .loader import CustomRef
+from .manager import ManageData
 from .app import (
     init,
     ref,
