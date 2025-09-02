@@ -1,4 +1,5 @@
-# import packages/modules
+# import libs
+import logging
 import os
 import pandas as pd
 from typing import (
@@ -12,6 +13,9 @@ from ..data import TableTypes
 from ..models import PayLoadType
 from .customref import CustomRef
 from ..models import DataBookTableTypes
+
+# NOTE: logger
+logger = logging.getLogger(__name__)
 
 
 class TableReference(ManageData):
@@ -665,6 +669,9 @@ class TableReference(ManageData):
             records, if nan exists then converted to 0
         '''
         try:
+            # table type
+            tb_type = self.get_table_type(databook_id, table_id)
+
             # SECTION: check
             if matrix_tb:
                 df = self.search_matrix_table(
