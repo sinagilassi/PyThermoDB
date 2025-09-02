@@ -1,6 +1,6 @@
 # import packages/modules
 import pandas as pd
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any
 # local imports
 from ..models import DataResult
 
@@ -10,9 +10,14 @@ class TableData:
     __trans_data = {}
     __prop_data = {}
 
-    def __init__(self, databook_name, table_name, table_data,
-                 table_values: Optional[List | Dict] = None,
-                 table_structure: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        databook_name,
+        table_name,
+        table_data,
+        table_values: Optional[List | Dict] = None,
+        table_structure: Optional[Dict[str, Any]] = None
+    ):
         '''
         Initialize TableData class
 
