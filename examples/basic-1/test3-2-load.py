@@ -35,20 +35,22 @@ print(data_thermodb.check())
 # ====================================
 # SELECT PROPERTY
 # ====================================
+print("[bold magenta]Select a property from the thermodb:[/bold magenta]")
 prop1_ = data_thermodb.select('general')
 print(type(prop1_))
 print(prop1_.prop_data)
 
-# old format
+# ! old format
 print(prop1_.get_property('dHf_IG'))
 
-# new format
+# ! new format
 dHf_IG_src = 'general | dHf_IG'
 print(data_thermodb.retrieve(dHf_IG_src, message="enthalpy of formation"))
 
 # ====================================
 # SELECT A FUNCTION
 # ====================================
+print("[bold magenta]Select a function from the thermodb:[/bold magenta]")
 # select function
 func1_ = data_thermodb.select_function('heat-capacity')
 print(type(func1_))

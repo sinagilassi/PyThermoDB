@@ -1,4 +1,5 @@
 # import packages/modules
+import logging
 import pandas as pd
 import math
 import json
@@ -6,6 +7,9 @@ from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult
 from ..utils import format_eq_data
+
+# NOTE: logger
+logger = logging.getLogger(__name__)
 
 
 class TableEquation:
@@ -157,9 +161,11 @@ class TableEquation:
             # check if exist
             _body_integral = equation.get('BODY-INTEGRAL')
             _body_first_derivative = equation.get(
-                'BODY-FIRST-DERIVATIVE')
+                'BODY-FIRST-DERIVATIVE'
+            )
             _body_second_derivative = equation.get(
-                'BODY-SECOND-DERIVATIVE')
+                'BODY-SECOND-DERIVATIVE'
+            )
             # custom integral
             _custom_integral = equation.get('CUSTOM-INTEGRAL')
 
@@ -243,7 +249,10 @@ class TableEquation:
             raise Exception(f'Loading error {e}!')
 
     @property
-    def table_columns(self, column_name: str = 'COLUMNS'):
+    def table_columns(
+        self,
+        column_name: str = 'COLUMNS',
+    ) -> List[str]:
         '''
         Display table columns defined in `yml file`
 
@@ -256,6 +265,7 @@ class TableEquation:
         -------
         columns : list
             table columns
+
         '''
         try:
             # table structure
@@ -263,19 +273,22 @@ class TableEquation:
 
             # check table structure
             if table_structure is None:
-                raise Exception('Table structure not defined!')
+                logger.error('Table structure not defined!')
+                raise
 
             # res
             columns = table_structure.get(column_name, None)
             # check columns
             if columns is None:
-                raise Exception(f'Column {column_name} not found!')
+                logger.error(f'Column {column_name} not found!')
+                raise
 
             # res
             return columns
 
         except Exception as e:
-            raise Exception(f'Loading error {e}!')
+            logger.error(f'Loading error {e}!')
+            return []
 
     @property
     def table_units(self, unit_name: str = 'UNIT'):
@@ -310,7 +323,8 @@ class TableEquation:
             return units
 
         except Exception as e:
-            raise Exception(f'Loading error {e}!')
+            logger.error(f'Loading error {e}!')
+            return []
 
     @property
     def table_symbols(self, symbol_name: str = 'SYMBOL'):
@@ -345,7 +359,8 @@ class TableEquation:
             return symbols
 
         except Exception as e:
-            raise Exception(f'Loading error {e}!')
+            logger.error(f'Loading error {e}!')
+            return []
 
     def eq_info(self):
         '''Get equation information.'''
@@ -389,39 +404,43 @@ class TableEquation:
         >>> res = cal(message=f'{comp1} Vapor Pressure', T=120,P=1)
         >>> print(res)
         '''
-        # equation info
-        eq_info = self.eq_info()
-        # databook and table name
-        eq_src = {
-            'databook_name': self.databook_name,
-            'table_name': self.table_name,
-        }
-        # update
-        eq_info.update(eq_src)
+        try:
+            # equation info
+            eq_info = self.eq_info()
+            # databook and table name
+            eq_src = {
+                'databook_name': self.databook_name,
+                'table_name': self.table_name,
+            }
+            # update
+            eq_info.update(eq_src)
 
-        # build parms dict
-        _parms = self.load_parms_v2()
-        # execute equation
-        # res
-        res = None
+            # build parms dict
+            _parms = self.load_parms_v2()
+            # execute equation
+            # res
+            res = None
 
-        # NOTE: execute equation
-        # check body
-        if self.body is None or self.body == 'None':
-            raise Exception('Equation body not defined!')
+            # NOTE: execute equation
+            # check body
+            if self.body is None or self.body == 'None':
+                raise Exception('Equation body not defined!')
 
-        res = self.eqExe(self.body, _parms, args=args)
+            res = self.eqExe(self.body, _parms, args=args)
 
-        if res is not None:
-            res = round(res, decimal_accuracy)
-        else:
-            res = 'Error'
+            if res is not None:
+                res = round(res, decimal_accuracy)
+            else:
+                res = 'Error'
 
-        # format data
-        eq_data = format_eq_data(res, eq_info, message or 'No message')
+            # format data
+            eq_data = format_eq_data(res, eq_info, message or 'No message')
 
-        # res
-        return eq_data
+            # res
+            return eq_data
+        except Exception as e:
+            logger.error(f'Calculation error {e}!')
+            raise Exception(f'Calculation error {e}!')
 
     def cal_integral(self, **args):
         '''
@@ -443,11 +462,19 @@ class TableEquation:
         >>> res = cal_integral(T1=120,T2=150)
         >>> print(res)
         '''
-        # build parms dict
-        _parms = self.load_parms_v2()
-        # execute equation
-        res = self.eqExe(self.body_integral, _parms, args=args)
-        return res
+        try:
+            # build parms dict
+            _parms = self.load_parms_v2()
+            # execute equation
+            res = self.eqExe(
+                body=self.body_integral,
+                parms=_parms,
+                args=args
+            )
+
+            return res
+        except Exception as e:
+            raise Exception('Loading integral calculation failed!, ', e)
 
     def cal_custom_integral(self, equation_name: str, **args):
         '''
@@ -517,17 +544,27 @@ class TableEquation:
         '''
         try:
             # check
-            if (self.body_first_derivative is None or
-                    self.body_first_derivative == 'None'):
+            if (
+                self.body_first_derivative is None or
+                self.body_first_derivative == 'None'
+            ):
                 print('The first derivative not defined!')
 
             # build parms dict
             _parms = self.load_parms_v2()
+
             # execute equation
-            res = self.eqExe(self.body_first_derivative, _parms, args=args)
+            res = self.eqExe(
+                body=self.body_first_derivative,
+                parms=_parms,
+                args=args
+            )
+
+            # res
             return res
         except Exception as e:
-            raise Exception("Derivation calculation failed!, ", e)
+            logger.error(f'Derivation calculation failed!, {e}')
+            return None
 
     def cal_second_derivative(self, **args):
         '''

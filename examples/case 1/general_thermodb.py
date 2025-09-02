@@ -1,30 +1,36 @@
 # import packages/modules
+from typing import Dict, Any
 import pyThermoDB as ptdb
-from pprint import pprint as pp
+from pyThermoDB.core import TableData, TableEquation
+from rich import print
 import os
 
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# version
 print(ptdb.__version__)
 
 # ====================================
 # CUSTOM REFERENCES
 # ====================================
+# current working directory
+current_path = os.path.dirname(os.path.abspath(__file__))
+print(current_path)
+
 # files
-yml_file = 'private\\general data.yml'
-yml_path = os.path.join(os.getcwd(), yml_file)
+yml_file = 'general data.yml'
+yml_path = os.path.join(current_path, yml_file)
 # csv files (data/equation tables)
-csv_file_1 = 'private\\The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State.csv'
-csv_file_2 = 'private\\General Data.csv'
-csv_file_3 = 'private\\Vapor Pressure.csv'
-csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
-csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
-csv_path_3 = os.path.join(os.getcwd(), csv_file_3)
+csv_file_1 = 'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State.csv'
+csv_file_2 = 'General Data.csv'
+csv_file_3 = 'Vapor Pressure.csv'
+csv_path_1 = os.path.join(current_path, csv_file_1)
+csv_path_2 = os.path.join(current_path, csv_file_2)
+csv_path_3 = os.path.join(current_path, csv_file_3)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2, csv_path_3]}
+ref: Dict[str, Any] = {
+    'reference': [yml_path],
+    'tables': [csv_path_1, csv_path_2, csv_path_3]
+}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -41,14 +47,14 @@ print(db_list)
 # SELECT A DATABOOK
 # ====================================
 # table list
-tb_list = thermo_db.list_tables(4)
+tb_list = thermo_db.list_tables('GENERAL')
 print(tb_list)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-tb_info = thermo_db.table_info(4, 1)
+tb_info = thermo_db.table_info('GENERAL', 1)
 print(tb_info)
 
 # ====================================
@@ -58,7 +64,7 @@ print(tb_info)
 # tb_eq = thermo_db.equation_load(3, 1)
 # # equation structure
 # tb_eq_structure = tb_eq.eq_structure(1)
-# pp(tb_eq_structure)
+# print(tb_eq_structure)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -67,7 +73,7 @@ print(tb_info)
 comp1 = "acetylene"
 # COMP1_check_availability = thermo_db.check_component(comp1, 4, 1)
 # COMP1_check_availability = thermo_db.check_component(comp1, 4, 2)
-COMP1_check_availability = thermo_db.check_component(comp1, 4, 3)
+COMP1_check_availability = thermo_db.check_component(comp1, 'GENERAL', 3)
 
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
@@ -79,12 +85,17 @@ COMP1_check_availability = thermo_db.check_component(comp1, 4, 3)
 # BUILD DATA
 # ====================================
 # build data
-comp1_data = thermo_db.build_data(comp1, 4, 2)
-pp(comp1_data.data_structure())
+comp1_data = thermo_db.build_data(comp1, 'GENERAL', 2)
+# check
+if not isinstance(comp1_data, TableData):
+    raise ValueError('Component data build failed!')
 
-pp(comp1_data.get_property(6))
+print(comp1_data.data_structure())
+
+print(comp1_data.get_property(6))
 # by symbol
-pp(float(comp1_data.get_property('dHf_IG')['value']))
+val1 = comp1_data.get_property('dHf_IG')['value']
+print(val1)
 
 
 # ====================================
@@ -92,45 +103,45 @@ pp(float(comp1_data.get_property('dHf_IG')['value']))
 # ====================================
 # ! equation 1
 # build equation
-comp1_eq = thermo_db.build_equation(comp1, 3, 1)
+comp1_eq = thermo_db.build_equation(comp1, 'GENERAL', 1)
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
 #     comp1, 3, 1)
 
 # load parms
-pp(comp1_eq.parms)
-pp(comp1_eq.parms_values)
+print(comp1_eq.parms)
+print(comp1_eq.parms_values)
 # equation details
-pp(comp1_eq.equation_parms())
-pp(comp1_eq.equation_args())
-pp(comp1_eq.equation_body())
-pp(comp1_eq.equation_return())
+print(comp1_eq.equation_parms())
+print(comp1_eq.equation_args())
+print(comp1_eq.equation_body())
+print(comp1_eq.equation_return())
 
 # cal
 Cp_cal = comp1_eq.cal(T=298.15)
-pp(Cp_cal)
+print(Cp_cal)
 
 # first derivative
 Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
-pp(Cp_cal_first)
+print(Cp_cal_first)
 
 # second derivative
 Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
-pp(Cp_cal_second)
+print(Cp_cal_second)
 
 # integral
 Cp_cal_integral = comp1_eq.cal_integral(T1=298.15, T2=320)
-pp(Cp_cal_integral)
+print(Cp_cal_integral)
 
 # ! equation 2
 # build equation
-vapor_pressure_eq = thermo_db.build_equation(comp1, 3, 3)
+vapor_pressure_eq = thermo_db.build_equation(comp1, 'GENERAL', 3)
 
-pp(vapor_pressure_eq.equation_args())
-pp(vapor_pressure_eq.equation_return())
+print(vapor_pressure_eq.equation_args())
+print(vapor_pressure_eq.equation_return())
 VaPr = vapor_pressure_eq.cal(T=304.21)
-pp(VaPr)
+print(VaPr)
 
 # ====================================
 # BUILD EQUATION
@@ -143,14 +154,14 @@ pp(VaPr)
 #     comp1, 3, 1)
 
 # equation details
-# pp(comp1_eq.equation_parms())
-# pp(comp1_eq.equation_args())
-# pp(comp1_eq.equation_body())
-# pp(comp1_eq.equation_return())
+# print(comp1_eq.equation_parms())
+# print(comp1_eq.equation_args())
+# print(comp1_eq.equation_body())
+# print(comp1_eq.equation_return())
 
 # cal (using sympy)
 # Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
-# pp(Cp_cal)
+# print(Cp_cal)
 
 
 # ====================================
@@ -158,7 +169,7 @@ pp(VaPr)
 # ====================================
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
-pp(type(thermo_db))
+print(type(thermo_db))
 
 # * add TableData
 thermo_db.add_data('general', comp1_data)
@@ -171,11 +182,13 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # thermodb_file_path = os.path.join(os.getcwd(), f'{comp1}')
 # save
 thermo_db.save(
-    f'{comp1}', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{comp1}',
+    file_path=current_path
+)
 
 # ====================================
 # CHECK THERMODB
 # ====================================
 # check all properties and functions registered
-pp(thermo_db.check_properties())
-pp(thermo_db.check_functions())
+print(thermo_db.check_properties())
+print(thermo_db.check_functions())

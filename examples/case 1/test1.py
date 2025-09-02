@@ -2,11 +2,7 @@
 import pyThermoDB as ptdb
 from rich import print
 
-
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# version
 print(ptdb.__version__)
 
 # ===============================
@@ -27,7 +23,6 @@ print(db_list)
 # table list
 tb_lists = tdb.list_tables(3)
 print(tb_lists)
-
 
 # ===============================
 # TABLE INFO
@@ -63,10 +58,22 @@ CO2_check_availability = tdb.check_component(comp1, 1, 2)
 # query
 query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
 COMP1_check_availability = tdb.check_component(
-    comp1, 3, 2, query, query=True)
+    comp1,
+    3,
+    2,
+    query,
+    query=True
+)
+print(COMP1_check_availability)
 
 COMP1_check_availability = tdb.check_component(
-    comp1, "Chemical and Engineering Thermodynamics", "Table A.IV Enthalpies and Gibbs Energies of Formation", query, query=True)
+    comp1,
+    "Chemical and Engineering Thermodynamics",
+    "Table A.IV Enthalpies and Gibbs Energies of Formation",
+    query,
+    query=True
+)
+print(COMP1_check_availability)
 
 # ====================================
 # BUILD DATA
@@ -88,11 +95,11 @@ print(comp1_eq.returns)
 print(comp1_eq.body_integral)
 print(comp1_eq.custom_integral)
 
-
-# res = comp1_eq.cal(T=298.15)
-# pp(res)
-
+res = comp1_eq.cal(T=298.15)
+print(res)
 # integral
-# res1 = comp1_eq.cal_integral(T1=125, T2=220)
+res1 = comp1_eq.cal_integral(T1=125, T2=220)
+print(res1)
 # derivative
 res2 = comp1_eq.cal_first_derivative(T=298.15)
+print(res2)

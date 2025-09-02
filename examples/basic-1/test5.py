@@ -1,7 +1,6 @@
 # import packages/modules
-import pyThermoDB as ptdb
-from pprint import pprint as pp
 import os
+import pyThermoDB as ptdb
 from rich import print
 
 # ====================================
@@ -21,8 +20,9 @@ print(type(Acetaldehyde_thermodb))
 print(Acetaldehyde_thermodb.check_properties())
 
 # check property
-# methdod 1
+# method 1
 # Acetaldehyde_general = Acetaldehyde_thermodb.check_property('general')
+
 # method 2
 Acetaldehyde_general = Acetaldehyde_thermodb.select('general')
 print(type(Acetaldehyde_general))
@@ -32,7 +32,10 @@ print(Acetaldehyde_general.get_property('dHf_IG')['value'])
 # load equation
 Acetaldehyde_equation = Acetaldehyde_thermodb.check_function('heat-capacity')
 print(type(Acetaldehyde_equation))
+
 # cal
 Cp_cal = Acetaldehyde_equation.cal(
-    T=290, message='heat capacity of Acetaldehyde')
+    T=290,
+    message='heat capacity of Acetaldehyde'
+)
 print(Cp_cal)

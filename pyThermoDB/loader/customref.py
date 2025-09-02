@@ -94,13 +94,18 @@ class CustomRef:
             True if reference is updated, False otherwise
         '''
         try:
+            # REVIEW: deprecated reference keys
+            if 'yml' in self.ref.keys() or 'md' in self.ref.keys():
+                logger.warning(
+                    "'yml' key is deprecated, please use 'reference' instead.")
+
             # SECTION: extract data
             # NOTE: reference
-            yml_files = self.ref.get('yml') or self.ref.get('reference') or []
-            md_files = self.ref.get('md') or self.ref.get('reference') or []
-            # tables
+            yml_files = self.ref.get('reference') or []
+            md_files = self.ref.get('reference') or []
+            # NOTE: tables
             csv_files = self.ref.get('csv') or self.ref.get('tables') or []
-            # symbols (optional)
+            # NOTE: symbols (optional)
             symbol_files = self.ref.get('symbols') or []
 
             # SECTION: check files exist
@@ -117,7 +122,8 @@ class CustomRef:
             # ! md files
             md_files = [x for x in md_files if str(x).endswith('.md')]
 
-            # NOTE: check string format
+            # SECTION: check string format
+            # NOTE: if no yml/md files, check content
             if len(yml_files) == 0 and len(md_files) == 0:
                 # get content
                 contents_ = self.ref.get('reference')
@@ -127,7 +133,7 @@ class CustomRef:
                     self.contents = self.content_manager(contents_)
 
             # SECTION: check file path
-            # yml files
+            # ! yml files
             if len(yml_files) > 0:
                 for yml_file in yml_files:
                     if not os.path.exists(yml_file):
@@ -138,7 +144,7 @@ class CustomRef:
                             # get path
                             self.yml_paths.append(os.path.abspath(yml_file))
 
-            # md files
+            # ! md files
             if len(md_files) > 0:
                 for md_file in md_files:
                     if not os.path.exists(md_file):
@@ -149,7 +155,7 @@ class CustomRef:
                             # get path
                             self.md_paths.append(os.path.abspath(md_file))
 
-            # check
+            # SECTION: check
             if self.data_mode == 'NORMAL':
                 for csv_file in csv_files:
                     if not os.path.exists(csv_file):
@@ -164,7 +170,7 @@ class CustomRef:
             # md files
             self.md_files = md_files
 
-            # check
+            # NOTE: check
             if self.data_mode == 'NORMAL':
                 self.csv_files = csv_files
 
