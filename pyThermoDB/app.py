@@ -10,9 +10,9 @@ from typing import (
 from .docs import (
     ThermoDB,
     TableReference,
-    CustomRef,
 )
 from .builder import CompBuilder
+from .loader import CustomRef
 
 
 # NOTE: logger

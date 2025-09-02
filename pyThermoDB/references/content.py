@@ -1,4 +1,5 @@
 # import libs
+import logging
 from typing import (
     Dict,
     List,
@@ -9,7 +10,11 @@ from typing import (
 import logging
 # local
 from ..utils import Convertor
-from ..docs import ManageData, CustomRef
+from ..manager import ManageData
+from ..loader import CustomRef
+
+# NOTE: logger
+logger = logging.getLogger(__name__)
 
 
 class ReferenceContent:
