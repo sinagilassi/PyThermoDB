@@ -1,11 +1,13 @@
 from .config import __version__, __author__, __description__
+from .core import (
+    TableEquation,
+    TableMatrixEquation,
+    TableData,
+    TableMatrixData
+)
 from .docs import (
     ThermoDB,
     CompBuilder,
-    TableData,
-    TableEquation,
-    TableMatrixData,
-    TableMatrixEquation,
     ManageData,
     CustomRef
 )

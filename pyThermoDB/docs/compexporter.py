@@ -1,10 +1,13 @@
 # import packages/modules
-
+import logging
 # local
-from .tabledata import TableData
-from .tableequation import TableEquation
-from .tablematrixdata import TableMatrixData
-from .tablematrixequation import TableMatrixEquation
+from ..core import TableData
+from ..core import TableEquation
+from ..core import TableMatrixData
+from ..core import TableMatrixEquation
+
+# logger
+logger = logging.getLogger(__name__)
 
 
 class CompExporter:
@@ -31,7 +34,11 @@ class CompExporter:
     def functions(self):
         return self.__functions
 
-    def _add(self, name: str, value: TableData | TableEquation | TableMatrixData | TableMatrixEquation):
+    def _add(
+        self,
+        name: str,
+        value: TableData | TableEquation | TableMatrixData | TableMatrixEquation
+    ):
         '''
         Add a new property/functions
 
@@ -46,6 +53,7 @@ class CompExporter:
         -------
         res : bool
             True if success
+
         '''
         try:
             # check value
@@ -65,8 +73,11 @@ class CompExporter:
                 self.__functions[name] = value
             else:
                 raise Exception("Value must be TableData or TableEquation")
+
+            return True
         except Exception as e:
-            raise Exception("Adding a new property failed!, ", e)
+            logger.error(f"Adding a new property failed!, {e}")
+            return False
 
     def _remove(self, name: str) -> bool:
         '''
@@ -91,11 +102,17 @@ class CompExporter:
                 del self.__functions[name]
                 return True
             else:
-                raise Exception(f"{name} not found!")
+                logger.warning(f"{name} not found!")
+                return False
         except Exception as e:
-            raise Exception("Removing a property failed!, ", e)
+            logger.error(f"Removing a property failed!, {e}")
+            return False
 
-    def _update(self, name: str, value: TableData | TableEquation | TableMatrixData | TableMatrixEquation):
+    def _update(
+            self,
+            name: str,
+            value: TableData | TableEquation | TableMatrixData | TableMatrixEquation
+    ):
         '''
         Update a property/functions
 
@@ -118,20 +135,31 @@ class CompExporter:
                     self.__properties[name] = value
                     return True
                 else:
-                    raise Exception(f"{name} not found!")
+                    logger.warning(f"{name} not found!")
+                    return False
+
             # check TableEquation and TableMatrixEquation
             elif isinstance(value, self.allowed_types_equations):
                 if name in self.__functions:
                     self.__functions[name] = value
                     return True
                 else:
-                    raise Exception(f"{name} not found!")
-            else:
-                raise Exception("Value must be TableData or TableEquation")
-        except Exception as e:
-            raise Exception("Updating a property failed!, ", e)
+                    logger.warning(f"{name} not found!")
+                    return False
 
-    def _rename(self, name: str, new_name: str) -> bool:
+            else:
+                logger.error("Value must be TableData or TableEquation")
+                return False
+
+        except Exception as e:
+            logger.error(f"Updating a property failed!, {e}")
+            return False
+
+    def _rename(
+            self,
+            name: str,
+            new_name: str
+    ) -> bool:
         '''
         Rename a property/functions
 
@@ -156,13 +184,14 @@ class CompExporter:
                 self.__functions[new_name] = self.__functions.pop(name)
                 return True
             else:
-                raise Exception(f"{name} not found!")
+                logger.warning(f"{name} not found!")
+                return False
         except Exception as e:
             raise Exception("Renaming a property failed!, ", e)
 
     def _clean(self):
         '''
-        Clean properties/functions
+        Clean properties/functions (dictionaries)
 
         Returns
         -------
@@ -174,4 +203,5 @@ class CompExporter:
             self.__functions = {}
             return True
         except Exception as e:
-            raise Exception("Cleaning properties/functions failed!, ", e)
+            logger.error(f"Cleaning properties/functions failed!, {e}")
+            return False
