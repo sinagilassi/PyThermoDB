@@ -8,10 +8,10 @@ from typing import (
 )
 import glob
 # local
-from .managedata import ManageData
+from ..manager import ManageData
 from ..data import TableTypes
 from ..models import PayLoadType
-from .customref import CustomRef
+from ..loader import CustomRef
 from ..models import DataBookTableTypes
 
 # NOTE: logger

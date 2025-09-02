@@ -22,7 +22,7 @@ from .tableref import TableReference
 # transformer
 from ..transformer import TransData
 from ..transformer import TransMatrixData
-from .managedata import ManageData
+from ..manager import ManageData
 # core
 from ..core import (
     TableEquation,
