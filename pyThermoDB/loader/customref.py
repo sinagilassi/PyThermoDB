@@ -106,7 +106,8 @@ class CustomRef:
 
             # check
             if src_files is None:
-                src_files = self.ref.get('reference')
+                src_files = self.ref.get(
+                    'reference') or self.ref.get('references')
             # check
             if src_files is None:
                 raise Exception("No reference files found.")
@@ -119,12 +120,13 @@ class CustomRef:
                 raise Exception("No reference files found.")
 
             # NOTE: tables
-            csv_files = self.ref.get('csv') or self.ref.get('tables') or []
+            csv_files = self.ref.get('csv') or self.ref.get('tables', [])
             # NOTE: symbols (optional)
             symbol_files = self.ref.get('symbols') or []
 
             # SECTION: check files exist
             # NOTE: csv files only for NORMAL mode (yml + csv)
+            # NOTE: for VALUES mode (yml/md or string content), no csv files are needed
             if len(csv_files) == 0 and self.data_mode == 'NORMAL':
                 raise Exception("No csv files to update.")
 
