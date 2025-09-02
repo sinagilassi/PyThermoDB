@@ -89,75 +89,23 @@ class Convertor:
             logging.error(f"Error parsing {format} data: {e}")
             raise ValueError(f"Invalid {format} data") from e
 
-    # def md_to_dict(self, data: str) -> dict:
-    #     """
-    #     Convert a Markdown string to a Python dictionary.
 
-    #     Parameters
-    #     ----------
-    #     data : str
-    #         The input Markdown string.
+def is_str_number(s: str) -> bool:
+    """
+    Check if a string represents a number (integer or float).
 
-    #     Returns
-    #     -------
-    #     dict
-    #         The converted data as a Python dictionary.
-    #     """
-    #     try:
-    #         lines = data.strip().splitlines()
-    #         config = {}
-    #         current_comp = None
-    #         current_section = None
-    #         i = 0
+    Parameters
+    ----------
+    s : str
+        The input string to check.
 
-    #         while i < len(lines):
-    #             line = lines[i].strip()
-
-    #             if line.startswith("## "):
-    #                 current_comp = line[3:].strip()
-    #                 config[current_comp] = {}
-    #                 i += 1
-
-    #             elif line.endswith(":") and not line.startswith("-"):
-    #                 current_section = line[:-1].strip()
-    #                 config[current_comp][current_section] = {}
-    #                 i += 1
-
-    #                 while i < len(lines) and lines[i].strip() == "":
-    #                     i += 1
-
-    #                 while i < len(lines):
-    #                     subline = lines[i]
-    #                     stripped = subline.strip()
-
-    #                     if not stripped or stripped.startswith("##") or (not stripped.startswith("-") and stripped.endswith(":")):
-    #                         break
-
-    #                     if stripped.startswith("- "):
-    #                         item = stripped[2:]
-    #                         if item.endswith(":"):
-    #                             nested_key = item[:-1].strip()
-    #                             config[current_comp][current_section][nested_key] = {}
-    #                             i += 1
-    #                             while i < len(lines) and lines[i].startswith("  - "):
-    #                                 subitem_line = lines[i].strip()[2:]
-    #                                 if ":" in subitem_line:
-    #                                     subkey, subval = map(
-    #                                         str.strip, subitem_line.split(":", 1))
-    #                                     config[current_comp][current_section][nested_key][subkey] = subval
-    #                                 i += 1
-    #                         elif ":" in item:
-    #                             key, val = map(str.strip, item.split(":", 1))
-    #                             config[current_comp][current_section][key] = val
-    #                             i += 1
-    #                         else:
-    #                             i += 1
-    #                     else:
-    #                         i += 1
-    #             else:
-    #                 i += 1
-
-    #         return config
-    #     except Exception as e:
-    #         logging.error(f"Error converting Markdown to dict: {e}")
-    #         return {}
+    Returns
+    -------
+    bool
+        True if the string represents a number, False otherwise.
+    """
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False

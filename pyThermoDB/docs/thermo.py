@@ -19,8 +19,9 @@ from ..config import API_URL, __version__
 from ..api import Manage
 from ..utils import isNumber, uppercaseStringList
 from .tableref import TableReference
-from .transdata import TransData
-from .transmatrixdata import TransMatrixData
+# transformer
+from ..transformer import TransData
+from ..transformer import TransMatrixData
 from .managedata import ManageData
 # core
 from ..core import (

@@ -2,6 +2,7 @@
 # ===============
 
 # import packages/modules
+import logging
 import os
 import yaml
 import pandas as pd
@@ -19,6 +20,10 @@ import re
 from ..data import TableTypes
 from ..models import DataBookTableTypes
 from .customref import CustomRef
+from ..utils import is_str_number
+
+# NOTE: logger
+logger = logging.getLogger(__name__)
 
 
 class ManageData():
@@ -636,8 +641,9 @@ class ManageData():
             res = [(db, f"[{i+1}]") for i, db in enumerate(_db)]
 
             # create dict
-            databook_dict = {f"databook-{i+1}": str(db)
-                             for i, db in enumerate(_db)}
+            databook_dict = {
+                f"databook-{i+1}": str(db) for i, db in enumerate(_db)
+            }
             # create json
             databook_json = json.dumps(databook_dict, indent=4)
 
@@ -703,7 +709,10 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook id loading error! {e}")
 
-    def get_tables(self, databook) -> tuple[list[list[str]], pd.DataFrame, str, dict[str, str]]:
+    def get_tables(
+            self,
+            databook
+    ) -> tuple[list[list[str]], pd.DataFrame, str, dict[str, str]]:
         '''
         Get a table list of selected databook
 
@@ -972,9 +981,10 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table values loading err! {e}")
 
-    def find_databook(self,
-                      databook: str | int
-                      ) -> tuple[list[DataBookTableTypes], str, int]:
+    def find_databook(
+        self,
+        databook: str | int
+    ) -> tuple[list[DataBookTableTypes], str, int]:
         '''
         Find a databook
 
@@ -1000,7 +1010,15 @@ class ManageData():
             # set
             databook_name = ''
 
-            # check
+            # SECTION: check string or int
+            if isinstance(databook, str):
+                # check if str is number
+                databook_type = is_str_number(databook)
+                # convert to int
+                if databook_type:
+                    databook = int(databook)
+
+            # SECTION: find databook id and name
             if isinstance(databook, int):
                 # convert to zero-based id
                 databook_id = databook-1
@@ -1015,14 +1033,22 @@ class ManageData():
             else:
                 raise ValueError("databook must be int or str")
 
-            # set databook
+            # NOTE: set databook
             selected_databook = self.databook_bulk[databook_name]
+            # check
+            if not selected_databook:
+                logger.error("Databook selected not found!")
+
             # res
             return selected_databook, databook_name, databook_id
         except Exception as e:
             raise Exception(f"databook finding err! {e}")
 
-    def find_table(self, databook: str | int, table: str | int) -> tuple[int, str]:
+    def find_table(
+            self,
+            databook: str | int,
+            table: str | int
+    ) -> tuple[int, str]:
         '''
         Finds table id through searching databook id and table name
 
@@ -1048,11 +1074,20 @@ class ManageData():
             # set
             table_id, table_name = 0, ''
 
-            # find databook zero-base id (real)
+            # SECTION: find databook zero-base id (real)
             selected_databook, databook_name, databook_id = self.find_databook(
-                databook)
+                databook
+            )
 
-            # check table
+            # SECTION: check table input type
+            if isinstance(table, str):
+                # check if str is number
+                table_type = is_str_number(table)
+                # convert to int
+                if table_type:
+                    table = int(table)
+
+            # SECTION: find table id and name
             if isinstance(table, int):
                 # convert to zero-based id
                 table_id = table-1
@@ -1075,7 +1110,10 @@ class ManageData():
         except Exception as e:
             raise Exception('Finding table id failed!, ', e)
 
-    def find_table_source(self, table: str | int) -> dict[str, str | int]:
+    def find_table_source(
+            self,
+            table: str | int
+    ) -> dict[str, str | int]:
         """
         Find table source (databook name and id)
 
@@ -1095,7 +1133,6 @@ class ManageData():
                 table name
             table_id : int
                 table id
-
         """
         try:
             # set
@@ -1175,7 +1212,10 @@ class ManageData():
         except Exception as e:
             raise Exception('Finding table source failed!', e)
 
-    def __parse_equation(self, eq_data: List[str]):
+    def __parse_equation(
+            self,
+            eq_data: List[str]
+    ):
         '''
         Parse equation data into a dictionary including equation args, parameters, returns
 

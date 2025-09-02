@@ -7,7 +7,6 @@ from pyThermoDB.models import Component
 
 
 # get versions
-# print(pt.get_version())
 print(ptdb.__version__)
 
 # ====================================
@@ -91,8 +90,10 @@ print(tb_eq.table_units)
 print(tb_eq.table_values)
 
 #
-tb_eq = thermo_db.equation_load("Perry's Chemical Engineers' Handbook",
-                                'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids')
+tb_eq = thermo_db.equation_load(
+    "Perry's Chemical Engineers' Handbook",
+    'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
+)
 # equation structure
 tb_eq_structure = tb_eq.eq_structure()
 print(tb_eq_structure)

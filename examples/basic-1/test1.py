@@ -1,7 +1,7 @@
 # import packages/modules
 import pyThermoDB as ptdb
 from rich import print
-from pyThermoDB.docs import TableData
+from pyThermoDB.core import TableData
 
 # versions
 print(ptdb.__version__)
