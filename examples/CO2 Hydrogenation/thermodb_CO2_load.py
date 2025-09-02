@@ -1,7 +1,8 @@
 # import packages/modules
-import pyThermoDB as ptdb
 import os
 from rich import print
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation
 
 # ====================================
 # LOAD THERMODB
@@ -35,6 +36,10 @@ print(CO2_thermodb.check_properties())
 
 # ! load data
 CO2_general = CO2_thermodb.check_property('general')
+# check
+if not isinstance(CO2_general, TableData):
+    raise TypeError('Not TableData')
+
 print(type(CO2_general))
 # heat of formation at 298.15K
 print(CO2_general.data_structure())
@@ -47,8 +52,7 @@ CO2_dHf_IG = float(CO2_general.get_property(11)['value'])
 CO2_dHf_IG = float(CO2_general.get_property('EnFo')['value'])
 CO2_dHf_IG_unit = CO2_general.get_property('EnFo')['unit']
 CO2_dHf_IG_J__mol = CO2_dHf_IG*1000
-print(f'CO2_dHf_IG = {CO2_dHf_IG} {
-      CO2_dHf_IG_unit}, {CO2_dHf_IG_J__mol} J/mol')
+print(f'CO2_dHf_IG={CO2_dHf_IG} {CO2_dHf_IG_unit}, {CO2_dHf_IG_J__mol} J/mol')
 # Gibbs free energy of formation at 298.15 K
 CO2_dGf_IG = float(CO2_general.get_property('EnFo')['value'])
 print(f'CO2_dGf_IG = {CO2_dGf_IG}')

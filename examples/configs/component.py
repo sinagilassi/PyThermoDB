@@ -1,6 +1,6 @@
 # import libs
 import pyThermoDB as ptdb
-from pyThermoDB.docs import TableData
+from pyThermoDB.core import TableData
 from pyThermoDB import build_component_thermodb_from_reference
 from rich import print
 

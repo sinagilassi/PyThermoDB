@@ -1,30 +1,38 @@
 # import packages/modules
-import pyThermoDB as ptdb
-from pprint import pprint as pp
 import os
+from typing import Any, Dict
+from rich import print
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation
 
-# dir
-# print(dir(pt))
-# get versions
-# print(pt.get_version())
+# version
 print(ptdb.__version__)
 
 # ====================================
 # CUSTOM REFERENCES
 # ====================================
+# parent path
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+print(f"Parent directory: {parent_dir}")
+
+# databook name
+DATABOOK_NAME = 'CO2-Hydrogenation Reaction'
 # files
-yml_file = 'tests\\CO2 Hydrogenation.yml'
-yml_path = os.path.join(os.getcwd(), yml_file)
+yml_file = 'CO2 Hydrogenation.yml'
+yml_path = os.path.join(parent_dir, yml_file)
 # csv files (data/equation tables)
-csv_file_1 = 'tests\\The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State.csv'
-csv_file_2 = 'tests\\General Data.csv'
-csv_file_3 = 'tests\\Vapor Pressure.csv'
-csv_path_1 = os.path.join(os.getcwd(), csv_file_1)
-csv_path_2 = os.path.join(os.getcwd(), csv_file_2)
-csv_path_3 = os.path.join(os.getcwd(), csv_file_3)
+csv_file_1 = 'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State.csv'
+csv_file_2 = 'General Data.csv'
+csv_file_3 = 'Vapor Pressure.csv'
+csv_path_1 = os.path.join(parent_dir, csv_file_1)
+csv_path_2 = os.path.join(parent_dir, csv_file_2)
+csv_path_3 = os.path.join(parent_dir, csv_file_3)
 
 # custom ref
-ref = {'yml': [yml_path], 'csv': [csv_path_1, csv_path_2, csv_path_3]}
+ref: Dict[str, Any] = {
+    'reference': [yml_path],
+    'tables': [csv_path_1, csv_path_2, csv_path_3]
+}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -41,30 +49,32 @@ print(db_list)
 # SELECT A DATABOOK
 # ====================================
 # table list
-tb_list = thermo_db.list_tables('CO2 Hydrogenation')
+tb_list = thermo_db.list_tables(DATABOOK_NAME)
 print(tb_list)
 
 # ====================================
 # DISPLAY TABLE INFO
 # ====================================
 # display a table
-# tb_info = thermo_db.table_info('CO2 Hydrogenation', 2)
+# tb_info = thermo_db.table_info(DATABOOK_NAME, 2)
 # print(tb_info)
 
-tb_info = thermo_db.table_info('CO2 Hydrogenation', 'General Data')
+tb_info = thermo_db.table_info(DATABOOK_NAME, 'General Data')
 print(tb_info)
 
 # ====================================
 # LOAD TABLE
 # ====================================
 # load equation
-# tb_eq = thermo_db.equation_load('CO2 Hydrogenation', 'Vapor Pressure')
+# tb_eq = thermo_db.equation_load(DATABOOK_NAME, 'Vapor Pressure')
 # load equation
 tb_eq = thermo_db.equation_load(
-    'CO2 Hydrogenation', 'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State')
+    DATABOOK_NAME,
+    'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State'
+)
 # equation structure
 tb_eq_structure = tb_eq.eq_structure(1)
-pp(tb_eq_structure)
+print(tb_eq_structure)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -72,7 +82,10 @@ pp(tb_eq_structure)
 # check component availability in the databook and table
 comp1 = "Carbon Dioxide"
 COMP1_check_availability = thermo_db.check_component(
-    comp1, 'CO2 Hydrogenation', 'General Data')
+    comp1,
+    DATABOOK_NAME,
+    'General Data'
+)
 
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
@@ -84,12 +97,16 @@ COMP1_check_availability = thermo_db.check_component(
 # BUILD DATA
 # ====================================
 # build data
-comp1_data = thermo_db.build_data(comp1, 'CO2 Hydrogenation', 'General Data')
-pp(comp1_data.data_structure())
+comp1_data = thermo_db.build_data(
+    comp1,
+    DATABOOK_NAME,
+    'General Data'
+)
+print(comp1_data.data_structure())
 
-pp(comp1_data.get_property(6))
+print(comp1_data.get_property(6))
 # by symbol
-pp(float(comp1_data.get_property('dHf_IG')['value']))
+print(float(comp1_data.get_property('EnFo')['value']))
 
 
 # ====================================
@@ -98,46 +115,52 @@ pp(float(comp1_data.get_property('dHf_IG')['value']))
 # ! equation 1
 # build equation
 comp1_eq = thermo_db.build_equation(
-    comp1, 'CO2 Hydrogenation', 'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State')
+    comp1,
+    DATABOOK_NAME,
+    'The Molar Heat Capacities of Gases in the Ideal Gas (Zero-Pressure) State'
+)
 
 # search a component using query
 # comp1_eq = thermo_db.build_equation(
 #     comp1, 3, 1)
 
 # load parms
-pp(comp1_eq.parms)
-pp(comp1_eq.parms_values)
+print(comp1_eq.parms)
+print(comp1_eq.parms_values)
 # equation details
-pp(comp1_eq.equation_parms())
-pp(comp1_eq.equation_args())
-pp(comp1_eq.equation_body())
-pp(comp1_eq.equation_return())
+print(comp1_eq.equation_parms())
+print(comp1_eq.equation_args())
+print(comp1_eq.equation_body())
+print(comp1_eq.equation_return())
 
 # cal
 Cp_cal = comp1_eq.cal(T=298.15)
-pp(Cp_cal)
+print(Cp_cal)
 
 # first derivative
 Cp_cal_first = comp1_eq.cal_first_derivative(T=273.15)
-pp(Cp_cal_first)
+print(Cp_cal_first)
 
 # second derivative
 Cp_cal_second = comp1_eq.cal_second_derivative(T=273.15)
-pp(Cp_cal_second)
+print(Cp_cal_second)
 
 # integral
 Cp_cal_integral = comp1_eq.cal_integral(T1=298.15, T2=320)
-pp(Cp_cal_integral)
+print(Cp_cal_integral)
 
 # ! equation 2
 # build equation
 vapor_pressure_eq = thermo_db.build_equation(
-    comp1, 'CO2 Hydrogenation', 'Vapor Pressure')
+    comp1,
+    DATABOOK_NAME,
+    'Vapor Pressure'
+)
 
-pp(vapor_pressure_eq.equation_args())
-pp(vapor_pressure_eq.equation_return())
+print(vapor_pressure_eq.equation_args())
+print(vapor_pressure_eq.equation_return())
 VaPr = vapor_pressure_eq.cal(T=304.21)
-pp(VaPr)
+print(VaPr)
 
 # ====================================
 # BUILD EQUATION
@@ -150,14 +173,14 @@ pp(VaPr)
 #     comp1, 3, 1)
 
 # equation details
-# pp(comp1_eq.equation_parms())
-# pp(comp1_eq.equation_args())
-# pp(comp1_eq.equation_body())
-# pp(comp1_eq.equation_return())
+# print(comp1_eq.equation_parms())
+# print(comp1_eq.equation_args())
+# print(comp1_eq.equation_body())
+# print(comp1_eq.equation_return())
 
 # cal (using sympy)
 # Cp_cal = comp1_eq.cal(sympy_format=True, T=290)
-# pp(Cp_cal)
+# print(Cp_cal)
 
 
 # ====================================
@@ -165,7 +188,7 @@ pp(VaPr)
 # ====================================
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
-pp(type(thermo_db))
+print(type(thermo_db))
 
 # * add TableData
 thermo_db.add_data('GENERAL', comp1_data)
@@ -182,20 +205,20 @@ thermo_db.add_data('vapor-pressure', vapor_pressure_eq)
 # ====================================
 # LIST THERMO DATA (DATA,EQUATIONS)
 # ====================================
-pp(thermo_db.list_data())
+print(thermo_db.list_data())
 
 # ====================================
 # REMOVE A RECORD
 # ====================================
 # remove a record
-# pp(thermo_db.delete_data('GENERAL-2'))
+# print(thermo_db.delete_data('GENERAL-2'))
 # check data after change (remove data)
-# pp(thermo_db.list_data())
+# print(thermo_db.list_data())
 
 # ====================================
 # CLEAN
 # ====================================
-# pp(thermo_db.clean())
+# print(thermo_db.clean())
 
 
 # ====================================
@@ -203,11 +226,13 @@ pp(thermo_db.list_data())
 # ====================================
 # save
 thermo_db.save(
-    f'{comp1}-multiple-3', file_path='E:\\Python Projects\\pyThermoDB\\tests')
+    f'{comp1}-multiple-3',
+    file_path=parent_dir,
+)
 
 # ====================================
 # CHECK THERMODB
 # ====================================
 # check all properties and functions registered
-pp(thermo_db.check_properties())
-pp(thermo_db.check_functions())
+print(thermo_db.check_properties())
+print(thermo_db.check_functions())
