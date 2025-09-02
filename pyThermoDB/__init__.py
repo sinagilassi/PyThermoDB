@@ -17,6 +17,7 @@ from .app import (
     build_component_thermodb,
     build_components_thermodb,
     build_component_thermodb_from_reference,
+    check_and_build_component_thermodb,
     ComponentThermoDB
 )
 
@@ -39,5 +40,6 @@ __all__ = [
     'ManageData',
     'CustomRef',
     'build_component_thermodb_from_reference',
+    'check_and_build_component_thermodb',
     'ComponentThermoDB'
 ]
