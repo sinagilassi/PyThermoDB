@@ -5,6 +5,8 @@ from rich import print
 import pyThermoDB as ptdb
 from pyThermoDB.docs import TableData, TableEquation, TableMatrixData
 from pyThermoDB.references import ReferenceConfig
+from pyThermoDB import check_and_build_component_thermodb
+from pyThermoDB.models import Component
 
 # get versions
 # print(pt.get_version())
@@ -147,6 +149,22 @@ carbon dioxide:
       Pc: Pc
       Tc: Tc
       AcFa: AcFa
+CO2-g:
+  heat-capacity:
+    databook: CUSTOM-REF-1
+    table: XXX
+    symbol: Cp_IG
+  vapor-pressure:
+    databook: CUSTOM-REF-1
+    table: vapor-pressure
+    symbol: VaPr
+  general:
+    databook: CUSTOM-REF-1
+    table: general-data
+    symbols:
+      Pc: Pc
+      Tc: Tc
+      AcFa: AcFa
 CO:
   heat-capacity:
     databook: CUSTOM-REF-1
@@ -175,11 +193,29 @@ CO:
 reference_config = reference_config_yml
 
 
-# NOTE: build component thermodb
+# NOTE: build component thermodb (by name)
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=reference_config,
-    custom_reference=ref)
+    custom_reference=ref
+)
+
+#  check
+print(thermodb_component_.check())
+print(thermodb_component_.message)
+
+# NOTE: build component thermodb (by name) and check
+CO2_component = Component(
+    name='carbon dioxide',
+    formula='CO2',
+    state='g'
+)
+thermodb_component_ = ptdb.check_and_build_component_thermodb(
+    component=CO2_component,
+    reference_config=reference_config,
+    custom_reference=ref,
+    component_key='Formula-State'
+)
 
 #  check
 print(thermodb_component_.check())
