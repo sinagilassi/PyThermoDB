@@ -18,7 +18,7 @@ from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
 from .models import Component
 from .utils import set_component_id, set_component_query
-from .manager import CompBuilder
+from .builder import CompBuilder
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
