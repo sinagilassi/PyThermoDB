@@ -22,10 +22,13 @@ from .tableref import TableReference
 from .transdata import TransData
 from .transmatrixdata import TransMatrixData
 from .managedata import ManageData
-from .tableequation import TableEquation
-from .tablematrixequation import TableMatrixEquation
-from .tabledata import TableData
-from .tablematrixdata import TableMatrixData
+# core
+from ..core import (
+    TableEquation,
+    TableMatrixEquation,
+    TableData,
+    TableMatrixData
+)
 from ..data import TableTypes
 from ..models import DataBookTableTypes, Component
 # web app

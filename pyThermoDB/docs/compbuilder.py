@@ -1,4 +1,5 @@
 # import packages/modules
+import logging
 import pickle
 import yaml
 import os
@@ -6,11 +7,16 @@ from typing import Optional, Union, Literal
 
 # local
 from .compexporter import CompExporter
-from .tabledata import TableData
-from .tableequation import TableEquation
-from .tablematrixdata import TableMatrixData
-from .tablematrixequation import TableMatrixEquation
+from ..core import (
+    TableEquation,
+    TableMatrixEquation,
+    TableData,
+    TableMatrixData
+)
 from ..config import __version__
+
+# logger
+logger = logging.getLogger(__name__)
 
 
 class CompBuilder(CompExporter):
@@ -25,9 +31,11 @@ class CompBuilder(CompExporter):
     # thermodb version
     build_version = __version__
 
-    def __init__(self,
-                 thermodb_name: Optional[str] = None,
-                 message: Optional[str] = None):
+    def __init__(
+        self,
+        thermodb_name: Optional[str] = None,
+        message: Optional[str] = None
+    ):
         '''
         Initialize CompBuilder object
 
@@ -78,7 +86,13 @@ class CompBuilder(CompExporter):
             return 'CompBuilder instance created!'
         return self.__message
 
-    def add_data(self, name: str, value: Union[TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation]):
+    def add_data(
+        self,
+        name: str,
+        value: Union[
+            TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation
+        ]
+    ):
         '''
         Add TableData/TableEquation
 
@@ -104,21 +118,28 @@ class CompBuilder(CompExporter):
                 raise Exception('Name is required')
 
             # check TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation
-            allowed_types = (TableData, TableEquation, dict,
-                             TableMatrixData, TableMatrixEquation)
+            allowed_types = (
+                TableData,
+                TableEquation,
+                dict,
+                TableMatrixData,
+                TableMatrixEquation
+            )
 
             # check allowed types
             if isinstance(value, allowed_types):
                 self.__data[name] = value
                 return True
             else:
-                raise Exception('Value must be TableData or TableEquation')
+                logger.error(f'Invalid type: {type(value)}')
+                return False
         except Exception as e:
-            raise Exception('Adding new data failed!, ', e)
+            logger.error(f'Adding data failed!, {e}')
+            return False
 
-    def delete_data(self, name: str):
+    def delete_data(self, name: str) -> bool:
         '''
-        Delete data
+        Delete data by name
 
         Parameters
         ----------
@@ -136,11 +157,17 @@ class CompBuilder(CompExporter):
                 #
                 return True
             else:
-                raise Exception('Data not found')
+                logger.error('Data not found')
+                return False
         except Exception as e:
-            raise Exception('Deleting data failed!, ', e)
+            logger.error(f'Deleting data failed!, {e}')
+            return False
 
-    def rename_data(self, name: str, new_name: str):
+    def rename_data(
+            self,
+            name: str,
+            new_name: str
+    ):
         '''
         Rename data
 
@@ -161,9 +188,11 @@ class CompBuilder(CompExporter):
                 self.__data[new_name] = self.__data.pop(name)
                 return True
             else:
-                raise Exception('Data not found')
+                logger.error('Data not found')
+                return False
         except Exception as e:
-            raise Exception('Renaming data failed!, ', e)
+            logger.error(f'Renaming data failed!, {e}')
+            return False
 
     def list_data(self):
         '''
@@ -188,7 +217,8 @@ class CompBuilder(CompExporter):
         try:
             return self.__data
         except Exception as e:
-            raise Exception('Listing data failed!, ', e)
+            logger.error(f'Listing data failed!, {e}')
+            return {}
 
     def build(self):
         '''
@@ -206,7 +236,8 @@ class CompBuilder(CompExporter):
 
             return True
         except Exception as e:
-            raise Exception('Building library failed!, ', e)
+            logger.error(f'Building library failed!, {e}')
+            return False
 
     def export_yml(self, component_name: str):
         '''
@@ -274,9 +305,13 @@ class CompBuilder(CompExporter):
             return True
 
         except Exception as e:
-            raise Exception('Exporting library failed!, ', e)
+            logger.error(f'Exporting yml failed!, {e}')
+            return False
 
-    def export_data_structure(self, component_name: str):
+    def export_data_structure(
+            self,
+            component_name: str
+    ) -> bool:
         '''
         Export yml of thermodb containing TableData and TableEquation objects
 
@@ -297,7 +332,8 @@ class CompBuilder(CompExporter):
             # yml
             return self.export_yml(component_name)
         except Exception as e:
-            raise Exception('Exporting library failed!, ', e)
+            logger.error(f'Exporting data structure failed!, {e}')
+            return False
 
     def check(self) -> dict:
         '''
@@ -315,7 +351,8 @@ class CompBuilder(CompExporter):
             res = {**self.check_properties(), **self.check_functions()}
             return res
         except Exception as e:
-            raise Exception('Checking library failed!, ', e)
+            logger.error(f'Checking library failed!, {e}')
+            return {}
 
     def check_properties(self) -> dict[str, TableData | TableMatrixData]:
         '''
@@ -332,9 +369,10 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def check_property(self,
-                       thermo_name: str
-                       ) -> TableData | TableMatrixData:
+    def check_property(
+        self,
+        thermo_name: str
+    ) -> TableData | TableMatrixData:
         '''
         Check properties
 
@@ -354,9 +392,10 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
-    def select_property(self,
-                        thermo_name: str
-                        ) -> TableData | TableMatrixData:
+    def select_property(
+        self,
+            thermo_name: str
+    ) -> TableData | TableMatrixData:
         '''
         Select a thermodynamic property
 
@@ -391,11 +430,12 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def check_function(self,
-                       name: str
-                       ) -> TableEquation | TableMatrixEquation:
+    def check_function(
+        self,
+        name: str
+    ) -> TableEquation | TableMatrixEquation:
         '''
-        Check functions
+        Check functions by name
 
         Parameters
         ----------
@@ -413,11 +453,12 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
-    def select_function(self,
-                        function_name: str
-                        ) -> TableEquation | TableMatrixEquation:
+    def select_function(
+        self,
+        function_name: str
+    ) -> TableEquation | TableMatrixEquation:
         '''
-        Select a thermodynamic function
+        Select a function registered in the thermodb
 
         Parameters
         ----------
@@ -435,16 +476,17 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a function failed!, ', e)
 
-    def select(self,
-               thermo_name: str
-               ) -> Union[
-                   TableData,
-                   TableMatrixData,
-                   TableEquation,
-                   TableMatrixEquation
+    def select(
+        self,
+        thermo_name: str
+    ) -> Union[
+        TableData,
+        TableMatrixData,
+        TableEquation,
+        TableMatrixEquation
     ]:
         '''
-        Select a thermodynamic property used for both functions and properties registered in the thermodb
+        Select a thermodynamic property or function registered in the thermodb
 
         Parameters
         ----------
@@ -479,12 +521,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a thermodynamic property failed!, ', e)
 
-    def retrieve(self,
-                 property_source: str,
-                 message: Optional[str] = None,
-                 symbol_format: Literal[
-                     'alphabetic', 'numeric'
-                 ] = 'alphabetic'):
+    def retrieve(
+        self,
+        property_source: str,
+        message: Optional[str] = None,
+        symbol_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'alphabetic'
+    ):
         '''
         Retrieve a thermodynamic property from the thermodb for only TableData and TableMatrixData
 
@@ -575,10 +619,11 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Retrieving failed!, ", e)
 
-    def save(self,
-             filename: str,
-             file_path: Optional[str] = None
-             ) -> bool:
+    def save(
+        self,
+        filename: str,
+        file_path: Optional[str] = None
+    ) -> bool:
         """
         Saves the instance to a file using pickle
 
@@ -619,7 +664,8 @@ class CompBuilder(CompExporter):
             # res
             return True
         except Exception as e:
-            raise Exception("Saving CompBuilder instance failed!", e)
+            logger.error(f'Saving CompBuilder instance failed!, {e}')
+            return False
 
     @classmethod
     def load(cls, filename: str):
@@ -657,6 +703,9 @@ class CompBuilder(CompExporter):
             self.__data = {}
             # properties/functions
             self._clean()
+
+            # res
             return True
         except Exception as e:
-            raise Exception("Cleaning properties/functions failed!", e)
+            logger.error(f'Cleaning properties/functions failed!, {e}')
+            return False
