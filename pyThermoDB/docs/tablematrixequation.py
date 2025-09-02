@@ -28,11 +28,13 @@ class TableMatrixEquation:
     # bulk data
     __trans_data_pack = {}
 
-    def __init__(self,
-                 databook_name,
-                 table_name: str,
-                 equations: list,
-                 matrix_table=None):
+    def __init__(
+        self,
+        databook_name,
+        table_name: str,
+        equations: list,
+        matrix_table=None
+    ):
         # set
         self.databook_name = databook_name  # databook name
         self.table_name = table_name  # table name

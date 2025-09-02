@@ -1,7 +1,7 @@
 # import packages/modules
 import pandas as pd
 import numpy as np
-from typing import Union, Optional, Any, Literal, TypedDict, Dict, List, Tuple
+from typing import Optional, Any, Literal, Dict, List, Tuple
 from warnings import warn
 # local
 from ..models import DataResultType, DataResult
@@ -25,12 +25,14 @@ class TableMatrixData:
     # matrix mode
     matrix_mode: Literal['VALUES', 'ITEMS'] = 'VALUES'
 
-    def __init__(self,
-                 databook_name: str | int,
-                 table_name: str | int,
-                 table_data,
-                 matrix_table=None,
-                 matrix_symbol: Optional[List[str]] = None):
+    def __init__(
+        self,
+            databook_name: str | int,
+            table_name: str | int,
+            table_data,
+            matrix_table=None,
+            matrix_symbol: Optional[List[str]] = None
+    ):
         # set values
         self.databook_name = databook_name
         self.table_name = table_name
