@@ -1,7 +1,9 @@
 # import packages/modules
 import os
+from typing import Any, Dict
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation
 
 # get versions
 # print(pt.get_version())
@@ -10,13 +12,17 @@ print(ptdb.__version__)
 # ====================================
 # CUSTOM REFERENCES
 # ====================================
+# get current working directory and yml path of the example
+parent_path = os.path.dirname(os.path.abspath(__file__))
+print(parent_path)
+
 # files
-yml_file = 'examples\\external-ref\\source-ref-1.yml'
-yml_path = os.path.join(os.getcwd(), yml_file)
+yml_file = 'source-ref-1.yml'
+yml_path = os.path.join(parent_path, yml_file)
 print(yml_path)
 
 # custom ref
-ref = {'reference': [yml_path]}
+ref: Dict[str, Any] = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -43,24 +49,24 @@ print(tb_list)
 tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data')
 print(tb_info)
 
-# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
-# print(tb_info)
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
+print(tb_info)
 
-# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
-# print(tb_info)
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+print(tb_info)
 
 # ====================================
 # LOAD TABLE
 # ====================================
 # table-data
 dt_ = thermo_db.data_load(
-    1, 'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
+    1,
+    'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
 print(dt_.data_structure())
 print(dt_.table_columns)
 print(dt_.table_symbols)
 print(dt_.table_units)
 print(dt_.table_values)
-
 
 # table-data
 dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
@@ -96,7 +102,7 @@ print(res_)
 # ====================================
 # check component availability in the databook and table
 # comp1 = "Carbon Dioxide"
-comp1 = "toluene"
+comp1 = "methane"
 # COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query
@@ -111,8 +117,12 @@ comp1 = "toluene"
 # build data
 data_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'General-Data')
-print(type(data_1))
+# check
+if not isinstance(data_1, TableData):
+    raise TypeError("data_1 is not a TableData instance")
 
+# type
+print(type(data_1))
 # retrieve data
 res_ = data_1.get_property("MW")
 print(res_)
@@ -123,6 +133,9 @@ print(res_)
 # ! build equation
 comp1_eq_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'Vapor-Pressure')
+# check
+if not isinstance(comp1_eq_1, TableEquation):
+    raise TypeError("comp1_eq_1 is not a TableEquation instance")
 
 # equation details
 print(comp1_eq_1.equation_parms())
@@ -135,18 +148,21 @@ res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
 # ! build equation
-# comp1_eq_2 = thermo_db.build_thermo_property(
-#     [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+comp1_eq_2 = thermo_db.build_thermo_property(
+    [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+# check
+if not isinstance(comp1_eq_2, TableEquation):
+    raise TypeError("comp1_eq_2 is not a TableEquation instance")
 
-# # equation details
-# print(comp1_eq_2.equation_parms())
-# print(comp1_eq_2.equation_args())
-# print(comp1_eq_2.equation_body())
-# print(comp1_eq_2.equation_return())
+# equation details
+print(comp1_eq_2.equation_parms())
+print(comp1_eq_2.equation_args())
+print(comp1_eq_2.equation_body())
+print(comp1_eq_2.equation_return())
 
-# # cal
-# res_ = comp1_eq_2.cal(T=290)
-# print(res_)
+# cal
+res_ = comp1_eq_2.cal(T=290)
+print(res_)
 
 # ====================================
 # BUILD THERMODB
@@ -160,18 +176,16 @@ thermo_db.add_data('general', data_1)
 # add TableEquation
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # add TableEquation
-# thermo_db.add_data('heat-capacity', comp1_eq_2)
+thermo_db.add_data('heat-capacity', comp1_eq_2)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-2.pkl'
-thermodb_path = os.path.join(
-    os.getcwd(), 'examples', 'external-ref', 'thermodb')
+thermodb_file = f'{comp1}-1.pkl'
 
 # save
-thermo_db.save(thermodb_file, file_path=thermodb_path)
+thermo_db.save(thermodb_file, file_path=parent_path)
 
 # check
 print(thermo_db.check())
@@ -181,7 +195,7 @@ print(thermo_db.check())
 # ====================================
 # load a thermodb
 thermo_db_loaded = ptdb.load_thermodb(
-    os.path.join(thermodb_path, thermodb_file))
+    os.path.join(parent_path, thermodb_file))
 print(type(thermo_db_loaded))
 
 # check
@@ -192,12 +206,16 @@ print(thermo_db_loaded.check())
 # ====================================
 prop1_ = thermo_db_loaded.select('general')
 print(type(prop1_))
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("prop1_ is not a TableData instance")
+# property details
 print(prop1_.prop_data)
 
-# old format
+# ! old format
 print(prop1_.get_property('MW'))
 
-# new format
+# ! new format
 _src = 'general | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
@@ -205,10 +223,10 @@ print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 # SELECT A FUNCTION
 # ====================================
 # select function
-# func1_ = thermo_db_loaded.select_function('heat-capacity')
-# print(type(func1_))
-# print(func1_.args)
-# print(func1_.cal(T=295.15, message="heat capacity result"))
+func1_ = thermo_db_loaded.select_function('heat-capacity')
+print(type(func1_))
+print(func1_.args)
+print(func1_.cal(T=295.15, message="heat capacity result"))
 
 # select function
 func2_ = thermo_db_loaded.select_function('vapor-pressure')
