@@ -17,7 +17,7 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 
 # file
-thermodb_file = 'carbon dioxide-yml-3.pkl'
+thermodb_file = 'Carbon Dioxide-1.pkl'
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
 
@@ -36,7 +36,7 @@ print(thermo_db_loaded.check())
 # ====================================
 # SELECT PROPERTY
 # ====================================
-prop1_ = thermo_db_loaded.select('general')
+prop1_ = thermo_db_loaded.select('general-data')
 # check
 if not isinstance(prop1_, TableData):
     raise TypeError("prop1_ is not a TableData instance")
@@ -46,9 +46,11 @@ print(prop1_.prop_data)
 
 # ! old format
 print(prop1_.get_property('MW'))
+# by name
+print(prop1_.get_property('Molecular-Weight'))
 
 # ! new format
-_src = 'general | MW'
+_src = 'general-data | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
 # ====================================
