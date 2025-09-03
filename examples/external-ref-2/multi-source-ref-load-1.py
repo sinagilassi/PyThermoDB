@@ -2,6 +2,7 @@
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 
 # get versions
 # print(pt.get_version())
@@ -34,13 +35,17 @@ print(thermo_db_loaded.check())
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermo_db_loaded.select('general')
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("The selected property is not of type 'TableData'")
+# type
 print(type(prop1_))
 print(prop1_.prop_data)
 
-# old format
+# ! old format
 print(prop1_.get_property('MW'))
 
-# new format
+# ! new format
 _src = 'general | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
@@ -70,6 +75,10 @@ print(thermo_db_loaded.check_properties())
 
 # load data
 nrtl_alpha_data = thermo_db_loaded.check_property('non-randomness-parameters')
+# check
+if not isinstance(nrtl_alpha_data, TableMatrixData):
+    raise TypeError("The selected property is not of type 'TableMatrixData'")
+# type
 print(type(nrtl_alpha_data))
 
 # symbol
@@ -79,11 +88,17 @@ print(nrtl_alpha_data.matrix_symbol)
 print(nrtl_alpha_data.matrix_data_structure())
 
 # NOTE: old format
-print(nrtl_alpha_data.get_matrix_property("alpha_i_j",
-                                          [comp1, comp2], symbol_format='alphabetic'))
+print(nrtl_alpha_data.get_matrix_property(
+    "alpha_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic')
+)
 
-print(nrtl_alpha_data.get_matrix_property("a_i_j",
-                                          [comp1, comp2], symbol_format='alphabetic'))
+print(nrtl_alpha_data.get_matrix_property(
+    "a_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic')
+)
 
 # NOTE: new format
 # ! retrieve

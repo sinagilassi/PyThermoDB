@@ -2,6 +2,7 @@
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 
 # get versions
 # print(pt.get_version())

@@ -2,6 +2,8 @@
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB import TableData, TableEquation
+from typing import Dict, Any
 
 # get versions
 # print(pt.get_version())
@@ -32,6 +34,10 @@ print(thermo_db_loaded.check())
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermo_db_loaded.select('general')
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("The selected property is not of type 'TableData'.")
+# check
 print(type(prop1_))
 print(prop1_.prop_data)
 

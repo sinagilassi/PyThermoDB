@@ -1,7 +1,9 @@
 # import packages/modules
+from typing import Dict, List, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 
 # get versions
 # print(pt.get_version())
@@ -171,11 +173,11 @@ EXTERNAL-REFERENCES:
 """
 
 # custom ref
-ref = {'reference': [file_contents]}
+ref: Dict[str, Any] = {'reference': [file_contents]}
 # md ref
-# ref = {'reference': [md_path]}
+ref = {'reference': [md_path]}
 # yml ref
-# ref = {'reference': [yml_path]}
+ref = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -216,11 +218,11 @@ print(tb_info)
 tb_ = thermo_db.table_data('CUSTOM-REF-1', 'General-Data')
 print(tb_)
 
-
 # table-data
 dt_ = thermo_db.matrix_data_load(
     'CUSTOM-REF-1',
     'NRTL Non-randomness parameters-2')
+print(dt_)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -261,6 +263,10 @@ for i in range(len(components_list)):
         # NOTE: build a matrix data
         nrtl_alpha = thermo_db.build_thermo_property(
             [comp1, comp2], 'CUSTOM-REF-1', "NRTL Non-randomness parameters-2")
+        # check
+        if not isinstance(nrtl_alpha, TableMatrixData):
+            print("The selected property is not a TableMatrixData instance.")
+            continue
 
         # matrix table
         print(nrtl_alpha.matrix_table)

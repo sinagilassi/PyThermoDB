@@ -4,6 +4,7 @@ import os
 from rich import print
 import pyThermoDB as ptdb
 from pyThermoDB.models import Component
+from pyThermoDB.core import TableData, TableEquation
 
 
 # get versions
@@ -91,8 +92,10 @@ print(tb_eq.table_units)
 print(tb_eq.table_values)
 
 #
-tb_eq = thermo_db.equation_load("Perry's Chemical Engineers' Handbook",
-                                'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids')
+tb_eq = thermo_db.equation_load(
+    "Perry's Chemical Engineers' Handbook",
+    'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
+)
 # equation structure
 tb_eq_structure = tb_eq.eq_structure()
 print(tb_eq_structure)
@@ -162,6 +165,10 @@ data_1 = thermo_db.build_thermo_property(
     'CUSTOM-REF-1',
     'General-Data'
 )
+# check
+if not isinstance(data_1, TableData):
+    raise TypeError("data_1 is not a TableData instance")
+# type
 print(type(data_1))
 
 # retrieve data
@@ -182,6 +189,9 @@ data_1 = thermo_db.build_components_thermo_property(
     'General-Data',
     component_key='Name-State'
 )
+# check
+if not isinstance(data_1, TableData):
+    raise TypeError("data_1 is not a TableData instance")
 
 res_ = data_1.get_property("MW")
 print(res_)
@@ -193,9 +203,14 @@ data_1 = thermo_db.build_components_thermo_property(
     'General-Data',
     component_key='Formula-State'
 )
-
+# check
+if not isinstance(data_1, TableData):
+    raise TypeError("data_1 is not a TableData instance")
+# type
+print(type(data_1))
 res_ = data_1.get_property("MW")
 print(res_)
+
 # ====================================
 # BUILD EQUATION
 # ====================================
@@ -207,7 +222,9 @@ comp1_eq_1 = thermo_db.build_thermo_property(
     'CUSTOM-REF-1',
     'Vapor-Pressure'
 )
-
+# check
+if not isinstance(comp1_eq_1, TableEquation):
+    raise TypeError("comp1_eq_1 is not a TableEquation instance")
 # equation details
 print(comp1_eq_1.equation_parms())
 print(comp1_eq_1.equation_args())
@@ -230,7 +247,9 @@ comp1_eq_1 = thermo_db.build_components_thermo_property(
     'Vapor-Pressure',
     component_key='Name-State'
 )
-
+# check
+if not isinstance(comp1_eq_1, TableEquation):
+    raise TypeError("comp1_eq_1 is not a TableEquation instance")
 # cal
 res_ = comp1_eq_1.cal(T=290)
 print(res_)
@@ -242,7 +261,9 @@ comp1_eq_2 = thermo_db.build_thermo_property(
     'CUSTOM-REF-1',
     'Ideal-Gas-Molar-Heat-Capacity'
 )
-
+# check
+if not isinstance(comp1_eq_2, TableEquation):
+    raise TypeError("comp1_eq_2 is not a TableEquation instance")
 # equation details
 print(comp1_eq_2.equation_parms())
 print(comp1_eq_2.equation_args())
@@ -260,7 +281,9 @@ comp1_eq_2 = thermo_db.build_components_thermo_property(
     'Ideal-Gas-Molar-Heat-Capacity',
     component_key='Name-State'
 )
-
+# check
+if not isinstance(comp1_eq_2, TableEquation):
+    raise TypeError("comp1_eq_2 is not a TableEquation instance")
 # cal
 res_ = comp1_eq_2.cal(T=290)
 print(res_)
@@ -306,13 +329,17 @@ print(thermo_db_loaded.check())
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermo_db_loaded.select('general-data')
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("prop1_ is not a TableData instance")
+# type
 print(type(prop1_))
 print(prop1_.prop_data)
 
-# old format
+# ! old format
 print(prop1_.get_property('MW'))
 
-# new format
+# ! new format
 _src = 'general-data | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
