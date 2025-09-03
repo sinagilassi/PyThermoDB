@@ -153,8 +153,11 @@ def build_thermodb(
         CompBuilder object used for building thermodynamic data and equations
     '''
     try:
-        # init class
-        return CompBuilder(thermodb_name=thermodb_name, message=message)
+        # NOTE: init class
+        return CompBuilder(
+            thermodb_name=thermodb_name,
+            message=message
+        )
     except Exception as e:
         raise Exception("Building thermodb failed!, ", e)
 
@@ -166,7 +169,7 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
     Parameters
     ----------
     thermodb_file : str
-        filename path
+        thermodb filename path
 
     Returns
     -------
