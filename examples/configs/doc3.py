@@ -39,7 +39,7 @@ REFERENCES:
             SYMBOL: [None,None,None,None,a0,a1,a2,a3,a4,R,Cp_IG]
             UNIT: [None,None,None,None,1,1E3,1E5,1E8,1E11,1,J/mol.K]
           VALUES:
-            - [1,'carbon dioxide','CO2','g',3.259,1.356,1.502,-2.374,1.056,8.314,1]
+            - [1,'carbon dioxide','CO2','l',3.259,1.356,1.502,-2.374,1.056,8.314,1]
             - [2,'carbon monoxide','CO','g',3.912,-3.913,1.182,-1.302,0.515,8.314,1]
             - [3,'hydrogen','H2','g',2.883,3.681,-0.772,0.692,-0.213,8.314,1]
             - [4,'methanol','CH3OH','g',4.714,-6.986,4.211,-4.443,1.535,8.314,1]
@@ -106,7 +106,7 @@ REFERENCES:
             SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr]
             UNIT: [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
           VALUES:
-            - [1,'carbon dioxide','CO2','-',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
+            - [1,'carbon dioxide','CO2','g',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
             - [2,'carbon monoxide','CO','g',45.698,-1076.6,-4.8814,7.57E-05,2,68.15,1.54E+04,132.92,3.49E+06,1]
             - [3,'hydrogen','H2','g',12.69,-94.9,1.1125,3.29E-04,2,13.95,7.21E+03,33.19,1.32E+06,1]
             - [4,'methanol','CH3OH','g',82.718,-6904.5,-8.8622,7.47E-06,2,175.47,1.11E-01,512.5,8.15E+06,1]
@@ -177,6 +177,23 @@ print(f"thermodb_component_: {thermodb_component_}")
 # NOTE: thermodb
 thermodb_ = thermodb_component_.thermodb
 print(f"thermodb_: {thermodb_}")
-
 # check
 print(f"thermodb checks: {thermodb_.check()}")
+
+# SECTION: build component thermodb with ignore state
+# NOTE: ignore state for specific properties
+ignore_state_props = ['Cp_IG']
+thermodb_component_ignore_state_: ComponentThermoDB = build_component_thermodb_from_reference(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    reference_content=REFERENCE_CONTENT,
+    ignore_state_props=ignore_state_props,
+)
+
+print(f"thermodb_component_ignore_state_: {thermodb_component_ignore_state_}")
+# NOTE: thermodb
+thermodb_ignore_state_ = thermodb_component_ignore_state_.thermodb
+print(f"thermodb_ignore_state_: {thermodb_ignore_state_}")
+# check
+print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")

@@ -1543,13 +1543,13 @@ class ReferenceChecker:
                             # add
                             res[table_name] = {
                                 'available': True,
-                                'ignore_state': None
+                                'ignore_state': True
                             }
                         else:
                             # add
                             res[table_name] = {
                                 'available': False,
-                                'ignore_state': None
+                                'ignore_state': True
                             }
 
                         # go to next table
@@ -1559,13 +1559,13 @@ class ReferenceChecker:
                             # add
                             res[table_name] = {
                                 'available': True,
-                                'ignore_state': None
+                                'ignore_state': True
                             }
                         else:
                             # add
                             res[table_name] = {
                                 'available': False,
-                                'ignore_state': None
+                                'ignore_state': True
                             }
 
                         # go to next table
@@ -1584,13 +1584,13 @@ class ReferenceChecker:
                             # add
                             res[table_name] = {
                                 'available': True,
-                                'ignore_state': True
+                                'ignore_state': False
                             }
                         else:
                             # add
                             res[table_name] = {
                                 'available': False,
-                                'ignore_state': True
+                                'ignore_state': False
                             }
 
                         # go to next table

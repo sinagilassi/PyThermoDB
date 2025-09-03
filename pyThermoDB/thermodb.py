@@ -17,7 +17,11 @@ from pydantic import (
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
 from .models import Component
-from .utils import set_component_id, set_component_query
+from .utils import (
+    set_component_id,
+    set_component_query,
+    ignore_state_in_prop
+)
 from .builder import CompBuilder
 
 # NOTE: logger
@@ -80,6 +84,7 @@ def build_component_thermodb(
             List[str | Dict[str, Any]]
         ]
     ] = None,
+    component_key: Literal['Name', 'Formula'] = 'Formula',
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None
 ):
@@ -96,6 +101,8 @@ def build_component_thermodb(
         Name of the thermodynamic databook to be built, by default None
     custom_reference : Optional[Dict[str, List[str | dict]]], optional
         Custom reference dictionary for external references, by default None
+    component_key : Literal['Name', 'Formula'], optional
+        Key to identify the component in the reference content, by default 'Formula'
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
@@ -103,7 +110,7 @@ def build_component_thermodb(
 
     Notes
     -----
-    Property dict should contain the following format:
+    1- Property dict should contain the following format:
 
     ```python
     # Dict[str, Dict[str, str]]
@@ -122,6 +129,8 @@ def build_component_thermodb(
         },
     }
     ```
+
+    2- This method only checks component by name. If you want to check by formula and state, use `check_and_build_component_thermodb` method.
     '''
     try:
         # NOTE: check inputs
@@ -209,11 +218,15 @@ def build_component_thermodb(
                 # ? skip if table is not found
                 continue
 
+            # NOTE: set column name based on key
+            column_name_ = 'Name' if component_key == 'Name' else 'Formula'
+
             # NOTE: check component
             component_checker_ = thermodb.check_component(
                 component_name=component_name,
                 databook=databook_,
                 table=table_,
+                column_name=column_name_,
                 res_format='dict'
             )
 
@@ -227,9 +240,11 @@ def build_component_thermodb(
             # NOTE: build thermodb items
             # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
             item_ = thermodb.build_thermo_property(
-                [component_name],
-                databook_,
-                table_,
+                component_names=[component_name],
+                databook=databook_,
+                table=table_,
+                column_name=column_name_,
+                query=False
             )
 
             # save
@@ -695,6 +710,8 @@ def build_component_thermodb_from_reference(
         A short description of the component thermodynamic databook, by default None
     **kwargs
         Additional keyword arguments.
+        - ignore_state_props: Optional[List[str]]
+            List of property names to ignore state during the build. By default, None.
 
     Returns
     -------
@@ -709,6 +726,14 @@ def build_component_thermodb_from_reference(
     - The `add_label` and `check_labels` parameters help in managing the reference configuration for the component. In this context, labels defined in the reference are compared with the PyThermoDB labels (symbols) to ensure consistency.
     '''
     try:
+        # NOTE: kwargs
+        ignore_state_props: Optional[List[str]] = kwargs.get(
+            'ignore_state_props', None
+        )
+        # set default if None
+        if ignore_state_props is None:
+            ignore_state_props = []
+
         # NOTE: check inputs
         if not isinstance(component_name, str):
             raise TypeError("component_name must be a string")
@@ -767,6 +792,8 @@ def build_component_thermodb_from_reference(
         res = {}
         # labels
         labels = []
+        # ignore state for all properties
+        ignore_component_state: bool = False
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
@@ -795,7 +822,16 @@ def build_component_thermodb_from_reference(
             label_ = prop_idx.get('label', None)
             if label_:
                 # append to labels
-                labels.append(label_)
+                labels.append(str(label_))
+
+                # >> set ignore state
+                if len(ignore_state_props) > 0:
+                    if ignore_state_in_prop(label_, ignore_state_props):
+                        ignore_component_state = True
+                    else:
+                        ignore_component_state = False
+                else:
+                    ignore_component_state = False
             # check labels
             labels_ = prop_idx.get('labels', None)
             if labels_ and isinstance(labels_, dict):
@@ -803,7 +839,20 @@ def build_component_thermodb_from_reference(
                 for lbl_key, lbl_val in labels_.items():
                     if lbl_val and isinstance(lbl_val, str):
                         # append to labels
-                        labels.append(lbl_val)
+                        labels.append(str(lbl_val))
+
+                # >> set ignore state
+                # iterate over labels
+                if len(ignore_state_props) > 0:
+                    for item in labels_.values():
+                        # check
+                        if ignore_state_in_prop(item, ignore_state_props):
+                            ignore_component_state = True
+                            break
+                        else:
+                            ignore_component_state = False
+                else:
+                    ignore_component_state = False
 
             # NOTE: check component
             component_checker_ = ReferenceChecker_.check_component_availability(
@@ -812,7 +861,8 @@ def build_component_thermodb_from_reference(
                 component_state=component_state,
                 databook_name=databook_,
                 table_name=table_,
-                component_key=component_key
+                component_key=component_key,
+                ignore_component_state=ignore_component_state,
             )
 
             # check
@@ -826,10 +876,8 @@ def build_component_thermodb_from_reference(
             table_check = component_checker_[table_]
             if isinstance(table_check, dict):
                 availability_ = table_check.get('available', False)
-                ignore_state_ = table_check.get('ignore_state', False)
             else:
                 availability_ = False
-                ignore_state_ = False
 
             if not availability_:
                 continue  # skip if component is not available in the table
@@ -837,29 +885,37 @@ def build_component_thermodb_from_reference(
             # SECTION: build thermodb items
             # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
             # NOTE: ignore state during the build if specified
-            if ignore_state_:
-                # ! set component name based on key
-                component_name_ = component_name if component_key == 'Name-State' else component_formula
-                column_name_ = 'Name' if component_key == 'Name-State' else 'Formula'
+            try:
+                if ignore_component_state:
+                    # ! set component name based on key
+                    component_name_ = component_name if component_key == 'Name-State' else component_formula
+                    column_name_ = 'Name' if component_key == 'Name-State' else 'Formula'
 
-                # ! build_thermo_property
-                item_ = thermodb.build_thermo_property(
-                    [component_name_],
-                    databook=databook_,
-                    table=table_,
-                    column_name=column_name_
-                )
-            else:
-                # ! build_components_thermo_property
-                item_ = thermodb.build_components_thermo_property(
-                    components=[component_],
-                    databook=databook_,
-                    table=table_,
-                    component_key=component_key
-                )
+                    # ! build_thermo_property
+                    item_ = thermodb.build_thermo_property(
+                        [component_name_],
+                        databook=databook_,
+                        table=table_,
+                        column_name=column_name_
+                    )
+                else:
+                    # ! build_components_thermo_property
+                    item_ = thermodb.build_components_thermo_property(
+                        components=[component_],
+                        databook=databook_,
+                        table=table_,
+                        component_key=component_key
+                    )
 
-            # save
-            res[prop_name] = item_
+                # save
+                res[prop_name] = item_
+            except Exception as e:
+                logging.error(
+                    f"Building property '{prop_name}' for component '{component_name}' failed! {e}")
+                continue
+
+            # reset loop vars
+            ignore_component_state = False
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
@@ -870,6 +926,12 @@ def build_component_thermodb_from_reference(
             prop_names_list = ', '.join(
                 list(component_reference_configs.keys()))
             message = f"Thermodb including {prop_names_list} for component: {component_name}"
+
+        # NOTE: remove duplicate labels
+        if labels and isinstance(labels, list):
+            labels = list(set(labels))
+        else:
+            labels = []
 
         # init thermodb
         thermodb_comp = build_thermodb(
@@ -895,7 +957,7 @@ def build_component_thermodb_from_reference(
             thermodb=thermodb_comp,
             reference_configs=component_reference_configs,
             reference_rules=reference_rules,
-            labels=labels if labels else None
+            labels=labels
         )
 
         # return
