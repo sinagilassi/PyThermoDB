@@ -1212,6 +1212,17 @@ class ThermoDB(ManageData):
         -------
         str | dict[str, str]
             summary of the component availability
+
+        Notes
+        -----
+        1. component_name can be a string or a list of strings.
+            If a list is provided, it should contain the component name and state (e.g., ['Carbon dioxide', 'g']).
+        2. column_name can be a string or a list of strings.
+            If a list is provided, it should contain the column names to search in (e.g., ['Name', 'State']).
+        3. If query is provided, it will be used to search the dataframe directly.
+        4. If column_name is not provided, it defaults to 'Name'.
+        5. If query is not provided, the method will construct a query based on component_name and column_name.
+        6. The method returns the result in the specified format: 'dict', 'json', or 'str'.
         '''
         try:
             # NOTE: check search option
@@ -1834,6 +1845,7 @@ class ThermoDB(ManageData):
                         databook=databook,
                         table=table,
                         column_name=column_name,
+                        query=query
                     )
                 elif tb_info_res_['Type'] == 'Data':  # ! data
                     # check
@@ -1849,6 +1861,7 @@ class ThermoDB(ManageData):
                         databook=databook,
                         table=table,
                         column_name=column_name,
+                        query=query
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
                     # check
@@ -1868,9 +1881,9 @@ class ThermoDB(ManageData):
                             'At least two component names required!')
                     # build matrix-data
                     return self.build_matrix_data(
-                        component_names,
-                        databook,
-                        table
+                        component_names=component_names,
+                        databook=databook,
+                        table=table
                     )
                 else:
                     raise Exception('No data/equation found!')
