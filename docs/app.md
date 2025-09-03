@@ -10,42 +10,42 @@
 
 ::: pyThermoDB.docs.thermo
 
-### transdata
-
-::: pyThermoDB.docs.transdata
-
 ### tableref
 
 ::: pyThermoDB.docs.tableref
 
+### transdata
+
+::: pyThermoDB.transformer.transdata
+
 ### tableequation
 
-::: pyThermoDB.docs.tableequation
+::: pyThermoDB.core.tableequation
 
 ### tabledata
 
-::: pyThermoDB.docs.tabledata
+::: pyThermoDB.core.tabledata
 
 ### tablematrixequation
 
-::: pyThermoDB.docs.tablematrixequation
+::: pyThermoDB.core.tablematrixequation
 
 ### tablematrixdata
 
-::: pyThermoDB.docs.tablematrixdata
+::: pyThermoDB.core.tablematrixdata
 
 ### managedata
 
-::: pyThermoDB.docs.managedata
+::: pyThermoDB.manager.managedata
 
 ### customref
 
-::: pyThermoDB.docs.customref
+::: pyThermoDB.loader.customref
 
 ### compexporter
 
-::: pyThermoDB.docs.compexporter
+::: pyThermoDB.builder.compexporter
 
 ### compbuilder
 
-::: pyThermoDB.docs.compbuilder
+::: pyThermoDB.builder.compbuilder
