@@ -1,7 +1,9 @@
 # import packages/modules
 import os
+from typing import Any, Dict
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation
 
 # get versions
 # print(pt.get_version())
@@ -12,21 +14,19 @@ print(ptdb.__version__)
 # ====================================
 # component
 comp1 = 'toluene'
+comp1 = 'methane'
 
-thermodb_file = f'{comp1}-3.pkl'
-thermodb_path = os.path.join(
-    os.getcwd(),
-    'examples',
-    'external-ref',
-    'thermodb'
-)
+thermodb_file = f'{comp1}-1.pkl'
+
+parent_path = os.path.dirname(os.path.abspath(__file__))
+print(parent_path)
 
 # ====================================
 # ! LOAD THERMODB
 # ====================================
 # load a thermodb
 thermo_db_loaded = ptdb.load_thermodb(
-    os.path.join(thermodb_path, thermodb_file))
+    os.path.join(parent_path, thermodb_file))
 print(type(thermo_db_loaded))
 
 # check
@@ -40,9 +40,12 @@ print(thermo_db_loaded.check_properties())
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermo_db_loaded.select('general')
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("prop1_ is not a TableData instance")
+# type
 print(type(prop1_))
 print(prop1_.prop_data)
-
 # old format
 print(prop1_.get_property('MW'))
 
