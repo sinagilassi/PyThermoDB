@@ -3,7 +3,7 @@ from typing import Dict, List, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
-from pyThermoDB import TableData, TableEquation, TableMatrixData
+from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 
 # get versions
 # print(pt.get_version())
@@ -231,6 +231,9 @@ print(thermodb_components_.message)
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermodb_component_.select('general')
+# check
+if not isinstance(prop1_, TableData):
+    raise ValueError("Property not found!")
 print(type(prop1_))
 print(prop1_.prop_data)
 
@@ -267,6 +270,8 @@ components = [comp1, comp2]
 
 # NOTE: build a matrix data
 nrtl_alpha = thermodb_components_.select('nrtl')
+if not isinstance(nrtl_alpha, TableMatrixData):
+    raise ValueError("Matrix data not found!")
 
 # matrix table
 print(nrtl_alpha.matrix_table)
@@ -280,15 +285,19 @@ print(nrtl_alpha.matrix_symbol)
 print(nrtl_alpha.matrix_data_structure())
 
 # matrix data
-print(nrtl_alpha.get_matrix_property("a_i_j",
-                                     [comp1, comp2],
-                                     symbol_format='alphabetic',
-                                     message="NRTL Alpha value"))
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value")
+)
 
-print(nrtl_alpha.get_matrix_property("b_i_j",
-                                     [comp1, comp2],
-                                     symbol_format='alphabetic',
-                                     message="NRTL Alpha value"))
+print(nrtl_alpha.get_matrix_property(
+    "b_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value")
+)
 
 # property name using ij method
 prop_name = f"a_{comp1}_{comp2}"

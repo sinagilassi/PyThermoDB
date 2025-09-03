@@ -3,6 +3,7 @@ from typing import Dict, List, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 
 # get versions
 # print(pt.get_version())
@@ -172,16 +173,16 @@ EXTERNAL-REFERENCES:
 """
 
 # custom ref
-ref: Dict[str, Any] = {'reference': [file_contents]}
+ref_1: Dict[str, Any] = {'reference': [file_contents]}
 # md ref
-ref: Dict[str, Any] = {'reference': [md_path]}
+ref_2: Dict[str, Any] = {'reference': [md_path]}
 # yml ref
-ref: Dict[str, Any] = {'reference': [yml_path]}
+ref_3: Dict[str, Any] = {'reference': [yml_path]}
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
 # ====================================
-thermo_db = ptdb.init(custom_reference=ref)
+thermo_db = ptdb.init(custom_reference=ref_2)
 
 # log reference
 # print(thermo_db.reference)
@@ -242,8 +243,10 @@ print(tb_eq.table_units)
 print(tb_eq.table_values)
 
 #
-tb_eq = thermo_db.equation_load("Perry's Chemical Engineers' Handbook",
-                                'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids')
+tb_eq = thermo_db.equation_load(
+    "Perry's Chemical Engineers' Handbook",
+    'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
+)
 # equation structure
 tb_eq_structure = tb_eq.eq_structure()
 print(tb_eq_structure)
@@ -269,11 +272,15 @@ comp1 = "carbon dioxide"
 # ====================================
 # BUILD DATA
 # ====================================
-# build data
+print("[bold magenta]Build Data[/bold magenta]")
+# ! build data
 data_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'General-Data')
+# check
+if not isinstance(data_1, TableData):
+    raise TypeError("data_1 is not an instance of TableData")
+# type
 print(type(data_1))
-
 # retrieve data
 res_ = data_1.get_property("MW")
 print(res_)
@@ -281,9 +288,13 @@ print(res_)
 # ====================================
 # BUILD EQUATION
 # ====================================
+print("[bold magenta]Build Equation[/bold magenta]")
 # ! build equation
 comp1_eq_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'Vapor-Pressure')
+# check
+if not isinstance(comp1_eq_1, TableEquation):
+    raise TypeError("comp1_eq_1 is not an instance of TableEquation")
 
 # equation details
 print(comp1_eq_1.equation_parms())
@@ -298,6 +309,9 @@ print(res_)
 # ! build equation
 comp1_eq_2 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+# check
+if not isinstance(comp1_eq_2, TableEquation):
+    raise TypeError("comp1_eq_2 is not an instance of TableEquation")
 
 # equation details
 print(comp1_eq_2.equation_parms())
@@ -326,9 +340,16 @@ components = [comp1, comp2]
 # ====================================
 # BUILD MATRIX DATA
 # ====================================
+print("[bold magenta]Build MATRIX DATA[/bold magenta]")
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_thermo_property(
-    [comp1, comp2], 'CUSTOM-REF-1', "NRTL Non-randomness parameters-2")
+    [comp1, comp2],
+    'CUSTOM-REF-1',
+    "NRTL Non-randomness parameters-2"
+)
+# check
+if not isinstance(nrtl_alpha, TableMatrixData):
+    raise TypeError("nrtl_alpha is not an instance of TableMatrixData")
 
 # matrix table
 print(nrtl_alpha.matrix_table)
@@ -342,15 +363,19 @@ print(nrtl_alpha.matrix_symbol)
 print(nrtl_alpha.matrix_data_structure())
 
 # matrix data
-print(nrtl_alpha.get_matrix_property("a_i_j",
-                                     [comp1, comp2],
-                                     symbol_format='alphabetic',
-                                     message="NRTL Alpha value"))
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value")
+)
 
-print(nrtl_alpha.get_matrix_property("b_i_j",
-                                     [comp1, comp2],
-                                     symbol_format='alphabetic',
-                                     message="NRTL Alpha value"))
+print(nrtl_alpha.get_matrix_property(
+    "b_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value")
+)
 
 # property name using ij method
 prop_name = f"a_{comp1}_{comp2}"
@@ -407,6 +432,7 @@ print("*" * 20)
 # ====================================
 # BUILD THERMODB
 # ====================================
+print("[bold magenta]Build ThermoDB[/bold magenta]")
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
 print(type(thermo_db))
@@ -431,6 +457,7 @@ print(thermo_db.check())
 # ====================================
 # LOAD THERMODB
 # ====================================
+print("[bold magenta]Load ThermoDB[/bold magenta]")
 # load a thermodb
 thermo_db_loaded = ptdb.load_thermodb(
     os.path.join(parent_dir, thermodb_file))
@@ -442,20 +469,27 @@ print(thermo_db_loaded.check())
 # ====================================
 # SELECT PROPERTY
 # ====================================
+print("[bold magenta]Select Property[/bold magenta]")
+# select a property
 prop1_ = thermo_db_loaded.select('general')
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("prop1_ is not an instance of TableData")
+# type
 print(type(prop1_))
 print(prop1_.prop_data)
 
-# old format
+# ! old format
 print(prop1_.get_property('MW'))
 
-# new format
+# ! new format
 _src = 'general | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
 # ====================================
 # SELECT A FUNCTION
 # ====================================
+print("[bold magenta]Select Function[/bold magenta]")
 # select function
 func1_ = thermo_db_loaded.select_function('heat-capacity')
 print(type(func1_))

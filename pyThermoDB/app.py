@@ -1,5 +1,6 @@
 # import packages/modules
 import logging
+import os
 from typing import (
     Optional,
     Dict,
@@ -173,7 +174,11 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
         CompBuilder object used for loading thermodynamic data and equations
     '''
     try:
-        # init class
+        # NOTE: check file exists
+        if not os.path.isfile(thermodb_file):
+            raise FileNotFoundError(f"File '{thermodb_file}' does not exist!")
+
+        # NOTE: init class
         return CompBuilder.load(thermodb_file)
     except Exception as e:
         raise Exception("Loading thermodb failed!, ", e)

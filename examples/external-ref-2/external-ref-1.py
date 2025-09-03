@@ -17,7 +17,7 @@ print(ptdb.__version__)
 current_directory = os.getcwd()
 print(f"Current directory: {current_directory}")
 # parent directory
-parent_directory = os.path.dirname(current_directory)
+parent_directory = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_directory}")
 # target directory
 test_dir = os.path.join(current_directory, 'notebooks', 'Ref-1')
@@ -149,6 +149,4 @@ thermo_db.add_data('general', comp1_data)
 # add TableEquation
 thermo_db.add_data('vapor-pressure', comp1_eq)
 # save
-thermo_db.save(f'{comp1}-1.pkl')
-
-# check
+thermo_db.save(f'{comp1}-1.pkl', file_path=parent_directory)
