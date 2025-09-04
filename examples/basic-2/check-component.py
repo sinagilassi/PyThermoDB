@@ -185,6 +185,7 @@ print(is_available)
 # ====================================
 # NOTE: build data (older methods)
 # ! build data does not check component formula and state
+print("[bold magenta]Build Data (older methods)[/bold magenta]")
 comp1 = "Carbon Dioxide"
 data_1 = thermo_db.build_thermo_property(
     [comp1],
@@ -204,6 +205,7 @@ res_ = data_1.get_property("MW")
 print(res_)
 
 # ! by formula
+print("[bold magenta]Build Data by Formula (older methods)[/bold magenta]")
 comp1 = "CO2"
 data_1 = thermo_db.build_thermo_property(
     [comp1],
@@ -230,6 +232,7 @@ comp1_Component = Component(
 )
 
 # ! build data (newer methods, Name-State)
+print("[bold magenta]Build Data (newer methods)[/bold magenta]")
 data_1 = thermo_db.build_components_thermo_property(
     [comp1_Component],
     'CUSTOM-REF-1',
@@ -246,6 +249,7 @@ res_ = data_1.get_property("MW")
 print(res_)
 
 # ! build data (newer methods, Formula-State)
+print("[bold magenta]Build Data by Formula (newer methods)[/bold magenta]")
 data_1 = thermo_db.build_components_thermo_property(
     [comp1_Component],
     'CUSTOM-REF-1',
@@ -265,6 +269,7 @@ print(res_)
 # ====================================
 # NOTE: build equation
 # ! build equation (older methods)
+print("[bold magenta]Build Equation (older methods)[/bold magenta]")
 # >> by name
 comp1 = "Carbon Dioxide"
 comp1_eq_1 = thermo_db.build_thermo_property(
@@ -288,6 +293,7 @@ res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
 # >> by formula
+print("[bold magenta]Build Equation by Formula (older methods)[/bold magenta]")
 comp1 = "CO2"
 comp1_eq_1 = thermo_db.build_thermo_property(
     [comp1],
@@ -311,6 +317,7 @@ res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
 # ! build equation (newer methods)
+print("[bold magenta]Build Equation (newer methods)[/bold magenta]")
 comp1_Component = Component(
     name="Carbon Dioxide",
     formula="CO2",
@@ -334,6 +341,7 @@ print(res_)
 
 
 # ! build equation (older methods)
+print("[bold magenta]Build Equation (older methods)[/bold magenta]")
 # >> by name
 comp1 = "Carbon Dioxide"
 comp1_eq_2 = thermo_db.build_thermo_property(
@@ -358,6 +366,7 @@ res_ = comp1_eq_2.cal(T=290)
 print(res_)
 
 # ! build equation (newer methods)
+print("[bold magenta]Build Equation (newer methods)[/bold magenta]")
 comp1_eq_2 = thermo_db.build_components_thermo_property(
     [comp1_Component],
     'CUSTOM-REF-1',
