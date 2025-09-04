@@ -341,6 +341,8 @@ def check_and_build_component_thermodb(
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
             List of property names to ignore state during the build. By default, None.
+        - ignore_state_all_props: Optional[bool]
+            Whether to ignore state for all properties during the build. By default, False.
 
     Returns
     -------
@@ -379,6 +381,18 @@ def check_and_build_component_thermodb(
         # set default if None
         if ignore_state_props is None:
             ignore_state_props = []
+
+        # NOTE: check if ignore state for all properties
+        ignore_state_all_props: bool = kwargs.get(
+            'ignore_state_all_props', False
+        )
+
+        if not isinstance(ignore_state_all_props, bool):
+            # logging warning
+            logging.warning(
+                "ignore_state_all_props must be a boolean, setting to False."
+            )
+            ignore_state_all_props = False
 
         # NOTE: check inputs
         if not isinstance(component, Component):
@@ -474,11 +488,15 @@ def check_and_build_component_thermodb(
                 continue
 
             # NOTE: state ignore settings
-            # set ignore state in prop
+            # ! set ignore state in prop
             ignore_component_state = ignore_state_in_prop(
                 prop_name,
                 ignore_state_props
             )
+
+            # >> override if ignore all state is True
+            if ignore_state_all_props:
+                ignore_component_state = True
 
             # NOTE: check component settings
             # check ignore state
@@ -545,6 +563,10 @@ def check_and_build_component_thermodb(
                 logging.error(
                     f"Building property '{prop_name}' for component '{component.name} and {component.formula}' failed! {e}")
                 continue
+
+            # NOTE: reset loop vars
+            # ! ignore state
+            ignore_component_state = False
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
@@ -908,21 +930,19 @@ def build_component_thermodb_from_reference(
                     f"Table for property '{prop_name}' is not specified.")
 
             # ! label/labels
-            # check label
+            # >> check label
             label_ = prop_idx.get('label', None)
             if label_:
                 # append to labels
                 labels.append(str(label_))
 
                 # >> set ignore state
-                if len(ignore_state_props) > 0:
-                    if ignore_state_in_prop(label_, ignore_state_props):
-                        ignore_component_state = True
-                    else:
-                        ignore_component_state = False
-                else:
-                    ignore_component_state = False
-            # check labels
+                ignore_component_state = ignore_state_in_prop(
+                    label_,
+                    ignore_state_props
+                )
+
+            # >> check labels
             labels_ = prop_idx.get('labels', None)
             if labels_ and isinstance(labels_, dict):
                 # extract labels
@@ -935,12 +955,14 @@ def build_component_thermodb_from_reference(
                 # iterate over labels
                 if len(ignore_state_props) > 0:
                     for item in labels_.values():
+                        # set ignore state
+                        ignore_component_state = ignore_state_in_prop(
+                            item,
+                            ignore_state_props
+                        )
                         # check
-                        if ignore_state_in_prop(item, ignore_state_props):
-                            ignore_component_state = True
+                        if ignore_component_state:
                             break
-                        else:
-                            ignore_component_state = False
                 else:
                     ignore_component_state = False
 
