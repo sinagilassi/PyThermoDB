@@ -341,9 +341,9 @@ class ThermoDB(ManageData):
                     for i, item in enumerate(tables):
                         # check
                         if isinstance(item, list):
-                            # table name
-                            tb_name = item[0]
-                            if tb_name == table.strip():
+                            # ! table name (case insensitive)
+                            tb_name = item[0].lower().strip()
+                            if tb_name == table.strip().lower():
                                 # zero-based id
                                 tb_id = i
                                 break
@@ -2057,9 +2057,9 @@ class ThermoDB(ManageData):
         component_name : str
             string of component name (e.g. 'Carbon dioxide')
         databook : int | str
-            databook id or name
+            databook id or name, id is non-zero-based
         table : int | str
-            table id or name
+            table id or name, id is non-zero-based
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
         query : bool
@@ -2186,6 +2186,10 @@ class ThermoDB(ManageData):
             # table id
             table_id = tb_id + 1
 
+            # check tb_name
+            if tb_name.strip() == '' or tb_name is None:
+                logger.error('Table name not found!')
+
             # SECTION: get data from api
             # ! dataframe and PayLoadType
             component_data = self.get_component_data(
@@ -2211,9 +2215,8 @@ class ThermoDB(ManageData):
                     # ! check data type
                     _data_type = TransDataC.data_type
                     if _data_type != 'data':
-                        print(
-                            "The selected table contains no data for building data!\
-                            check table id and try again.")
+                        logger.error("The selected table contains no data for building\
+                            data! check table id and try again.")
 
                         raise Exception('Building data failed!')
 
@@ -2221,7 +2224,9 @@ class ThermoDB(ManageData):
                     # * construct template
                     # check eq exists
                     dts = self.data_load(
-                        databook_id, table_id)
+                        databook_id,
+                        table_id
+                    )
 
                     # ! check
                     if dts is not None:

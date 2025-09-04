@@ -21,6 +21,7 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 # files
 # SECTION:
 yml_file = 'reference-1.yml'
+yml_file = 'str-ref-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
 # SECTION:
@@ -82,10 +83,12 @@ print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
 # BUILD EQUATION
 # ====================================
 # build equation
+# ! by table id
+print("[bold magenta]Build equation by table name[/bold magenta]")
 vapor_pressure_eq = thermo_db.build_equation(
     comp1,
     'CUSTOM-REF-1',
-    2
+    3
 )
 
 print(vapor_pressure_eq.equation_args())
@@ -94,6 +97,32 @@ VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
 VaPr = vapor_pressure_eq.cal(T=304.21)
 print(VaPr)
 
+# ! by databook id and table id
+print("[bold magenta]Alternative method (without databook name)[/bold magenta]")
+vapor_pressure_eq = thermo_db.build_equation(
+    comp1,
+    8,
+    3
+)
+
+print(vapor_pressure_eq.equation_args())
+print(vapor_pressure_eq.equation_return())
+VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
+VaPr = vapor_pressure_eq.cal(T=304.21)
+print(VaPr)
+
+# ! by databook name and table name
+print("[bold magenta]Alternative method (by table name)[/bold magenta]")
+vapor_pressure_eq = thermo_db.build_equation(
+    comp1,
+    'CUSTOM-REF-1',
+    'vapor-pressure'
+)
+print(vapor_pressure_eq.equation_args())
+print(vapor_pressure_eq.equation_return())
+VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
+VaPr = vapor_pressure_eq.cal(T=304.21)
+print(VaPr)
 
 # SECTION: build component thermodb for each component
 # ====================================
@@ -137,6 +166,22 @@ carbon dioxide:
   heat-capacity:
     databook: CUSTOM-REF-1
     table: XXX
+    symbol: Cp_IG
+  vapor-pressure:
+    databook: CUSTOM-REF-1
+    table: vapor-pressure
+    symbol: VaPr
+  general:
+    databook: CUSTOM-REF-1
+    table: general-data
+    symbols:
+      Pc: Pc
+      Tc: Tc
+      AcFa: AcFa
+CO2:
+  heat-capacity:
+    databook: CUSTOM-REF-1
+    table: Ideal-Gas-Molar-Heat-Capacity
     symbol: Cp_IG
   vapor-pressure:
     databook: CUSTOM-REF-1
