@@ -20,7 +20,8 @@ from .models import Component
 from .utils import (
     set_component_id,
     set_component_query,
-    ignore_state_in_prop
+    ignore_state_in_prop,
+    look_up_component_reference_config
 )
 from .builder import CompBuilder
 
@@ -164,17 +165,11 @@ def build_component_thermodb(
                 )
 
             # ! extract component reference config
-            reference_config = reference_config_.get(component_name, {})
-            # check if reference_config is empty
-            if not reference_config:
-                # check default
-                if reference_config_default_check:
-                    reference_config = reference_config_.get('ALL', {})
-
-            if not reference_config:
-                raise ValueError(
-                    f"No reference config found for component '{component_name}' in the provided reference config."
-                )
+            reference_config = look_up_component_reference_config(
+                component_id=component_name,
+                reference_config=reference_config_,
+                reference_config_default_check=reference_config_default_check
+            )
 
         # NOTE: check if reference_config is a dict
         if not isinstance(reference_config, dict):
@@ -317,8 +312,10 @@ def check_and_build_component_thermodb(
         'Name-State', 'Formula-State'
     ] = 'Formula-State',
     thermodb_name: Optional[str] = None,
-    message: Optional[str] = None
-):
+    message: Optional[str] = None,
+    reference_config_default_check: Optional[bool] = True,
+    **kwargs
+) -> CompBuilder:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
 
@@ -338,6 +335,16 @@ def check_and_build_component_thermodb(
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default True
+    **kwargs
+        Additional keyword arguments.
+        # REVIEW: ignore_state_props: Optional[List[str]]
+
+    Returns
+    -------
+    CompBuilder : object
+        CompBuilder object used for building component thermodynamic databook
 
     Notes
     -----
@@ -390,12 +397,11 @@ def check_and_build_component_thermodb(
                 )
 
             # ! extract component reference config
-            reference_config = reference_config_.get(component_id, {})
-            # check if reference_config is empty
-            if not reference_config:
-                raise ValueError(
-                    f"No reference config found for component '{component_id}' in the provided reference config."
-                )
+            reference_config = look_up_component_reference_config(
+                component_id=component_id,
+                reference_config=reference_config_,
+                reference_config_default_check=reference_config_default_check
+            )
 
         # NOTE: check if reference_config is a dict
         if not isinstance(reference_config, dict):
@@ -475,22 +481,22 @@ def check_and_build_component_thermodb(
             # SECTION: build thermodb items
             # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
 
-            # NOTE: set query based on key
-            query = set_component_query(
-                component=component,
-                component_key=component_key
-            )
+            # NOTE: ignore state during the build if specified
+            try:
+                # NOTE: build query
+                item_ = thermodb.build_components_thermo_property(
+                    components=[component],
+                    databook=databook_,
+                    table=table_,
+                    component_key=component_key
+                )
 
-            # NOTE: build query
-            item_ = thermodb.build_components_thermo_property(
-                components=[component],
-                databook=databook_,
-                table=table_,
-                component_key=component_key
-            )
-
-            # save
-            res[prop_name] = item_
+                # save
+                res[prop_name] = item_
+            except Exception as e:
+                logging.error(
+                    f"Building property '{prop_name}' for component '{component.name} and {component.formula}' failed! {e}")
+                continue
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name

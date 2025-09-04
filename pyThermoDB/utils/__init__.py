@@ -4,6 +4,7 @@ from .result_generator import format_eq_data
 from .convertor import Convertor, is_str_number
 from .component_utils import set_component_id, set_component_query
 from .prop_utils import ignore_state_in_prop
+from .reference_utils import look_up_component_reference_config
 
 __all__ = [
     "log2Col",
@@ -15,4 +16,5 @@ __all__ = [
     "set_component_query",
     "is_str_number",
     "ignore_state_in_prop",
+    "look_up_component_reference_config"
 ]

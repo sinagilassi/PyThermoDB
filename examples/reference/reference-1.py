@@ -76,7 +76,7 @@ print(comp1_data.data_structure())
 
 print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 # by symbol
-print(float(comp1_data.get_property('gibbs-energy-of-formation')['value']))
+print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
 
 # ====================================
 # BUILD EQUATION
@@ -124,11 +124,11 @@ ALL:
     symbol: Cp_IG
   vapor-pressure:
     databook: CUSTOM-REF-1
-    table: Vapor-Pressure
+    table: vapor-pressure
     symbol: VaPr
   general:
     databook: CUSTOM-REF-1
-    table: General-Data
+    table: general-data
     symbols:
       Pc: Pc
       Tc: Tc
@@ -193,7 +193,8 @@ CO:
 reference_config = reference_config_yml
 
 
-# NOTE: build component thermodb (by name)
+# NOTE: build component thermodb
+# ! (by name)
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=reference_config,
@@ -201,8 +202,20 @@ thermodb_component_ = ptdb.build_component_thermodb(
 )
 
 #  check
-print(thermodb_component_.check())
-print(thermodb_component_.message)
+print(f"check: {thermodb_component_.check()}")
+print(f"message: {thermodb_component_.message}")
+
+# ! (by formula)
+thermodb_component_ = ptdb.build_component_thermodb(
+    component_name='CO2',
+    reference_config=reference_config,
+    custom_reference=ref,
+    component_key='Formula'
+)
+
+#  check
+print(f"check: {thermodb_component_.check()}")
+print(f"message: {thermodb_component_.message}")
 
 # NOTE: build component thermodb (by name) and check
 CO2_component = Component(
@@ -210,6 +223,8 @@ CO2_component = Component(
     formula='CO2',
     state='g'
 )
+
+# ! (by component and Formula-State)
 thermodb_component_ = ptdb.check_and_build_component_thermodb(
     component=CO2_component,
     reference_config=reference_config,
@@ -218,8 +233,20 @@ thermodb_component_ = ptdb.check_and_build_component_thermodb(
 )
 
 #  check
-print(thermodb_component_.check())
-print(thermodb_component_.message)
+print(f"check: {thermodb_component_.check()}")
+print(f"message: {thermodb_component_.message}")
+
+# ! (by component and Name-State)
+thermodb_component_ = ptdb.check_and_build_component_thermodb(
+    component=CO2_component,
+    reference_config=reference_config,
+    custom_reference=ref,
+    component_key='Name-State'
+)
+
+#  check
+print(f"check: {thermodb_component_.check()}")
+print(f"message: {thermodb_component_.message}")
 
 # ====================================
 # BUILD COMPONENTS THERMODB
