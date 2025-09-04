@@ -1211,7 +1211,14 @@ class ThermoDB(ManageData):
         Returns
         -------
         str | dict[str, str]
-            summary of the component availability
+            summary of the component availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'component_name': name of the component,
+            - 'availability': True or False
 
         Notes
         -----
@@ -1324,7 +1331,14 @@ class ThermoDB(ManageData):
         Returns
         -------
         str | dict[str, str]
-            Summary of the component availability.
+            Summary of the component availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'component_name': name of the component,
+            - 'availability': True or False
 
         Notes
         -----

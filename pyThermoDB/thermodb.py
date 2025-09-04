@@ -339,7 +339,8 @@ def check_and_build_component_thermodb(
         Whether to perform default checks on the reference configuration, by default True
     **kwargs
         Additional keyword arguments.
-        # REVIEW: ignore_state_props: Optional[List[str]]
+        - ignore_state_props: Optional[List[str]]
+            List of property names to ignore state during the build. By default, None.
 
     Returns
     -------
@@ -371,6 +372,14 @@ def check_and_build_component_thermodb(
     Table should contain columns including `Name`, `Formula`, and `State` to identify the component. Otherwise during the check, it will raise an error.
     '''
     try:
+        # NOTE: kwargs
+        ignore_state_props: Optional[List[str]] = kwargs.get(
+            'ignore_state_props', None
+        )
+        # set default if None
+        if ignore_state_props is None:
+            ignore_state_props = []
+
         # NOTE: check inputs
         if not isinstance(component, Component):
             raise TypeError("component_name must be a string")
@@ -414,6 +423,8 @@ def check_and_build_component_thermodb(
 
         # init res
         res = {}
+        # ignore state for all properties
+        ignore_component_state: bool = False
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
@@ -462,14 +473,38 @@ def check_and_build_component_thermodb(
                 # ? skip if table is not found
                 continue
 
-            # NOTE: check component
-            component_checker_ = thermodb.is_component_available(
-                component=component,
-                databook=databook_,
-                table=table_,
-                component_key=component_key,
-                res_format='dict'
+            # NOTE: state ignore settings
+            # set ignore state in prop
+            ignore_component_state = ignore_state_in_prop(
+                prop_name,
+                ignore_state_props
             )
+
+            # NOTE: check component settings
+            # check ignore state
+            if ignore_component_state:
+                # ! set component name based on key
+                component_name_ = component.name if component_key == 'Name-State' else component.formula
+                column_name_ = 'Name' if component_key == 'Name-State' else 'Formula'
+
+                # ! check component
+                component_checker_ = thermodb.check_component(
+                    component_name=component_name_,
+                    databook=databook_,
+                    table=table_,
+                    column_name=column_name_,
+                    res_format='dict'
+                )
+
+            else:
+                # ! check component
+                component_checker_ = thermodb.is_component_available(
+                    component=component,
+                    databook=databook_,
+                    table=table_,
+                    component_key=component_key,
+                    res_format='dict'
+                )
 
             # check
             if not isinstance(component_checker_, dict):
@@ -483,13 +518,26 @@ def check_and_build_component_thermodb(
 
             # NOTE: ignore state during the build if specified
             try:
-                # NOTE: build query
-                item_ = thermodb.build_components_thermo_property(
-                    components=[component],
-                    databook=databook_,
-                    table=table_,
-                    component_key=component_key
-                )
+                if ignore_component_state:
+                    # ! set component name based on key
+                    # ! already set above
+
+                    # ! build_thermo_property with component name
+                    item_ = thermodb.build_thermo_property(
+                        component_names=[component_name_],
+                        databook=databook_,
+                        table=table_,
+                        column_name=column_name_,
+                        query=False
+                    )
+                else:
+                    # ! build_thermo_property with component object
+                    item_ = thermodb.build_components_thermo_property(
+                        components=[component],
+                        databook=databook_,
+                        table=table_,
+                        component_key=component_key
+                    )
 
                 # save
                 res[prop_name] = item_
@@ -538,7 +586,7 @@ def build_components_thermodb(
     thermodb_name: Optional[str] = None,
     custom_reference: Optional[Dict[str, List[str | dict]]] = None,
     message: Optional[str] = None
-):
+) -> CompBuilder:
     '''
     Build components thermodynamic databook (thermodb) including matrix-data.
 
@@ -555,6 +603,25 @@ def build_components_thermodb(
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
 
+    Returns
+    -------
+    CompBuilder : object
+        CompBuilder object used for building component thermodynamic databook
+
+    Notes
+    -----
+    Property dict should contain the following format:
+    ```python
+    # Dict[str, Dict[str, str]]
+    reference_config = {
+        'activity-coefficient': {
+            'databook': 'CUSTOM-REF-1',
+            'table': 'Activity-Coefficient',
+        },
+    }
+    ```
+
+    2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
     '''
     try:
         # NOTE: check inputs
