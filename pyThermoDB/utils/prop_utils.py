@@ -32,6 +32,8 @@ def ignore_state_in_prop(
             raise TypeError("ignore_state_props must be a list or None")
         if not all(isinstance(item, str) for item in ignore_state_props):
             raise ValueError("All items in ignore_state_props must be strings")
+        if len(ignore_state_props) == 0:
+            return False
 
         # lowercase comparison for case-insensitivity
         ignore_state_props = [item.lower() for item in ignore_state_props]
