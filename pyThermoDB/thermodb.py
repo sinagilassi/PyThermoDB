@@ -84,10 +84,11 @@ def build_component_thermodb(
             List[str | Dict[str, Any]]
         ]
     ] = None,
-    component_key: Literal['Name', 'Formula'] = 'Formula',
+    component_key: Literal['Name', 'Formula'] = 'Name',
     thermodb_name: Optional[str] = None,
-    message: Optional[str] = None
-):
+    message: Optional[str] = None,
+    reference_config_default_check: Optional[bool] = True
+) -> CompBuilder:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
 
@@ -107,6 +108,13 @@ def build_component_thermodb(
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default None
+
+    Returns
+    -------
+    CompBuilder : object
+        CompBuilder object used for building component thermodynamic databook
 
     Notes
     -----
@@ -141,6 +149,10 @@ def build_component_thermodb(
         if not isinstance(reference_config, (dict, str)):
             raise TypeError("property must be a dictionary or a string")
 
+        # NOTE: reference_config default check
+        if reference_config_default_check is None:
+            reference_config_default_check = True
+
         # NOTE: check if reference_config is a string
         if isinstance(reference_config, str):
             # ! init ReferenceConfig
@@ -154,6 +166,11 @@ def build_component_thermodb(
             # ! extract component reference config
             reference_config = reference_config_.get(component_name, {})
             # check if reference_config is empty
+            if not reference_config:
+                # check default
+                if reference_config_default_check:
+                    reference_config = reference_config_.get('ALL', {})
+
             if not reference_config:
                 raise ValueError(
                     f"No reference config found for component '{component_name}' in the provided reference config."
