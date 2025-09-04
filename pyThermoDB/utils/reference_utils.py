@@ -60,3 +60,71 @@ def look_up_component_reference_config(
         )
 
     return component_reference_config
+
+
+def is_table_available(
+        table_name: str,
+        tables: List[str]
+):
+    '''
+    Check if a table name is available in the list of tables.
+
+    Parameters
+    ----------
+    table_name : str
+        The name of the table to check.
+    tables : List[str]
+        A list of available table names.
+
+    Returns
+    -------
+    bool
+        True if the table name is available, False otherwise.
+
+    Notes
+    -----
+    - The comparison is case-insensitive and ignores leading/trailing whitespace.
+    '''
+    try:
+        # Normalize table name for comparison
+        normalized_table_name = table_name.strip().lower()
+        normalized_tables = [t.strip().lower() for t in tables]
+
+        return normalized_table_name in normalized_tables
+    except Exception as e:
+        logger.error(f"Error checking table availability: {e}")
+        return False
+
+
+def is_databook_available(
+        databook_name: str,
+        databooks: List[str]
+):
+    '''
+    Check if a databook name is available in the list of databooks.
+
+    Parameters
+    ----------
+    databook_name : str
+        The name of the databook to check.
+    databooks : List[str]
+        A list of available databook names.
+
+    Returns
+    -------
+    bool
+        True if the databook name is available, False otherwise.
+
+    Notes
+    -----
+    - The comparison is case-insensitive and ignores leading/trailing whitespace.
+    '''
+    try:
+        # Normalize databook name for comparison
+        normalized_databook_name = databook_name.strip().lower()
+        normalized_databooks = [d.strip().lower() for d in databooks]
+
+        return normalized_databook_name in normalized_databooks
+    except Exception as e:
+        logger.error(f"Error checking databook availability: {e}")
+        return False

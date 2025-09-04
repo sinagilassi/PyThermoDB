@@ -818,9 +818,11 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table info loading err! {e}")
 
-    def get_table(self,
-                  databook: str | int | list[DataBookTableTypes],
-                  table: int | str) -> DataBookTableTypes:
+    def get_table(
+        self,
+        databook: str | int | list[DataBookTableTypes],
+        table: int | str
+    ) -> DataBookTableTypes:
         '''
         Get a table with respect to databook and table id or name
 
@@ -839,6 +841,20 @@ class ManageData():
         try:
             # select databook
             if isinstance(databook, str):
+                # ! case insensitive
+                databook_names_normalized = [
+                    db.lower() for db in self.databook_bulk.keys()
+                ]
+
+                # iterate to find the correct case
+                databooks_ = [
+                    db for db in self.databook_bulk.keys() if db.lower() == databook.lower().strip()
+                ]
+                if len(databooks_) == 0:
+                    raise ValueError(f"Databook {databook} not found!")
+                # get the correct case databook name
+                databook_name = databooks_[0]
+
                 databook_set = self.databook_bulk[databook]
             elif isinstance(databook, int):
                 databook_set = self.databook_bulk[self.__databook[databook]]
@@ -882,7 +898,8 @@ class ManageData():
                 # check table name
                 for i, tb in enumerate(databook_set):
                     # check table name
-                    if tb['table'] == table:
+                    # ! case sensitive
+                    if tb['table'].lower() == table.lower().strip():
                         selected_tb = DataBookTableTypes(**tb)
                         # NOTE: check table type
                         # tb_name_ = selected_tb['table']
@@ -900,12 +917,14 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
-    def get_table_id(self,
-                     databook: str | int,
-                     table: str,
-                     res_format: Literal[
-                         'str', 'json', 'dict'
-                     ] = 'json') -> str | dict[str, str]:
+    def get_table_id(
+        self,
+        databook: str | int,
+        table: str,
+        res_format: Literal[
+            'str', 'json', 'dict'
+        ] = 'json'
+    ) -> str | dict[str, str]:
         '''
         Get table id
 
@@ -924,6 +943,11 @@ class ManageData():
         try:
             # select databook
             if isinstance(databook, str):
+                # ! case insensitive
+                databook_names_normalized = [
+                    db.lower() for db in self.databook_bulk.keys()
+                ]
+
                 databook_set = self.databook_bulk[databook]
             elif isinstance(databook, int):
                 databook_set = self.databook_bulk[self.__databook[databook]]
@@ -936,7 +960,8 @@ class ManageData():
             # check table and equations
             for i, tb in enumerate(databook_set):
                 # check table id
-                if tb['table'] == table:
+                # ! case sensitive
+                if tb['table'].lower() == table.lower().strip():
                     table_id = str(i+1)
                     break
 
@@ -1029,7 +1054,8 @@ class ManageData():
             elif isinstance(databook, str):
                 # find databook
                 for i, item in enumerate(self.databook):
-                    if item == databook.strip():
+                    # ! case insensitive
+                    if item.lower() == databook.strip().lower():
                         databook_id = i
                         databook_name = item
                         break
@@ -1099,7 +1125,9 @@ class ManageData():
             elif isinstance(table, str):
                 # find table id
                 for i, tb in enumerate(selected_databook):
-                    if tb['table'] == table.strip():
+                    # ! case sensitive
+                    tb_name__ = tb['table']
+                    if tb_name__.lower() == table.strip().lower():
                         table_id = i
                         # table name
                         table_name = tb['table']
