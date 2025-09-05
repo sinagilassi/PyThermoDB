@@ -515,8 +515,27 @@ class CompBuilder(CompExporter):
         -------
         TableMatrixEquation | TableEquation
             function registered in the thermodb
+
+        Notes
+        -----
+        - The search is case-sensitive.
         '''
         try:
+            # NOTE: case-sensitive
+            # functions normalize to lower case
+            function_name = function_name.strip().lower()
+
+            # SECTION: lookup
+            selected_function = None
+            for func in self.functions.keys():
+                if func.lower() == function_name:
+                    selected_function = func
+                    break
+            if selected_function is not None:
+                function_name = selected_function
+            else:
+                raise Exception('Function not found in the thermodb!')
+
             # check library
             return self.functions[function_name]
         except Exception as e:
