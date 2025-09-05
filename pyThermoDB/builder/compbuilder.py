@@ -369,6 +369,29 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
+    def is_property_available(
+        self,
+        thermo_name: str
+    ) -> bool:
+        '''
+        Check if a property is available in the thermodb
+
+        Parameters
+        ----------
+        thermo_name : str
+            name of the thermodynamic property
+
+        Returns
+        -------
+        res : bool
+            True if available
+        '''
+        try:
+            # check
+            return thermo_name in self.properties
+        except Exception as e:
+            raise Exception('Checking property availability failed!, ', e)
+
     def check_property(
         self,
         thermo_name: str
@@ -429,6 +452,29 @@ class CompBuilder(CompExporter):
             return self.functions
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
+
+    def is_function_available(
+        self,
+        function_name: str
+    ) -> bool:
+        '''
+        Check if a function is available in the thermodb
+
+        Parameters
+        ----------
+        function_name : str
+            name of the thermodynamic function
+
+        Returns
+        -------
+        res : bool
+            True if available
+        '''
+        try:
+            # check
+            return function_name in self.functions
+        except Exception as e:
+            raise Exception('Checking function availability failed!, ', e)
 
     def check_function(
         self,
@@ -575,11 +621,13 @@ class CompBuilder(CompExporter):
                         f"Invalid source format! {property_source}")
                 # get property
                 prop = prop_src.get_property(
-                    source[1].strip(), message=message)
+                    source[1].strip(),
+                    message=message
+                )
                 # return
                 return prop
             elif isinstance(prop_src, TableMatrixData):
-                # NOTE: check strring format
+                # NOTE: check string format
                 if source_num == 2:
                     # property name full format
                     prop_name = source[1].strip()
@@ -593,23 +641,31 @@ class CompBuilder(CompExporter):
 
                     # NOTE: get property (ij method)
                     prop = prop_src.ij(
-                        prop_name, symbol_format=symbol_format, message=message)
+                        prop_name,
+                        symbol_format=symbol_format,
+                        message=message
+                    )
                     # return
                     return prop
                 elif source_num == 4:
                     # get components
                     component_names = source[2:]
                     # trim
-                    component_names = [name.strip()
-                                       for name in component_names]
+                    component_names = [
+                        name.strip() for name in component_names
+                    ]
                     # check length
                     if len(component_names) != 2:
                         raise ValueError(
                             f"Invalid source format! {property_source}, components are required!")
 
                     # NOTE: get property (get_matrix_property method)
-                    prop = prop_src.get_matrix_property(source[1].strip(), component_names=component_names,
-                                                        symbol_format=symbol_format, message=message)
+                    prop = prop_src.get_matrix_property(
+                        source[1].strip(),
+                        component_names=component_names,
+                        symbol_format=symbol_format,
+                        message=message
+                    )
                     # return
                     return prop
             else:
