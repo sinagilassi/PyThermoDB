@@ -108,7 +108,10 @@ class ManageData():
         self.__tables = []
         self.__tables = value
 
-    def load_reference(self, custom_ref: CustomRef | None) -> dict[str, dict]:
+    def load_reference(
+            self,
+            custom_ref: CustomRef | None
+    ) -> dict[str, dict]:
         '''
         load reference data from file
 
@@ -122,35 +125,38 @@ class ManageData():
         reference : dict
             reference data
         '''
-        # current dir
-        current_path = os.path.join(os.path.dirname(__file__))
+        try:
+            # current dir
+            current_path = os.path.join(os.path.dirname(__file__))
 
-        # Go back to the parent directory (pyThermoDB)
-        parent_path = os.path.abspath(os.path.join(current_path, '..'))
+            # Go back to the parent directory (pyThermoDB)
+            parent_path = os.path.abspath(os.path.join(current_path, '..'))
 
-        # Now navigate to the data folder
-        data_path = os.path.join(parent_path, 'config')
+            # Now navigate to the data folder
+            data_path = os.path.join(parent_path, 'config')
 
-        # relative
-        config_path = os.path.join(data_path, 'reference.yml')
+            # relative
+            config_path = os.path.join(data_path, 'reference.yml')
 
-        with open(config_path, 'r') as f:
-            reference = yaml.load(f, Loader=yaml.FullLoader)
+            with open(config_path, 'r') as f:
+                reference = yaml.load(f, Loader=yaml.FullLoader)
 
-        # update reference local
-        self.__reference_local_no = len(reference['REFERENCES'])
+            # update reference local
+            self.__reference_local_no = len(reference['REFERENCES'])
 
-        # check custom reference
-        if custom_ref:
-            # get data
-            custom_reference = custom_ref.load_ref()
-            # merge data
-            reference['REFERENCES'].update(custom_reference)
+            # check custom reference
+            if custom_ref:
+                # get data
+                custom_reference = custom_ref.load_ref()
+                # merge data
+                reference['REFERENCES'].update(custom_reference)
 
-        # log
-        # <class 'dict'>
-        # print(type(reference))
-        return reference
+            # log
+            # <class 'dict'>
+            # print(type(reference))
+            return reference
+        except Exception as e:
+            raise Exception(f"reference loading error! {e}")
 
     @staticmethod
     def load_custom_reference(
@@ -357,7 +363,9 @@ class ManageData():
         except Exception as e:
             raise Exception(f"load_descriptions error! {e}")
 
-    def get_symbols(self) -> tuple[dict, list, str, pd.DataFrame]:
+    def get_symbols(
+            self
+    ) -> tuple[dict, list, str, pd.DataFrame]:
         '''
         Get symbols
 
@@ -386,7 +394,9 @@ class ManageData():
         except Exception as e:
             raise Exception(f"symbol loading error! {e}")
 
-    def get_descriptions(self) -> tuple[dict, list, str, pd.DataFrame]:
+    def get_descriptions(
+            self
+    ) -> tuple[dict, list, str, pd.DataFrame]:
         '''
         Get databook descriptions
         '''
@@ -405,7 +415,10 @@ class ManageData():
         except Exception as e:
             raise Exception(f"description loading error! {e}")
 
-    def get_descriptions_by_databook(self, databook: str) -> dict:
+    def get_descriptions_by_databook(
+            self,
+            databook: str
+    ) -> dict:
         '''
         Get descriptions by databook
 
@@ -692,7 +705,8 @@ class ManageData():
 
             # find
             for i, db in enumerate(self.__databook):
-                if db == databook:
+                # ! case insensitive
+                if db.strip().lower() == databook.strip().lower():
                     db_id = str(i+1)
 
                     # check
@@ -707,6 +721,9 @@ class ManageData():
                     else:
                         raise ValueError(
                             "res_format must be 'str', 'json', or 'dict'!")
+
+            # log
+            logger.error("Databook not found!")
             # return
             return 'Databook not found!'
         except Exception as e:
@@ -715,7 +732,12 @@ class ManageData():
     def get_tables(
             self,
             databook
-    ) -> tuple[list[list[str]], pd.DataFrame, str, dict[str, str]]:
+    ) -> tuple[
+        list[list[str]],
+        pd.DataFrame,
+        str,
+        dict[str, str]
+    ]:
         '''
         Get a table list of selected databook
 
@@ -732,6 +754,18 @@ class ManageData():
         try:
             # list tables
             if isinstance(databook, str):
+                # ! case insensitive
+                databook_ = [
+                    db for db in self.databook if db.lower() == databook.lower().strip()
+                ]
+                # check
+                if len(databook_) == 0:
+                    raise ValueError(f"Databook {databook} not found!")
+
+                # set name
+                databook = databook_[0]
+
+                # get databook
                 _dbs = self.__databook_bulk[databook]
             elif isinstance(databook, int):
                 _dbs = self.__databook_bulk[self.__databook[databook]]
@@ -742,8 +776,13 @@ class ManageData():
                 # check
                 # ! equation
                 if tb['equations'] is not None:
-                    tables.append([tb['table'], "equation",
-                                  f"[{i+1}]"])
+                    tables.append(
+                        [
+                            tb['table'],
+                            "equation",
+                            f"[{i+1}]"
+                        ]
+                    )
                 # ! data
                 elif tb['data'] is not None:
                     tables.append([tb['table'], "data", f"[{i+1}]"])
@@ -763,20 +802,27 @@ class ManageData():
             column_name = f"Tables in {databook} databook"
 
             # convert to json
-            tables_dict = {f"table-{i+1}": tb[0]
-                           for i, tb in enumerate(tables)}
+            tables_dict = {
+                f"table-{i+1}": tb[0]
+                for i, tb in enumerate(tables)
+            }
             # convert to json
             tables_json = json.dumps(tables_dict, indent=4)
 
             # ! set table dataframe
             tables_df = pd.DataFrame(
-                tables, columns=[column_name, "Type", "Id"])
+                tables, columns=[column_name, "Type", "Id"]
+            )
             # return
             return tables, tables_df, tables_json, tables_dict
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
-    def get_table_type(self, databook: int, table_id: int) -> str:
+    def get_table_type(
+            self,
+            databook: int,
+            table_id: int
+    ) -> str:
         '''
         Get a table type
 
@@ -800,8 +846,9 @@ class ManageData():
             filter_keys = [enum.value for enum in TableTypes]
 
             # table data type
-            tb_bulk = {key: value for key, value in tb.items(
-            ) if key in filter_keys and value is not None}
+            tb_bulk = {
+                key: value for key, value in tb.items() if key in filter_keys and value is not None
+            }
 
             # table type
             tb_type = ''
@@ -842,20 +889,17 @@ class ManageData():
             # select databook
             if isinstance(databook, str):
                 # ! case insensitive
-                databook_names_normalized = [
-                    db.lower() for db in self.databook_bulk.keys()
-                ]
-
                 # iterate to find the correct case
                 databooks_ = [
                     db for db in self.databook_bulk.keys() if db.lower() == databook.lower().strip()
                 ]
+                # check
                 if len(databooks_) == 0:
                     raise ValueError(f"Databook {databook} not found!")
                 # get the correct case databook name
                 databook_name = databooks_[0]
 
-                databook_set = self.databook_bulk[databook]
+                databook_set = self.databook_bulk[databook_name]
             elif isinstance(databook, int):
                 databook_set = self.databook_bulk[self.__databook[databook]]
             else:
@@ -944,11 +988,18 @@ class ManageData():
             # select databook
             if isinstance(databook, str):
                 # ! case insensitive
-                databook_names_normalized = [
-                    db.lower() for db in self.databook_bulk.keys()
+                databook_ = [
+                    db for db in self.databook if db.lower() == databook.lower().strip()
                 ]
 
-                databook_set = self.databook_bulk[databook]
+                # check
+                if len(databook_) == 0:
+                    raise ValueError(f"Databook {databook} not found!")
+
+                # set name
+                databook_name = databook_[0]
+
+                databook_set = self.databook_bulk[databook_name]
             elif isinstance(databook, int):
                 databook_set = self.databook_bulk[self.__databook[databook]]
             else:
@@ -978,7 +1029,11 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table id loading err! {e}")
 
-    def get_table_values(self, databook: str | int, table: str | int):
+    def get_table_values(
+            self,
+            databook: str | int,
+            table: str | int
+    ):
         '''
         Get table values
 
@@ -1055,7 +1110,7 @@ class ManageData():
                 # find databook
                 for i, item in enumerate(self.databook):
                     # ! case insensitive
-                    if item.lower() == databook.strip().lower():
+                    if item.strip().lower() == databook.strip().lower():
                         databook_id = i
                         databook_name = item
                         break
@@ -1126,7 +1181,8 @@ class ManageData():
                 # find table id
                 for i, tb in enumerate(selected_databook):
                     # ! case sensitive
-                    tb_name__ = tb['table']
+                    tb_name__ = tb['table'].strip()
+                    # check
                     if tb_name__.lower() == table.strip().lower():
                         table_id = i
                         # table name
@@ -1189,7 +1245,8 @@ class ManageData():
                         # check
                         if table == 0:
                             raise ValueError(
-                                "table id must be non-zero-based!")
+                                "table id must be non-zero-based!"
+                            )
 
                         # check
                         if tb['table_id'] == table:
@@ -1202,7 +1259,9 @@ class ManageData():
 
                             # get data type
                             data_type = self.get_table_type(
-                                databook_id, int(table_id))
+                                databook_id,
+                                int(table_id)
+                            )
 
                             # return
                             return {
@@ -1214,8 +1273,9 @@ class ManageData():
                             }
 
                     elif isinstance(table, str):
+                        # ! case sensitive
                         # check
-                        if tb['table'] == table.strip():
+                        if tb['table'].strip().lower() == table.strip().lower():
                             table_id = tb['table_id']
                             table_name = tb['table']
 
@@ -1225,7 +1285,9 @@ class ManageData():
 
                             # get data type
                             data_type = self.get_table_type(
-                                databook_id, int(table_id))
+                                databook_id,
+                                int(table_id)
+                            )
 
                             # return
                             return {
@@ -1398,7 +1460,10 @@ class ManageData():
         except Exception as e:
             raise Exception(f"equation formatting error! {e}")
 
-    def equation_formatter(self, equation_src: Dict | str) -> Dict[str, Any]:
+    def equation_formatter(
+            self,
+            equation_src: Dict | str
+    ) -> Dict[str, Any]:
         '''
         Check equation format
 
@@ -1433,11 +1498,18 @@ class ManageData():
             parse_res = self.__parse_equation(body_)
 
             # NOTE: check other equations
-            body_integral = equations.get('BODY-INTEGRAL', None)
+            body_integral = equations.get(
+                'BODY-INTEGRAL',
+                None
+            )
             body_first_derivative = equations.get(
-                'BODY-FIRST-DERIVATIVE', None)
+                'BODY-FIRST-DERIVATIVE',
+                None
+            )
             body_second_derivative = equations.get(
-                'BODY-SECOND-DERIVATIVE', None)
+                'BODY-SECOND-DERIVATIVE',
+                None
+            )
 
             # check
             if body_integral is not None:
