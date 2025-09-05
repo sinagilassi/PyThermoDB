@@ -110,6 +110,8 @@ print(res_, type(res_))
 print(CO2_data_0.get_property('MW'))
 # by property name
 print(CO2_data_0.get_property('molecular-weight'))
+# by symbol (case insensitive)
+print(CO2_data_0.get_property('mw'))
 
 
 # ====================================
