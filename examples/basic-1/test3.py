@@ -88,6 +88,11 @@ print(comp1_data.data_structure())
 
 print(comp1_data.get_property(6))
 
+# ! check property availability
+print(comp1_data.is_property_available('Cp_IG'))
+print(comp1_data.is_property_available('dHf_IG', search_mode='SYMBOL'))
+print(comp1_data.is_property_available('dHf_IG', search_mode='COLUMN'))
+
 
 # ====================================
 # BUILD EQUATION

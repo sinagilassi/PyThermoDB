@@ -37,6 +37,10 @@ print(data_thermodb.check())
 # ====================================
 print("[bold magenta]Select a property from the thermodb:[/bold magenta]")
 prop1_ = data_thermodb.select('general')
+# check
+if not isinstance(prop1_, TableData):
+    raise TypeError("The selected object is not a TableData instance.")
+# type
 print(type(prop1_))
 print(prop1_.prop_data)
 
