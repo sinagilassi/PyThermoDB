@@ -7,6 +7,8 @@ from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult
 from ..utils import format_eq_data
+from .table_util import TableUtil
+from ..models import PropertyMatch
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -999,3 +1001,128 @@ class TableEquation:
             return {}
         except Exception as e:
             raise Exception("Making return symbols failed!, ", e)
+
+    def is_symbol_available(self, symbol: str):
+        '''
+        Check if a symbol is available in the table data. This method is case-insensitive.
+
+        Parameters
+        ----------
+        symbol : str
+            Symbol to check.
+
+        Returns
+        -------
+        bool
+            True if the symbol is available, False otherwise.
+        '''
+        try:
+            # NOTE: get symbols
+            symbols = self.table_symbols
+
+            # SECTION: check if symbol exists (case-sensitive)
+            return TableUtil.is_symbol_available(symbol, symbols)
+        except Exception as e:
+            logger.error(f"Error checking symbol availability: {e}")
+            return PropertyMatch(
+                prop_id=symbol,
+                availability=False,
+                search_mode='SYMBOL',
+            )
+
+    def is_column_name_available(self, column_name: str):
+        '''
+        Check if a column name is available in the table data.
+
+        Parameters
+        ----------
+        column_name : str
+            Column name to check.
+
+        Returns
+        -------
+        bool
+            True if the column name is available, False otherwise.
+        '''
+        try:
+            # NOTE: get column names
+            column_names = self.table_columns
+
+            # SECTION: check if column exists (case-sensitive)
+            return TableUtil.is_column_name_available(column_name, column_names)
+        except Exception as e:
+            logger.error(f"Error checking column name availability: {e}")
+            return PropertyMatch(
+                prop_id=column_name,
+                availability=False,
+                search_mode='COLUMN',
+            )
+
+    def is_property_available(
+            self,
+            prop_id: str,
+            search_mode: Literal['SYMBOL', 'COLUMN', 'BOTH'] = 'BOTH'
+    ) -> PropertyMatch:
+        '''
+        Check if a property is available in the table data.
+
+        Parameters
+        ----------
+        prop_id : str
+            Property ID to check.
+        search_mode : Literal['SYMBOL', 'COLUMN', 'BOTH'], optional
+            Search mode (default: 'BOTH'). Can be 'SYMBOL', 'COLUMN', or 'BOTH'.
+
+        Returns
+        -------
+        bool
+            True if the property is available, False otherwise.
+        '''
+        try:
+            # NOTE: check inputs
+            if not isinstance(prop_id, str):
+                logger.error(
+                    "Invalid property ID input! Property ID must be a string.")
+                return False
+
+            # SECTION: get property names
+            if search_mode == 'SYMBOL':
+                # ! symbol only
+                return self.is_symbol_available(prop_id)
+            elif search_mode == 'COLUMN':
+                # ! column name only
+                return self.is_column_name_available(prop_id)
+            elif search_mode != 'BOTH':
+                logger.error(
+                    "Invalid search mode! Must be 'SYMBOL', 'COLUMN', or 'BOTH'."
+                )
+                return False
+
+            # SECTION: check both symbol and column name
+            # NOTE: check symbols (true/false)
+            check_symbol_res = self.is_symbol_available(prop_id)
+
+            # NOTE: check column names (true/false)
+            check_column_res = self.is_column_name_available(prop_id)
+
+            # check
+            if check_symbol_res.availability or check_column_res.availability:
+                return PropertyMatch(
+                    prop_id=prop_id,
+                    availability=True,
+                    search_mode='BOTH'
+                )
+            else:
+                return PropertyMatch(
+                    prop_id=prop_id,
+                    availability=False,
+                    search_mode='BOTH'
+                )
+
+        except Exception as e:
+            logger.error(f"Error checking property availability: {e}")
+            return PropertyMatch(
+                prop_id=prop_id,
+                availability=False,
+                search_mode=search_mode,
+            )
