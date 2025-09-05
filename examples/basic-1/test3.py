@@ -93,6 +93,11 @@ print(comp1_data.is_property_available('Cp_IG'))
 print(comp1_data.is_property_available('dHf_IG', search_mode='SYMBOL'))
 print(comp1_data.is_property_available('dHf_IG', search_mode='COLUMN'))
 
+# dHf_IG (case insensitive)
+print(comp1_data.get_property('dHf_IG'))
+print(comp1_data.get_property('dhf_IG'))
+print(comp1_data.get_property('dhf_iG'))
+# print(comp1_data.get_property('dhf_if')) # raise error
 
 # ====================================
 # BUILD EQUATION
