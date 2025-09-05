@@ -256,6 +256,12 @@ print(type(func1_))
 print(func1_.args)
 print(func1_.cal(T=295.15, message="heat capacity result"))
 
+# ! case sensitive
+func1_ = thermo_db_loaded.select_function('heat-Capacity')
+print(type(func1_))
+print(func1_.args)
+print(func1_.cal(T=295.15, message="heat capacity result"))
+
 # select function
 func2_ = thermo_db_loaded.select_function('vapor-pressure')
 print(type(func2_))
