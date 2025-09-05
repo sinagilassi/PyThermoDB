@@ -135,12 +135,12 @@ REFERENCES:
           EQUATIONS:
             EQ-1:
               BODY:
-                - parms['C1 | C1 | 1'] = parms['C1 | C1 | 1']/1
-                - parms['C2 | C2 | 1'] = parms['C2 | C2 | 1']/1
-                - parms['C3 | C3 | 1'] = parms['C3 | C3 | 1']/1
-                - parms['C4 | C4 | 1'] = parms['C4 | C4 | 1']/1
-                - parms['C5 | C5 | 1'] = parms['C5 | C5 | 1']/1
-                - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
+                - parms['Constant1 | C1 | 1'] = parms['Constant1 | C1 | 1']/1
+                - parms['Constant2 | C2 | 1'] = parms['Constant2 | C2 | 1']/1
+                - parms['Constant3 | C3 | 1'] = parms['Constant3 | C3 | 1']/1
+                - parms['Constant4 | C4 | 1'] = parms['Constant4 | C4 | 1']/1
+                - parms['Constant5 | C5 | 1'] = parms['Constant5 | C5 | 1']/1
+                - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['Constant1 | C1 | 1'] + parms['Constant2 | C2 | 1']/args['temperature | T | K'] + parms['Constant3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['Constant4 | C4 | 1']*(args['temperature | T | K']**parms['Constant5 | C5 | 1']))
               BODY-INTEGRAL:
                 None
               BODY-FIRST-DERIVATIVE:
@@ -148,7 +148,7 @@ REFERENCES:
               BODY-SECOND-DERIVATIVE:
                 None
           STRUCTURE:
-            COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq]
+            COLUMNS: [No.,Name,Formula,State,Constant1,Constant2,Constant3,Constant4,Constant5,Tmin,P(Tmin),Tmax,P(Tmax),Eq]
             SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr]
             UNIT: [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
           VALUES:

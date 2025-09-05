@@ -108,9 +108,21 @@ COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 comp1_data = thermo_db.build_data(comp1, databook, 2)
 print(comp1_data.data_structure())
 
+# ! check property availability
+print(comp1_data.is_property_available('GiEnFo'))
+print(comp1_data.is_property_available('GiEnFo', search_mode='SYMBOL'))
+print(comp1_data.is_property_available('GiEnFo', search_mode='COLUMN'))
+print(comp1_data.is_property_available('MW'))
+print(comp1_data.is_property_available('molecular-weight'))
+print(comp1_data.is_property_available('critical-temperature'))
+print(comp1_data.is_property_available('Critical-Temperature'))
+print(comp1_data.is_property_available('Critical-Temperature0'))
+
+# get property by column index
 print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 # by symbol
 print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
+
 
 # ====================================
 # BUILD EQUATION

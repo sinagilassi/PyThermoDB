@@ -116,10 +116,21 @@ comp1 = "methane"
 # ====================================
 # build data
 data_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'General-Data')
+    [comp1],
+    'CUSTOM-REF-1',
+    'General-Data'
+)
 # check
 if not isinstance(data_1, TableData):
     raise TypeError("data_1 is not a TableData instance")
+
+# ! property availability
+print(data_1.is_property_available('GiEnFo'))
+print(data_1.is_property_available('MW'))
+
+# ! symbol list
+print(data_1.table_symbols)
+print(data_1.table_columns)
 
 # type
 print(type(data_1))
@@ -132,10 +143,19 @@ print(res_)
 # ====================================
 # ! build equation
 comp1_eq_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'Vapor-Pressure')
+    [comp1],
+    'CUSTOM-REF-1',
+    'Vapor-Pressure'
+)
 # check
 if not isinstance(comp1_eq_1, TableEquation):
     raise TypeError("comp1_eq_1 is not a TableEquation instance")
+
+# ! check property availability
+print(comp1_eq_1.is_property_available('VaPr'))
+print(comp1_eq_1.is_property_available('GiEnFo'))
+print(comp1_eq_1.is_property_available('VaPr', search_mode='SYMBOL'))
+print(comp1_eq_1.is_property_available('vapor-pressure', search_mode='COLUMN'))
 
 # equation details
 print(comp1_eq_1.equation_parms())
@@ -143,13 +163,21 @@ print(comp1_eq_1.equation_args())
 print(comp1_eq_1.equation_body())
 print(comp1_eq_1.equation_return())
 
+# table details
+print(comp1_eq_1.table_columns)
+print(comp1_eq_1.table_symbols)
+
 # cal
 res_ = comp1_eq_1.cal(T=290)
 print(res_)
 
 # ! build equation
 comp1_eq_2 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+    [comp1],
+    'CUSTOM-REF-1',
+    'Ideal-Gas-Molar-Heat-Capacity'
+)
+
 # check
 if not isinstance(comp1_eq_2, TableEquation):
     raise TypeError("comp1_eq_2 is not a TableEquation instance")
