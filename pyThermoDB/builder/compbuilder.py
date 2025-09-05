@@ -417,10 +417,10 @@ class CompBuilder(CompExporter):
 
     def select_property(
         self,
-            thermo_name: str
+        thermo_name: str
     ) -> TableData | TableMatrixData:
         '''
-        Select a thermodynamic property
+        Select a thermodynamic property (TableData or TableMatrixData) registered in the thermodb, case-sensitive.
 
         Parameters
         ----------
@@ -433,6 +433,23 @@ class CompBuilder(CompExporter):
             property registered in the thermodb
         '''
         try:
+            # NOTE: case-sensitive
+            # thermo_name normalize to lower case
+            thermo_name = thermo_name.strip().lower()
+
+            # SECTION: lookup
+            selected_property = None
+            for prop in self.properties.keys():
+                if prop.lower().strip() == thermo_name:
+                    selected_property = prop
+                    break
+
+            # NOTE: check
+            if selected_property is not None:
+                thermo_name = selected_property
+            else:
+                raise Exception('Property not found in the thermodb!')
+
             # check library
             return self.properties[thermo_name]
         except Exception as e:
@@ -504,7 +521,7 @@ class CompBuilder(CompExporter):
         function_name: str
     ) -> TableEquation | TableMatrixEquation:
         '''
-        Select a function registered in the thermodb
+        Select a function registered in the thermodb (case-sensitive).
 
         Parameters
         ----------
@@ -528,9 +545,11 @@ class CompBuilder(CompExporter):
             # SECTION: lookup
             selected_function = None
             for func in self.functions.keys():
-                if func.lower() == function_name:
+                if func.lower().strip() == function_name:
                     selected_function = func
                     break
+
+            # NOTE: check
             if selected_function is not None:
                 function_name = selected_function
             else:
@@ -551,7 +570,7 @@ class CompBuilder(CompExporter):
         TableMatrixEquation
     ]:
         '''
-        Select a thermodynamic property or function registered in the thermodb
+        Select a thermodynamic property or function registered in the thermodb (case-sensitive).
 
         Parameters
         ----------
@@ -564,25 +583,49 @@ class CompBuilder(CompExporter):
             property defined in the thermodb
         '''
         try:
+            # SECTION: case-sensitive
+            # thermo_name normalize to lower case
+            thermo_name = thermo_name.strip()
+            # normalize to lower case
+            thermo_name_lower = thermo_name.lower()
+
             # SECTION 1: check if the property exists in both functions and properties
             check_list = list(self.functions.keys()) + \
                 list(self.properties.keys())
+
+            # NOTE: normalize to lower case
+            check_list = [item.lower() for item in check_list]
+            # NOTE: check_list may contain duplicates
+            check_list = list(set(check_list))
+
             # check if the property exists in both functions and properties
-            if (thermo_name not in check_list):
+            if (thermo_name_lower not in check_list):
                 # raise
                 raise Exception(
                     'Property exists in both functions and properties!')
 
-            # SECTION 2: check if the property is a function or a property
-            if thermo_name in self.functions:
-                # check if the property is a function
+            # SECTION: normalized names in functions and properties
+            # NOTE: functions
+            functions_keys_lower = [
+                k for k in self.functions.keys() if k.lower() == thermo_name_lower
+            ]
+            # check
+            if len(functions_keys_lower) == 1:
+                thermo_name = functions_keys_lower[0]
                 return self.functions[thermo_name]
-            elif thermo_name in self.properties:
-                # check if the property is a property
+
+            # NOTE: properties
+            properties_keys_lower = [
+                k for k in self.properties.keys() if k.lower() == thermo_name_lower
+            ]
+            # check
+            if len(properties_keys_lower) == 1:
+                thermo_name = properties_keys_lower[0]
                 return self.properties[thermo_name]
-            else:
-                # check if the property is a property in the thermodb
-                raise Exception('Property not found in the thermodb!')
+
+            # NOTE: not found
+            raise Exception('Property not found in the thermodb!')
+
         except Exception as e:
             raise Exception('Selecting a thermodynamic property failed!, ', e)
 
