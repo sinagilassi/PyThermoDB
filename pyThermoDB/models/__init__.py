@@ -8,6 +8,7 @@ from .ref import (
 )
 
 from .references import Component
+from .property import PropertyMatch
 
 __all__ = [
     'DataBookTableTypes',
@@ -16,5 +17,6 @@ __all__ = [
     'MatrixDataType',
     'DataResult',
     'EquationResult',
-    'Component'
+    'Component',
+    'PropertyMatch'
 ]
