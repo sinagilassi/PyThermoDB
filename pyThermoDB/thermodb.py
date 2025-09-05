@@ -460,9 +460,12 @@ def check_and_build_component_thermodb(
             if databook_ is None:
                 raise ValueError(
                     f"Databook for property '{prop_name}' is not specified.")
-            if databook_ not in databook_list:
-                raise ValueError(
-                    f"Databook '{databook_}' for property '{prop_name}' is not found in the databook list.")
+            # >> check databook exists
+            if is_databook_available(databook_, databook_list) is False:
+                logger.error(
+                    f"Databook '{databook_}' for property '{prop_name}' is not found in the databook list."
+                )
+                continue
 
             # NOTE: tables
             table_dict_ = thermodb.list_tables(
@@ -485,7 +488,7 @@ def check_and_build_component_thermodb(
                     f"Table for property '{prop_name}' is not specified.")
 
             # check table
-            if table_ not in table_list_:
+            if is_table_available(table_, table_list_) is False:
                 logging.error(
                     f"Table '{table_}' for property '{prop_name}' is not found in the databook '{databook_}'."
                 )
