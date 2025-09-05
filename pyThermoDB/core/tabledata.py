@@ -211,10 +211,11 @@ class TableData:
         if isinstance(property, str):
             # df = df[property_name]
             # look up prop_data dict
+            # ! case insensitive
             prop_data_keys_ = [key.lower() for key in self.prop_data.keys()]
 
             # NOTE: property lower
-            property_ = property.lower()
+            property_ = property.lower().strip()
 
             # check key exists
             if property_ in prop_data_keys_:
@@ -233,7 +234,8 @@ class TableData:
                 # check symbol value in each item
                 for key, value in self.prop_data.items():
                     # check if property is in the symbol
-                    if property == value['symbol']:
+                    # ! case insensitive
+                    if property_ == str(value['symbol']).lower().strip():
                         # value found
                         get_data = self.prop_data[key]
                         # property name
@@ -439,7 +441,9 @@ class TableData:
     def is_property_available(
             self,
             prop_id: str,
-            search_mode: Literal['SYMBOL', 'COLUMN', 'BOTH'] = 'BOTH'
+            search_mode: Literal[
+                'SYMBOL', 'COLUMN', 'BOTH'
+            ] = 'BOTH'
     ) -> PropertyMatch:
         '''
         Check if a property is available in the table data.
