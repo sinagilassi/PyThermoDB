@@ -9,7 +9,7 @@ from .reference_utils import (
     is_table_available,
     is_databook_available
 )
-
+from .core_utils import has_prop_nested
 
 __all__ = [
     "log2Col",
@@ -23,5 +23,6 @@ __all__ = [
     "ignore_state_in_prop",
     "look_up_component_reference_config",
     "is_table_available",
-    "is_databook_available"
+    "is_databook_available",
+    "has_prop_nested"
 ]
