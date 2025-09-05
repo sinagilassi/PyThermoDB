@@ -350,4 +350,18 @@ print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 func1_ = thermo_db_loaded.select_function('heat-capacity')
 print(type(func1_))
 print(func1_.args)
-print(func1_.cal(T=295.15, message="heat capacity result"))
+print(func1_.cal(T=295.15, message="heat capacity result (normal)"))
+
+# select function (case-insensitive)
+func1_ = thermo_db_loaded.select_function('heat-Capacity')
+print(type(func1_))
+print(func1_.args)
+print(func1_.cal(T=295.15, message="heat capacity result (case-insensitive)"))
+
+# select function
+func2_ = thermo_db_loaded.select('Heat-Capacity')
+if not isinstance(func2_, TableEquation):
+    raise TypeError("func2_ is not a TableEquation instance")
+print(type(func2_))
+print(func2_.args)
+print(func2_.cal(T=295.15, message="heat capacity result (select)"))
