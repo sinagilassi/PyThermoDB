@@ -165,7 +165,7 @@ ALL:
 carbon dioxide:
   heat-capacity:
     databook: CUSTOM-REF-1
-    table: XXX
+    table: Ideal-Gas-Molar-Heat-Capacity
     symbol: Cp_IG
   vapor-pressure:
     databook: CUSTOM-REF-1
@@ -185,7 +185,7 @@ CO2:
     symbol: Cp_IG
   vapor-pressure:
     databook: CUSTOM-REF-1
-    table: vapor-pressure
+    table: vapor-Pressure
     symbol: VaPr
   general:
     databook: CUSTOM-REF-1
@@ -197,7 +197,7 @@ CO2:
 CO2-g:
   heat-capacity:
     databook: CUSTOM-REF-1
-    table: XXX
+    table: Ideal-Gas-Molar-Heat-Capacity
     symbol: Cp_IG
   vapor-pressure:
     databook: CUSTOM-REF-1
