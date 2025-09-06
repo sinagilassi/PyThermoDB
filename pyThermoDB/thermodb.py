@@ -356,7 +356,7 @@ def check_and_build_component_thermodb(
 
     Notes
     -----
-    Property dict should contain the following format:
+    - Property dict should contain the following format:
 
     ```python
     # Dict[str, Dict[str, str]]
@@ -364,19 +364,27 @@ def check_and_build_component_thermodb(
         'heat-capacity': {
             'databook': 'CUSTOM-REF-1',
             'table': 'Ideal-Gas-Molar-Heat-Capacity',
+            'label': 'Cp_IG',
         },
         'vapor-pressure': {
             'databook': 'CUSTOM-REF-1',
             'table': 'Vapor-Pressure',
+            'label': 'VaPr',
         },
         'general': {
             'databook': 'CUSTOM-REF-1',
             'table': 'General-Data',
+            'labels': {
+                'molecular-weight': 'MW',
+                'critical-temperature': 'Tc',
+                'critical-pressure': 'Pc',
+                'acentric-factor': 'AcFa',
         },
     }
     ```
 
-    Table should contain columns including `Name`, `Formula`, and `State` to identify the component. Otherwise during the check, it will raise an error.
+    - Table should contain columns including `Name`, `Formula`, and `State` to identify the component. Otherwise during the check, it will raise an error.
+    - ignore_state_props: List of property names to ignore state during the build. For example, if you want to ignore state for a thermo property such as vapor pressure and use only component name and formula, set `ignore_state_props=['VaPr']`.
     '''
     try:
         # NOTE: kwargs
@@ -442,6 +450,8 @@ def check_and_build_component_thermodb(
 
         # init res
         res = {}
+        # labels
+        labels: List[str] = []
         # ignore state for all properties
         ignore_component_state: bool = False
 
@@ -495,14 +505,51 @@ def check_and_build_component_thermodb(
                 # ? skip if table is not found
                 continue
 
-            # NOTE: state ignore settings
-            # ! set ignore state in prop
-            ignore_component_state = ignore_state_in_prop(
-                prop_name,
-                ignore_state_props
-            )
+            # ! label/labels
+            # NOTE: >> check label
+            label_ = prop_idx.get(
+                'label', None) or prop_idx.get('symbol', None)
+            # check
+            if label_:
+                # append to labels
+                labels.append(str(label_))
+
+                # >> set ignore state
+                # ! for label
+                ignore_component_state = ignore_state_in_prop(
+                    label_,
+                    ignore_state_props
+                )
+
+            # NOTE: >> check labels
+            labels_ = prop_idx.get(
+                'labels', None) or prop_idx.get('symbols', None)
+            # check
+            if labels_ and isinstance(labels_, dict):
+                # extract labels
+                for lbl_key, lbl_val in labels_.items():
+                    if lbl_val and isinstance(lbl_val, str):
+                        # append to labels
+                        labels.append(str(lbl_val))
+
+                # >> set ignore state
+                # iterate over labels
+                if len(ignore_state_props) > 0:
+                    for item in labels_.values():
+                        # set ignore state
+                        # ! for labels
+                        ignore_component_state = ignore_state_in_prop(
+                            item,
+                            ignore_state_props
+                        )
+                        # check
+                        if ignore_component_state:
+                            break
+                else:
+                    ignore_component_state = False
 
             # >> override if ignore all state is True
+            # ! for all property skip
             if ignore_state_all_props:
                 ignore_component_state = True
 
