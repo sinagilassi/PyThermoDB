@@ -1,6 +1,6 @@
 # import libs
 from typing import Literal, Optional, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 # locals
 
 
@@ -17,7 +17,7 @@ class PropertyMatch(BaseModel):
         None, description="Search mode: 'SYMBOL', 'COLUMN', 'BOTH'."
     )
 
-    class Config:
-        """Pydantic configuration."""
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=True
+    )
