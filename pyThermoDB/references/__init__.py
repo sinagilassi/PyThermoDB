@@ -4,7 +4,7 @@ from .databook import ThermoDatabook
 from .reference import ThermoReference
 from .checker import ReferenceChecker
 from .main import check_custom_reference, load_reference_from_str
-from .reference_mapper import map_component_reference
+from .reference_mapper import component_reference_mapper
 
 __all__ = [
     "ReferenceConfig",
@@ -15,5 +15,5 @@ __all__ = [
     "ReferenceChecker",
     "check_custom_reference",
     "load_reference_from_str",
-    "map_component_reference",
+    "component_reference_mapper",
 ]
