@@ -19,9 +19,9 @@ class Component(BaseModel):
     """Component model for input validation"""
     name: str = Field(..., description="Name of the component")
     formula: str = Field(..., description="Chemical formula of the component")
-    state: str = Field(
+    state: Literal['g', 'l', 's', 'aq'] = Field(
         ...,
-        description="State of the component: 'g' for gas, 'l' for liquid, 's' for solid"
+        description="State of the component: 'g' for gas, 'l' for liquid, 's' for solid, 'aq' for aqueous"
     )
     mole_fraction: float = Field(
         default=1.0,
