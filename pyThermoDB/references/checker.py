@@ -235,6 +235,10 @@ class ReferenceChecker:
         -------
         str
             The type of the table.
+
+        Notes
+        -----
+        The table type can be 'DATA' or 'EQUATIONS'. For Matrix tables, the type is 'DATA'.
         """
         try:
             # get table
@@ -1668,7 +1672,9 @@ class ReferenceChecker:
         databook_name: str,
         add_label: Optional[bool] = False,
         check_labels: Optional[bool] = False,
-        component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State'
     ):
         """
         Get the reference including the databook name and table name for a component.
@@ -1739,39 +1745,55 @@ class ReferenceChecker:
                             f"Table type for '{table_name}' not found.")
                         continue
 
+                    # >> check if table is matrix
+                    is_matrix = self.is_matrix_table(
+                        databook_name,
+                        table_name
+                    )
+
                     # ! get symbols
-                    if table_type == 'DATA':
-                        # check if table is matrix
-                        is_matrix = self.is_matrix_table(
+                    if table_type == 'DATA' and is_matrix is False:
+
+                        # get symbols
+                        symbols = self.get_table_data_details(
                             databook_name,
                             table_name
                         )
-
-                        # get symbols
-                        if is_matrix:
-                            # REVIEW
-                            symbols = self.get_table_matrix_symbols(
-                                databook_name,
-                                table_name
-                            )
-                        else:
-                            symbols = self.get_table_data_details(
-                                databook_name,
-                                table_name
-                            )
-                            # ! check symbols
-                            if check_labels and symbols is not None:
-                                # convert to list if not already
-                                symbols_: List[str] = list(symbols.values())
-                                symbol_controller.check_symbols(symbols_)
+                        # ! check symbols
+                        if check_labels and symbols is not None:
+                            # convert to list if not already
+                            symbols_: List[str] = list(symbols.values())
+                            symbol_controller.check_symbols(symbols_)
 
                         # set
                         res_availability = {
                             'databook': databook_name,
                             'table': table_name,
                             'mode': table_type,
-                            'labels': symbols
+                            'labels': symbols if add_label else []
                         }
+
+                    elif table_type == 'DATA' and is_matrix is True:
+                        # get symbols
+                        symbols = self.get_table_matrix_symbols(
+                            databook_name,
+                            table_name
+                        )
+
+                        # ! check symbols
+                        if check_labels and symbols is not None:
+                            # convert to list if not already
+                            symbols_: List[str] = list(symbols)
+                            symbol_controller.check_symbols(symbols_)
+
+                        # set
+                        res_availability = {
+                            'databook': databook_name,
+                            'table': table_name,
+                            'mode': table_type,
+                            'labels': symbols if add_label else []
+                        }
+
                     elif table_type == 'EQUATIONS':
                         symbol = self.get_table_equation_details(
                             databook_name,
@@ -1787,7 +1809,7 @@ class ReferenceChecker:
                             'databook': databook_name,
                             'table': table_name,
                             'mode': table_type,
-                            'label': symbol
+                            'label': symbol if add_label else None
                         }
                     else:
                         logging.error(
