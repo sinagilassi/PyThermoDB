@@ -16,7 +16,7 @@ from ..models import Component, ComponentReferenceThermoDB
 logger = logging.getLogger(__name__)
 
 
-def map_component_reference(
+def component_reference_mapper(
     component: Component,
     reference_content: str,
     component_key: Literal[
@@ -24,8 +24,6 @@ def map_component_reference(
     ] = 'Formula-State',
     add_label: Optional[bool] = True,
     check_labels: Optional[bool] = True,
-    thermodb_name: Optional[str] = None,
-    message: Optional[str] = None,
     **kwargs
 ) -> ComponentReferenceThermoDB:
     '''
@@ -33,12 +31,8 @@ def map_component_reference(
 
     Parameters
     ----------
-    component_name : str
-        Name of the component to build thermodynamic databook for.
-    component_formula : str
-        Chemical formula of the component.
-    component_state : str
-        Physical state of the component (e.g., 'liquid', 'gas').
+    component : Component
+        An instance of the Component model containing details about the component.
     reference_content : str
         String content of the reference (YAML format) containing databook and tables.
     component_key : Literal['Name-State', 'Formula-State'], optional
@@ -47,10 +41,6 @@ def map_component_reference(
         Whether to add labels to the component reference config, by default True
     check_labels : Optional[bool], optional
         Whether to check labels in the component reference config, by default True
-    thermodb_name : Optional[str], optional
-        Name of the thermodynamic databook to be built, by default None
-    message : Optional[str], optional
-        A short description of the component thermodynamic databook, by default None
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -102,7 +92,7 @@ def map_component_reference(
         if not isinstance(databooks, list) or not databooks:
             raise ValueError("No databooks found in the reference content.")
 
-        # init component reference config
+        # NOTE: component reference config
         component_reference_configs = ReferenceChecker_.get_component_reference_configs(
             component_name=component_name,
             component_formula=component_formula,
@@ -123,12 +113,7 @@ def map_component_reference(
             reference_configs=component_reference_configs
         )
 
-        # SECTION: build thermodb
-        # set reference
-        ref: Dict[str, Any] = {'reference': [reference_content]}
-
         # SECTION: check component_reference_configs
-        res = {}
         # labels
         labels = []
 
