@@ -270,7 +270,7 @@ CO2_component = Component(
 )
 
 # ! (by component and Formula-State)
-print("[bold magenta]By Component and Formula-State[/bold magenta]")
+print("[bold magenta]By Component and Formula-State with no ignore[/bold magenta]")
 thermodb_component_ = ptdb.check_and_build_component_thermodb(
     component=CO2_component,
     reference_config=reference_config,
@@ -283,7 +283,7 @@ print(f"check: {thermodb_component_.check()}")
 print(f"message: {thermodb_component_.message}")
 
 # ! (by component and Name-State)
-print("[bold magenta]By Component and Name-State[/bold magenta]")
+print("[bold magenta]By Component and Name-State with no ignore[/bold magenta]")
 thermodb_component_ = ptdb.check_and_build_component_thermodb(
     component=CO2_component,
     reference_config=reference_config,
@@ -296,11 +296,12 @@ print(f"check: {thermodb_component_.check()}")
 print(f"message: {thermodb_component_.message}")
 
 # ! (by component and Name)
-print("[bold magenta]By Component and Name[/bold magenta]")
+print("[bold magenta]By Component and Name with ignore[/bold magenta]")
 thermodb_component_ = ptdb.check_and_build_component_thermodb(
     component=CO2_component,
     reference_config=reference_config,
     custom_reference=ref,
+    component_key='Name-State',
     ignore_state_props=['VaPr'],
 )
 #  check
@@ -308,12 +309,25 @@ print(f"check: {thermodb_component_.check()}")
 print(f"message: {thermodb_component_.message}")
 
 # ! (by component and Formula)
-print("[bold magenta]By Component and Formula[/bold magenta]")
+print("[bold magenta]By Component and Formula with ignore[/bold magenta]")
 thermodb_component_ = ptdb.check_and_build_component_thermodb(
     component=CO2_component,
     reference_config=reference_config,
     custom_reference=ref,
+    component_key='Formula-State',
     ignore_state_props=['VaPr'],
+)
+#  check
+print(f"check: {thermodb_component_.check()}")
+print(f"message: {thermodb_component_.message}")
+
+# ! vapor pressure state enforced to check
+print("[bold magenta]By Component and Formula without ignore[/bold magenta]")
+thermodb_component_ = ptdb.check_and_build_component_thermodb(
+    component=CO2_component,
+    reference_config=reference_config,
+    custom_reference=ref,
+    component_key='Formula-State',
 )
 #  check
 print(f"check: {thermodb_component_.check()}")
