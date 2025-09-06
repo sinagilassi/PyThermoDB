@@ -7,7 +7,7 @@ from .ref import (
     EquationResult
 )
 
-from .references import Component
+from .references import Component, ComponentReferenceThermoDB
 from .property import PropertyMatch
 
 __all__ = [
@@ -18,5 +18,6 @@ __all__ = [
     'DataResult',
     'EquationResult',
     'Component',
-    'PropertyMatch'
+    'PropertyMatch',
+    'ComponentReferenceThermoDB'
 ]
