@@ -322,16 +322,16 @@ print(f"check: {thermodb_component_.check()}")
 print(f"message: {thermodb_component_.message}")
 
 # ! vapor pressure state enforced to check
-print("[bold magenta]By Component and Formula without ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
-    component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
-    component_key='Formula-State',
-)
-#  check
-print(f"check: {thermodb_component_.check()}")
-print(f"message: {thermodb_component_.message}")
+# print("[bold magenta]By Component and Formula without ignore[/bold magenta]")
+# thermodb_component_ = ptdb.check_and_build_component_thermodb(
+#     component=CO2_component,
+#     reference_config=reference_config,
+#     custom_reference=ref,
+#     component_key='Formula-State',
+# )
+# #  check
+# print(f"check: {thermodb_component_.check()}")
+# print(f"message: {thermodb_component_.message}")
 
 # ====================================
 # BUILD COMPONENTS THERMODB
