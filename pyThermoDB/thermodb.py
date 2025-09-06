@@ -6,7 +6,8 @@ from typing import (
     List,
     Union,
     Any,
-    Literal
+    Literal,
+    cast
 )
 from pydantic import (
     BaseModel,
@@ -19,13 +20,13 @@ from .references import ReferenceConfig, ReferenceChecker
 from .models import Component
 from .utils import (
     set_component_id,
-    set_component_query,
     ignore_state_in_prop,
     look_up_component_reference_config,
     is_table_available,
-    is_databook_available
+    is_databook_available,
 )
 from .builder import CompBuilder
+from .config import DEFAULT_COMPONENT_STATES
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -908,6 +909,9 @@ def build_component_thermodb_from_reference(
             raise TypeError("component_formula must be a string")
         if not isinstance(component_state, str):
             raise TypeError("component_state must be a string")
+
+        # NOTE: check component_state
+        component_state = cast(DEFAULT_COMPONENT_STATES, component_state)
 
         # init component
         component_ = Component(
