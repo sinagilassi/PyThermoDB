@@ -1,6 +1,6 @@
 # import libs
 from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
-from pyThermoDB.references import map_component_reference
+from pyThermoDB.references import component_reference_mapper
 from pyThermoDB.models import Component, ComponentReferenceThermoDB
 from rich import print
 
@@ -174,12 +174,13 @@ component = Component(
 )
 
 # SECTION: map reference content to component
-component_ref_thermodb: ComponentReferenceThermoDB = map_component_reference(
+component_ref_thermodb: ComponentReferenceThermoDB = component_reference_mapper(
     component=component,
     reference_content=REFERENCE_CONTENT,
     key='Formula-State',
+    ignore_component_state=True
 )
 # print result
-print(f"reference_configs:\n{component_ref_thermodb.reference_configs}\n"
-      f"reference_rules:\n{component_ref_thermodb.reference_rules}\n"
-      f"labels: {component_ref_thermodb.labels}\n")
+print(f"reference_configs:\n{component_ref_thermodb.reference_configs}")
+print(f"reference_rules:\n{component_ref_thermodb.reference_rules}")
+print(f"labels:\n{component_ref_thermodb.labels}")
