@@ -42,7 +42,9 @@ def look_up_component_reference_config(
 
     # Extract component reference config
     component_reference_config = reference_config_lower.get(
-        component_id_lower, {})
+        component_id_lower,
+        {}
+    )
 
     # Check if reference_config is empty
     if not component_reference_config:
