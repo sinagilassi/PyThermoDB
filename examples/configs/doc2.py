@@ -292,6 +292,20 @@ components_data_ = ReferenceChecker_.get_component_data(
 print(f"Components Data: {components_data_}")
 
 # SECTION: get component reference config
+# ! unknown component
+component_name_unknown = 'unknown'
+component_formula_unknown = 'Un'
+component_state_unknown = 'g'
+component_reference_config = ReferenceChecker_.get_component_reference_config(
+    component_name=component_name_unknown,
+    component_formula=component_formula_unknown,
+    component_state=component_state_unknown,
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True
+)
+print(f"Component Reference Config (unknown): {component_reference_config}")
+
 # ! without ignore state
 component_reference_config = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
