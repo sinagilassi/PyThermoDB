@@ -24,6 +24,7 @@ def component_reference_mapper(
     ] = 'Formula-State',
     add_label: Optional[bool] = True,
     check_labels: Optional[bool] = True,
+    ignore_component_state: Optional[bool] = False,
     **kwargs
 ) -> ComponentReferenceThermoDB:
     '''
@@ -41,6 +42,8 @@ def component_reference_mapper(
         Whether to add labels to the component reference config, by default True
     check_labels : Optional[bool], optional
         Whether to check labels in the component reference config, by default True
+    ignore_component_state : Optional[bool], optional
+        Whether to ignore the component state in the check, by default False.
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -99,7 +102,9 @@ def component_reference_mapper(
             component_state=component_state,
             add_label=add_label,
             check_labels=check_labels,
-            component_key=component_key
+            component_key=component_key,
+            ignore_component_state=ignore_component_state,
+            ignore_state_props=ignore_state_props
         )
 
         # NOTE: check if reference_config is a dict
@@ -109,6 +114,7 @@ def component_reference_mapper(
             )
 
         # SECTION: generate reference rules
+        # ! from component_reference_configs
         reference_rules = ReferenceChecker_.generate_reference_rules(
             reference_configs=component_reference_configs
         )
