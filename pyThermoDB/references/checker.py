@@ -12,6 +12,7 @@ from typing import (
 from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
+from ..utils import ignore_state_in_prop
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -818,7 +819,8 @@ class ReferenceChecker:
             # check if lengths of symbol and columns match
             if len(symbol) != len(columns):
                 logging.error(
-                    f"Table '{table_name}' structure 'SYMBOL' and 'COLUMNS' lengths do not match.")
+                    f"Table '{table_name}' structure 'SYMBOL' and 'COLUMNS' lengths do not match."
+                )
                 return None
 
             # NOTE: result init
@@ -839,7 +841,8 @@ class ReferenceChecker:
             # check if res is empty
             if not res:
                 logging.warning(
-                    f"Table '{table_name}' structure 'SYMBOL' is empty.")
+                    f"Table '{table_name}' structure 'SYMBOL' is empty."
+                )
                 return {}
             # return the symbols
             return res
@@ -1171,13 +1174,179 @@ class ReferenceChecker:
             logging.error(f"Error getting component data: {e}")
             return None
 
+    def generate_property_mapping(
+            self,
+            databook_name: str,
+            table_name: Optional[str] = None
+    ) -> Dict[str, str]:
+        '''
+        Generate a property mapping for a given databook, this dictionary can be used to map property names to their symbols.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+
+        '''
+        try:
+            # SECTION: get tables
+            tables = self.get_databook_tables(databook_name)
+
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return {}
+
+            # NOTE: check if table_name is provided
+            if table_name is not None:
+                # strip table name
+                table_name = table_name.strip()
+
+                # check if table_name exists in tables
+                if table_name not in tables.keys():
+                    logging.error(
+                        f"Table '{table_name}' not found in databook '{databook_name}'.")
+                    return {}
+
+                # init tables
+                tables_ = {}
+                # add to tables
+                tables_[table_name] = tables[table_name]
+
+                # update tables
+                tables = tables_
+
+            # SECTION: init property mapping
+            property_mapping = {}
+            # init matrix
+            is_matrix: bool = False
+
+            # iterate through each table
+            for table_name, table in tables.items():
+                # get table type
+                table_type = self.get_table_type(databook_name, table_name)
+                if table_type is None:
+                    logging.error(f"Table type for '{table_name}' not found.")
+                    continue
+
+                # NOTE: check table type
+                if table_type not in ['DATA', 'EQUATIONS']:
+                    logging.warning(
+                        f"Table '{table_name}' has unsupported type '{table_type}'. Skipping.")
+                    continue
+
+                # NOTE: check matrix
+                is_matrix = self.is_matrix_table(
+                    databook_name,
+                    table_name
+                )
+
+                # NOTE: get table details
+                if table_type == 'DATA' and not is_matrix:  # ! not matrix
+                    table_details = self.get_table_data_details(
+                        databook_name,
+                        table_name
+                    )
+                    if table_details is None:
+                        logging.error(
+                            f"Table details for '{table_name}' not found.")
+                        continue
+
+                    # update property mapping
+                    property_mapping.update(table_details)
+                elif table_type == 'DATA' and is_matrix:  # ! matrix
+                    matrix_symbols = self.get_table_matrix_symbols(
+                        databook_name,
+                        table_name
+                    )
+                    if matrix_symbols is None:
+                        logging.error(
+                            f"Matrix symbols for '{table_name}' not found.")
+                        continue
+
+                    # iterate through each matrix symbol
+                    for symbol in matrix_symbols:
+                        if symbol is not None and str(symbol).strip() not in ['None', '']:
+                            # add to property mapping
+                            property_mapping[symbol] = symbol
+                elif table_type == 'EQUATIONS':  # ! equations
+                    equation_symbol = self.get_table_equation_details(
+                        databook_name,
+                        table_name
+                    )
+                    if equation_symbol is None:
+                        logging.error(
+                            f"Equation symbol for '{table_name}' not found.")
+                        continue
+
+                    # add to property mapping
+                    property_mapping[table_name] = equation_symbol
+                else:
+                    logging.warning(
+                        f"Table '{table_name}' has unsupported type '{table_type}'. Skipping.")
+                    continue
+
+            #  return property mapping
+            return property_mapping
+        except Exception as e:
+            logging.error(f"Error generating property mapping: {e}")
+            return {}
+
+    def get_property_mappings(
+        self,
+        databook_name: str,
+        table_name: Optional[str] = None
+    ) -> List[str]:
+        '''
+        Get the property mappings for a given databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : Optional[str], optional
+            The name of the table to filter by, by default None.
+
+        Returns
+        -------
+        List[str]
+            A list of property names.
+        '''
+        try:
+            # generate property mapping
+            property_mapping = self.generate_property_mapping(
+                databook_name,
+                table_name
+            )
+
+            # return the property names
+            mappings = list(property_mapping.keys()) + \
+                list(property_mapping.values())
+            mappings = list(set(mappings))  # remove duplicates
+
+            # check if mappings is empty
+            if not mappings:
+                logging.warning(
+                    f"No property mappings found for databook '{databook_name}'"
+                    + (f" and table '{table_name}'." if table_name else ".")
+                )
+                return []
+
+            # check
+            return mappings
+        except Exception as e:
+            logging.error(f"Error getting property mappings: {e}")
+            return []
+
     def generate_reference_link(
         self,
         databook_name: str,
         table_names: Optional[str | List[str]] = None,
         component_name: Optional[str] = None,
         component_formula: Optional[str] = None,
-        component_state: Optional[str] = None
+        component_state: Optional[str] = None,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Generate a reference link for a component.
@@ -1236,24 +1405,34 @@ class ReferenceChecker:
                 # update tables
                 tables = tables_
 
+            # SECTION: check component availability
+            # NOTE: check if component details are provided
+            if component_name and component_formula and component_state:
+                # check if component is available in the table
+                component_availability = self.check_component_availability(
+                    component_name=component_name,
+                    component_formula=component_formula,
+                    component_state=component_state,
+                    databook_name=databook_name,
+                    component_key=component_key,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props
+                )
+            else:
+                component_availability = None
+
             # SECTION: go through each table content
             # iterate through each table
             for table_name, table in tables.items():
-                # NOTE: check component availability
-                if component_name and component_formula and component_state:
-                    # check if component is available in the table
-                    component_availability = self.check_component_availability(
-                        component_name,
-                        component_formula,
-                        component_state,
-                        databook_name
-                    )
 
-                    # check if component is available in the table
-                    if not component_availability.get(table_name, False):
-                        logging.warning(
-                            f"Component '{component_name}' with formula '{component_formula}' and state '{component_state}' not found in table '{table_name}'.")
-                        continue
+                # NOTE: check if component is available in the table
+                if component_name and component_formula and component_state:
+                    if component_availability:
+                        # ! check component availability in the current table
+                        check_ = component_availability[table_name]
+                        if not check_['available']:
+                            # skip this table
+                            continue
 
                 # NOTE: table type
                 table_type = self.get_table_type(databook_name, table_name)
@@ -1431,8 +1610,9 @@ class ReferenceChecker:
         component_key: Literal[
             'Name-State', 'Formula-State'
         ] = 'Formula-State',
-        ignore_component_state: Optional[bool] = False
-    ) -> Dict[str, Union[bool, str]]:
+        ignore_component_state: Optional[bool] = False,
+        **kwargs
+    ) -> Dict[str, Dict[str, Union[bool, str]]]:
         """
         Check if a component is available in the specified databook.
 
@@ -1452,17 +1632,30 @@ class ReferenceChecker:
             The key to use for the components, by default 'Formula-State'.
         ignore_component_state : Optional[bool], optional
             Whether to ignore the component state in the check, by default False.
+        **kwargs
+            Additional keyword arguments.
+            - ignore_state_props: List[str], optional
+                A list of state properties to ignore in the check.
 
         Returns
         -------
-        Dict[str, Union[bool, str]]
+        Dict[str, Dict[str, Union[bool, str]]]
             A dictionary indicating whether the component is available in the databook.
 
         Notes
         -----
-        The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - If `ignore_component_state` is True, the state of the component will be ignored in the check.
+        - If `table_name` is provided, only that table will be checked; otherwise, all tables in the databook will be checked.
+        - ignore_state_props can be used to specify state properties to ignore during the check. As a result, if the component state matches any of the properties in this list, the state will be ignored in the comparison. Then, ignore_component_state will be set to True.
         """
         try:
+            # SECTION: kwargs
+            # get ignore_state_props from kwargs
+            ignore_state_props = kwargs.get('ignore_state_props', [])
+            if not isinstance(ignore_state_props, list):
+                ignore_state_props = []
+
             # NOTE: init
             res = {}
 
@@ -1477,7 +1670,7 @@ class ReferenceChecker:
             # check if tables are valid
             if tables is None:
                 logging.error(f"No tables found for databook: {databook_name}")
-                return {'available': False, 'message': 'No tables found.'}
+                return {"results": {'available': False, 'message': 'No tables found.'}}
 
             # NOTE: check if table_name is provided
             if table_name is not None:
@@ -1491,11 +1684,37 @@ class ReferenceChecker:
                 else:
                     logging.error(
                         f"Table '{table_name}' not found in databook '{databook_name}'.")
-                    return {'available': False, 'message': f"Table '{table_name}' not found."}
+                    return {"results": {'available': False, 'message': f"Table '{table_name}' not found."}}
 
             # SECTION: iterate through each table
             for table_name, table in tables.items():
+                # NOTE: iterate through each property mapping
+                if ignore_state_props and len(ignore_state_props) > 0:
+
+                    # NOTE: get property mapping
+                    property_mappings = self.get_property_mappings(
+                        databook_name,
+                        table_name
+                    )
+
+                    # >> normalized property mappings
+                    property_mappings_lower = [
+                        prop.strip().lower() for prop in property_mappings
+                    ]
+
+                    for prop in ignore_state_props:
+                        # set ignore state
+                        ignore_component_state = ignore_state_in_prop(
+                            prop_name=prop,
+                            ignore_state_props=property_mappings_lower
+                        )
+
+                        # >> check
+                        if ignore_component_state is True:
+                            break
+
                 # NOTE: get table components
+                # ! all components in the table
                 components = self.get_table_components(
                     databook_name,
                     table_name
@@ -1506,7 +1725,7 @@ class ReferenceChecker:
                         f"Components not found for table '{table_name}' in databook '{databook_name}'.")
                     continue
 
-                # component records
+                # ! component records
                 component_records = components.get(
                     component_name,
                     None
@@ -1530,12 +1749,12 @@ class ReferenceChecker:
 
                 # NOTE: check if component records are valid
                 if component_key == 'Name-State' and (name is None or state is None):
-                    logging.error(
+                    logging.warning(
                         f"Component records for '{component_name}' in table '{table_name}' are missing 'Name' or 'State.")
                     continue
 
                 if component_key == 'Formula-State' and (formula is None or state is None):
-                    logging.error(
+                    logging.warning(
                         f"Component records for '{component_name}' in table '{table_name}' are missing 'Formula' or 'State'.")
                     continue
 
@@ -1547,13 +1766,16 @@ class ReferenceChecker:
                             # add
                             res[table_name] = {
                                 'available': True,
-                                'ignore_state': True
+                                'ignore_component_state': ignore_component_state,
+                                'component_key': 'Name'
+
                             }
                         else:
                             # add
                             res[table_name] = {
                                 'available': False,
-                                'ignore_state': True
+                                'ignore_component_state': ignore_component_state,
+                                'component_key': 'Name'
                             }
 
                         # go to next table
@@ -1563,13 +1785,15 @@ class ReferenceChecker:
                             # add
                             res[table_name] = {
                                 'available': True,
-                                'ignore_state': True
+                                'ignore_component_state': ignore_component_state,
+                                'component_key': 'Formula'
                             }
                         else:
                             # add
                             res[table_name] = {
                                 'available': False,
-                                'ignore_state': True
+                                'ignore_component_state': ignore_component_state,
+                                'component_key': 'Formula'
                             }
 
                         # go to next table
@@ -1581,25 +1805,7 @@ class ReferenceChecker:
 
                 # SECTION: check if component matches the formula and state
                 if component_key == 'Name-State' and (name is not None and state is not None):
-                    # NOTE: check if state symbol is "-"
-                    if state.strip() == '-':
-                        # if state symbol is "-", ignore state in comparison
-                        if name.lower().strip() == component_name:
-                            # add
-                            res[table_name] = {
-                                'available': True,
-                                'ignore_state': False
-                            }
-                        else:
-                            # add
-                            res[table_name] = {
-                                'available': False,
-                                'ignore_state': False
-                            }
-
-                        # go to next table
-                        continue
-
+                    # NOTE: check
                     # ! normal comparison
                     if (
                         name.lower().strip() == component_name and
@@ -1608,34 +1814,18 @@ class ReferenceChecker:
                         # add
                         res[table_name] = {
                             'available': True,
-                            'ignore_state': False
+                            'ignore_component_state': ignore_component_state,
+                            'component_key': component_key
                         }
                     else:
                         # add
                         res[table_name] = {
                             'available': False,
-                            'ignore_state': False
+                            'ignore_component_state': ignore_component_state,
+                            'component_key': component_key
                         }
                 elif component_key == 'Formula-State' and (formula is not None and state is not None):
-                    # NOTE: check if state symbol is "-"
-                    if state.strip() == '-':
-                        # if state symbol is "-", ignore state in comparison
-                        if formula.lower().strip() == component_formula:
-                            # add
-                            res[table_name] = {
-                                'available': True,
-                                'ignore_state': True
-                            }
-                        else:
-                            # add
-                            res[table_name] = {
-                                'available': False,
-                                'ignore_state': True
-                            }
-
-                        # go to next table
-                        continue
-
+                    # NOTE: check
                     # ! normal comparison
                     if (
                         formula.lower().strip() == component_formula and
@@ -1644,25 +1834,32 @@ class ReferenceChecker:
                         # add
                         res[table_name] = {
                             'available': True,
-                            'ignore_state': False
+                            'ignore_component_state': ignore_component_state,
+                            'component_key': component_key
                         }
                     else:
                         # add
                         res[table_name] = {
                             'available': False,
-                            'ignore_state': False
+                            'ignore_component_state': ignore_component_state,
+                            'component_key': component_key
                         }
                 else:
                     logging.error(
                         f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
                     continue
 
+                # NOTE: reset loop vars
+                # ! ignore_component_state for next table
+                if len(ignore_state_props) > 0:
+                    ignore_component_state = False
+
             # res
             return res
 
         except Exception as e:
             logging.error(f"Error checking component availability: {e}")
-            return {'available': False, 'message': str(e)}
+            return {"results": {'available': False, 'message': str(e)}}
 
     def get_component_reference_config(
         self,
@@ -1670,11 +1867,14 @@ class ReferenceChecker:
         component_formula: str,
         component_state: str,
         databook_name: str,
+        table_name: Optional[str] = None,
         add_label: Optional[bool] = False,
         check_labels: Optional[bool] = False,
         component_key: Literal[
             'Name-State', 'Formula-State'
-        ] = 'Formula-State'
+        ] = 'Formula-State',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None
     ):
         """
         Get the reference including the databook name and table name for a component.
@@ -1689,12 +1889,18 @@ class ReferenceChecker:
             The state of the component.
         databook_name : str
             The name of the databook.
+        table_name : Optional[str], optional
+            The name of the table to check, by default None (checks all tables).
         add_label : Optional[bool], optional
             Whether to include the label in the reference, by default False.
         check_labels : Optional[bool], optional
             Whether to check if the labels are valid, by default False.
         component_key : Literal['Name-State', 'Formula-State'], optional
             The key to use for the components, by default 'Formula-State'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
+        ignore_state_props : Optional[List[str]], optional
+            A list of properties for which the component state should be ignored during the check, by default None.
 
         Returns
         -------
@@ -1706,13 +1912,30 @@ class ReferenceChecker:
 
         """
         try:
+            # SECTION: check inputs
+            # NOTE: component name, formula, and state must be provided
+            if not component_name or not component_formula or not component_state:
+                logging.error(
+                    "Component name, formula, and state must be provided.")
+                return None
+
+            # NOTE: ignore state props
+            if ignore_state_props and isinstance(ignore_state_props, list):
+                # check list
+                if len(ignore_state_props) == 0:
+                    logger.warning("ignore_state_props is an empty list.")
+                    ignore_state_props = None
+
             # SECTION: check component availability
             availability = self.check_component_availability(
-                component_name,
-                component_formula,
-                component_state,
-                databook_name,
-                component_key=component_key
+                component_name=component_name,
+                component_formula=component_formula,
+                component_state=component_state,
+                databook_name=databook_name,
+                table_name=table_name,
+                component_key=component_key,
+                ignore_component_state=ignore_component_state,
+                ignore_state_props=ignore_state_props
             )
 
             # SECTION: symbol settings
@@ -1731,8 +1954,12 @@ class ReferenceChecker:
             # NOTE: init result
             res = {}
 
-            # iterate through each table in availability
-            for table_name, is_available in availability.items():
+            # SECTION: iterate through each table in availability
+            for table_name, availability_val in availability.items():
+                # NOTE: extract availability
+                is_available = availability_val.get('available', False)
+
+                # only proceed if available
                 if is_available:
                     # reset res_availability
                     res_availability = {}
@@ -1838,7 +2065,11 @@ class ReferenceChecker:
         component_state: str,
         add_label: Optional[bool] = False,
         check_labels: Optional[bool] = False,
-        component_key: Literal['Name-State', 'Formula-State'] = 'Formula-State'
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None
     ):
         """
         Get the reference including the databook name and table name for a component
@@ -1858,6 +2089,10 @@ class ReferenceChecker:
             Whether to check if the labels are valid, by default False.
         component_key : Literal['Name-State', 'Formula-State'], optional
             The key to use for the components, by default 'Formula-State'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
+        ignore_state_props : Optional[List[str]], optional
+            A list of properties for which the component state should be ignored during the check, by default None.
 
         Returns
         -------
@@ -1866,9 +2101,24 @@ class ReferenceChecker:
 
         Notes
         -----
-
+        - The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - If `ignore_component_state` is True, the state of the component will be ignored in the check.
+        - ignore_state_props can be used to specify state properties to ignore during the check. As a result, if the component state matches any of the properties in this list, the state will be ignored in the comparison. Then, ignore_component_state will be set to True.
+        - The result dictionary keys are in the format "DatabookName::TableName".
         """
         try:
+            # SECTION: check inputs
+            # component name, formula, and state must be provided
+            if not component_name or not component_formula or not component_state:
+                logging.error(
+                    "Component name, formula, and state must be provided.")
+                return None
+
+            # ignore_state_props must be a list if provided
+            if ignore_state_props is not None and not isinstance(ignore_state_props, list):
+                logging.error("ignore_state_props must be a list.")
+                ignore_state_props = None
+
             # SECTION: init result
             res = {}
 
@@ -1889,7 +2139,9 @@ class ReferenceChecker:
                     databook_name=databook_name,
                     add_label=add_label,
                     check_labels=check_labels,
-                    component_key=component_key
+                    component_key=component_key,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props
                 )
 
                 if res_databook is not None:
