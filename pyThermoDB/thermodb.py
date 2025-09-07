@@ -937,7 +937,8 @@ def build_component_thermodb_from_reference(
             component_state=component_state,
             add_label=add_label,
             check_labels=check_labels,
-            component_key=component_key
+            component_key=component_key,
+            ignore_state_props=ignore_state_props
         )
 
         # NOTE: check if reference_config is a dict
@@ -1022,8 +1023,6 @@ def build_component_thermodb_from_reference(
                         # check
                         if ignore_component_state:
                             break
-                else:
-                    ignore_component_state = False
 
             # NOTE: check component
             component_checker_ = ReferenceChecker_.check_component_availability(
@@ -1085,7 +1084,7 @@ def build_component_thermodb_from_reference(
                     f"Building property '{prop_name}' for component '{component_name}' failed! {e}")
                 continue
 
-            # reset loop vars
+            # NOTE: reset loop vars
             ignore_component_state = False
 
         # SECTION: build component thermodb
