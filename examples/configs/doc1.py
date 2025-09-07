@@ -317,6 +317,33 @@ databook_tables_types_ = ReferenceChecker_.get_databook_tables_types(
 )
 print(f"Databook Tables Types: {databook_tables_types_}")
 
+# SECTION: generate property mapping
+property_mapping_ = ReferenceChecker_.generate_property_mapping(
+    databook_name='CUSTOM-REF-1',
+)
+print(f"Property Mapping: {property_mapping_}")
+
+# NOTE: generate property mapping for specific table
+property_mapping_ = ReferenceChecker_.generate_property_mapping(
+    databook_name='CUSTOM-REF-1',
+    table_name='general-data'
+)
+print(f"Property Mapping: {property_mapping_}")
+
+# NOTE: generate property mapping for specific tables
+property_mapping_ = ReferenceChecker_.generate_property_mapping(
+    databook_name='CUSTOM-REF-1',
+    table_name='ideal-gas-heat-capacity'
+)
+print(f"Property Mapping: {property_mapping_}")
+
+# NOTE: generate property mapping for specific tables
+property_mapping_ = ReferenceChecker_.generate_property_mapping(
+    databook_name='CUSTOM-REF-1',
+    table_name='vapor-pressure'
+)
+print(f"Property Mapping: {property_mapping_}")
+
 # SECTION: get component data
 # NOTE: component data by name and state
 component_name = 'carbon dioxide'
