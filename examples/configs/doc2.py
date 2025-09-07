@@ -66,7 +66,7 @@ REFERENCES:
             UNIT: [None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
             CONVERSION: [None,None,None,None,1,1,1,1,1,1,1,1]
           VALUES:
-            - [1,'carbon dioxide','CO2','-',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
+            - [1,'carbon dioxide','CO2','l',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
             - [2,'carbon monoxide','CO','g',28.01,132.92,3.499,0.0944,0.299,0.0482,-110.5,-137.2]
             - [3,'hydrogen','H2','g',2.016,33.19,1.313,0.064147,0.305,-0.216,0,0]
             - [4,'methanol','CH3OH','g',32.04,512.5,8.084,0.117,0.222,0.5658,-200.7,-162]
@@ -172,7 +172,7 @@ REFERENCES:
             UNIT: [None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
             CONVERSION: [None,None,None,None,1,1,1,1,1,1,1,1]
           VALUES:
-            - [100,'carbon dioxide','CO2','g',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
+            - [100,'carbon dioxide','CO3','g',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
             - [2,'carbon monoxide','CO','g',28.01,132.92,3.499,0.0944,0.299,0.0482,-110.5,-137.2]
             - [3,'hydrogen','H2','g',2.016,33.19,1.313,0.064147,0.305,-0.216,0,0]
             - [4,'methanol','CH3OH','g',32.04,512.5,8.084,0.117,0.222,0.5658,-200.7,-162]
@@ -200,7 +200,9 @@ component_name = 'carbon dioxide'
 component_formula = 'CO2'
 component_state = 'g'
 
-# NOTE: check component availability
+# SECTION: check component availability
+# NOTE: check in all tables
+# ! Formula-State
 check_result = ReferenceChecker_.check_component_availability(
     component_name=component_name,
     component_formula=component_formula,
@@ -210,7 +212,30 @@ check_result = ReferenceChecker_.check_component_availability(
 )
 print(f"Check Result: {check_result}")
 
+# ! Name-State
+check_result = ReferenceChecker_.check_component_availability(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    component_key='Name-State'
+)
+print(f"Check Result: {check_result}")
+
+# ! to ignore state by providing 'name' or 'symbol'
+ignore_state_prop = ['MW', 'VaPr']
+check_result = ReferenceChecker_.check_component_availability(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    ignore_state_props=ignore_state_prop
+)
+print(f"Check Result (ignore state by prop): {check_result}")
+
+# NOTE: check in specific table
 # to check in only one table
+# ! Formula-State
 check_result = ReferenceChecker_.check_component_availability(
     component_name=component_name,
     component_formula=component_formula,
@@ -221,7 +246,18 @@ check_result = ReferenceChecker_.check_component_availability(
 )
 print(f"Check Result: {check_result}")
 
-# to ignore state
+# ! check state
+check_result = ReferenceChecker_.check_component_availability(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    table_name='general-data',
+    component_key='Name-State',
+)
+print(f"Check Result: {check_result}")
+
+# ! to ignore state (Formula-State by default)
 check_result = ReferenceChecker_.check_component_availability(
     component_name=component_name,
     component_formula=component_formula,
@@ -232,15 +268,17 @@ check_result = ReferenceChecker_.check_component_availability(
 )
 print(f"Check Result (ignore state): {check_result}")
 
-# to ignore state
+# ! to ignore state
 check_result = ReferenceChecker_.check_component_availability(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
     databook_name='CUSTOM-REF-1',
     table_name='general-data',
+    component_key='Name-State',
+    ignore_component_state=True,
 )
-print(f"Check Result (state sign '-'): {check_result}")
+print(f"Check Result (ignore state): {check_result}")
 
 # NOTE: get component data
 components_data_ = ReferenceChecker_.get_component_data(
@@ -253,7 +291,8 @@ components_data_ = ReferenceChecker_.get_component_data(
 )
 print(f"Components Data: {components_data_}")
 
-# NOTE: get component reference config
+# SECTION: get component reference config
+# ! without ignore state
 component_reference_config = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
     component_formula=component_formula,
@@ -264,6 +303,36 @@ component_reference_config = ReferenceChecker_.get_component_reference_config(
 )
 print(f"Component Reference Config: {component_reference_config}")
 
+# ! with ignore state
+component_reference_config = ReferenceChecker_.get_component_reference_config(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True,
+    ignore_component_state=True
+)
+
+# print result
+print(
+    f"Component Reference Config (ignore state): {component_reference_config}")
+
+# ! with ignore state by providing 'name' or 'symbol'
+ignore_state_prop = ['VaPr']
+component_reference_config = ReferenceChecker_.get_component_reference_config(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True,
+    ignore_state_props=ignore_state_prop
+)
+print(
+    f"Component Reference Config (ignore state by prop): {component_reference_config}")
+
+# SECTION: get component reference configs (ALL)
 # NOTE: get component reference configs
 component_reference_configs = ReferenceChecker_.get_component_reference_configs(
     component_name=component_name,
@@ -274,7 +343,34 @@ component_reference_configs = ReferenceChecker_.get_component_reference_configs(
 )
 print(f"Component Reference Configs: {component_reference_configs}")
 
-# NOTE: generate reference rules
+# ! with ignore state
+component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    add_label=True,
+    check_labels=True,
+    ignore_component_state=True
+)
+print(
+    f"Component Reference Configs (ignore state): {component_reference_configs}"
+)
+
+# ! with ignore state by providing 'name' or 'symbol'
+ignore_state_prop = ['VaPr', 'Molecular-Weight']
+component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    add_label=True,
+    check_labels=True,
+    ignore_state_props=ignore_state_prop
+)
+print(
+    f"Component Reference Configs (ignore state by prop): {component_reference_configs}"
+)
+
+# SECTION: generate reference rules
 if component_reference_configs is not None:
     reference_rules_ = ReferenceChecker_.generate_reference_rules(
         reference_configs=component_reference_configs
