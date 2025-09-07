@@ -1875,7 +1875,7 @@ class ReferenceChecker:
         ] = 'Formula-State',
         ignore_component_state: Optional[bool] = False,
         ignore_state_props: Optional[List[str]] = None
-    ):
+    ) -> Optional[Dict[str, Any]]:
         """
         Get the reference including the databook name and table name for a component.
 
