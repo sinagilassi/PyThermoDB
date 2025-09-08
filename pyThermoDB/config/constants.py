@@ -1,5 +1,5 @@
 # pyThermoDB version
-__version__ = "1.11.25"
+__version__ = "1.11.26"
 # author
 __author__ = "Sina Gilassi"
 # email
