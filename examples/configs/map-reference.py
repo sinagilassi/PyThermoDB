@@ -181,6 +181,5 @@ component_ref_thermodb: ComponentReferenceThermoDB = component_reference_mapper(
     ignore_component_state=True
 )
 # print result
-print(f"reference_configs:\n{component_ref_thermodb.reference_configs}")
-print(f"reference_rules:\n{component_ref_thermodb.reference_rules}")
-print(f"labels:\n{component_ref_thermodb.labels}")
+print(
+    f"[bold green]Component Reference ThermoDB:[/bold green] {component_ref_thermodb}\n")
