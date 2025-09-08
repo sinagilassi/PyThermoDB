@@ -17,7 +17,7 @@ from pydantic import (
 # local
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
-from .models import Component
+from .models import Component, ComponentReferenceThermoDB, ReferenceThermoDB
 from .utils import (
     set_component_id,
     ignore_state_in_prop,
@@ -44,11 +44,8 @@ class ComponentThermoDB(BaseModel):
         The component for which the thermodynamic database is built.
     thermodb: CompBuilder
         The thermodynamic database builder instance.
-    reference_configs: Dict[str, Any]
-        Reference configuration used for building the thermodynamic database.
-    labels: Optional[List[str]]
-        List of labels used in the reference config.
-
+    reference_thermodb : ReferenceThermoDB
+        Reference thermodynamic database.
     """
     component: Component = Field(
         ...,
@@ -58,17 +55,8 @@ class ComponentThermoDB(BaseModel):
         ...,
         description="The thermodynamic database builder instance."
     )
-    reference_configs: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Reference configuration used for building the thermodynamic database."
-    )
-    reference_rules: Dict[str, Dict[str, str]] = Field(
-        default_factory=dict,
-        description="Reference rules generated from the reference configuration."
-    )
-    labels: Optional[List[str]] = Field(
-        default=None,
-        description="List of labels used in the reference config."
+    reference_thermodb: ReferenceThermoDB = Field(
+        ..., description="Reference thermodynamic database."
     )
 
     model_config = ConfigDict(
@@ -1121,13 +1109,20 @@ def build_component_thermodb_from_reference(
         thermodb_comp.build()
 
         # SECTION: ComponentThermoDB settings
+        # NOTE: reference thermodb
+        reference_thermodb = ReferenceThermoDB(
+            reference={'reference': [reference_content]},
+            contents=[reference_content],
+            configs=component_reference_configs,
+            rules=reference_rules,
+            labels=labels
+        )
+        # NOTE: init ComponentThermoDB
         # init ComponentThermoDB
         component_thermodb = ComponentThermoDB(
             component=component_,
             thermodb=thermodb_comp,
-            reference_configs=component_reference_configs,
-            reference_rules=reference_rules,
-            labels=labels
+            reference_thermodb=reference_thermodb,
         )
 
         # return
