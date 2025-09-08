@@ -17,7 +17,7 @@ from pydantic import (
 # local
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
-from .models import Component, ComponentReferenceThermoDB, ReferenceThermoDB
+from .models import Component, ReferenceThermoDB
 from .utils import (
     set_component_id,
     ignore_state_in_prop,
