@@ -10,7 +10,7 @@ from typing import (
 )
 # local
 from .checker import ReferenceChecker
-from ..models import Component, ComponentReferenceThermoDB
+from ..models import Component, ComponentReferenceThermoDB, ReferenceThermoDB
 
 # NOTE: set logger
 logger = logging.getLogger(__name__)
@@ -157,12 +157,20 @@ def component_reference_mapper(
                         labels.append(str(lbl_val))
 
         # SECTION: return result
+        # NOTE: reference thermodb
+        reference_thermodb: ReferenceThermoDB = ReferenceThermoDB(
+            reference={component_name: [reference_content]},
+            contents=[reference_content],
+            configs=component_reference_configs,
+            rules=reference_rules,
+            labels=labels
+        )
+
+        # NOTE: component reference thermodb
         return ComponentReferenceThermoDB(
             component=component,
-            reference_content=[reference_content],
-            reference_configs=component_reference_configs,
-            reference_rules=reference_rules,
-            labels=labels
+            reference_thermodb=reference_thermodb,
+            component_key=component_key
         )
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
