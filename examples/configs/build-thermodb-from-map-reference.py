@@ -188,13 +188,18 @@ print(
 # NOTE: build component thermodb
 # ! custom reference
 custom_reference: Dict[str, Any] = {'reference': [REFERENCE_CONTENT]}
+# ! reference config
+reference_config = component_ref_thermodb_default.reference_thermodb.configs
+# ! ignore labels
+ignore_labels = component_ref_thermodb_default.reference_thermodb.ignore_labels
+
 # build component thermodb
 component_thermodb = check_and_build_component_thermodb(
     component=component,
-    reference_config=component_ref_thermodb_default.reference_thermodb.configs,
+    reference_config=reference_config,
     custom_reference=custom_reference,
     key='Formula-State',
-    ignore_state_props=component_ref_thermodb_default.reference_thermodb.ignore_labels
+    ignore_state_props=ignore_labels
 )
 # print result
 print(
@@ -217,13 +222,18 @@ print(
 # NOTE: build component thermodb
 # ! custom reference
 custom_reference: Dict[str, Any] = {'reference': [REFERENCE_CONTENT]}
+# ! reference config
+reference_config = component_ref_thermodb.reference_thermodb.configs
+# ! ignore labels
+ignore_labels = component_ref_thermodb.reference_thermodb.ignore_labels
+
 # build component thermodb
 component_thermodb = check_and_build_component_thermodb(
     component=component,
-    reference_config=component_ref_thermodb.reference_thermodb.configs,
+    reference_config=reference_config,
     custom_reference=custom_reference,
     key='Formula-State',
-    ignore_state_props=component_ref_thermodb.reference_thermodb.ignore_labels
+    ignore_state_props=ignore_labels
 )
 # print result
 print(
@@ -247,13 +257,18 @@ print(
 # NOTE: build component thermodb
 # ! custom reference
 custom_reference: Dict[str, Any] = {'reference': [REFERENCE_CONTENT]}
+# ! reference config
+reference_config = component_ref_thermodb2.reference_thermodb.configs
+# ! ignore labels
+ignore_labels = component_ref_thermodb2.reference_thermodb.ignore_labels
+
 # build component thermodb
 component_thermodb = check_and_build_component_thermodb(
     component=component,
-    reference_config=component_ref_thermodb2.reference_thermodb.configs,
+    reference_config=reference_config,
     custom_reference=custom_reference,
     key='Formula-State',
-    ignore_state_props=component_ref_thermodb2.reference_thermodb.ignore_labels
+    ignore_state_props=ignore_labels
 )
 # print result
 print(
