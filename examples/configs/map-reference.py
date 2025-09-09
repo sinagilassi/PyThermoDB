@@ -174,6 +174,17 @@ component = Component(
 )
 
 # SECTION: map reference content to component
+# ! default check with state
+component_ref_thermodb_default: ComponentReferenceThermoDB = component_reference_mapper(
+    component=component,
+    reference_content=REFERENCE_CONTENT,
+    key='Formula-State'
+)
+# print result
+print(
+    f"[bold green]Component Reference ThermoDB (default check with state):[/bold green] {component_ref_thermodb_default}\n")
+
+
 # ! ignore_component_state=True to ignore all state check for properties
 component_ref_thermodb: ComponentReferenceThermoDB = component_reference_mapper(
     component=component,
@@ -186,7 +197,7 @@ print(
     f"[bold green]Component Reference ThermoDB:[/bold green] {component_ref_thermodb}\n")
 
 # ! ignore_state_props to ignore state check for specific properties
-ignore_state_props = ['VaPr']
+ignore_state_props = ['VaPr', 'MW']
 component_ref_thermodb2: ComponentReferenceThermoDB = component_reference_mapper(
     component=component,
     reference_content=REFERENCE_CONTENT,
