@@ -116,7 +116,7 @@ def component_reference_mapper(
 
         # SECTION: generate reference rules
         # ! from component_reference_configs
-        reference_rules = ReferenceChecker_.generate_reference_rules(
+        reference_rules = ReferenceChecker_.generate_component_reference_rules(
             reference_configs=component_reference_configs
         )
 

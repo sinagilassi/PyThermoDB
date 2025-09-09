@@ -13,6 +13,7 @@ from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
 from ..utils import ignore_state_in_prop
+from ..models import ComponentConfig, ComponentRule
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -1346,8 +1347,8 @@ class ReferenceChecker:
         component_state: Optional[str] = None,
         component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
         ignore_component_state: Optional[bool] = False,
-        ignore_state_props: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        **kwargs
+    ) -> Dict[str, Dict[str, str]]:
         """
         Generate a reference link for a component.
 
@@ -1363,13 +1364,34 @@ class ReferenceChecker:
             The formula of the component to include in the reference link, by default None.
         component_state : Optional[str], optional
             The state of the component to include in the reference link, by default None.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the component, by default 'Name-State'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state when checking availability, by default False.
+        kwargs : dict, optional
+            Additional keyword arguments, including:
+            - ignore_state_props : Optional[List[str]], optional
+                A list of state properties to ignore when checking availability, by default None.
 
         Returns
         -------
-        Dict[str, Any]
+        Dict[str, Dict[str, str]]
             A dictionary containing the reference link for the component.
         """
         try:
+            # SECTION: additional kwargs
+            ignore_state_props: Optional[List[str]] = kwargs.get(
+                'ignore_state_props', None
+            )
+
+            # >>> check
+            if ignore_state_props is None:
+                ignore_state_props = []
+            elif not isinstance(ignore_state_props, list):
+                logger.warning(
+                    "ignore_state_props must be a list. Setting to empty list.")
+                ignore_state_props = []
+
             # SECTION: get tables
             tables = self.get_databook_tables(databook_name)
 
@@ -1421,6 +1443,14 @@ class ReferenceChecker:
             else:
                 component_availability = None
 
+            # NOTE: update tables if component is not available in any table
+            if component_availability:
+                # remove tables where component is not available
+                tables = {
+                    k: v for k, v in tables.items()
+                    if component_availability.get(k, {}).get('available', False)
+                }
+
             # SECTION: go through each table content
             # iterate through each table
             for table_name, table in tables.items():
@@ -1441,7 +1471,7 @@ class ReferenceChecker:
                     continue
 
                 # matrix symbols
-                matrix_symbols = table.get('MATRIX-SYMBOL', None)
+                matrix_symbols = table.get('MATRIX-SYMBOL', False)
 
                 # get table structure
                 structure = table.get('STRUCTURE', None)
@@ -1584,21 +1614,20 @@ class ReferenceChecker:
             # SECTION: check if reference config is empty
             if reference_config['DATA'] == {}:
                 # add dummy data
-                reference_config['DATA'] = {
-                    'status': 'No Links Provided'
-                }
+                pass
 
             if reference_config['EQUATIONS'] == {}:
                 # add dummy equations
-                reference_config['EQUATIONS'] = {
-                    'status': 'No Links Provided'
-                }
+                pass
 
             # return the reference config
             return reference_config
         except Exception as e:
             logging.error(f"Error generating reference config: {e}")
-            return {}
+            return {
+                'DATA': {},
+                'EQUATIONS': {},
+            }
 
     def check_component_availability(
         self,
@@ -1875,7 +1904,7 @@ class ReferenceChecker:
         ] = 'Formula-State',
         ignore_component_state: Optional[bool] = False,
         ignore_state_props: Optional[List[str]] = None
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[Dict[str, ComponentConfig]]:
         """
         Get the reference including the databook name and table name for a component.
 
@@ -1904,7 +1933,7 @@ class ReferenceChecker:
 
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[Dict[str, ComponentConfig]]
             A dictionary containing the reference config if the component exists, otherwise None.
 
         Notes
@@ -1952,7 +1981,7 @@ class ReferenceChecker:
                     return None
 
             # NOTE: init result
-            res = {}
+            res: Dict[str, ComponentConfig] = {}
 
             # SECTION: iterate through each table in availability
             for table_name, availability_val in availability.items():
@@ -2043,7 +2072,9 @@ class ReferenceChecker:
                             f"Invalid table type '{table_type}' for table '{table_name}'.")
                         continue
 
-                    # add to result
+                    # convert to ComponentConfig
+                    res_availability = ComponentConfig(**res_availability)
+                    # >> add to result
                     res[table_name] = res_availability
 
             # check if res is empty
@@ -2070,7 +2101,7 @@ class ReferenceChecker:
         ] = 'Formula-State',
         ignore_component_state: Optional[bool] = False,
         ignore_state_props: Optional[List[str]] = None
-    ):
+    ) -> Optional[Dict[str, ComponentConfig]]:
         """
         Get the reference including the databook name and table name for a component
         across all databooks.
@@ -2096,7 +2127,7 @@ class ReferenceChecker:
 
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[Dict[str, ComponentConfig]]
             A dictionary containing the reference config if the component exists, otherwise None.
 
         Notes
@@ -2120,7 +2151,7 @@ class ReferenceChecker:
                 ignore_state_props = None
 
             # SECTION: init result
-            res = {}
+            res: Dict[str, ComponentConfig] = {}
 
             # NOTE: databook names
             databook_names = self.get_databook_names()
@@ -2132,7 +2163,7 @@ class ReferenceChecker:
             # SECTION: iterate through each databook
             for databook_name in databook_names:
                 # get component reference config for each databook
-                res_databook = self.get_component_reference_config(
+                res_databook: Optional[Dict[str, ComponentConfig]] = self.get_component_reference_config(
                     component_name,
                     component_formula,
                     component_state,
@@ -2250,6 +2281,118 @@ class ReferenceChecker:
                         continue
 
                     # table
+                    table = ref_config.get('table', None)
+                    if table is None:
+                        logging.error(
+                            f"Table not found in reference config for '{ref_key}'.")
+                        continue
+                    # get property name from label (assuming the property name is the same as the label)
+                    prop = ref_key  # This can be modified based on actual requirements
+
+                    # add to reference rules
+                    if prop not in reference_rules['EQUATIONS']:
+                        reference_rules['EQUATIONS'][prop] = label
+                else:
+                    logging.error(
+                        f"Invalid mode '{mode}' in reference config for '{ref_key}'.")
+                    continue
+
+            # return the reference rules
+            return reference_rules
+        except Exception as e:
+            logging.error(f"Error building reference rules: {e}")
+            return {
+                'DATA': {},
+                'EQUATIONS': {}
+            }
+
+    def generate_component_reference_rules(
+        self,
+        reference_configs: Dict[str, ComponentConfig]
+    ) -> Dict[str, ComponentRule]:
+        """
+        generate the reference rules for a component based on the provided reference configurations. It consists of two main parts: DATA and EQUATIONS. Each part contains thermodynamic properties and their corresponding symbols (labels).
+
+        Parameters
+        ----------
+        reference_configs : Dict[str, ComponentConfig]
+            A dictionary containing the reference configurations for the component.
+
+        Returns
+        -------
+        Dict[str, ComponentRule]
+            A dictionary containing the reference rules for the component.
+
+        Notes
+        -----
+        The reference_configs dictionary should have the following structure:
+        {
+            'reference_key_1': {
+                'databook': 'Databook Name',
+                'table': 'Table Name',
+                'mode': 'DATA' or 'EQUATIONS',
+                'labels': {
+                    'Property1': 'Symbol1',
+                    'Property2': 'Symbol2',
+                    ...
+                } (for DATA mode)
+                'label': 'Symbol' (for EQUATIONS mode)
+            },
+            ...
+        }
+        """
+        try:
+            # SECTION: init result
+            reference_rules: Dict[str, ComponentRule] = {
+                'DATA': {},
+                'EQUATIONS': {}
+            }
+
+            # SECTION: iterate through each reference config
+            for ref_key, ref_config in reference_configs.items():
+                # check if ref_config is a dictionary
+                if not isinstance(ref_config, dict):
+                    logging.error(
+                        f"Reference config for '{ref_key}' is not a dictionary.")
+                    continue
+
+                # NOTE: get mode
+                mode = ref_config.get('mode', None)
+                if mode is None:
+                    logging.error(
+                        f"Mode not found in reference config for '{ref_key}'.")
+                    continue
+
+                # check mode
+                if mode == 'DATA':
+                    # NOTE: iterate through each label
+                    labels = ref_config.get('labels', None)
+                    if not isinstance(labels, dict):
+                        logging.error(
+                            f"Labels not found or invalid in reference config for '{ref_key}'.")
+                        continue
+
+                    for prop, label in labels.items():
+                        # check if prop and label are valid
+                        if prop is None or label is None or label in ['None', '']:
+                            logging.error(
+                                f"Property or label not found or invalid in reference config for '{ref_key}'.")
+                            continue
+
+                        # add to reference rules
+                        if prop not in reference_rules['DATA']:
+
+                            reference_rules['DATA'][prop] = label
+
+                elif mode == 'EQUATIONS':
+                    # NOTE: get label
+                    label = ref_config.get('label', None)
+                    if label is None or label in ['None', '']:
+                        logging.error(
+                            f"Label not found or invalid in reference config for '{ref_key}'.")
+                        continue
+
+                    # NOTE: table
                     table = ref_config.get('table', None)
                     if table is None:
                         logging.error(
