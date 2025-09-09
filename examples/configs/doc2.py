@@ -1,6 +1,8 @@
 # import libs
 from rich import print
+from typing import Dict
 from pyThermoDB.references import ReferenceChecker
+from pyThermoDB.models import ComponentConfig, ComponentRule
 
 # SECTION: reference content
 REFERENCE_CONTENT = """
@@ -296,7 +298,7 @@ print(f"Components Data: {components_data_}")
 component_name_unknown = 'unknown'
 component_formula_unknown = 'Un'
 component_state_unknown = 'g'
-component_reference_config = ReferenceChecker_.get_component_reference_config(
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
     component_name=component_name_unknown,
     component_formula=component_formula_unknown,
     component_state=component_state_unknown,
@@ -307,7 +309,7 @@ component_reference_config = ReferenceChecker_.get_component_reference_config(
 print(f"Component Reference Config (unknown): {component_reference_config}")
 
 # ! without ignore state
-component_reference_config = ReferenceChecker_.get_component_reference_config(
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -318,7 +320,7 @@ component_reference_config = ReferenceChecker_.get_component_reference_config(
 print(f"Component Reference Config: {component_reference_config}")
 
 # ! with ignore state
-component_reference_config = ReferenceChecker_.get_component_reference_config(
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -334,7 +336,7 @@ print(
 
 # ! with ignore state by providing 'name' or 'symbol'
 ignore_state_prop = ['VaPr']
-component_reference_config = ReferenceChecker_.get_component_reference_config(
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -348,7 +350,7 @@ print(
 
 # SECTION: get component reference configs (ALL)
 # NOTE: get component reference configs
-component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -358,7 +360,7 @@ component_reference_configs = ReferenceChecker_.get_component_reference_configs(
 print(f"Component Reference Configs: {component_reference_configs}")
 
 # ! with ignore state
-component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -372,7 +374,7 @@ print(
 
 # ! with ignore state by providing 'name' or 'symbol'
 ignore_state_prop = ['VaPr', 'Molecular-Weight']
-component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -391,20 +393,42 @@ if component_reference_configs is not None:
     )
     print(f"Reference Rules: {reference_rules_}")
 
-# SECTION: generate reference link (ALL)
+if component_reference_configs is not None:
+    component_reference_rules_: Dict[str, ComponentRule] = ReferenceChecker_.generate_component_reference_rules(
+        reference_configs=component_reference_configs
+    )
+    print(f"Component Reference Rules: {component_reference_rules_}")
+
+
+# SECTION: generate reference link (specific component)
+# ! generate reference link (ALL)
 reference_link_ = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1'
 )
 print(f"Reference Link: {reference_link_}")
 
-# SECTION: generate reference link (specific component)
+# ! NOTE: ignore component state is set to True
 reference_link_component = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1',
     component_name=component_name,
     component_formula=component_formula,
-    component_state=component_state
+    component_state=component_state,
+    ignore_component_state=True
 )
-print(f"Reference Link ({component_name}): {reference_link_component}")
+print(
+    f"Component Reference Link ({component_name}): {reference_link_component}")
+
+# ! ignore component state is set to False (by default)
+reference_link_component = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    ignore_component_state=False
+)
+print(
+    f"Component Reference Link ({component_name}): {reference_link_component}"
+)
 
 # SECTION: generate reference link (specific component not exists)
 # component not exists
