@@ -74,6 +74,10 @@ class ReferenceThermoDB(BaseModel):
         default_factory=list,
         description="List of property labels to ignore state during the build."
     )
+    ignore_props: Optional[List[str]] = Field(
+        default_factory=list,
+        description="List of property names to ignore state during the build."
+    )
 
 
 class ComponentReferenceThermoDB(BaseModel):

@@ -127,6 +127,8 @@ def component_reference_mapper(
         ignore_state_props_check: bool = False
         # labels ignored
         labels_ignored = []
+        # property names to ignore state check
+        props_ignored = []
 
         # SECTION: check both databook and table
         for prop_name, prop_idx in component_reference_configs.items():
@@ -156,9 +158,18 @@ def component_reference_mapper(
                 ignore_state_props_check = ignore_state_in_prop(
                     label_, ignore_state_props
                 )
-                # store ignore state for component
+
+                # >>> store ignore state for component
                 if ignore_state_props_check and label_ not in labels_ignored:
+                    # append
+                    # >> to labels_ignored
                     labels_ignored.append(label_)
+
+                # >>> store ignore state for property
+                if ignore_state_props_check and prop_name not in props_ignored:
+                    # append
+                    # >> to props_ignored
+                    props_ignored.append(prop_name)
 
             # >> check labels
             labels_ = prop_idx.get('labels', None)
@@ -173,9 +184,13 @@ def component_reference_mapper(
                         ignore_state_props_check = ignore_state_in_prop(
                             lbl_val, ignore_state_props
                         )
-                        # store ignore state for component
+
+                        # >>> store ignore state for component
                         if ignore_state_props_check and lbl_val not in labels_ignored:
                             labels_ignored.append(lbl_val)
+                        # >>> store ignore state for property
+                        if ignore_state_props_check and prop_name not in props_ignored:
+                            props_ignored.append(prop_name)
 
             # NOTE: reset loop variables
             if len(ignore_state_props) > 0:
@@ -188,6 +203,7 @@ def component_reference_mapper(
         # NOTE: check ignore_component_state
         if ignore_component_state:
             labels_ignored = labels.copy()
+            props_ignored = list(component_reference_configs.keys())
 
         # SECTION: return result
         # NOTE: reference thermodb
@@ -197,7 +213,8 @@ def component_reference_mapper(
             configs=component_reference_configs,
             rules=reference_rules,
             labels=labels,
-            ignore_labels=labels_ignored
+            ignore_labels=labels_ignored,
+            ignore_props=props_ignored
         )
 
         # NOTE: component reference thermodb
