@@ -17,7 +17,7 @@ from pydantic import (
 # local
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
-from .models import Component, ReferenceThermoDB
+from .models import Component, ReferenceThermoDB, ComponentConfig
 from .utils import (
     set_component_id,
     ignore_state_in_prop,
@@ -294,6 +294,7 @@ def check_and_build_component_thermodb(
     component: Component,
     reference_config: Union[
         Dict[str, Dict[str, str]],
+        Dict[str, ComponentConfig],
         str
     ],
     custom_reference: Optional[
@@ -317,7 +318,7 @@ def check_and_build_component_thermodb(
     ----------
     component : Component
         Component object to build thermodynamic databook for Which includes name, formula, and state.
-    reference_config : Dict[str, Dict[str, Any]] | str
+    reference_config : Dict[str, Dict[str, Any]] | str | Dict[str, ComponentConfig]
         Dictionary containing properties of the component to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
@@ -945,7 +946,7 @@ def build_component_thermodb_from_reference(
             )
 
         # SECTION: generate reference rules
-        reference_rules = ReferenceChecker_.generate_reference_rules(
+        reference_rules = ReferenceChecker_.generate_component_reference_rules(
             reference_configs=component_reference_configs
         )
 
