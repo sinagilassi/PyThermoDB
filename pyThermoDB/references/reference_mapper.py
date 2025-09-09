@@ -11,6 +11,7 @@ from typing import (
 # local
 from .checker import ReferenceChecker
 from ..models import Component, ComponentReferenceThermoDB, ReferenceThermoDB
+from ..utils import ignore_state_in_prop
 
 # NOTE: set logger
 logger = logging.getLogger(__name__)
@@ -122,6 +123,10 @@ def component_reference_mapper(
         # SECTION: check component_reference_configs
         # labels
         labels = []
+        # ignore component state
+        ignore_state_props_check: bool = False
+        # labels ignored
+        labels_ignored = []
 
         # SECTION: check both databook and table
         for prop_name, prop_idx in component_reference_configs.items():
@@ -147,6 +152,14 @@ def component_reference_mapper(
                 # append to labels
                 labels.append(str(label_))
 
+                # >> set ignore component property
+                ignore_state_props_check = ignore_state_in_prop(
+                    label_, ignore_state_props
+                )
+                # store ignore state for component
+                if ignore_state_props_check and label_ not in labels_ignored:
+                    labels_ignored.append(label_)
+
             # >> check labels
             labels_ = prop_idx.get('labels', None)
             if labels_ and isinstance(labels_, dict):
@@ -156,6 +169,26 @@ def component_reference_mapper(
                         # append to labels
                         labels.append(str(lbl_val))
 
+                        # >> set ignore component property
+                        ignore_state_props_check = ignore_state_in_prop(
+                            lbl_val, ignore_state_props
+                        )
+                        # store ignore state for component
+                        if ignore_state_props_check and lbl_val not in labels_ignored:
+                            labels_ignored.append(lbl_val)
+
+            # NOTE: reset loop variables
+            if len(ignore_state_props) > 0:
+                ignore_state_props_check = False
+
+        # NOTE: remove duplicates in labels
+        labels = list(set(labels))
+        labels_ignored = list(set(labels_ignored))
+
+        # NOTE: check ignore_component_state
+        if ignore_component_state:
+            labels_ignored = labels.copy()
+
         # SECTION: return result
         # NOTE: reference thermodb
         reference_thermodb: ReferenceThermoDB = ReferenceThermoDB(
@@ -163,7 +196,8 @@ def component_reference_mapper(
             contents=[reference_content],
             configs=component_reference_configs,
             rules=reference_rules,
-            labels=labels
+            labels=labels,
+            ignore_labels=labels_ignored
         )
 
         # NOTE: component reference thermodb

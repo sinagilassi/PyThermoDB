@@ -70,6 +70,10 @@ class ReferenceThermoDB(BaseModel):
         default_factory=list,
         description="List of labels used in the reference config."
     )
+    ignore_labels: Optional[List[str]] = Field(
+        default_factory=list,
+        description="List of property labels to ignore state during the build."
+    )
 
 
 class ComponentReferenceThermoDB(BaseModel):
