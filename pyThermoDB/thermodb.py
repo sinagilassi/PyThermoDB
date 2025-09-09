@@ -378,7 +378,8 @@ def check_and_build_component_thermodb(
     try:
         # NOTE: kwargs
         ignore_state_props: Optional[List[str]] = kwargs.get(
-            'ignore_state_props', None
+            'ignore_state_props',
+            None
         )
         # set default if None
         if ignore_state_props is None:
@@ -386,7 +387,8 @@ def check_and_build_component_thermodb(
 
         # NOTE: check if ignore state for all properties
         ignore_state_all_props: bool = kwargs.get(
-            'ignore_state_all_props', False
+            'ignore_state_all_props',
+            False
         )
 
         if not isinstance(ignore_state_all_props, bool):
@@ -394,6 +396,11 @@ def check_and_build_component_thermodb(
             logging.warning(
                 "ignore_state_all_props must be a boolean, setting to False."
             )
+            ignore_state_all_props = False
+
+        # ! check both ignore_state_props and ignore_state_all_props
+        if len(ignore_state_props) > 0:
+            # set ignore_state_all_props to False
             ignore_state_all_props = False
 
         # NOTE: check inputs
@@ -411,7 +418,7 @@ def check_and_build_component_thermodb(
             component_key=component_key
         )
 
-        # NOTE: check if reference_config is a string
+        # SECTION: check if reference_config is a string
         if isinstance(reference_config, str):
             # ! init ReferenceConfig
             ReferenceConfig_ = ReferenceConfig()
@@ -437,7 +444,7 @@ def check_and_build_component_thermodb(
             custom_reference=custom_reference
         )
 
-        # init res
+        # SECTION: init res
         res = {}
         # labels
         labels: List[str] = []
@@ -505,10 +512,11 @@ def check_and_build_component_thermodb(
 
                 # >> set ignore state
                 # ! for label
-                ignore_component_state = ignore_state_in_prop(
-                    label_,
-                    ignore_state_props
-                )
+                if len(ignore_state_props) > 0:
+                    ignore_component_state = ignore_state_in_prop(
+                        label_,
+                        ignore_state_props
+                    )
 
             # NOTE: >> check labels
             labels_ = prop_idx.get(
@@ -610,7 +618,8 @@ def check_and_build_component_thermodb(
 
             # NOTE: reset loop vars
             # ! ignore state
-            ignore_component_state = False
+            if len(ignore_state_props) > 0:
+                ignore_component_state = False
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
@@ -952,8 +961,14 @@ def build_component_thermodb_from_reference(
         res = {}
         # labels
         labels = []
+        # ignore labels
+        ignore_labels: List[str] = []
+        # ignore state in property
+        ignore_props: List[str] = []
         # ignore state for all properties
         ignore_component_state: bool = False
+        # ignore component state check
+        ignore_state_props_check: bool = False
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
@@ -985,10 +1000,18 @@ def build_component_thermodb_from_reference(
                 labels.append(str(label_))
 
                 # >> set ignore state
-                ignore_component_state = ignore_state_in_prop(
-                    label_,
-                    ignore_state_props
-                )
+                if len(ignore_state_props) > 0:
+                    # ! for label
+                    ignore_state_props_check = ignore_state_in_prop(
+                        label_,
+                        ignore_state_props
+                    )
+
+                    # >> set & append to ignore labels
+                    if ignore_state_props_check:
+                        ignore_component_state = True
+                        ignore_labels.append(str(label_))
+                        ignore_props.append(str(prop_name))
 
             # >> check labels
             labels_ = prop_idx.get('labels', None)
@@ -1004,13 +1027,15 @@ def build_component_thermodb_from_reference(
                 if len(ignore_state_props) > 0:
                     for item in labels_.values():
                         # set ignore state
-                        ignore_component_state = ignore_state_in_prop(
+                        ignore_state_props_check = ignore_state_in_prop(
                             item,
                             ignore_state_props
                         )
                         # check
-                        if ignore_component_state:
-                            break
+                        if ignore_state_props_check:
+                            ignore_component_state = True
+                            ignore_labels.append(str(item))
+                            ignore_props.append(str(prop_name))
 
             # NOTE: check component
             component_checker_ = ReferenceChecker_.check_component_availability(
@@ -1073,7 +1098,9 @@ def build_component_thermodb_from_reference(
                 continue
 
             # NOTE: reset loop vars
-            ignore_component_state = False
+            if len(ignore_state_props) > 0:
+                ignore_state_props_check = False
+                ignore_component_state = False
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
@@ -1115,7 +1142,9 @@ def build_component_thermodb_from_reference(
             contents=[reference_content],
             configs=component_reference_configs,
             rules=reference_rules,
-            labels=labels
+            labels=labels,
+            ignore_labels=ignore_labels,
+            ignore_props=ignore_props
         )
         # NOTE: init ComponentThermoDB
         # init ComponentThermoDB
