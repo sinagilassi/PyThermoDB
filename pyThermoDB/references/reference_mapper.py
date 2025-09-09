@@ -208,7 +208,7 @@ def component_reference_mapper(
         # SECTION: return result
         # NOTE: reference thermodb
         reference_thermodb: ReferenceThermoDB = ReferenceThermoDB(
-            reference={component_name: [reference_content]},
+            reference={'reference': [reference_content]},
             contents=[reference_content],
             configs=component_reference_configs,
             rules=reference_rules,
