@@ -1,5 +1,6 @@
 # import packages/modules
-from typing import TypedDict, List, Optional, Union, Dict, Any
+from typing import List, Optional, Union, Dict, Any
+from typing_extensions import TypedDict
 import numpy as np
 
 

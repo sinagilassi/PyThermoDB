@@ -1,7 +1,5 @@
 # import libs
-from typing import (
-    TypedDict
-)
+from typing_extensions import TypedDict
 
 
 class ComponentConfig(TypedDict, total=False):
