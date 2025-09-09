@@ -9,6 +9,9 @@ from .ref import (
 
 from .references import Component, ComponentReferenceThermoDB, ReferenceThermoDB
 from .property import PropertyMatch
+from .configs import ComponentConfig
+from .rules import ComponentRule
+from .conditions import Pressure, Temperature
 
 __all__ = [
     'DataBookTableTypes',
@@ -21,4 +24,8 @@ __all__ = [
     'PropertyMatch',
     'ComponentReferenceThermoDB',
     'ReferenceThermoDB',
+    'ComponentConfig',
+    'ComponentRule',
+    'Pressure',
+    'Temperature',
 ]
