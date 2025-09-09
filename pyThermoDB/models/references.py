@@ -11,6 +11,9 @@ from pydantic import (
     Field,
     ConfigDict
 )
+# local
+from .configs import ComponentConfig
+from .rules import ComponentRule
 
 
 class Component(BaseModel):
@@ -37,12 +40,16 @@ class ReferenceThermoDB(BaseModel):
         Dictionary of references with their associated contents.
     contents : List[str]
         List of reference contents used for building the thermodynamic database.
-    configs : Dict[str, Any]
+    configs : Dict[str, ComponentConfig]
         Reference configuration used for building the thermodynamic database.
-    rules : Dict[str, Any]
+    rules : ComponentRule
         Reference rules generated from the reference configuration.
     labels : Optional[List[str]]
         List of labels used in the reference config.
+    ignore_labels : Optional[List[str]]
+        List of property labels to ignore state during the build.
+    ignore_props : Optional[List[str]]
+        List of property names to ignore state during the build.
 
     Notes
     -----
@@ -58,11 +65,11 @@ class ReferenceThermoDB(BaseModel):
         ...,
         description="List of reference contents used for building the thermodynamic database."
     )
-    configs: Dict[str, Any] = Field(
+    configs: Dict[str, ComponentConfig] = Field(
         default_factory=dict,
         description="Reference configuration used for building the thermodynamic database."
     )
-    rules: Dict[str, Any] = Field(
+    rules: Dict[str, ComponentRule] = Field(
         default_factory=dict,
         description="Reference rules generated from the reference configuration."
     )
@@ -77,6 +84,10 @@ class ReferenceThermoDB(BaseModel):
     ignore_props: Optional[List[str]] = Field(
         default_factory=list,
         description="List of property names to ignore state during the build."
+    )
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
     )
 
 
