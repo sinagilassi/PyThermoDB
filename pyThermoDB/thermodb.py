@@ -951,10 +951,10 @@ def build_component_thermodb_from_reference(
 
         # SECTION: build thermodb
         # set reference
-        ref: Dict[str, Any] = {'reference': [reference_content]}
+        reference: Dict[str, Any] = {'reference': [reference_content]}
 
         thermodb = init(
-            custom_reference=ref
+            custom_reference=reference
         )
 
         # NOTE: init res
@@ -1138,7 +1138,7 @@ def build_component_thermodb_from_reference(
         # SECTION: ComponentThermoDB settings
         # NOTE: reference thermodb
         reference_thermodb = ReferenceThermoDB(
-            reference={'reference': [reference_content]},
+            reference=reference,
             contents=[reference_content],
             configs=component_reference_configs,
             rules=reference_rules,
