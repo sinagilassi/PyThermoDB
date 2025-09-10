@@ -187,7 +187,7 @@ print(
 
 # NOTE: build component thermodb
 # ! custom reference
-custom_reference: Dict[str, Any] = {'reference': [REFERENCE_CONTENT]}
+custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! reference config
 reference_config = component_ref_thermodb_default.reference_thermodb.configs
 # ! ignore labels
@@ -221,7 +221,7 @@ print(
 
 # NOTE: build component thermodb
 # ! custom reference
-custom_reference: Dict[str, Any] = {'reference': [REFERENCE_CONTENT]}
+custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! reference config
 reference_config = component_ref_thermodb.reference_thermodb.configs
 # ! ignore labels
@@ -256,7 +256,7 @@ print(
 
 # NOTE: build component thermodb
 # ! custom reference
-custom_reference: Dict[str, Any] = {'reference': [REFERENCE_CONTENT]}
+custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! reference config
 reference_config = component_ref_thermodb2.reference_thermodb.configs
 # ! ignore labels
