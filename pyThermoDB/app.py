@@ -5,7 +5,6 @@ from typing import (
     Optional,
     Dict,
     List,
-    Any,
 )
 # local
 from .docs import (
@@ -14,6 +13,7 @@ from .docs import (
 )
 from .builder import CompBuilder
 from .loader import CustomRef
+from .models import CustomReference
 
 
 # NOTE: logger
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def init(
     custom_reference: Optional[
-        Dict[str, List[str | Dict[str, Any]]]
+        CustomReference | str
     ] = None
 ) -> ThermoDB:
     '''
@@ -30,7 +30,7 @@ def init(
 
     Parameters
     ----------
-    custom_reference : dict | None, optional
+    custom_reference : Optional[CustomReference | str], optional
         set-up external reference (custom reference) dict for databook and tables (check examples)
 
     Returns
@@ -42,7 +42,6 @@ def init(
     ------
     ### Set-up external reference dict for databook and tables
 
-    - `format ref_external = {'yml':[yml files], 'csv':[csv files]}`
     - `format ref_external = {'reference':[yml files], 'tables':[csv files]}`
 
     ### Examples
@@ -59,16 +58,42 @@ def init(
     ```
     '''
     try:
+        # NOTE: init vars
         # check new custom ref
         check_ref = False
+        # init class
+        CustomRefC = None
+
+        # SECTION: init class
         if custom_reference:
+            # NOTE: check both str and dict
+            if not isinstance(custom_reference, (str, dict)):
+                logger.error(
+                    "`custom_reference` must be a string or dictionary!")
+                raise TypeError(
+                    "`custom_reference` must be a string or dictionary!")
+
+            # NOTE: check if string (yml file)
+            if isinstance(custom_reference, str):
+                # set dict
+                custom_reference = {'reference': [custom_reference]}
+
+            # NOTE: check dict values
+            if not all(isinstance(v, list) for v in custom_reference.values()):
+                logger.error(
+                    "All values in `custom_reference` dictionary must be lists!")
+                raise TypeError(
+                    "All values in `custom_reference` dictionary must be lists!")
+
+            # NOTE: init class
             CustomRefC = CustomRef(custom_reference)
-            # check ref
+
+            # NOTE: initialize reference
             check_ref = CustomRefC.init_ref()
 
-        # check
+        # SECTION: check ref
         if check_ref:
-            return ThermoDB(CustomRefC)
+            return ThermoDB(custom_ref=CustomRefC)
         else:
             return ThermoDB()
     except Exception as e:
