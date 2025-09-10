@@ -7,7 +7,7 @@ from .ref import (
     EquationResult
 )
 
-from .references import Component, ComponentReferenceThermoDB, ReferenceThermoDB
+from .references import Component, ComponentReferenceThermoDB, ReferenceThermoDB, CustomReference
 from .property import PropertyMatch
 from .configs import ComponentConfig
 from .rules import ComponentRule
@@ -28,4 +28,5 @@ __all__ = [
     'ComponentRule',
     'Pressure',
     'Temperature',
+    'CustomReference'
 ]
