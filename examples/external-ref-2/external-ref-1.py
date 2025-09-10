@@ -1,5 +1,5 @@
 # import packages/modules
-from typing import Dict, Any
+from typing import Dict, Any, List
 import pyThermoDB as ptdb
 import os
 from rich import print
@@ -40,17 +40,17 @@ csv_path_2 = os.path.join(test_dir, csv_file_2)
 csv_path_3 = os.path.join(test_dir, csv_file_3)
 
 # NOTE: custom ref
-ref: Dict[str, Any] = {
+custom_reference: Dict[str, List[str]] = {
     'reference': [yml_path],
     'tables': [csv_path_1, csv_path_2, csv_path_3],
 }
 
-print(ref)
+print(custom_reference)
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
 # ====================================
-thermo_db = ptdb.init(custom_reference=ref)
+thermo_db = ptdb.init(custom_reference=custom_reference)
 
 # ====================================
 # GET DATABOOK LIST
