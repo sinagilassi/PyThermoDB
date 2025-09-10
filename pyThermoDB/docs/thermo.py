@@ -82,10 +82,16 @@ class ThermoDB(ManageData):
     # selected table
     __selected_tb = ''
 
-    def __init__(self, custom_ref=None, data_source='local'):
+    def __init__(
+            self,
+            custom_ref=None,
+            data_source='local'
+    ):
+        # NOTE: set
         self.data_source = data_source
         self.custom_ref = custom_ref
-        # ManageData init
+
+        # LINK: ManageData init
         ManageData.__init__(self, custom_ref=custom_ref)
 
     @property
