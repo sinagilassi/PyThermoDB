@@ -5,7 +5,6 @@ from typing import (
     Dict,
     List,
     Union,
-    Any,
     Literal,
     cast
 )
@@ -17,7 +16,7 @@ from pydantic import (
 # local
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
-from .models import Component, ReferenceThermoDB, ComponentConfig
+from .models import Component, ReferenceThermoDB, ComponentConfig, CustomReference
 from .utils import (
     set_component_id,
     ignore_state_in_prop,
@@ -71,10 +70,7 @@ def build_component_thermodb(
         str
     ],
     custom_reference: Optional[
-        Dict[
-            str,
-            List[str | Dict[str, Any]]
-        ]
+        CustomReference
     ] = None,
     component_key: Literal['Name', 'Formula'] = 'Name',
     thermodb_name: Optional[str] = None,
@@ -92,7 +88,7 @@ def build_component_thermodb(
         Dictionary containing properties of the component to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
-    custom_reference : Optional[Dict[str, List[str | dict]]], optional
+    custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     component_key : Literal['Name', 'Formula'], optional
         Key to identify the component in the reference content, by default 'Formula'
@@ -298,10 +294,7 @@ def check_and_build_component_thermodb(
         str
     ],
     custom_reference: Optional[
-        Dict[
-            str,
-            List[str | Dict[str, Any]]
-        ]
+        CustomReference
     ] = None,
     component_key: Literal[
         'Name-State', 'Formula-State'
@@ -322,7 +315,7 @@ def check_and_build_component_thermodb(
         Dictionary containing properties of the component to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
-    custom_reference : Optional[Dict[str, List[str | dict]]], optional
+    custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     component_key : Literal['Name-State', 'Formula-State'], optional
         Key to identify the component in the reference content, by default 'Formula-State'
@@ -660,7 +653,7 @@ def build_components_thermodb(
     component_names: List[str],
     reference_config: Dict[str, Dict[str, str]],
     thermodb_name: Optional[str] = None,
-    custom_reference: Optional[Dict[str, List[str | dict]]] = None,
+    custom_reference: Optional[CustomReference] = None,
     message: Optional[str] = None
 ) -> CompBuilder:
     '''
@@ -674,7 +667,7 @@ def build_components_thermodb(
         Dictionary containing properties of the components to be included in the thermodynamic databook.
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
-    custom_reference : Optional[Dict[str, List[str | dict]]], optional
+    custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
@@ -952,7 +945,7 @@ def build_component_thermodb_from_reference(
 
         # SECTION: build thermodb
         # set reference
-        reference: Dict[str, Any] = {'reference': [reference_content]}
+        reference: CustomReference = {'reference': [reference_content]}
 
         thermodb = init(
             custom_reference=reference
