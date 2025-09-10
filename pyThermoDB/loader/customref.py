@@ -16,6 +16,7 @@ class CustomRef:
     '''
 
     def __init__(self, ref):
+        # NOTE: set external reference
         self.ref = ref
 
         # NOTE: files
