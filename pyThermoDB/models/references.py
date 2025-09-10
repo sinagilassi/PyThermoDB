@@ -15,6 +15,9 @@ from pydantic import (
 from .configs import ComponentConfig
 from .rules import ComponentRule
 
+# NOTE: custom reference models
+CustomReference = Dict[str, List[str]]
+
 
 class Component(BaseModel):
     """Component model for input validation"""
