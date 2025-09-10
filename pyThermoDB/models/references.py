@@ -121,3 +121,7 @@ class ComponentReferenceThermoDB(BaseModel):
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
     )
+
+
+# NOTE: List of ComponentReferenceThermoDB
+ComponentsReferenceThermoDB = List[ComponentReferenceThermoDB]
