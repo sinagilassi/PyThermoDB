@@ -14,6 +14,7 @@ from .reference_utils import (
     is_databook_available
 )
 from .core_utils import has_prop_nested
+from .extractor import YAMLExtractor
 
 __all__ = [
     "log2Col",
@@ -29,5 +30,6 @@ __all__ = [
     "is_table_available",
     "is_databook_available",
     "has_prop_nested",
-    "validate_component_state"
+    "validate_component_state",
+    "YAMLExtractor"
 ]
