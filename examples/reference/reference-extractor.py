@@ -204,13 +204,13 @@ if result['sections']:
         print(f"Section {i} ({section['method']})")
         print('='*60)
 
-        # # Pretty print the content
-        # import json
-        # print("Parsed content:")
-        # print(json.dumps(section['content'], indent=2, default=str))
+        # Pretty print the content
+        import json
+        print("Parsed content:")
+        print(json.dumps(section['content'], indent=2, default=str))
 
-        # print(f"\nRaw YAML:")
-        # print(section['raw'])
+        print(f"\nRaw YAML:")
+        print(section['raw'])
 
 print("\n" + "="*60)
 print("Testing with your original input:")
