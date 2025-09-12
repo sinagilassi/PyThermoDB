@@ -1,9 +1,13 @@
 # import libs
-from pyThermoDB.references import check_custom_reference, ReferenceChecker
+from pyThermoDB.references import check_custom_reference, ReferenceChecker, extract_reference_from_str
 from rich import print
 
 # SECTION: reference content
 REFERENCE_CONTENT = """
+This is an example of a custom reference in YAML format for a databook named "MyDatabook" containing two databooks with multiple tables. The custom reference includes various thermodynamic properties and parameters for different chemical species.
+
+It can be used to initialize a ThermoDB application or check references.
+--------------------------------
 REFERENCES:
     CUSTOM-REF-1:
       DATABOOK-ID: 1
@@ -188,15 +192,25 @@ REFERENCES:
             - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
             - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
+--------------------------------
+this is an example of a custom reference in YAML format for a databook named "MyDatabook" containing two databooks with multiple tables. The custom reference includes various thermodynamic properties and parameters for different chemical species.
 """
 
+# SECTION: extract reference from string
+extracted_reference_ = extract_reference_from_str(REFERENCE_CONTENT)
+print(extracted_reference_)
+extract_status, extracted_content_ = extracted_reference_
+print(f"Extract Status: {extract_status}")
+print(f"Extracted Content: {extracted_content_}")
+
+
 # SECTION: check custom reference
-check_ = check_custom_reference(REFERENCE_CONTENT)
+check_ = check_custom_reference(extracted_content_)
 print(check_)
 
 
 # SECTION: create ReferenceChecker instance
-ReferenceChecker_ = ReferenceChecker(REFERENCE_CONTENT)
+ReferenceChecker_ = ReferenceChecker(extracted_content_)
 
 # SECTION: get databook names
 databook_names_ = ReferenceChecker_.get_databook_names()
