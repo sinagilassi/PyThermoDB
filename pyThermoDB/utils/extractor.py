@@ -97,7 +97,7 @@ class YAMLExtractor:
 
             if not yaml_started:
                 # Looking for start of a YAML block
-                if self._looks_like_yaml_start(line):
+                if self._looks_like_yaml_start(line, lines, i):
                     # Skip if this is inside a marker block already processed
                     if stripped == '---':
                         # This might be a marker block, skip it
@@ -160,7 +160,7 @@ class YAMLExtractor:
                         consecutive_non_yaml = 0
 
                         # Check if current line starts a new YAML block
-                        if self._looks_like_yaml_start(line):
+                        if self._looks_like_yaml_start(line, lines, i):
                             yaml_started = True
                             current_block = [line]
                             block_start_idx = i
@@ -200,7 +200,7 @@ class YAMLExtractor:
 
         return results
 
-    def _looks_like_yaml_start(self, line: str) -> bool:
+    def _looks_like_yaml_start(self, line: str, lines: List[str] = None, line_idx: int = -1) -> bool:
         """Check if a line looks like it could start a YAML document."""
         stripped = line.strip()
 
@@ -211,15 +211,12 @@ class YAMLExtractor:
         if stripped in ['---', '...']:
             return True
 
-        # Comment at start
+        # DON'T treat standalone comments as YAML start
         if stripped.startswith('#'):
-            return True
+            return False
 
-        # Key-value pair (must have colon followed by space, newline, or end)
-        if re.match(r'^[a-zA-Z_][\w\-]*\s*:\s*(?:.*|$)', stripped):
-            # Make sure it's not a time or URL
-            if re.match(r'^\d+:\d+', stripped) or '://' in stripped:
-                return False
+        # Key-value pair check with better validation
+        if self._looks_like_yaml_key_value(stripped, line, lines, line_idx):
             return True
 
         # List item
@@ -227,6 +224,96 @@ class YAMLExtractor:
             return True
 
         return False
+
+    def _looks_like_yaml_key_value(self, stripped: str, full_line: str, lines: List[str] = None, line_idx: int = -1) -> bool:
+        """Enhanced key-value pair detection with context awareness."""
+        # Basic key-value pattern
+        key_value_match = re.match(
+            r'^([a-zA-Z_][\w\-]*)\s*:\s*(.*?)$', stripped)
+        if not key_value_match:
+            return False
+
+        key, value = key_value_match.groups()
+
+        # Skip URLs and times
+        if re.match(r'^\d+:\d+', stripped) or '://' in stripped:
+            return False
+
+        # Check if this appears to be in a comment context
+        if lines and line_idx >= 0:
+            # Look at the original line in context to see if it's part of a comment
+            if self._appears_in_comment_context(lines, line_idx, key):
+                return False
+
+        # Additional validation for key-value pairs
+
+        # 1. Very short keys with no meaningful value are suspicious
+        if len(key) <= 2 and not value.strip():
+            return False
+
+        # 2. Single letter keys are often not real YAML keys
+        if len(key) == 1:
+            return False
+
+        # 3. If we have context, check if next lines make sense
+        if lines and line_idx >= 0:
+            if not self._has_reasonable_yaml_continuation(lines, line_idx):
+                return False
+
+        return True
+
+    def _appears_in_comment_context(self, lines: List[str], line_idx: int, key: str) -> bool:
+        """Check if a key appears to be part of a comment rather than real YAML."""
+        current_line = lines[line_idx]
+
+        # Check if the line starts with # (even before the key)
+        # This handles cases like "# Some text OK: value"
+        hash_pos = current_line.find('#')
+        key_pos = current_line.find(key + ':')
+
+        if hash_pos >= 0 and key_pos >= 0 and hash_pos < key_pos:
+            # The key appears after a # comment marker
+            return True
+
+        # Check if previous lines suggest we're in a comment block
+        comment_context = 0
+        for i in range(max(0, line_idx - 3), line_idx):
+            if i < len(lines) and lines[i].strip().startswith('#'):
+                comment_context += 1
+
+        # If surrounded by comments and key is short, it's likely part of comment
+        if comment_context >= 2 and len(key) <= 3:
+            return True
+
+        return False
+
+    def _has_reasonable_yaml_continuation(self, lines: List[str], line_idx: int) -> bool:
+        """Check if the lines following a potential YAML key make sense."""
+        if line_idx + 1 >= len(lines):
+            return True  # End of file, can't check continuation
+
+        # Look at next 3 lines
+        next_few_lines = lines[line_idx + 1:line_idx + 4]
+
+        yaml_like_continuations = 0
+        non_yaml_continuations = 0
+
+        for next_line in next_few_lines:
+            stripped = next_line.strip()
+            if not stripped:
+                continue  # Skip empty lines
+
+            # Check if it looks like YAML continuation
+            if (stripped.startswith('  ') or  # Indented (likely YAML)
+                re.match(r'^[a-zA-Z_][\w\-]*\s*:', stripped) or  # Another key
+                stripped.startswith('- ') or  # List item
+                    stripped.startswith('#')):  # Comment
+                yaml_like_continuations += 1
+            else:
+                non_yaml_continuations += 1
+
+        # If we see more non-YAML than YAML continuations, it's probably not YAML
+        return yaml_like_continuations >= non_yaml_continuations
 
     def _is_yaml_continuation(self, line: str, indent_stack: List[int]) -> bool:
         """Check if a line continues YAML structure based on indentation and content."""
@@ -236,15 +323,14 @@ class YAMLExtractor:
         if not stripped:
             return True
 
-        # Comments are continuations
+        # Comments are continuations ONLY if we're already in a YAML block
         if stripped.startswith('#'):
             return True
 
         # Check for YAML patterns
-        # Key-value pair (but not URLs or times)
-        if re.match(r'^[a-zA-Z_][\w\-]*\s*:', stripped):
-            if not ('://' in stripped or re.match(r'^\d+:\d+', stripped)):
-                return True
+        # Key-value pair (with better validation)
+        if self._looks_like_yaml_key_value(stripped, line):
+            return True
 
         # List item
         if stripped.startswith('- '):
@@ -277,6 +363,10 @@ class YAMLExtractor:
 
         if not stripped:
             return False  # Empty lines could be part of YAML
+
+        # Standalone comments at the beginning are not YAML content
+        if stripped.startswith('#'):
+            return True
 
         # Check for patterns that are definitely not YAML
         # Sentences without YAML structure
