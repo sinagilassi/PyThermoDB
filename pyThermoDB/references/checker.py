@@ -13,7 +13,7 @@ from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
 from ..utils import ignore_state_in_prop
-from ..models import ComponentConfig, ComponentRule
+from ..models import ComponentConfig, ComponentRule, CustomReference
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -34,14 +34,14 @@ class ReferenceChecker:
     def __init__(
         self,
         custom_reference:
-        Union[Dict[str, List[str | Dict[str, Any]]], str]
+        CustomReference | str
     ):
         """
         Initialize the ReferenceChecker with a custom reference.
 
         Parameters
         ----------
-        custom_reference : Dict[str, List[str | Dict[str, Any]]]
+        custom_reference : CustomReference | str
             A dictionary containing custom references, where the key is 'reference'
         """
         # NOTE: set custom reference
@@ -64,7 +64,12 @@ class ReferenceChecker:
                 "custom_reference must be a dictionary or a string.")
 
         # SECTION: load reference
-        self.load_reference()
+        load_reference_status = self.load_reference()
+        # check load reference status
+        if not load_reference_status:
+            logging.error("Failed to load custom reference.")
+            # set reference to None
+            self._reference = None
 
     @property
     def reference(self):
@@ -86,14 +91,14 @@ class ReferenceChecker:
 
     def load_reference(
         self
-    ) -> Optional[Dict[str, List[str | Dict[str, Any]]]]:
+    ) -> bool:
         """
         Load the custom reference.
 
         Returns
         -------
-        Optional[Dict[str, List[str | Dict[str, Any]]]]
-            The custom reference if it exists, otherwise None.
+        bool
+            True if the reference is loaded successfully, otherwise False.
         """
         try:
             # SECTION: check format of custom_reference
@@ -108,9 +113,12 @@ class ReferenceChecker:
             if check_ref:
                 # load custom reference
                 self._reference = CustomRef_.load_ref()
+
+            # return
+            return True
         except Exception as e:
             logging.error(f"Error loading custom reference: {e}")
-            return None
+            return False
 
     def get_databook(
         self,
@@ -1337,6 +1345,53 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting property mappings: {e}")
             return []
+
+    def prop_available_in_databook(
+        self,
+        prop_ids: List[str],
+        databook_name: str,
+        table_name: Optional[str] = None
+    ) -> Dict[str, bool]:
+        '''
+        Check if the given property IDs are available in the specified databook (and table if provided).
+
+        Parameters
+        ----------
+        prop_ids : List[str]
+            A list of property IDs to check.
+        databook_name : str
+            The name of the databook.
+        table_name : Optional[str], optional
+            The name of the table to filter by, by default None.
+
+        Returns
+        -------
+        Dict[str, bool]
+            A dictionary with property IDs as keys and availability (True/False) as values.
+        '''
+        try:
+            # SECTION: get property mappings
+            property_mappings = self.get_property_mappings(
+                databook_name,
+                table_name
+            )
+
+            if not property_mappings:
+                logging.warning(
+                    f"No property mappings found for databook '{databook_name}'"
+                    + (f" and table '{table_name}'." if table_name else ".")
+                )
+                return {prop_id: False for prop_id in prop_ids}
+
+            # SECTION: check availability
+            availability = {}
+            for prop_id in prop_ids:
+                availability[prop_id] = prop_id in property_mappings
+
+            return availability
+        except Exception as e:
+            logging.error(f"Error checking property availability: {e}")
+            return {prop_id: False for prop_id in prop_ids}
 
     def generate_reference_link(
         self,
