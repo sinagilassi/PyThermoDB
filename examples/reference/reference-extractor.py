@@ -1,5 +1,6 @@
 # import libs
 from pyThermoDB.utils import YAMLExtractor
+from pyThermoDB.references import extract_reference_from_str
 
 # SECTION: reference content
 # NOTE: string with yaml sections
@@ -184,7 +185,7 @@ This file is used in PyThermoDB
 This file is a yaml format. Then AI can produce this as it is!
 '''
 
-# NOTE: create extractor instance
+# SECTION: create extractor instance
 # Create extractor instance
 extractor = YAMLExtractor()
 
@@ -192,6 +193,7 @@ extractor = YAMLExtractor()
 result = extractor.extract_and_validate(content_1)
 
 print("Extraction Results:")
+print("Result Dictionary Keys:", result.keys())
 print(f"Found YAML: {result['found_yaml']}")
 print(f"Number of sections: {result['num_sections']}")
 print(f"\n{result['summary']}")
@@ -200,6 +202,8 @@ print(f"\n{result['summary']}")
 if result['sections']:
     print("\nExtracted YAML Content:")
     for i, section in enumerate(result['sections'], 1):
+        # keys
+        print(f"\nSection {i} keys: {list(section.keys())}")
         print(f"\n{'='*60}")
         print(f"Section {i} ({section['method']})")
         print('='*60)
@@ -212,6 +216,10 @@ if result['sections']:
         print(f"\nRaw YAML:")
         print(section['raw'])
 
-print("\n" + "="*60)
-print("Testing with your original input:")
-print("="*60)
+
+# SECTION: function to extract reference from string
+found, yaml_str = extract_reference_from_str(content_1)
+print("\nFunction Output:")
+print(f"YAML Found: {found}")
+print("YAML String:")
+print(yaml_str)
