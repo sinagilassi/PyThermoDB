@@ -9,7 +9,6 @@ from typing import (
     Dict,
     Any,
     List,
-    Optional
 )
 from pathlib import Path
 # locals

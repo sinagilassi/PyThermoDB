@@ -2,15 +2,16 @@
 import logging
 from typing import (
     Literal,
-    Dict,
     List,
-    Optional,
-    Union,
-    Any,
+    Optional
+)
+from pythermodb_settings.models import (
+    Component,
+    ComponentReferenceThermoDB,
+    ReferenceThermoDB
 )
 # local
 from .checker import ReferenceChecker
-from ..models import Component, ComponentReferenceThermoDB, ReferenceThermoDB
 from ..utils import ignore_state_in_prop
 
 # NOTE: set logger
@@ -221,7 +222,6 @@ def component_reference_mapper(
         return ComponentReferenceThermoDB(
             component=component,
             reference_thermodb=reference_thermodb,
-            component_key=component_key
         )
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
