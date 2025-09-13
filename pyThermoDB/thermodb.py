@@ -13,10 +13,15 @@ from pydantic import (
     Field,
     ConfigDict
 )
+from pythermodb_settings.models import (
+    Component,
+    ReferenceThermoDB,
+    ComponentConfig,
+    CustomReference
+)
 # local
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
-from .models import Component, ReferenceThermoDB, ComponentConfig, CustomReference
 from .utils import (
     set_component_id,
     ignore_state_in_prop,

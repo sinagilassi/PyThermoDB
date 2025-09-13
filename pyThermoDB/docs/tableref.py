@@ -10,9 +10,8 @@ import glob
 # local
 from ..manager import ManageData
 from ..data import TableTypes
-from ..models import PayLoadType
+from ..models import PayLoadType, DataBookTableTypes
 from ..loader import CustomRef
-from ..models import DataBookTableTypes
 
 # NOTE: logger
 logger = logging.getLogger(__name__)

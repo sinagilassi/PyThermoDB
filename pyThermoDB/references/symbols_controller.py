@@ -2,7 +2,7 @@
 import logging
 import yaml
 import os
-from typing import Dict, Any, Optional, List
+from typing import List
 # locals
 
 # NOTE: logger

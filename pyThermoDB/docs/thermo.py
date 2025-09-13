@@ -13,7 +13,7 @@ from typing import (
 import json
 import webbrowser
 import tempfile
-# from jinja2 import Environment, FileSystemLoader
+from pythermodb_settings.models import Component
 # internal
 from ..config import API_URL, __version__
 from ..api import Manage
@@ -31,7 +31,7 @@ from ..core import (
     TableMatrixData
 )
 from ..data import TableTypes
-from ..models import DataBookTableTypes, Component
+from ..models import DataBookTableTypes
 # web app
 from ..ui import Launcher
 

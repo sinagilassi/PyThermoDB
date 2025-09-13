@@ -2,10 +2,11 @@
 # ------------------------
 import logging
 import pandas as pd
-from typing import Optional, Union, List, Dict, Any
+from typing import List
+from pythermodb_settings.models import Component
 # locals
 from ..data import TableTypes
-from ..models import PayLoadType, Component
+from ..models import PayLoadType
 
 # NOTE: logger
 logger = logging.getLogger(__name__)

@@ -8,12 +8,16 @@ from typing import (
     Any,
     Literal
 )
+from pythermodb_settings.models import (
+    ComponentConfig,
+    ComponentRule,
+    CustomReference
+)
 # locals
 from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
 from ..utils import ignore_state_in_prop
-from ..models import ComponentConfig, ComponentRule, CustomReference
 
 # NOTE: logger
 logger = logging.getLogger(__name__)

@@ -3,9 +3,8 @@ import logging
 import pandas as pd
 from typing import Optional, List, Dict, Any, Literal
 # local imports
-from ..models import DataResult
+from ..models import DataResult, PropertyMatch
 from .table_util import TableUtil
-from ..models import PropertyMatch
 
 # logger
 logger = logging.getLogger(__name__)

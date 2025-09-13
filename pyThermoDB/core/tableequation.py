@@ -5,10 +5,9 @@ import math
 import json
 from typing import Literal, Optional, List, Dict, Any
 # local
-from ..models import EquationResult
+from ..models import EquationResult, PropertyMatch
 from ..utils import format_eq_data
 from .table_util import TableUtil
-from ..models import PropertyMatch
 
 # NOTE: logger
 logger = logging.getLogger(__name__)

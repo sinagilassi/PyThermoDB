@@ -1,8 +1,8 @@
 # import libs
 import logging
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import List, Literal
+from pythermodb_settings.models import Component
 # local
-from ..models import Component
 from ..config import DEFAULT_COMPONENT_STATES
 
 # NOTE: set logger
