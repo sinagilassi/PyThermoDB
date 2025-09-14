@@ -2,7 +2,7 @@
 from rich import print
 from typing import Dict
 from pyThermoDB.references import ReferenceChecker
-from pyThermoDB.models import ComponentConfig, ComponentRule
+from pythermodb_settings.models import ComponentConfig, ComponentRule
 
 # SECTION: reference content
 REFERENCE_CONTENT = """

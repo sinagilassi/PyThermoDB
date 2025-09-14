@@ -11,9 +11,10 @@ from pydantic import (
     Field,
     ConfigDict
 )
+from pythermodb_settings.models import ComponentConfig, ComponentRule
 # local
-from .configs import ComponentConfig
-from .rules import ComponentRule
+# from .configs import ComponentConfig
+# from .rules import ComponentRule
 
 # NOTE: custom reference models
 CustomReference = Dict[str, List[str]]
@@ -30,6 +31,11 @@ class Component(BaseModel):
     mole_fraction: float = Field(
         default=1.0,
         description="Mole fraction of the component in a mixture, if applicable"
+    )
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow"
     )
 
 
@@ -91,6 +97,7 @@ class ReferenceThermoDB(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        extra="allow"
     )
 
 
@@ -123,8 +130,44 @@ class ComponentReferenceThermoDB(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        extra="allow"
     )
 
 
-# NOTE: List of ComponentReferenceThermoDB
-ComponentsReferenceThermoDB = List[ComponentReferenceThermoDB]
+# NOTE: references thermodb model
+class ReferencesThermoDB(BaseModel):
+    """
+    Model for references thermodynamic database (ThermoDB).
+    """
+    reference: Dict[str, Dict[str, List[str]]] = Field(
+        ...,
+        description="Dictionary of references with their associated contents."
+    )
+    contents: Dict[str, List[str]] = Field(
+        ...,
+        description="List of reference contents used for building the thermodynamic database."
+    )
+    configs: Dict[str, Dict[str, ComponentConfig]] = Field(
+        default_factory=dict,
+        description="Reference configuration used for building the thermodynamic database."
+    )
+    rules: Dict[str, Dict[str, ComponentRule]] = Field(
+        default_factory=dict,
+        description="Reference rules generated from the reference configuration."
+    )
+    labels: Dict[str, List[str]] = Field(
+        default_factory=dict,
+        description="Dictionary of labels used in the reference config."
+    )
+    ignore_labels: Dict[str, List[str]] = Field(
+        default_factory=dict,
+        description="Dictionary of property labels to ignore state during the build."
+    )
+    ignore_props: Dict[str, List[str]] = Field(
+        default_factory=dict,
+        description="Dictionary of property names to ignore state during the build."
+    )
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow"
+    )
