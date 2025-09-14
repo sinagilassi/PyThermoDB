@@ -13,6 +13,7 @@ class Temperature(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        extra="allow"
     )
 
 
@@ -26,4 +27,5 @@ class Pressure(BaseModel):
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        extra="allow"
     )
