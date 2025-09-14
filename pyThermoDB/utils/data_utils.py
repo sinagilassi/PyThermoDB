@@ -150,11 +150,25 @@ def create_component(payload: PayLoadType) -> Component | None:
             logger.warning("Missing component information in records.")
             return None
 
+        # NOTE: state settings
+        state = str(state).strip().lower()
+        if state in ['g', 'gas', 'gaseous']:
+            state = 'g'
+        elif state in ['l', 'liq', 'liquid', 'liquids']:
+            state = 'l'
+        elif state in ['s', 'solid', 'solids']:
+            state = 's'
+        elif state in ['aq', 'aqueous']:
+            state = 'aq'
+        else:
+            logger.warning(f"Unrecognized state: {state}. Defaulting to 'g'.")
+            state = 'g'
+
         # create Component object
         component = Component(
             name=str(name).strip(),
             formula=str(formula).strip(),
-            state=str(state).strip().lower()
+            state=state
         )
         return component
     except Exception as e:

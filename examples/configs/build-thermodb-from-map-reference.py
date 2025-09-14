@@ -1,5 +1,5 @@
 # import libs
-from typing import Dict, Any, List
+from typing import Dict, List
 from pyThermoDB import check_and_build_component_thermodb
 from pyThermoDB.references import component_reference_mapper
 from pythermodb_settings.models import Component, ComponentReferenceThermoDB

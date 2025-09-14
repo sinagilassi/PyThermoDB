@@ -1,7 +1,7 @@
 # import libs
 from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
 from pyThermoDB.references import component_reference_mapper
-from pyThermoDB.models import Component, ComponentReferenceThermoDB
+from pythermodb_settings.models import Component, ComponentReferenceThermoDB
 from rich import print
 
 # SECTION: reference content
