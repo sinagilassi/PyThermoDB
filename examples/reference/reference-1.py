@@ -6,7 +6,7 @@ import pyThermoDB as ptdb
 from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 from pyThermoDB.references import ReferenceConfig
 from pyThermoDB import check_and_build_component_thermodb
-from pyThermoDB.models import Component
+from pythermodb_settings.models import Component
 
 # get versions
 # print(pt.get_version())

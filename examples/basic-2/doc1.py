@@ -3,7 +3,7 @@ from typing import Dict, Any
 import os
 from rich import print
 import pyThermoDB as ptdb
-from pyThermoDB.models import Component
+from pythermodb_settings.models import Component
 from pyThermoDB.core import TableData, TableEquation
 
 
