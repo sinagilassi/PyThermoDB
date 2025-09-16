@@ -364,4 +364,5 @@ if not isinstance(func2_, TableEquation):
     raise TypeError("func2_ is not a TableEquation instance")
 print(type(func2_))
 print(func2_.args)
+print(func2_.return_symbols)
 print(func2_.cal(T=295.15, message="heat capacity result (select)"))
