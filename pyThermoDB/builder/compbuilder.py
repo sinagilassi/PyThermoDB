@@ -762,15 +762,18 @@ class CompBuilder(CompExporter):
             if filename is None:
                 raise Exception("Filename is required!")
 
-            # build
+            # NOTE: build
             self.build()
 
-            # file path setting
+            # NOTE: file path setting
             if file_path is None:
                 file_path = os.getcwd()
 
             # file full name
-            filename = os.path.join(file_path, filename)
+            filename = os.path.join(
+                file_path,
+                filename
+            )
 
             # file name path
             if not filename.endswith('.pkl'):
