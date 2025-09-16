@@ -394,7 +394,7 @@ wheels = [
 
 [[package]]
 name = "pythermodb"
-version = "1.11.35"
+version = "1.11.36"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
@@ -419,7 +419,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "pythermodb-settings", specifier = ">=0.1.0" },
+    { name = "pythermodb-settings", specifier = ">=0.1.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "rich", specifier = ">=14.1.0" },
@@ -428,15 +428,15 @@ provides-extras = ["web"]
 
 [[package]]
 name = "pythermodb-settings"
-version = "0.1.0"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4a/15/92c2681c017057fd5c4b9c25dbe99d4ffa3dc956024359ed18dfb6059615/pythermodb_settings-0.1.0.tar.gz", hash = "sha256:4d914a7a70c979b83486d2a4006c963c27c4a6d9f0322dc09c638e1c0d2d480c", size = 7763, upload-time = "2025-09-13T18:31:44.316Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/db/6e5066e41dd462acf6e5fec85ec50bc7b0dda9c578cf9a0ba288192e9de7/pythermodb_settings-0.1.1.tar.gz", hash = "sha256:89ebe7f460e3964b0a3ce48a36a1a13a7510e581357efee121d1df9aceb33307", size = 7900, upload-time = "2025-09-16T20:56:01.489Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6f/0b/712e83effde78a37a83121453f32bc97257801b6e53732e01593192b62b3/pythermodb_settings-0.1.0-py3-none-any.whl", hash = "sha256:0571977ae444c9a64ff4dcff2501211e330b3d28e7a4e3b720acd62a0e59bae0", size = 8675, upload-time = "2025-09-13T18:31:42.725Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/59/f055c6fcca87eee0bd455f7a0330e8709a650eb9e118f09b7b999e99a31e/pythermodb_settings-0.1.1-py3-none-any.whl", hash = "sha256:6ce9757b985b2776cc44c6f9d088e2080bf6db5210578d5013f75e0dc8817e99", size = 9141, upload-time = "2025-09-16T20:56:00.375Z" },
 ]
 
 [[package]]

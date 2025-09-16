@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyThermoDB"
-version = "1.11.36"
+version = "1.11.37"
 description = "PyThermoDB is a lightweight and user-friendly Python package designed to provide quick access to essential thermodynamic data."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -35,7 +35,7 @@ dependencies = [
     "requests>=2.32.5",
     "numpy>=2.3.2",
     "pyyaml>=6.0.2",
-    "pythermodb-settings>=0.1.0",
+    "pythermodb-settings>=0.1.1",
     "rich>=14.1.0",
 ]
 
