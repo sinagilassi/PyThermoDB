@@ -48,8 +48,8 @@ class ComponentThermoDB(BaseModel):
         The component for which the thermodynamic database is built.
     thermodb: CompBuilder
         The thermodynamic database builder instance.
-    reference_thermodb : ReferenceThermoDB
-        Reference thermodynamic database.
+    reference_thermodb : Optional[ReferenceThermoDB]
+        Reference thermodynamic database, default is None.
     """
     component: Component = Field(
         ...,
@@ -59,12 +59,13 @@ class ComponentThermoDB(BaseModel):
         ...,
         description="The thermodynamic database builder instance."
     )
-    reference_thermodb: ReferenceThermoDB = Field(
-        ..., description="Reference thermodynamic database."
+    reference_thermodb: Optional[ReferenceThermoDB] = Field(
+        None, description="Reference thermodynamic database."
     )
 
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
+        extra='allow'
     )
 
 
