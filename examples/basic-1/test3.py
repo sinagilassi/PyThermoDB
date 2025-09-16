@@ -147,4 +147,5 @@ thermo_db.add_data('heat-capacity', comp1_eq)
 # export
 # thermo_db.export_data_structure(comp1)
 # save
-thermo_db.save(f'{comp1}-1.pkl', file_path=parent_dir)
+res_ = thermo_db.save(f'{comp1}-1.pkl', file_path=parent_dir)
+print(res_)
