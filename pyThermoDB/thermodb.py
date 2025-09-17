@@ -288,10 +288,8 @@ def build_component_thermodb(
                 prop_value
             )
 
-        # NOTE: build
-        thermodb_comp.build()
-
         # SECTION: save thermodb if specified
+        # NOTE: build and save
         if thermodb_save:
             # check path
             if thermodb_save_path is None:
@@ -305,6 +303,14 @@ def build_component_thermodb(
                 file_path=thermodb_save_path
             )
             logger.info(f"Thermodb saved to {thermodb_save_path}")
+        else:
+            # NOTE: build without saving
+            build_res_ = thermodb_comp.build()
+            # check
+            if not build_res_:
+                logger.warning(
+                    f"Building thermodb for component '{component_name}' may have issues, please check the logs."
+                )
 
         # return
         return thermodb_comp
