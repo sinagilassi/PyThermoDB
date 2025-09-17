@@ -198,7 +198,10 @@ reference_config = reference_config_yml
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=reference_config,
-    custom_reference=ref
+    custom_reference=ref,
+    thermodb_name='CO2_Component',
+    thermodb_save=True,
+    thermodb_save_path=parent_dir,
 )
 
 #  check

@@ -1,4 +1,5 @@
 # import libs
+from typing import Dict, List, Any
 import os
 from rich import print
 from pyThermoDB.references import ThermoDatabook, ThermoReference
@@ -80,7 +81,7 @@ print(f"References: {references}")
 
 # SECTION: initialize own thermo db
 # custom ref
-ref = {'reference': [references]}
+ref: Dict[str, Any] = {'reference': [references]}
 # md ref
 # ref = {'reference': [md_path]}
 # yml ref
