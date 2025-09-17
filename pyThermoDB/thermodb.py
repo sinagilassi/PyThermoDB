@@ -335,6 +335,8 @@ def check_and_build_component_thermodb(
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None,
     reference_config_default_check: Optional[bool] = True,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
     **kwargs
 ) -> CompBuilder:
     '''
@@ -358,6 +360,10 @@ def check_and_build_component_thermodb(
         A short description of the component thermodynamic databook, by default None
     reference_config_default_check : Optional[bool], optional
         Whether to perform default checks on the reference configuration, by default True
+    thermodb_save : Optional[bool], optional
+        Whether to save the built thermodb to a file, by default False
+    thermodb_save_path : Optional[str], optional
+        Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -671,13 +677,25 @@ def check_and_build_component_thermodb(
                 prop_value
             )
 
-        # NOTE: build
-        thermodb_comp.build()
+        # SECTION: build and save thermodb
+        if thermodb_save:
+            # NOTE: check path
+            thermodb_save_path = check_file_path(
+                file_path=thermodb_save_path,
+                default_path=None,
+                create_dir=True
+            )
+            # NOTE: save
+            thermodb_comp.save(
+                filename=thermodb_name,
+                file_path=thermodb_save_path
+            )
+        else:
+            # build
+            thermodb_comp.build()
 
         # return
         return thermodb_comp
-
-        # SECTION: init
     except Exception as e:
         raise Exception(f"Building {component_id} thermodb failed! {e}")
 
