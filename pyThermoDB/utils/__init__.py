@@ -15,6 +15,7 @@ from .reference_utils import (
 )
 from .core_utils import has_prop_nested
 from .extractor import YAMLExtractor
+from .file_manager import check_file_path
 
 __all__ = [
     "log2Col",
@@ -31,5 +32,6 @@ __all__ = [
     "is_databook_available",
     "has_prop_nested",
     "validate_component_state",
-    "YAMLExtractor"
+    "YAMLExtractor",
+    "check_file_path"
 ]
