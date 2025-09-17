@@ -144,7 +144,7 @@ print(COMP1_check_availability)
 CO2 = Component(
     name="Carbon dioxide",
     formula="CO2",
-    state="g"
+    state="g",
 )
 # by Formula-State
 is_available = thermo_db.is_component_available(
