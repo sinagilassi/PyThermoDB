@@ -1,4 +1,5 @@
 # import libs
+import os
 from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
 from rich import print
 
@@ -160,6 +161,10 @@ REFERENCES:
             - [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 """
 
+# NOTE: current file path
+parent_path = os.path.dirname(os.path.abspath(__file__))
+print(parent_path)
+
 # SECTION: check component availability
 component_name = 'carbon dioxide'
 component_formula = 'CO2'
@@ -180,6 +185,21 @@ print(f"thermodb_: {thermodb_}")
 # check
 print(f"thermodb checks: {thermodb_.check()}")
 
+# NOTE: build and save
+thermodb_component_save_: ComponentThermoDB = build_component_thermodb_from_reference(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    reference_content=REFERENCE_CONTENT,
+    thermodb_save=True,
+    thermodb_save_path=parent_path,
+    thermodb_name="CO2_thermodb",
+)
+print(f"thermodb_component_save_: {thermodb_component_save_}")
+# check
+print(
+    f"thermodb_component_save_ checks: {thermodb_component_save_.thermodb.check()}")
+
 # SECTION: build component thermodb with ignore state
 # NOTE: ignore state for specific properties
 ignore_state_props = ['Cp_IG']
@@ -197,3 +217,20 @@ thermodb_ignore_state_ = thermodb_component_ignore_state_.thermodb
 print(f"thermodb_ignore_state_: {thermodb_ignore_state_}")
 # check
 print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")
+
+# NOTE: build and save
+thermodb_component_ignore_state_save_: ComponentThermoDB = build_component_thermodb_from_reference(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    reference_content=REFERENCE_CONTENT,
+    ignore_state_props=ignore_state_props,
+    thermodb_save=True,
+    thermodb_save_path=parent_path,
+    thermodb_name="CO2_thermodb_ignore_state",
+)
+print(
+    f"thermodb_component_ignore_state_save_: {thermodb_component_ignore_state_save_}")
+# check
+print(
+    f"thermodb_component_ignore_state_save_ checks: {thermodb_component_ignore_state_save_.thermodb.check()}")
