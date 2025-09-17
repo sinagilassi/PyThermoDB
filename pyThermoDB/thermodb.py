@@ -534,6 +534,26 @@ def check_and_build_component_thermodb(
                 # ? skip if table is not found
                 continue
 
+            # SECTION: table info
+            # ! table info
+            table_info_ = thermodb.table_info(
+                databook=databook_,
+                table=table_,
+                res_format='dict'
+            )
+            # check table info
+            if not isinstance(table_info_, dict):
+                raise TypeError("Table info must be a dictionary")
+
+            table_data_type = table_info_.get('Type', None)
+            # check
+            if table_data_type == 'Matrix-Data':
+                # log
+                logging.warning(
+                    f"Table '{table_}' for property '{prop_name}' is a matrix data table. Only single component properties are supported in this method."
+                )
+                continue  # skip if table is matrix data
+
             # ! label/labels
             # NOTE: >> check label
             label_ = prop_idx.get(

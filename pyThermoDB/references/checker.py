@@ -1748,9 +1748,9 @@ class ReferenceChecker:
             res = {}
 
             # NOTE: standardize component inputs
-            component_name = component_name.strip().lower()
-            component_formula = component_formula.strip().lower()
-            component_state = component_state.strip().lower()
+            component_name = component_name.strip()
+            component_formula = component_formula.strip()
+            component_state = component_state.strip()
 
             # SECTION: get tables
             tables = self.get_databook_tables(databook_name)
@@ -1845,6 +1845,11 @@ class ReferenceChecker:
                     logging.warning(
                         f"Component records for '{component_name}' in table '{table_name}' are missing 'Formula' or 'State'.")
                     continue
+
+                # SECTION: standardize component records
+                component_name = component_name.lower()
+                component_formula = component_formula.lower()
+                component_state = component_state.lower()
 
                 # SECTION: ignore component state if specified
                 if ignore_component_state:
