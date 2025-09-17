@@ -459,11 +459,16 @@ class ThermoDB(ManageData):
         Returns
         -------
         tb_summary : dict | pandas.DataFrame | str
-            table summary
+            table summary which includes table name, type, equations no, data no, matrix-equations no, matrix-data no in the specified format as:
 
         Notes
         -----
         1. The default value of dataframe is True, the return value (tb_summary) is Pandas Dataframe
+        2. The table type can be one of the following:
+            - 'Equation': if the table contains equations
+            - 'Data': if the table contains data
+            - 'Matrix-Equation': if the table contains matrix equations
+            - 'Matrix-Data': if the table contains matrix data
         '''
         try:
             # table type
