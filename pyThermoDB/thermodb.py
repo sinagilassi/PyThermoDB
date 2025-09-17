@@ -1,5 +1,6 @@
 # import libs
 import logging
+import os
 from typing import (
     Optional,
     Dict,
@@ -81,7 +82,9 @@ def build_component_thermodb(
     component_key: Literal['Name', 'Formula'] = 'Name',
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None,
-    reference_config_default_check: Optional[bool] = True
+    reference_config_default_check: Optional[bool] = True,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
 ) -> CompBuilder:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
@@ -104,6 +107,10 @@ def build_component_thermodb(
         A short description of the component thermodynamic databook, by default None
     reference_config_default_check : Optional[bool], optional
         Whether to perform default checks on the reference configuration, by default None
+    thermodb_save : Optional[bool], optional
+        Whether to save the built thermodb to a file, by default False
+    thermodb_save_path : Optional[str], optional
+        Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
 
     Returns
     -------
@@ -284,10 +291,23 @@ def build_component_thermodb(
         # NOTE: build
         thermodb_comp.build()
 
+        # SECTION: save thermodb if specified
+        if thermodb_save:
+            # check path
+            if thermodb_save_path is None:
+                thermodb_save_path = os.getcwd()
+            elif not os.path.isdir(thermodb_save_path):
+                os.makedirs(thermodb_save_path, exist_ok=True)
+
+            # save
+            thermodb_comp.save(
+                filename=thermodb_name,
+                file_path=thermodb_save_path
+            )
+            logger.info(f"Thermodb saved to {thermodb_save_path}")
+
         # return
         return thermodb_comp
-
-        # SECTION: init
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
