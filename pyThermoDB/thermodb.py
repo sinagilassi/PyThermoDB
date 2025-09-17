@@ -29,6 +29,7 @@ from .utils import (
     look_up_component_reference_config,
     is_table_available,
     is_databook_available,
+    check_file_path
 )
 from .builder import CompBuilder
 from .config import DEFAULT_COMPONENT_STATES
@@ -874,6 +875,8 @@ def build_component_thermodb_from_reference(
     check_labels: Optional[bool] = True,
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
     **kwargs
 ) -> ComponentThermoDB:
     '''
@@ -899,6 +902,10 @@ def build_component_thermodb_from_reference(
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    thermodb_save : Optional[bool], optional
+        Whether to save the built thermodb to a file, by default False
+    thermodb_save_path : Optional[str], optional
+        Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -919,7 +926,8 @@ def build_component_thermodb_from_reference(
     try:
         # NOTE: kwargs
         ignore_state_props: Optional[List[str]] = kwargs.get(
-            'ignore_state_props', None
+            'ignore_state_props',
+            None
         )
         # set default if None
         if ignore_state_props is None:
@@ -1158,8 +1166,22 @@ def build_component_thermodb_from_reference(
                 prop_value
             )
 
-        # NOTE: build
-        thermodb_comp.build()
+        # SECTION: build and save thermodb
+        if thermodb_save:
+            # NOTE: check path
+            thermodb_save_path = check_file_path(
+                file_path=thermodb_save_path,
+                default_path=None,
+                create_dir=True
+            )
+            # NOTE: save
+            thermodb_comp.save(
+                filename=thermodb_name,
+                file_path=thermodb_save_path
+            )
+        else:
+            # build
+            thermodb_comp.build()
 
         # SECTION: ComponentThermoDB settings
         # NOTE: reference thermodb
