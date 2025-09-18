@@ -1748,7 +1748,7 @@ class ReferenceChecker:
             res = {}
 
             # NOTE: standardize component inputs
-            component_name = component_name.strip()
+            component_name_ = component_name.strip()
             component_formula = component_formula.strip()
             component_state = component_state.strip()
 
@@ -1815,19 +1815,19 @@ class ReferenceChecker:
 
                 # ! component records
                 component_records = components.get(
-                    component_name,
+                    component_name_,
                     None
                 )
 
                 if component_records is None:
                     logging.warning(
-                        f"Component '{component_name}' not found in table '{table_name}'.")
+                        f"Component '{component_name_}' not found in table '{table_name}'.")
                     continue
 
                 # check if component_records is a dictionary
                 if not isinstance(component_records, dict):
                     logging.error(
-                        f"Component records for '{component_name}' in table '{table_name}' are not a dictionary.")
+                        f"Component records for '{component_name_}' in table '{table_name}' are not a dictionary.")
                     continue
 
                 # NOTE: set name, formula and state from component records - case-insensitive
@@ -1838,12 +1838,12 @@ class ReferenceChecker:
                 # NOTE: check if component records are valid
                 if component_key == 'Name-State' and (name is None or state is None):
                     logging.warning(
-                        f"Component records for '{component_name}' in table '{table_name}' are missing 'Name' or 'State.")
+                        f"Component records for '{component_name_}' in table '{table_name}' are missing 'Name' or 'State.")
                     continue
 
                 if component_key == 'Formula-State' and (formula is None or state is None):
                     logging.warning(
-                        f"Component records for '{component_name}' in table '{table_name}' are missing 'Formula' or 'State'.")
+                        f"Component records for '{component_name_}' in table '{table_name}' are missing 'Formula' or 'State'.")
                     continue
 
                 # SECTION: standardize component records
@@ -1999,10 +1999,6 @@ class ReferenceChecker:
         -------
         Optional[Dict[str, ComponentConfig]]
             A dictionary containing the reference config if the component exists, otherwise None.
-
-        Notes
-        -----
-
         """
         try:
             # SECTION: check inputs
