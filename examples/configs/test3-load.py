@@ -12,12 +12,33 @@ print(ptdb.__version__)
 # ====================================
 # parent directory
 parent_dir = os.path.dirname(os.path.abspath(__file__))
+# thermodb directory
+THERMODB_PATH = os.path.join(parent_dir, '..', 'thermodb')
+print(THERMODB_PATH)
+
+
+components = [
+    {'name': 'carbon dioxide', 'formula': 'CO2', 'state': 'g'},
+    {'name': 'methanol', 'formula': 'CH3OH', 'state': 'g'},
+    {'name': 'ethanol', 'formula': 'C2H6O', 'state': 'l'},
+    {'name': 'water', 'formula': 'H2O', 'state': 'g'},
+    {'name': 'methane', 'formula': 'CH4', 'state': 'g'},
+    {'name': 'ethane', 'formula': 'C2H6', 'state': 'g'},
+    {'name': 'propane', 'formula': 'C3H8', 'state': 'g'},
+    {'name': 'n-butane', 'formula': 'C4H10', 'state': 'g'},
+    {'name': '1-butene', 'formula': 'C4H8', 'state': 'g'},
+    {'name': '1,3-Butadiene', 'formula': 'C4H6', 'state': 'g'},
+    {'name': 'benzene', 'formula': 'C6H6', 'state': 'l'},
+    {'name': 'nitrogen', 'formula': 'N2', 'state': 'g'},
+    {'name': 'carbon monoxide', 'formula': 'CO', 'state': 'g'},
+    {'name': 'hydrogen', 'formula': 'H2', 'state': 'g'},
+    {'name': 'acetylene', 'formula': 'C2H2', 'state': 'g'},
+]
 
 # files
-file_name = 'CO2_thermodb'
-file_name = 'CO2_thermodb_ignore_state'
+file_name = '1,3-Butadiene-g'
 thermodb_file = f'{file_name}.pkl'
-thermodb_path = os.path.join(parent_dir, thermodb_file)
+thermodb_path = os.path.join(THERMODB_PATH, thermodb_file)
 print(thermodb_path)
 
 # ====================================
