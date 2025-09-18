@@ -166,6 +166,9 @@ REFERENCES:
 # NOTE: parent directory of this file
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print(current_dir)
+# thermodb path
+THERMODB_PATH = os.path.join(current_dir, '..', 'thermodb')
+print(THERMODB_PATH)
 
 # SECTION: check component availability
 components = [
@@ -192,10 +195,14 @@ custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! ignore_state_props to ignore state check for specific properties
 ignore_state_props = ['Cp_IG', 'VaPr']
 # ! component key
-component_key = 'Formula-State'
+component_key = 'Name-State'
 
 # SECTION: loop through components and check availability
-for comp in components:
+for i, comp in enumerate(components):
+    # log
+    print(
+        f"[bold blue]Component {i+1} of {len(components)}:[/bold blue] {comp['name']} ({comp['formula']}, {comp['state']})")
+    print("-" * 80)
     # build component model
     component = Component(
         name=comp['name'],
@@ -225,7 +232,7 @@ for comp in components:
         component_key=component_key,
         ignore_state_props=ignore_labels,
         thermodb_save=True,
-        thermodb_save_path=current_dir
+        thermodb_save_path=THERMODB_PATH
     )
     # print result
     print(

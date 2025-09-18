@@ -164,3 +164,6 @@ cython_debug/
 # private folder
 /private
 /notes
+
+# pkl files
+*.pkl
