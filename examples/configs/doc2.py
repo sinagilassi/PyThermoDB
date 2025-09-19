@@ -152,14 +152,14 @@ REFERENCES:
             - c
             - alpha
           STRUCTURE:
-            COLUMNS: [No.,Mixture,Name,Formula,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-            SYMBOL: [None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-            UNIT: [None,None,None,None,1,1,1,1,1,1,1,1]
+            COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+            SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+            UNIT: [None,None,None,None,None,1,1,1,1,1,1,1,1]
           VALUES:
-            - [1,methanol|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-            - [2,methanol|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
-            - [1,methane|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-            - [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+            - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+            - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+            - [1,methane|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+            - [2,methane|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
     CUSTOM-REF-2:
       DATABOOK-ID: 2
       TABLES:
@@ -190,7 +190,6 @@ REFERENCES:
             - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
             - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
-
 """
 
 

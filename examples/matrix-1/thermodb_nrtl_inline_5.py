@@ -30,7 +30,7 @@ md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
 ref = {
-    'reference': [md_path],
+    'reference': [yml_path],
 }
 
 # ====================================

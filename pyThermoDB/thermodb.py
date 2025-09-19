@@ -140,7 +140,7 @@ def build_component_thermodb(
     }
     ```
 
-    2- This method only checks component by name. If you want to check by formula and state, use `check_and_build_component_thermodb` method.
+    2- This method only checks component by `name`. If you want to check by formula/name and state such as `CO2-g`, `carbon dioxide-g`, use `check_and_build_component_thermodb` method.
     '''
     try:
         # NOTE: check inputs
@@ -725,7 +725,8 @@ def build_components_thermodb(
     reference_config: Dict[str, Dict[str, str]],
     thermodb_name: Optional[str] = None,
     custom_reference: Optional[CustomReference] = None,
-    message: Optional[str] = None
+    message: Optional[str] = None,
+    **kwargs
 ) -> CompBuilder:
     '''
     Build components thermodynamic databook (thermodb) including matrix-data.
@@ -742,6 +743,8 @@ def build_components_thermodb(
         Custom reference dictionary for external references, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    **kwargs
+        Additional keyword arguments.
 
     Returns
     -------
@@ -750,7 +753,7 @@ def build_components_thermodb(
 
     Notes
     -----
-    Property dict should contain the following format:
+    1- Property dict should contain the following format:
     ```python
     # Dict[str, Dict[str, str]]
     reference_config = {
@@ -842,10 +845,14 @@ def build_components_thermodb(
             table_data_type = table_info_.get('Type', None)
             # check
             if table_data_type != 'Matrix-Data':
-                raise ValueError(
-                    f"Table '{table_}' for property '{prop_name}' is not a matrix data table.")
+                # log
+                logging.error(
+                    f"Table '{table_}' for property '{prop_name}' is not a matrix data table."
+                )
+                # skip if table is not matrix data
+                continue
 
-            # NOTE: check component
+            # SECTION: check component
             component_checker_ = thermodb.check_component(
                 component_name=component_names,
                 databook=databook_,

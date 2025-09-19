@@ -843,8 +843,10 @@ class TableMatrixData:
             property_column_index = matrix_column_index[comp2_index]
 
             # get property value
-            property_value = matrix_table.iat[row_index_comp1,
-                                              property_column_index]
+            property_value = matrix_table.iat[
+                row_index_comp1,
+                property_column_index
+            ]
 
             # get property symbol
             symbol_idx = str(matrix_table.iloc[0, property_column_index]).split('_')[

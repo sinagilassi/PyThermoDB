@@ -1184,7 +1184,11 @@ class ThermoDB(ManageData):
                     table_data = tb['matrix_data']
 
                     # data no
-                    return TableMatrixData(db_name, table_name, table_data)
+                    return TableMatrixData(
+                        databook_name=db_name,
+                        table_name=table_name,
+                        table_data=table_data
+                    )
                 else:
                     raise Exception('Table loading error!')
             else:
@@ -1193,15 +1197,15 @@ class ThermoDB(ManageData):
             raise Exception(f"Table loading error {e}")
 
     def check_component(
-            self,
-            component_name: str | list[str],
-            databook: int | str,
-            table: int | str,
-            column_name: Optional[str | list[str]] = None,
-            query: bool = False,
-            res_format: Literal[
-                'dict', 'json', 'str'
-            ] = 'json'
+        self,
+        component_name: str | list[str],
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+        query: bool = False,
+        res_format: Literal[
+            'dict', 'json', 'str'
+        ] = 'json'
     ) -> Union[str, dict[str, str]]:
         '''
         Check a component availability in the selected databook and table
@@ -1316,8 +1320,12 @@ class ThermoDB(ManageData):
         databook: int | str,
         table: int | str,
         column_names: List[str] = ['Name', 'Formula'],
-        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
-        res_format: Literal['dict', 'json', 'str'] = 'dict'
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Name-State',
+        res_format: Literal[
+            'dict', 'json', 'str'
+        ] = 'dict'
     ) -> Union[str, dict[str, str]]:
         '''
         Check if a component is available in the specified databook and table. A component is defined as:
@@ -2442,18 +2450,20 @@ class ThermoDB(ManageData):
 
             # looping through components
             for component_name in component_names:
+                # component name
+                component_name = str(component_name).strip()
                 # get data
                 component_data = self.get_component_data(
-                    component_name.strip(),
-                    databook_id,
-                    table_id,
+                    component_name=component_name,
+                    databook_id=databook_id,
+                    table_id=table_id,
                     column_name=column_name,
                     query=query,
                     matrix_tb=True
                 )
                 # save
                 component_data_pack.append({
-                    'component_name': str(component_name).strip(),
+                    'component_name': component_name,
                     'data': component_data
                 })
 
@@ -2479,7 +2489,9 @@ class ThermoDB(ManageData):
                     # ! build data
                     # check eq exists
                     dts = self.matrix_data_load(
-                        databook_id, table_id)
+                        databook_id,
+                        table_id
+                    )
 
                     # ! check
                     if dts is not None:
