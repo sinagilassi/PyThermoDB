@@ -27,11 +27,11 @@ class TableMatrixData:
 
     def __init__(
         self,
-            databook_name: str | int,
-            table_name: str | int,
-            table_data,
-            matrix_table=None,
-            matrix_symbol: Optional[List[str]] = None
+        databook_name: str | int,
+        table_name: str | int,
+        table_data,
+        matrix_table=None,
+        matrix_symbol: Optional[List[str]] = None
     ):
         # set values
         self.databook_name = databook_name
@@ -377,8 +377,9 @@ class TableMatrixData:
             for component_name, component_value in self.prop_data_pack.items():
                 if component_name == component_name_set:
                     # check value
-                    prop_data = {key: value for key,
-                                 value in component_value.items() if key != exclude_key}
+                    prop_data = {
+                        key: value for key, value in component_value.items() if key != exclude_key
+                    }
                     return prop_data
             # check
             if len(prop_data) == 0:
@@ -406,11 +407,12 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Matrix data structure failed!, ", e)
 
-    def get_matrix_table(self,
-                         mode: Literal[
-                             'all', 'selected'
-                         ] = 'all'
-                         ) -> pd.DataFrame:
+    def get_matrix_table(
+        self,
+        mode: Literal[
+            'all', 'selected'
+        ] = 'all'
+    ) -> pd.DataFrame:
         '''
         Get matrix table data
 
@@ -471,7 +473,11 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Getting matrix table failed!, ", e)
 
-    def get_property(self, property: str | int, component_name: str) -> DataResultType | dict:
+    def get_property(
+            self,
+            property: str | int,
+            component_name: str
+    ) -> DataResultType | dict:
         '''
         Get a component property from data table structure
 
@@ -561,13 +567,15 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Getting matrix property failed!, ", e)
 
-    def ij(self,
-           property: str,
-           symbol_format: Literal[
-               'alphabetic', 'numeric'
-           ] = 'alphabetic',
-           message: Optional[str] = None,
-           **kwargs) -> DataResult:
+    def ij(
+        self,
+        property: str,
+        symbol_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'alphabetic',
+        message: Optional[str] = None,
+        **kwargs
+    ) -> DataResult:
         '''
         Get a component property from data table structure (matrix data)
 
@@ -883,15 +891,16 @@ class TableMatrixData:
         else:
             raise ValueError(f"Property format {property} not recognized.")
 
-    def ijs(self,
-            property: str,
-            res_format: Literal[
-                'alphabetic', 'numeric'
-            ] = 'alphabetic',
-            symbol_delimiter: Literal[
-                "|", "_"
-            ] = "|"
-            ) -> Dict[str, float | int] | np.ndarray:
+    def ijs(
+        self,
+        property: str,
+        res_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'alphabetic',
+        symbol_delimiter: Literal[
+            "|", "_"
+        ] = "|"
+    ) -> Dict[str, float | int] | np.ndarray:
         '''
         Generate a dictionary for ij property
 
@@ -1000,13 +1009,14 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Generating dictionary failed!, ", e)
 
-    def mat(self,
-            property_name: str,
-            component_names: list[str],
-            symbol_format: Literal[
-                'alphabetic', 'numeric'
-            ] = 'numeric'
-            ) -> Dict[str, str | float | int] | np.ndarray:
+    def mat(
+        self,
+        property_name: str,
+        component_names: list[str],
+        symbol_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'numeric'
+    ) -> Dict[str, str | float | int] | np.ndarray:
         '''
         Get matrix data
 

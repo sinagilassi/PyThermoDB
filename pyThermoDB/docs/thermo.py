@@ -17,7 +17,7 @@ from pythermodb_settings.models import Component
 # internal
 from ..config import API_URL, __version__
 from ..api import Manage
-from ..utils import isNumber, uppercaseStringList
+from ..utils import isNumber, uppercaseStringList, create_binary_mixture_id
 from .tableref import TableReference
 # transformer
 from ..transformer import TransData
@@ -1454,6 +1454,257 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking component availability: {e}")
 
+    def is_binary_mixture_available(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        column_name: str = 'Mixture',
+        component_key: Literal[
+            'Name-State', 'Formula-State',
+        ] = 'Name-State',
+        mixture_key: Literal[
+            'Name', 'Formula',
+        ] = 'Name',
+        delimiter: str = '|',
+        ignore_component_state: bool = False,
+        res_format: Literal[
+            'dict', 'json', 'str'
+        ] = 'dict'
+    ) -> Union[str, dict[str, Union[str, List[str]]]]:
+        '''
+        Check if all components in a binary mixture are available in the specified databook and table. A component is defined as:
+        - name-state: carbon dioxide-g
+        - formula-state: CO2-g
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components in the mixture to check.
+        databook : int | str
+            The databook id or name.
+        table : int | str
+            The table id or name.
+        column_name : str, optional
+            The name of the column containing mixture identifiers, by default 'Mixture'.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for identifying the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used in the mixture identifiers, by default '|'.
+        ignore_component_state : bool, optional
+            Whether to ignore the state of the components when checking availability, by default False.
+        res_format : Literal['dict', 'json', 'str'], optional
+            The format of the returned result, by default 'dict'.
+
+        Returns
+        -------
+        str | dict[str, Union[str, List[str]]]
+            Summary of the mixture availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'components': list of component identifiers,
+            - 'all_available': True if all components are available, False otherwise
+
+        Notes
+        -----
+        - Table should contain columns for 'Mixture', 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        - All components must be available for the mixture to be considered available.
+        '''
+        try:
+            # SECTION: Validate input
+            if not isinstance(components, list) or not all(isinstance(c, Component) for c in components):
+                raise ValueError(
+                    "Invalid components. Must be a list of Component instances.")
+            if not components:
+                raise ValueError("Components list cannot be empty.")
+            if not column_name or not isinstance(column_name, str):
+                raise ValueError(
+                    "column_names must be a non-empty list of strings.")
+
+            # SECTION: components config
+            # NOTE: at least two components are required
+            if len(components) != 2:
+                raise ValueError(
+                    "The two components are required to check mixture availability.")
+
+            # NOTE: component identifiers for mixture id creation
+            component_1 = components[0]
+            component_2 = components[1]
+
+            # SECTION: find ids
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id (non-zero-based id)
+            databook_id = db_rid + 1
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(databook, table)
+            # table id (non-zero-based id)
+            table_id = tb_id + 1
+
+            # SECTION: binary mixture configuration
+            # NOTE: create a unique mixture id based on component names/formulas
+            binary_mixture_id: str = create_binary_mixture_id(
+                component_1=component_1,
+                component_2=component_2,
+                mixture_key=mixture_key
+            )
+            # >> normalized mixture id
+            binary_mixture_id = binary_mixture_id.lower().strip()
+
+            # SECTION: load matrix data
+            def normalize_mixture_id(
+                    mixture: str,
+                    delimiter: str
+            ) -> str:
+                parts = mixture.lower().strip().split(delimiter)
+                return delimiter.join(sorted(parts))
+
+            # NOTE: check table type
+            table_data = self.table_data(
+                databook=databook_id,
+                table=table_id,
+                res_format='dataframe'
+            )
+
+            # check dataframe
+            if not isinstance(table_data, pd.DataFrame):
+                raise ValueError("Table data is not a valid DataFrame.")
+
+            # NOTE: look up mixture column 'Mixture' for availability of the binary mixture
+            if column_name not in table_data.columns:
+                raise ValueError(
+                    f"Table must contain a {column_name} column to check binary mixture availability.")
+
+            # NOTE: normalized dataframe
+            # normalized column
+            normalized_column_name = f'Normalized_{column_name}'
+
+            # create normalized column
+            table_data[normalized_column_name] = table_data[column_name].apply(
+                lambda x: normalize_mixture_id(str(x).strip(), delimiter)
+            )
+
+            # SECTION: filter dataframe for the mixture
+            # ! normalized binary mixture id
+            normalized_binary_mixture_id = normalize_mixture_id(
+                mixture=binary_mixture_id,
+                delimiter=delimiter
+            )
+
+            # ! mask
+            mask_ = table_data[normalized_column_name].str.strip(
+            ) == normalized_binary_mixture_id
+
+            mixture_df = table_data[mask_]
+
+            # count row
+            available_count = 0
+            # check availability
+            if mixture_df.empty:
+                all_available = False
+            else:
+                # SECTION: check component name/formula and state in each row
+                mask_component_1 = None
+                mask_component_2 = None
+
+                if component_key == 'Name-State' and ignore_component_state is False:
+                    mask_component_1 = (
+                        (
+                            mixture_df['Name'].str.lower().str.strip(
+                            ) == component_1.name.lower().strip()
+                        ) &
+                        (
+                            mixture_df['State'].str.lower().str.strip(
+                            ) == component_1.state.lower().strip()
+                        )
+                    )
+                    mask_component_2 = (
+                        (
+                            mixture_df['Name'].str.lower().str.strip(
+                            ) == component_2.name.lower().strip()
+                        ) &
+                        (
+                            mixture_df['State'].str.lower().str.strip()
+                            == component_2.state.lower().strip()
+                        )
+                    )
+                elif component_key == 'Formula-State' and ignore_component_state is False:
+                    mask_component_1 = (
+                        (
+                            mixture_df['Formula'].str.lower().str.strip(
+                            ) == component_1.formula.lower().strip()
+                        ) &
+                        (
+                            mixture_df['State'].str.lower().str.strip()
+                            == component_1.state.lower().strip()
+                        )
+                    )
+                    mask_component_2 = (
+                        (
+                            mixture_df['Formula'].str.lower().str.strip(
+                            ) == component_2.formula.lower().strip()
+                        ) &
+                        (
+                            mixture_df['State'].str.lower().str.strip()
+                            == component_2.state.lower().strip()
+                        )
+                    )
+                elif ignore_component_state:
+                    # NOTE: set Name for chosen Name-State
+                    component_key_ = 'Name' if component_key == 'Name-State' else 'Formula'
+
+                    # NOTE: compare
+                    mask_component_1 = (
+                        mixture_df[component_key_].str.lower().str.strip()
+                        == component_1.name.lower().strip()
+                    )
+                    mask_component_2 = (
+                        mixture_df[component_key_].str.lower().str.strip()
+                        == component_2.name.lower().strip()
+                    )
+                else:
+                    raise ValueError(
+                        "Invalid component_key or ignore_component_state configuration.")
+
+                # check
+                if mask_component_1 is None or mask_component_2 is None:
+                    raise ValueError(
+                        "Component masks could not be determined.")
+                # check if both components are found
+                if not mixture_df[mask_component_1].empty and not mixture_df[mask_component_2].empty:
+                    all_available = True
+                    # count available rows containing the mixture
+                    available_count = len(mixture_df)
+                else:
+                    all_available = False
+
+            # SECTION: Format results
+            res_dict = {
+                'databook_id': databook_id,
+                'databook_name': db_name,
+                'table_id': table_id,
+                'table_name': tb_name,
+                'mixture_name': binary_mixture_id,
+                'availability': all_available,
+                'available_count': available_count
+            }
+            res_json = json.dumps(res_dict, indent=4)
+            if res_format == 'json':
+                return res_json
+            elif res_format == 'dict':
+                return res_dict
+            elif res_format == 'str':
+                return res_json
+            else:
+                raise ValueError('Invalid res_format')
+        except Exception as e:
+            raise Exception(f"Error checking mixture availability: {e}")
+
     def check_component_api(
             self,
             component_name: str | list,
@@ -2452,7 +2703,8 @@ class ThermoDB(ManageData):
             for component_name in component_names:
                 # component name
                 component_name = str(component_name).strip()
-                # get data
+                # NOTE: get data
+                # ! (check only by Name/Formula)
                 component_data = self.get_component_data(
                     component_name=component_name,
                     databook_id=databook_id,
