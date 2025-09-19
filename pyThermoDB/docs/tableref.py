@@ -569,8 +569,11 @@ class TableReference(ManageData):
                 search_mode = True
 
                 lookup_normalized = [str(x).strip().lower() for x in lookup]
-                df_filter = df[df[column_name].str.strip(
-                ).str.lower().isin(lookup_normalized)]
+                # filter
+                df_filter = df[
+                    df[column_name].str.strip().str.lower().isin(
+                        lookup_normalized)
+                ]
             # query
             elif (
                 isinstance(column_name, str) and

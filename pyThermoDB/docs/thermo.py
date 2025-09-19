@@ -1467,7 +1467,7 @@ class ThermoDB(ManageData):
             'Name', 'Formula',
         ] = 'Name',
         delimiter: str = '|',
-        ignore_component_state: bool = False,
+        ignore_component_state: bool = True,
         res_format: Literal[
             'dict', 'json', 'str'
         ] = 'dict'
@@ -1494,7 +1494,7 @@ class ThermoDB(ManageData):
         delimiter : str, optional
             The delimiter used in the mixture identifiers, by default '|'.
         ignore_component_state : bool, optional
-            Whether to ignore the state of the components when checking availability, by default False.
+            Whether to ignore the state of the components when checking availability, by default True.
         res_format : Literal['dict', 'json', 'str'], optional
             The format of the returned result, by default 'dict'.
 
@@ -2090,8 +2090,10 @@ class ThermoDB(ManageData):
             table id or name
         **kwargs
             Additional keyword arguments to pass to the specific build methods.
-            - component_state : str, optional
-                component state (e.g. 'g', 'l', 's')
+            - column_name: str, optional
+                The name of the column to use for component identification. Default is None.
+            - query: bool, optional
+                Whether to use a query for component identification. Default is False.
 
         Returns
         -------
@@ -2167,7 +2169,8 @@ class ThermoDB(ManageData):
                     return self.build_matrix_data(
                         component_names=component_names,
                         databook=databook,
-                        table=table
+                        table=table,
+                        column_name=column_name,
                     )
                 else:
                     raise Exception('No data/equation found!')
