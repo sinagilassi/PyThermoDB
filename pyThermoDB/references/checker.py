@@ -11,7 +11,8 @@ from typing import (
 from pythermodb_settings.models import (
     ComponentConfig,
     ComponentRule,
-    CustomReference
+    CustomReference,
+    Component
 )
 # locals
 from ..loader import CustomRef
@@ -1186,6 +1187,16 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting component data: {e}")
             return None
+
+    def get_components_matrix_data(
+            self,
+            components: List[Component]
+    ):
+        '''
+        Get the matrix data for a list of components.
+        '''
+        # REVIEW
+        pass
 
     def generate_property_mapping(
             self,

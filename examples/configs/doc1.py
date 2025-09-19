@@ -278,7 +278,8 @@ components_data_ = ReferenceChecker_.get_components_data(
     'general-data',
     component_key='Name-State'
 )
-print(f"Components Data: {components_data_}")
+print(f"Components Data:")
+print(components_data_)
 
 # SECTION: get table matrix symbols
 table_matrix_symbols_ = ReferenceChecker_.get_table_matrix_symbols(
