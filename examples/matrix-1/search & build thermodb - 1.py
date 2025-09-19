@@ -2,6 +2,8 @@
 import os
 import pyThermoDB as ptdb
 from pyThermoDB.core import TableData, TableMatrixData
+from pythermodb_settings.models import Component
+
 from rich import print
 
 # version
@@ -73,14 +75,46 @@ print(tb_info)
 # ====================================
 # check component availability in the databook and table
 comp1 = "methanol"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
-
 comp2 = "ethanol"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
 
 components = [comp1, comp2]
+
+# component 1
+methanol_Comp = Component(
+    name='Methanol',
+    formula='CH3OH',
+    state='l'
+)
+
+# component 2
+ethanol_Comp = Component(
+    name='Ethanol',
+    formula='C2H5OH',
+    state='l'
+)
+
+# SECTION: check availability of the binary mixture
+# NOTE: state is considered
+availability = thermo_db.is_binary_mixture_available(
+    components=[methanol_Comp, ethanol_Comp],
+    databook='NRTL-PARAMETERS',
+    table='NRTL Non-randomness parameters-2',
+    component_key='Name-State',
+    ignore_component_state=False,
+)
+print("Availability (with state):")
+print(availability)
+
+# NOTE: ignore state
+availability = thermo_db.is_binary_mixture_available(
+    components=[methanol_Comp, ethanol_Comp],
+    databook='NRTL-PARAMETERS',
+    table='NRTL Non-randomness parameters-2',
+    component_key='Name-State',
+    ignore_component_state=True,
+)
+print("Availability (ignore state):")
+print(availability)
 
 # ====================================
 # BUILD MATRIX DATA
