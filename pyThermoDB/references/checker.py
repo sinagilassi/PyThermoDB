@@ -6,7 +6,8 @@ from typing import (
     Dict,
     List,
     Any,
-    Literal
+    Literal,
+    Tuple
 )
 from pythermodb_settings.models import (
     ComponentConfig,
@@ -1189,14 +1190,181 @@ class ReferenceChecker:
             return None
 
     def get_components_matrix_data(
-            self,
-            components: List[Component]
+        self,
+        components: List[Component],
+        databook_name: str,
+        table_name: str,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State'
     ):
         '''
-        Get the matrix data for a list of components.
+        Get the matrix data for a binary mixture of components from a specific table in a databook.
+
+        Parameters
+        ----------
+        components : List[Component]
+            A list of Component objects (must be 2 components for binary mixture).
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Name-State'.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary containing the matrix data if it exists, otherwise None.
+
+        Notes
+        -----
+        1- The search is `case-insensitive` and ignores leading/trailing whitespace.
+        2- The searched table must have a 'MIXTURE' key in its structure.
+        3- The 'MIXTURE' key must contain the names of the two components in the format 'Component1|Component2'.
+        4- For each component, the 'Name' or 'Formula' and 'State' must match the provided components based on the component_key.
         '''
-        # REVIEW
-        pass
+        try:
+            # SECTION: check table
+            is_matrix_table = self.is_matrix_table(
+                databook_name,
+                table_name
+            )
+            if not is_matrix_table:
+                logging.error(
+                    f"Table '{table_name}' in databook '{databook_name}' is not a matrix table.")
+                return None
+
+            # SECTION: get table data
+            table_data = self.get_table_data(databook_name, table_name)
+
+            # check if table data is valid
+            if table_data is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # SECTION: get table structure
+            table_structure = self.get_table_structure(
+                databook_name,
+                table_name
+            )
+
+            if table_structure is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # check if 'MIXTURE' key exists in table structure
+            if 'MIXTURE' not in table_structure:
+                logging.error(
+                    f"Table '{table_name}' structure must contain 'MIXTURE' key.")
+                return None
+
+            # get mixture string
+            mixture_str = table_structure['MIXTURE']
+            if not isinstance(mixture_str, str) or '|' not in mixture_str:
+                logging.error(
+                    f"Table '{table_name}' structure 'MIXTURE' must be a string in the format 'Component1|Component2'.")
+                return None
+
+            # split mixture string into two components
+            comp1_str, comp2_str = mixture_str.split('|', 1)
+
+            # SECTION: extract component details from comp1_str and comp2_str
+            def extract_component_details(comp_str: str) -> Tuple[str, str]:
+                """Extract component name/formula and state from a component string."""
+                parts = comp_str.split('-')
+                if len(parts) != 2:
+                    logging.error(
+                        f"Component string '{comp_str}' must be in the format 'Name-State' or 'Formula-State'.")
+                    return '', ''
+                return parts[0].strip(), parts[1].strip()
+
+            comp1_name, comp1_state = extract_component_details(comp1_str)
+            comp2_name, comp2_state = extract_component_details(comp2_str)
+
+            if not comp1_name or not comp1_state or not comp2_name or not comp2_state:
+                logging.error(
+                    f"Invalid component details extracted from 'MIXTURE': '{mixture_str}'.")
+                return None
+
+            # SECTION: find matching components in the provided components list
+            def find_matching_component(name: str, state: str) -> Optional[Component]:
+                """Find a component in the components list matching the given name/formula and state."""
+                for comp in components:
+                    if component_key == 'Name-State':
+                        if (comp.name.strip().lower() == name.strip().lower() and
+                                comp.state.strip().lower() == state.strip().lower()):
+                            return comp
+                    elif component_key == 'Formula-State':
+                        if (comp.formula.strip().lower() == name.strip().lower() and
+                                comp.state.strip().lower() == state.strip().lower()):
+                            return comp
+                return None
+
+            comp1 = find_matching_component(comp1_name, comp1_state)
+            comp2 = find_matching_component(comp2_name, comp2_state)
+            if comp1 is None or comp2 is None:
+                logging.error(
+                    f"Components '{comp1_name}-{comp1_state}' or '{comp2_name}-{comp2_state}' not found in provided components list.")
+                return None
+            # SECTION: find matrix data for the component pair
+            for row in table_data:
+
+                # check if row is a dictionary
+                if not isinstance(row, dict):
+                    logging.error("Table data must be a list of dictionaries.")
+                    return None
+
+                # check if 'Component1' and 'Component2' keys exist in the row
+                if 'Component1' not in row or 'Component2' not in row:
+                    logging.error(
+                        f"Table data rows must contain 'Component1' and 'Component2' keys.")
+                    return None
+
+                # extract component details from the row
+                row_comp1_str = row['Component1']
+                row_comp2_str = row['Component2']
+
+                row_comp1_name, row_comp1_state = extract_component_details(
+                    row_comp1_str)
+                row_comp2_name, row_comp2_state = extract_component_details(
+                    row_comp2_str)
+
+                # check if the components match (considering both possible orders)
+                def components_match(
+                    name1: str, state1: str,
+                    name2: str, state2: str,
+                    comp_a: Component, comp_b: Component
+                ) -> bool:
+                    """Check if two components match the given names/formulas and states."""
+                    if component_key == 'Name-State':
+                        return ((comp_a.name.strip().lower() == name1.strip().lower() and
+                                 comp_a.state.strip().lower() == state1.strip().lower() and
+                                 comp_b.name.strip().lower() == name2.strip().lower() and
+                                 comp_b.state.strip().lower() == state2.strip().lower()) or
+                                (comp_a.name.strip().lower() == name2.strip().lower() and
+                                 comp_a.state.strip().lower() == state2.strip().lower() and
+                                 comp_b.name.strip().lower() == name1.strip().lower() and
+                                 comp_b.state.strip().lower() == state1.strip().lower()))
+                    elif component_key == 'Formula-State':
+                        return ((comp_a.formula.strip().lower() == name1.strip().lower() and
+                                 comp_a.state.strip().lower() == state1.strip().lower() and
+                                 comp_b.formula.strip().lower() == name2.strip().lower() and
+                                 comp_b.state.strip().lower() == state2.strip().lower()) or
+                                (comp_a.formula.strip().lower() == name2.strip().lower() and
+                                 comp_a.state.strip().lower() == state2.strip().lower() and
+                                 comp_b.formula.strip().lower() == name1.strip().lower() and
+                                    comp_b.state.strip().lower() == state1.strip().lower()))
+
+                if components_match(row_comp1_name, row_comp1_state, row_comp2_name, row_comp2_state, comp1, comp2):
+                    return row
+            # if matrix data not found
+            logging.warning(
+                f"Matrix data for components '{comp1_name}-{comp1_state}' and '{comp2_name}-{comp2_state}' not found in table '{table_name}'.")
+            return None
+        except Exception as e:
+            logging.error(f"Error getting components matrix data: {e}")
+            return None
 
     def generate_property_mapping(
             self,
