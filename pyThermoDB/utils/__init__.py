@@ -5,7 +5,8 @@ from .convertor import Convertor, is_str_number
 from .component_utils import (
     set_component_id,
     set_component_query,
-    validate_component_state
+    validate_component_state,
+    create_binary_mixture_id
 )
 from .prop_utils import ignore_state_in_prop
 from .reference_utils import (
@@ -33,5 +34,6 @@ __all__ = [
     "has_prop_nested",
     "validate_component_state",
     "YAMLExtractor",
-    "check_file_path"
+    "check_file_path",
+    "create_binary_mixture_id"
 ]

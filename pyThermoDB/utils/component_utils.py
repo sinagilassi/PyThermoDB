@@ -140,3 +140,64 @@ def validate_component_state(
     except Exception as e:
         logging.error(f"Error in validate_component_state: {e}")
         return False, ''
+
+
+def create_binary_mixture_id(
+    component_1: Component,
+    component_2: Component,
+    mixture_key: Literal[
+        'Name', 'Formula'
+    ] = 'Name',
+    delimiter: str = "|"
+) -> str:
+    """Create a unique binary mixture ID based on two components.
+
+    Parameters
+    ----------
+    component1 : Component
+        The first component in the mixture.
+    component2 : Component
+        The second component in the mixture.
+    component_key : Literal['Name', 'Formula'], optional
+        The key to use for identifying the components, by default 'Name'.
+    delimiter : str, optional
+        Delimiter to separate the two components in the ID, by default "|".
+
+    Returns
+    -------
+    str
+        A unique binary mixture ID.
+
+    Raises
+    ------
+    ValueError
+        If the component_key is not recognized.
+    """
+    try:
+        # SECTION: validate inputs
+        if not isinstance(component_1, Component) or not isinstance(component_2, Component):
+            raise TypeError(
+                "Both component1 and component2 must be instances of Component")
+        # check delimiter
+        if not isinstance(delimiter, str):
+            raise TypeError("delimiter must be a string")
+
+        # SECTION: get component IDs
+        if mixture_key == 'Name':
+            comp1_id = component_1.name.strip()
+            comp2_id = component_2.name.strip()
+        elif mixture_key == 'Formula':
+            comp1_id = component_1.formula.strip()
+            comp2_id = component_2.formula.strip()
+        else:
+            raise ValueError(
+                "component_key must be 'Name-State', 'Formula-State', 'Name', or 'Formula'")
+
+        # SECTION: create unique mixture ID (sorted to ensure uniqueness)
+        mixture_id = delimiter.join(sorted([comp1_id, comp2_id]))
+
+        return mixture_id
+
+    except Exception as e:
+        logging.error(f"Error in create_binary_mixture_id: {e}")
+        raise
