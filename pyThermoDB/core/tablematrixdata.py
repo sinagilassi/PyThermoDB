@@ -1,10 +1,15 @@
-# import packages/modules
+# import libs
+import logging
 import pandas as pd
 import numpy as np
-from typing import Optional, Any, Literal, Dict, List, Tuple
+from typing import Optional, Any, Literal, Dict, List
 from warnings import warn
 # local
 from ..models import DataResultType, DataResult
+
+
+# NOTE: logger
+logger = logging.getLogger(__name__)
 
 
 class TableMatrixData:
@@ -492,17 +497,47 @@ class TableMatrixData:
         -------
         dict
             component property
+
+        Notes
+        -----
+        - property can be a string or an integer
+        - if property is a string, it can be a property name or symbol
+        - if property is an integer, it is the column index (1-based)
+        - component_name is the name of the component to look for in the data table
+        - the function returns a dictionary with the property data
+        - if the property is not found, an empty dictionary is returned
+
+        Table structure example:
+
+        Non-randomness parameters of the NRTL equation:
+
+        | No. | Name     | Formula | Alpha_i_1 | Alpha_i_2 | Alpha_i_3 | Beta_i_1 | Beta_i_2 | Beta_i_3 | Delta_i_1 | Delta_i_2 | Delta_i_3 |
+        |-----|----------|---------|-----------|-----------|-----------|----------|----------|----------|-----------|-----------|-----------|
+        | 1   | methanol | CH3OH   | 0         | 0.3       | -1.709    | 0        | 1        | 2        | 0         | 10        | 20        |
+        | 2   | ethanol  | C2H5OH  | 0.3       | 0         | 0.569     | 3        | 0        | 4        | 30        | 0         | 40        |
+        | 3   | benzene  | C6H6    | 11.58     | -0.916    | 0         | 5        | 6        | 0        | 50        | 60        | 0         |
+
+        Example
+        -------
+        >>> get_property('Alpha_i_1', 'ethanol')
+        {'value': 0.3, 'unit': '', 'symbol': 'Alpha_i_1', 'description': 'Non-randomness parameter Alpha_i_1'}
+        >>> get_property(4, 'ethanol')
+        {'value': 0.3, 'unit': '', 'symbol': 'Alpha_i_1', 'description': 'Non-randomness parameter Alpha_i_1'}
+
         '''
-        # find component property
+        # SECTION: find component property
         prop_data = self._find_component_prop_data(component_name)
 
         if not isinstance(prop_data, dict):
             raise Exception("Component property data is not a dictionary!")
 
-        # dataframe (selected component data)
+        # NOTE: dataframe (selected component data)
         df = pd.DataFrame(prop_data)
 
-        # choose a column
+        # >> init
+        get_data = {}
+
+        # SECTION: choose a column
         if isinstance(property, str):
             # df = df[property_name]
             # look up prop_data dict
@@ -516,7 +551,12 @@ class TableMatrixData:
                         get_data = prop_data[key]
                         break
 
-            # print(type(get_data))
+            # log empty data
+            if len(get_data) == 0:
+                logger.warning(
+                    f"Property '{property}' not found for component '{component_name}'!")
+
+            # res
             return get_data
 
         elif isinstance(property, int):
@@ -527,10 +567,17 @@ class TableMatrixData:
             # set
             get_data = sr.to_dict()
 
+            # empty data
+            if len(get_data) == 0:
+                logger.warning(
+                    f"Property index '{property}' not found for component '{component_name}'!")
+
             return get_data
 
         else:
-            raise ValueError("loading error!")
+            # logger
+            logger.error("Property must be a string or an integer!")
+            return {}
 
     def get_matrix_property_by_name(self, property: str) -> DataResult:
         '''
@@ -668,6 +715,7 @@ class TableMatrixData:
         symbol_format: Literal[
             'alphabetic', 'numeric'
         ] = 'alphabetic',
+        component_key: Literal['Name'] = 'Name',
         message: str = 'Get a component property from data table structure',
         **kwargs
     ) -> DataResult:
@@ -682,6 +730,8 @@ class TableMatrixData:
             component names such as ['ethanol', 'methanol']
         symbol_format : str
             symbol format alphabetic or numeric (default: alphabetic)
+        component_key : Literal['Name']
+            component key Name or Formula (default: Name)
         message : str
             message (default: None)
         **kwargs : dict
@@ -696,6 +746,13 @@ class TableMatrixData:
         # NOTE: mixture_components
         mixture_name = kwargs.get('mixture_name', None)
 
+        # NOTE: selected columns based on component_key
+        if component_key not in ['Name']:
+            raise ValueError("component_key must be 'Name' or 'Formula'!")
+
+        # >> selected column
+        selected_column = component_key
+
         # NOTE: check matrix mode
         if self.matrix_mode == 'ITEMS':
             # SECTION: check matrix items
@@ -705,8 +762,8 @@ class TableMatrixData:
 
         elif self.matrix_mode == 'VALUES':
             # SECTION: matrix structure (all data)
+            # ! load matrix table
             matrix_table = self.matrix_table
-
         else:
             raise Exception("Matrix mode is not recognized!")
 
@@ -714,7 +771,7 @@ class TableMatrixData:
         if not isinstance(matrix_table, pd.DataFrame):
             raise Exception("Matrix data is not a dataframe!")
 
-        # column name
+        # >> column name
         matrix_table_column_name = list(matrix_table.columns)
 
         # SECTION: check columns names
@@ -724,8 +781,11 @@ class TableMatrixData:
             parts.sort()
             return ' | '.join(parts)
 
-        # mixture
-        if any(col.lower() == 'mixture' for col in matrix_table_column_name):
+        # SECTION: mixture
+        # >> if 'Mixture' column exists, filter rows based on mixture_name
+        if any(
+            col.lower() == 'mixture' for col in matrix_table_column_name
+        ):
             # check
             if mixture_name is None:
                 # set
@@ -735,13 +795,14 @@ class TableMatrixData:
             mixture_name = normalize_mixture(mixture_name)
 
             # build dataframe for the mixture
-            # Extract header + row1 + row2
+            # NOTE: Extract header + row1 + row2
             header_rows = matrix_table.iloc[:2]  # row 0 and 1
 
             matrix_table['normalized_mixture'] = matrix_table['Mixture'].apply(
-                normalize_mixture)
+                normalize_mixture
+            )
 
-            # Filter rows where 'mixture' == specific_name
+            # NOTE: Filter rows where 'mixture' == specific_name
             filtered_rows = matrix_table[
                 matrix_table['normalized_mixture'] == mixture_name
             ]
@@ -754,17 +815,23 @@ class TableMatrixData:
 
             # drop the normalized_mixture column
             matrix_table = matrix_table.drop(columns=['normalized_mixture'])
-
-        # log
-        # print(matrix_table)
+        else:
+            # log
+            logger.info("No 'Mixture' column found in the matrix table.")
 
         # SECTION: component names
+        # load all component names in Name column
         comp_i = 1
         matrix_table_component = {}
         # looping through Name column
-        for i, item in enumerate(list(matrix_table['Name'])):
+        for i, item in enumerate(list(matrix_table[selected_column])):
             # check item is a component name
-            if item != "-" and len(item) > 1 and item != 'None' and item != 'None':
+            if (
+                item != "-" and
+                len(item) > 1 and
+                item != 'None' and
+                item != 'None'
+            ):
                 matrix_table_component[item] = comp_i
                 comp_i += 1
 
@@ -782,8 +849,13 @@ class TableMatrixData:
             component_name_filter = matrix_table_component_names[i]
 
             # get component data
-            _data_get = matrix_table[matrix_table['Name'].str.match(
-                component_name_filter, case=False, na=False)]
+            _data_get = matrix_table[
+                matrix_table[selected_column].str.match(
+                    component_name_filter,
+                    case=False,
+                    na=False
+                )
+            ]
 
             # set
             _row_index = int(_data_get.index[0])
@@ -798,11 +870,14 @@ class TableMatrixData:
                                 component_name_filter)
 
             # get component data
-            _component_name = _data['Name']
+            _component_name = _data[selected_column]
             matrix_table_comp_data[_component_name] = _data
 
         # SECTION: manage property
-        if isinstance(property, str) and property.endswith('_i_j'):
+        if (
+            isinstance(property, str) and
+            property.endswith('_i_j')
+        ):
             # find the columns
             _property = property.split('_')
             property_name = _property[0]
@@ -812,11 +887,12 @@ class TableMatrixData:
             # matrix column index
             matrix_column_index = []
 
-            # look for the property name in the column names
+            # NOTE: look for the property name in the column names
             for column in matrix_table_column_name:
                 # column name set
                 column_set = column.split('_')[0]
-                # check
+                # >> check
+                # ! case insensitive
                 if property_name.upper() == column_set.upper():
                     # get the column index
                     column_index = matrix_table_column_name.index(column)
@@ -850,11 +926,23 @@ class TableMatrixData:
             # get index
             property_column_index = matrix_column_index[comp2_index]
 
-            # get property value
+            # NOTE: get property value
             property_value = matrix_table.iat[
                 row_index_comp1,
                 property_column_index
             ]
+            # >> check empty
+            if not property_value or property_value == 'None':
+                # log
+                logger.warning(
+                    f"Property value for '{property}' is empty, setting to -1.")
+                property_value = -1
+            # >> check type
+            if not isinstance(property_value, (int, float, str)):
+                # log
+                logger.warning(
+                    f"Property value '{property_value}' is not a number, setting to -1.")
+                property_value = -1
 
             # get property symbol
             symbol_idx = str(matrix_table.iloc[0, property_column_index]).split('_')[
@@ -918,11 +1006,21 @@ class TableMatrixData:
         -------
         dict
             dictionary for ij property
+
+        Notes
+        -----
+        - property must be a string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol` or `Alpha | ethanol | methanol`
+        - res_format is the result format (default: dict)
+        - symbol_delimiter is the symbol delimiter (default: |), array element symbol delimiter
+        - the function returns a dictionary with the ij property
+        - if the property is not found, an empty dictionary is returned
         '''
         try:
-            # check property name
-            # check not empty
-            if property is None or property.strip() == "":
+            # NOTE: property name
+            if (
+                property is None or
+                property.strip() == ""
+            ):
                 raise Exception("Property name is empty!")
 
             # extract data
@@ -930,7 +1028,7 @@ class TableMatrixData:
             # check contains underscore
             extracted = property.strip().split('_')
 
-            # check len
+            # NOTE: check len
             if len(extracted) == 3:
                 prop_name, comp1, comp2 = extracted
                 # remove _ij
@@ -973,13 +1071,14 @@ class TableMatrixData:
             elif symbol_delimiter == "|":
                 symbol_delimiter_set = " | "
             else:
+                logger.error("Symbol delimiter not recognized!")
                 raise Exception("Symbol delimiter not recognized!")
 
             # NOTE: define mixture
             # mixture name
             mixture_name = f"{components[0]} | {components[1]}"
 
-            # NOTE: extract data
+            # SECTION: extract data
             for i in range(len(components)):
                 for j in range(len(components)):
                     # key
@@ -996,12 +1095,12 @@ class TableMatrixData:
                     res_dict[key_comp] = val
                     res_array[i][j] = val
 
-            # check
+            # NOTE: check
             if res_format == 'alphabetic':
-                # NOTE: convert to alphabetic format
+                # >> convert to alphabetic format
                 return res_dict
             elif res_format == 'numeric':
-                # NOTE: convert to numeric format
+                # >> convert to numeric format
                 return res_array
             else:
                 raise Exception("Result format not recognized!")
@@ -1018,7 +1117,7 @@ class TableMatrixData:
         ] = 'numeric'
     ) -> Dict[str, str | float | int] | np.ndarray:
         '''
-        Get matrix data
+        Get matrix data from matrix data table structure (2x2, 3x3, ...)
 
         Parameters
         ----------
@@ -1033,6 +1132,12 @@ class TableMatrixData:
         -------
         dict | np.ndarray
             matrix data (dict or np.ndarray)
+
+        Notes
+        -----
+        - property_name must be a string as: Alpha (i,j are component names) such as `Alpha`
+        - component_names is a list of component names such as ['ethanol', 'methanol']
+        - the function returns a dictionary or numpy array with the matrix data
         '''
         try:
             # NOTE: check property name
@@ -1062,7 +1167,7 @@ class TableMatrixData:
             # NOTE: mixture name
             mixture_name = f"{components[0]} | {components[1]}"
 
-            # looping through component names
+            # SECTION: looping through component names
             for i in range(component_num):
                 for j in range(component_num):
                     # key
@@ -1082,17 +1187,23 @@ class TableMatrixData:
                     # ? return 0 if value is None
                     mat_ij_dict[key_dict] = matrix_property['value'] or 0
 
-            # check
-            if mat_ij is None:
-                raise Exception("Matrix data is None!")
+            # NOTE: check
+            if (
+                mat_ij is None or
+                mat_ij_dict is None
+            ):
+                # log
+                logger.error("Matrix data is None!")
+                return {}
 
-            # return
+            # NOTE: return
             if symbol_format == 'alphabetic':
                 return mat_ij_dict
             elif symbol_format == 'numeric':
                 return mat_ij
             else:
-                raise Exception("Symbol format not recognized!")
+                raise ValueError(
+                    f"Symbol format {symbol_format} not recognized.")
         except Exception as e:
             raise Exception("Getting matrix data failed!, ", e)
 
