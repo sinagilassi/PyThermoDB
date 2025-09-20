@@ -68,7 +68,7 @@ comp3 = 'benzene'
 components = [comp1, comp2, comp3]
 
 # ====================================
-# LOAD MATRIX DATA
+# ! LOAD MATRIX DATA
 # ====================================
 tb_data_df = thermo_db.table_data(
     'NRTL',
@@ -78,51 +78,70 @@ print(type(tb_data_df))
 print(tb_data_df)
 
 # ====================================
-# BUILD MATRIX DATA
+# ! BUILD MATRIX DATA
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_thermo_property(
-    [comp1, comp2], 'NRTL', "Non-randomness parameters of the NRTL equation-3")
+    [comp1, comp2],
+    'NRTL',
+    "Non-randomness parameters of the NRTL equation-3"
+)
 # check type
 if not isinstance(nrtl_alpha, TableMatrixData):
     raise TypeError("nrtl_alpha is not an instance of TableMatrixData")
 
-# matrix table
+# NOTE: matrix table
 print(nrtl_alpha.matrix_table)
-# matrix table
+# NOTE: matrix table
 print(nrtl_alpha.get_matrix_table(mode='selected'))
-# symbol
+# NOTE: symbol
 print(nrtl_alpha.matrix_symbol)
-
+# NOTE: structure
 print(nrtl_alpha.matrix_data_structure())
 
+# SECTION: get property value
 print(nrtl_alpha.get_property('Alpha_i_1', comp1))
-# print(nrtl_alpha.get_property(4, comp1))
+print(nrtl_alpha.get_property('Alpha_i_2', comp1))
+print(nrtl_alpha.get_property('Alpha_i_3', comp1))
+print(nrtl_alpha.get_property('Alpha_i_4', comp1))
+print(nrtl_alpha.get_property(4, comp1))
 # by symbol
 # print(float(Alpha_i_j['value']))
 
+# SECTION: get matrix property
 print(nrtl_alpha.get_matrix_property(
     "Alpha_i_j",
-    [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value")
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value"
+)
 )
 
 print(nrtl_alpha.get_matrix_property(
     "Beta_i_j",
-    [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value")
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value"
+)
 )
 
-# property name using ij method
+# SECTION: property name using ij method
 prop_name = f"Alpha_{comp1}_{comp3}"
 print(prop_name)
 print(nrtl_alpha.ij(prop_name))
 print(nrtl_alpha.ij(prop_name).get('value'))
 
 
-# matrix data
+# SECTION: matrix data
+# NOTE: multi-component
 res_1 = nrtl_alpha.mat("Alpha", [comp2, comp1, comp3])
 print(res_1)
 
-# metric
+# NOTE: binary
+res_2 = nrtl_alpha.mat("Alpha", [comp1, comp2])
+print(res_2)
+
+# SECTION: metric
 print(nrtl_alpha.ijs(f"Alpha | {comp1} | {comp2}"))
 
 # components
@@ -137,10 +156,10 @@ for comp1 in components:
 
 
 # ====================================
-# BUILD THERMODB
+# ! BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = "thermodb_nrtl_2"
+thermodb_name = "thermodb_nrtl"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
@@ -151,10 +170,12 @@ thermo_db.add_data('nrtl', nrtl_alpha)
 
 # save
 thermo_db.save(
-    f'{thermodb_name}', file_path=parent_dir)
+    f'{thermodb_name}',
+    file_path=parent_dir
+)
 
 # ====================================
-# CHECK THERMODB
+# ! CHECK THERMODB
 # ====================================
 # check all properties and functions registered
 print(thermo_db.check_properties())
