@@ -554,14 +554,19 @@ class TableReference(ManageData):
             if (
                 isinstance(column_name, str) and
                 isinstance(lookup, str) and
-                    query is False
+                query is False
             ):
-                # create filter
-                df_filter = df[df[column_name].str.lower() == lookup.lower()]
-            if (
+                # ! create filter
+                # used for single search term with respect to a single column name only
+                df_filter = df[
+                    df[column_name].str.lower() == lookup.lower()
+                ]
+            elif (
                 isinstance(column_name, str) and
-                    isinstance(lookup, list)
+                isinstance(lookup, list),
+                query is False
             ):
+                # ! create filter
                 # create filter
                 # df_filter = df[df[column_name].isin(lookup)]
 
@@ -574,29 +579,38 @@ class TableReference(ManageData):
                     df[column_name].str.strip().str.lower().isin(
                         lookup_normalized)
                 ]
-            # query
             elif (
                 isinstance(column_name, str) and
                 query is True
             ):
-                # create filter
-                df_filter = df.query(column_name)
+                # ! query based search
+                # used for creating filter using query method
+                # >> use query
+                df_filter = df.query(column_name, engine='python')
             # list
             elif (
                 isinstance(column_name, list) and
-                isinstance(lookup, list)
+                isinstance(lookup, list),
+                query is True
             ):
-                # use query
+                # ! query based search
                 _queries = []
+
+                # iterate through column names
                 for i in range(len(column_name)):
-                    _queries.append(f'`{column_name[i]}` == "{lookup[i]}"')
+                    _queries.append(
+                        f'{column_name[i]}.str.lower() == "{str(lookup[i]).lower()}"'
+                    )
+
                 # make query
-                _query_set = ' & '.join(_queries)
-                # query
-                df_filter = df.query(_query_set)
-            # else:
-            #     raise ValueError(
-            #         f"Column name and lookup formats are not valid.")
+                _query_set = ' and '.join(_queries)
+
+                # >> query
+                df_filter = df.query(_query_set, engine='python')
+            else:
+                raise ValueError(
+                    f"Column name and lookup formats are not valid for {databook_id} and {table_id}."
+                )
 
             # NOTE: df_filter analysis
             # check if df_filter is empty
@@ -617,10 +631,21 @@ class TableReference(ManageData):
             elif records_number == 4:
                 df_info = df.iloc[:2, :]
             else:
+                # ! take row 0 to 3
                 df_info = df.iloc[:4, :]
 
             # NOTE: combine dfs
             result = pd.concat([df_info, df_filter])
+
+            # log
+            print("====================================")
+            print(f"Records found: {records_number}")
+            print(df_info)
+            print("====================================")
+            print(df_filter)
+            print("====================================")
+            print(result)
+            print("====================================")
 
             # NOTE: check
             if not df_filter.empty:
@@ -676,6 +701,7 @@ class TableReference(ManageData):
 
             # SECTION: check
             if matrix_tb:
+                # NOTE: search matrix table
                 df = self.search_matrix_table(
                     databook_id,
                     table_id,
@@ -684,6 +710,7 @@ class TableReference(ManageData):
                     query=query
                 )
             else:
+                # NOTE: search table
                 df = self.search_table(
                     databook_id,
                     table_id,

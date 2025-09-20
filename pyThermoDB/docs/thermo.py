@@ -2171,6 +2171,7 @@ class ThermoDB(ManageData):
                         databook=databook,
                         table=table,
                         column_name=column_name,
+                        query=query
                     )
                 else:
                     raise Exception('No data/equation found!')
