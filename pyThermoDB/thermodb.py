@@ -725,7 +725,10 @@ def build_components_thermodb(
     reference_config: Dict[str, Dict[str, str]],
     thermodb_name: Optional[str] = None,
     custom_reference: Optional[CustomReference] = None,
+    component_key: Literal['Name', 'Formula'] = 'Name',
     message: Optional[str] = None,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
     **kwargs
 ) -> CompBuilder:
     '''
@@ -741,8 +744,14 @@ def build_components_thermodb(
         Name of the thermodynamic databook to be built, by default None
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
+    component_key : Literal['Name', 'Formula'], optional
+        Key to identify the component in the reference content, by default 'Name'
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    thermodb_save : Optional[bool], optional
+        Whether to save the built thermodb to a file, by default False
+    thermodb_save_path : Optional[str], optional
+        Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     **kwargs
         Additional keyword arguments.
 
@@ -868,6 +877,7 @@ def build_components_thermodb(
                 continue  # skip if component is not available in the table
 
             # NOTE: build thermodb items
+            # ! create Tables [TableMatrixData]
             item_ = thermodb.build_thermo_property(
                 component_names,
                 databook_,
@@ -900,8 +910,23 @@ def build_components_thermodb(
                 prop_name, prop_value
             )
 
-        # NOTE: build
-        thermodb_comp.build()
+        # SECTION: build and save thermodb
+        if thermodb_save:
+            # check path
+            thermodb_save_path = check_file_path(
+                file_path=thermodb_save_path,
+                default_path=None,
+                create_dir=True
+            )
+            # save
+            thermodb_comp.save(
+                filename=thermodb_name,
+                file_path=thermodb_save_path
+            )
+        else:
+            # build
+            thermodb_comp.build()
+
         # return
         return thermodb_comp
     except Exception as e:

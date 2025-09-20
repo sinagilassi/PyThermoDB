@@ -598,7 +598,7 @@ class CompBuilder(CompExporter):
             # NOTE: check_list may contain duplicates
             check_list = list(set(check_list))
 
-            # check if the property exists in both functions and properties
+            # ! check if the property exists in both functions and properties
             if (thermo_name_lower not in check_list):
                 # raise
                 raise Exception(
@@ -719,7 +719,8 @@ class CompBuilder(CompExporter):
                     # check length
                     if len(component_names) != 2:
                         raise ValueError(
-                            f"Invalid source format! {property_source}, components are required!")
+                            f"Invalid source format! {property_source}, components are required!"
+                        )
 
                     # NOTE: get property (get_matrix_property method)
                     prop = prop_src.get_matrix_property(
