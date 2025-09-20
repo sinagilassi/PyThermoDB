@@ -1,6 +1,7 @@
 # import packages/modules
 import pyThermoDB as ptdb
 from pyThermoDB.core import TableMatrixData
+from pythermodb_settings.models import Component
 import os
 from rich import print
 from typing import Dict, Any
@@ -50,9 +51,41 @@ print(tb_list)
 # CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
-comp1 = "methanol"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp1, 'NRTL', "Non-randomness parameters of the NRTL equation")
+# ! component
+methanol = Component(name="methanol", formula="C2H5OH", state="l")
+ethanol = Component(name="ethanol", formula="C2H6O", state="l")
+benzene = Component(name="benzene", formula="C6H6", state="l")
+
+# NOTE: without query
+# ! direct match search by column name - Name
+COMP1_check_availability = thermo_db.check_component(
+    component_name=methanol.name,
+    databook='NRTL',
+    table="Non-randomness parameters of the NRTL equation-3",
+    column_name='Name'
+)
+print(f"Component availability (without query): {COMP1_check_availability}")
+
+# ! direct match search by column name - Formula
+COMP1_check_availability = thermo_db.check_component(
+    component_name=methanol.formula,
+    databook='NRTL',
+    table="Non-randomness parameters of the NRTL equation-3",
+    column_name='Formula'
+)
+print(f"Component availability (without query): {COMP1_check_availability}")
+
+# NOTE: using query
+query = f"Name.str.lower() == '{comp1.lower()}' and State.str.lower() == '{state1.lower()}'"
+COMP1_check_availability = thermo_db.check_component(
+    component_name=comp1,
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    column_name=query,
+    query=True,
+    res_format='dict'
+)
+print(COMP1_check_availability)
 
 comp2 = "ethanol"
 # COMP1_check_availability = thermo_db.check_component(
