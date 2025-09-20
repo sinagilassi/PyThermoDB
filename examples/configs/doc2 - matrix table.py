@@ -1,6 +1,8 @@
 # import libs
-from pyThermoDB.references import check_custom_reference, ReferenceChecker
 from rich import print
+from typing import Dict
+from pyThermoDB.references import ReferenceChecker
+from pythermodb_settings.models import ComponentConfig, ComponentRule, Component
 
 # SECTION: reference content
 REFERENCE_CONTENT = """
@@ -66,7 +68,7 @@ REFERENCES:
             UNIT: [None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
             CONVERSION: [None,None,None,None,1,1,1,1,1,1,1,1]
           VALUES:
-            - [1,'carbon dioxide','CO2','g',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
+            - [1,'carbon dioxide','CO2','l',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
             - [2,'carbon monoxide','CO','g',28.01,132.92,3.499,0.0944,0.299,0.0482,-110.5,-137.2]
             - [3,'hydrogen','H2','g',2.016,33.19,1.313,0.064147,0.305,-0.216,0,0]
             - [4,'methanol','CH3OH','g',32.04,512.5,8.084,0.117,0.222,0.5658,-200.7,-162]
@@ -122,7 +124,7 @@ REFERENCES:
             - [14,'benzene','C6H6','l',83.107,-6486.2,-9.2194,6.98E-06,2,278.68,4.76E+03,562.05,4.88E+06,1]
             - [15,'nitrogen','N2','g',58.282,-1084.1,-8.3144,4.41E-02,1,63.15,1.25E+04,126.2,3.39E+06,1]
             - [16,'ethane','C2H6','g',51.857,-2598.7,-5.1283,1.49E-05,2,90.35,1.13E+00,305.32,4.85E+06,1]
-        NRTL Non-randomness parameters:
+        NRTL Non-randomness parameters-2:
           TABLE-ID: 5
           DESCRIPTION:
             This table provides the NRTL non-randomness parameters for the NRTL equation.
@@ -154,7 +156,7 @@ REFERENCES:
             UNIT: [None,None,None,None,g/mol,K,MPa,m3/kmol,None,None,kJ/mol,kJ/mol]
             CONVERSION: [None,None,None,None,1,1,1,1,1,1,1,1]
           VALUES:
-            - [100,'carbon dioxide','CO2','g',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
+            - [100,'carbon dioxide','CO3','g',44.01,304.21,7.383,0.094,0.274,0.2236,-393.5,-394.4]
             - [2,'carbon monoxide','CO','g',28.01,132.92,3.499,0.0944,0.299,0.0482,-110.5,-137.2]
             - [3,'hydrogen','H2','g',2.016,33.19,1.313,0.064147,0.305,-0.216,0,0]
             - [4,'methanol','CH3OH','g',32.04,512.5,8.084,0.117,0.222,0.5658,-200.7,-162]
@@ -172,194 +174,97 @@ REFERENCES:
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
 """
 
-# SECTION: check custom reference
-check_ = check_custom_reference(REFERENCE_CONTENT)
-print(check_)
-
 
 # SECTION: create ReferenceChecker instance
 ReferenceChecker_ = ReferenceChecker(REFERENCE_CONTENT)
 
-# SECTION: get databook names
-databook_names_ = ReferenceChecker_.get_databook_names()
-print(f"Databook Names: {databook_names_}")
-
-# SECTION: get databooks
-databooks_ = ReferenceChecker_.get_databook('CUSTOM-REF-1')
-print(f"Databooks: {databooks_}")
-
-# SECTION: get databook tables
-databook_tables_ = ReferenceChecker_.get_databook_tables('CUSTOM-REF-1')
-print(f"Databook Tables: {databook_tables_}")
-
-# SECTION: get databook table names
-databook_table_names_ = ReferenceChecker_.get_databook_table_names(
-    'CUSTOM-REF-1'
-)
-print(f"Databook Table Names: {databook_table_names_}")
-
-# SECTION: get databook table
-databook_table_ = ReferenceChecker_.get_databook_table(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Databook Table: {databook_table_}")
-
-# SECTION: get databook table values
-databook_table_values_ = ReferenceChecker_.get_table_values(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Databook Table Values: {databook_table_values_}")
-
-# SECTION: get table description
-table_description_ = ReferenceChecker_.get_table_description(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Description: {table_description_}")
-
-# SECTION: get table components
-table_components_ = ReferenceChecker_.get_table_components(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Components: {table_components_}")
-
-# SECTION: get table data
-table_data_ = ReferenceChecker_.get_table_data(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Data: {table_data_}")
-
-# NOTE: get table data details (property name and symbols)
-table_data_details_ = ReferenceChecker_.get_table_data_details(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Data Details: {table_data_details_}")
-
-# SECTION: get table equations
-table_equations_ = ReferenceChecker_.get_table_equations(
-    'CUSTOM-REF-1',
-    'ideal-gas-heat-capacity'
-)
-print(f"Table Equations: {table_equations_}")
-
-# NOTE: get table equation details
-table_equation_details_ = ReferenceChecker_.get_table_equation_details(
-    'CUSTOM-REF-1',
-    'ideal-gas-heat-capacity'
-)
-print(f"Table Equation Details: {table_equation_details_}")
-
-# SECTION: get components data
-components_data_ = ReferenceChecker_.get_components_data(
-    'CUSTOM-REF-1',
-    'general-data',
-    component_key='Name-State'
-)
-print(f"Components Data:")
-print(components_data_)
-
-# SECTION: get table matrix symbols
-table_matrix_symbols_ = ReferenceChecker_.get_table_matrix_symbols(
-    'CUSTOM-REF-1',
-    'NRTL Non-randomness parameters-1'
-)
-print(f"Table Matrix Symbols: {table_matrix_symbols_}")
-
-# SECTION: get table types
-# NOTE: all table types
-all_table_types_ = ReferenceChecker_.get_all_tables_types()
-print(f"All Table Types: {all_table_types_}")
-
-# NOTE: databook table types
-table_types_ = ReferenceChecker_.get_table_type(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Types: {table_types_}")
-
-table_types_ = ReferenceChecker_.get_table_type(
-    'CUSTOM-REF-1',
-    'ideal-gas-heat-capacity'
-)
-print(f"Table Types: {table_types_}")
-
-table_types_ = ReferenceChecker_.get_table_type(
-    'CUSTOM-REF-1',
-    'vapor-pressure'
-)
-print(f"Table Types: {table_types_}")
-
-# SECTION: get databook tables types
-databook_tables_types_ = ReferenceChecker_.get_databook_tables_types(
-    'CUSTOM-REF-1'
-)
-print(f"Databook Tables Types: {databook_tables_types_}")
-
-# SECTION: generate property mapping
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# NOTE: generate property mapping for specific table
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-    table_name='general-data'
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# NOTE: generate property mapping for specific tables
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-    table_name='ideal-gas-heat-capacity'
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# NOTE: generate property mapping for specific tables
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-    table_name='vapor-pressure'
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# SECTION: property mappings
-property_mappings_ = ReferenceChecker_.get_property_mappings(
-    databook_name='CUSTOM-REF-1',
-)
-print(f"Property Mappings: {property_mappings_}")
-
-# SECTION: check properties availability
-# prop
-props = [
-    'VaPr',
-    'Cp_IG',
-    'MW',
-    'Tc',
-    'Pc',
-    'Vc',
-    'Zc',
-    'AcFa',
-    'EnFo',
-    'GiEnFo',
-    'Tm',
-    'Tb'
-]
-props_availability_ = ReferenceChecker_.prop_available_in_databook(
-    props,
-    databook_name='CUSTOM-REF-1',
-)
-print(f"Properties Availability: {props_availability_}")
-
-# SECTION: get component data
-# NOTE: component data by name and state
+# SECTION: check component availability
 component_name = 'carbon dioxide'
 component_formula = 'CO2'
 component_state = 'g'
+
+# methanol
+methanol = Component(
+    name='methanol',
+    formula='CH3OH',
+    state='l'
+)
+
+# ethanol
+ethanol = Component(
+    name='ethanol',
+    formula='C2H5OH',
+    state='l'
+)
+
+# methane
+methane = Component(
+    name='methane',
+    formula='CH4',
+    state='l'
+)
+
+# components
+components = [methane, ethanol]
+
+# SECTION: check mixture availability
+# NOTE: check in all tables
+# ! Formula-State
+check_result = ReferenceChecker_.check_binary_mixture_availability(
+    components=components,
+    databook_name='CUSTOM-REF-1',
+    component_key='Formula-State'
+)
+print(f"Check Result: {check_result}")
+
+# ! Name-State
+check_result = ReferenceChecker_.check_binary_mixture_availability(
+    components=components,
+    databook_name='CUSTOM-REF-1',
+    component_key='Name-State'
+)
+print(f"Check Result: {check_result}")
+
+# ! ignore component state (Name-State by default)
+check_result = ReferenceChecker_.check_binary_mixture_availability(
+    components=components,
+    databook_name='CUSTOM-REF-1',
+    component_key='Name-State',
+    ignore_component_state=True,
+)
+print(f"Check Result (ignore component state): {check_result}")
+
+# NOTE: check in specific table
+# to check in only one table
+# ! Formula-State
+check_result = ReferenceChecker_.check_binary_mixture_availability(
+    components=components,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    component_key='Formula-State',
+)
+print(f"Check Result: {check_result}")
+
+# ! Name-State
+check_result = ReferenceChecker_.check_binary_mixture_availability(
+    components=components,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    component_key='Name-State',
+)
+print(f"Check Result: {check_result}")
+
+# ! ignore component state (Name-State by default)
+check_result = ReferenceChecker_.check_binary_mixture_availability(
+    components=components,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    component_key='Name-State',
+    ignore_component_state=True,
+)
+print(f"Check Result (ignore component state): {check_result}")
+
+# NOTE: get component data
 components_data_ = ReferenceChecker_.get_component_data(
     component_name=component_name,
     component_formula=component_formula,
@@ -370,12 +275,162 @@ components_data_ = ReferenceChecker_.get_component_data(
 )
 print(f"Components Data: {components_data_}")
 
-components_data_ = ReferenceChecker_.get_component_data(
+# SECTION: get component reference config
+# ! unknown component
+component_name_unknown = 'unknown'
+component_formula_unknown = 'Un'
+component_state_unknown = 'g'
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
+    component_name=component_name_unknown,
+    component_formula=component_formula_unknown,
+    component_state=component_state_unknown,
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True
+)
+print(f"Component Reference Config (unknown): {component_reference_config}")
+
+# ! without ignore state
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
-    databook_name='CUSTOM-REF-2',
-    table_name='general-data-2',
-    component_key='Name-State'
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True
 )
-print(f"Components Data: {components_data_}")
+print(f"Component Reference Config: {component_reference_config}")
+
+# ! with ignore state
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True,
+    ignore_component_state=True
+)
+
+# print result
+print(
+    f"Component Reference Config (ignore state): {component_reference_config}")
+
+# ! with ignore state by providing 'name' or 'symbol'
+ignore_state_prop = ['VaPr']
+component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    add_label=True,
+    check_labels=True,
+    ignore_state_props=ignore_state_prop
+)
+print(
+    f"Component Reference Config (ignore state by prop): {component_reference_config}")
+
+# SECTION: get component reference configs (ALL)
+# NOTE: get component reference configs
+component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    add_label=True,
+    check_labels=True
+)
+print(f"Component Reference Configs: {component_reference_configs}")
+
+# ! with ignore state
+component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    add_label=True,
+    check_labels=True,
+    ignore_component_state=True
+)
+print(
+    f"Component Reference Configs (ignore state): {component_reference_configs}"
+)
+
+# ! with ignore state by providing 'name' or 'symbol'
+ignore_state_prop = ['VaPr', 'Molecular-Weight']
+component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    add_label=True,
+    check_labels=True,
+    ignore_state_props=ignore_state_prop
+)
+print(
+    f"Component Reference Configs (ignore state by prop): {component_reference_configs}"
+)
+
+# SECTION: generate reference rules
+if component_reference_configs is not None:
+    reference_rules_ = ReferenceChecker_.generate_reference_rules(
+        reference_configs=component_reference_configs
+    )
+    print(f"Reference Rules: {reference_rules_}")
+
+if component_reference_configs is not None:
+    component_reference_rules_: Dict[str, ComponentRule] = ReferenceChecker_.generate_component_reference_rules(
+        reference_configs=component_reference_configs
+    )
+    print(f"Component Reference Rules: {component_reference_rules_}")
+
+
+# SECTION: generate reference link (specific component)
+# ! generate reference link (ALL)
+reference_link_ = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1'
+)
+print(f"Reference Link: {reference_link_}")
+
+# ! NOTE: ignore component state is set to True
+reference_link_component = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    ignore_component_state=True
+)
+print(
+    f"Component Reference Link ({component_name}): {reference_link_component}")
+
+# ! ignore component state is set to False (by default)
+reference_link_component = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    ignore_component_state=False
+)
+print(
+    f"Component Reference Link ({component_name}): {reference_link_component}"
+)
+
+# SECTION: generate reference link (specific component not exists)
+# component not exists
+component_name_not_exists = 'Dimethyl ether'
+component_formula_not_exists = 'C2H6O'
+component_state_not_exists = 'l'
+
+reference_link_component = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    component_name=component_name_not_exists,
+    component_formula=component_formula_not_exists,
+    component_state=component_state_not_exists
+)
+print(
+    f"Reference Link ({component_name_not_exists}): {reference_link_component}"
+)
+
+# SECTION: generate reference link (specific table)
+reference_link_specific = ReferenceChecker_.generate_reference_link(
+    databook_name='CUSTOM-REF-1',
+    table_names='NRTL Non-randomness parameters-1'
+)
+print(f"Reference Link (Specific Table): {reference_link_specific}")
