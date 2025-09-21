@@ -358,7 +358,10 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Generating table structure failed!, ", e)
 
-    def _find_component_prop_data(self, component_name_set: str):
+    def _find_component_prop_data(
+            self,
+            component_name_set: str
+    ):
         '''
         Get a component property from data table structure
 
@@ -481,7 +484,13 @@ class TableMatrixData:
     def get_property(
             self,
             property: str | int,
-            component_name: str
+            component_name: str,
+            component_key: Literal[
+                'Name',
+                'Formula',
+                'Name-State',
+                'Formula-State'
+            ] = 'Name'
     ) -> DataResultType | dict:
         '''
         Get a component property from data table structure
@@ -525,6 +534,7 @@ class TableMatrixData:
         {'value': 0.3, 'unit': '', 'symbol': 'Alpha_i_1', 'description': 'Non-randomness parameter Alpha_i_1'}
 
         '''
+        # REVIEW
         # SECTION: find component property
         prop_data = self._find_component_prop_data(component_name)
 

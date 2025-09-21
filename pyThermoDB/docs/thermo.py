@@ -1245,6 +1245,7 @@ class ThermoDB(ManageData):
         4. If column_name is not provided, it defaults to 'Name'.
         5. If query is not provided, the method will construct a query based on component_name and column_name.
         6. The method returns the result in the specified format: 'dict', 'json', or 'str'.
+        7. The `query phrase` is set to `column_name` if query is True.
         '''
         try:
             # NOTE: check search option
@@ -2650,7 +2651,8 @@ class ThermoDB(ManageData):
         databook: int | str,
         table: int | str,
         column_name: Optional[str | list[str]] = None,
-        query: bool = False
+        query: bool = False,
+        component_key: Literal['Name', 'Formula'] = 'Name',
     ) -> TableMatrixData:
         '''
         Build matrix data as:
@@ -2666,6 +2668,10 @@ class ThermoDB(ManageData):
             table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
+        query : bool
+            query to search a dataframe
+        component_key : Literal['Name', 'Formula'], optional
+            The key to use for identifying the component, by default 'Name'.
 
         Returns
         -------
@@ -2683,7 +2689,9 @@ class ThermoDB(ManageData):
 
             # check search option
             if column_name is None:
-                column_name = 'Name'
+                # column_name = 'Name'
+                # set based on component_key
+                column_name = component_key if component_key == 'Name' else 'Formula'
 
             # find databook zero-based id (real)
             db, db_name, db_rid = self.find_databook(databook)
@@ -2709,6 +2717,8 @@ class ThermoDB(ManageData):
                 component_name = str(component_name).strip()
                 # NOTE: get data
                 # ! (check only by Name/Formula)
+                # component data consists of:
+                # header, symbol, units, records
                 component_data = self.get_component_data(
                     component_name=component_name,
                     databook_id=databook_id,
@@ -2717,9 +2727,44 @@ class ThermoDB(ManageData):
                     query=query,
                     matrix_tb=True
                 )
+
+                # NOTE: get component formula
+                # check type to consider only PayLoadType
+                if (
+                    component_data is not None and
+                    (
+                        not isinstance(component_data, pd.DataFrame) or
+                        not component_data.empty
+                    )
+                ):
+                    # header
+                    header_ = component_data['header']
+                    # records
+                    records_ = component_data['records']
+
+                    # component formula
+                    # component_name = None
+                    # component formula
+                    component_formula = None
+
+                    # >> find formula if header contains Formula
+                    for i, h in enumerate(header_):
+                        if h.lower() == 'formula':
+                            # set name
+                            component_formula = records_[i]
+                            break
+
+                    # >> find name if header contains Name
+                    for i, h in enumerate(header_):
+                        if h.lower() == 'name':
+                            # set name
+                            component_name = records_[i]
+                            break
+
                 # save
                 component_data_pack.append({
                     'component_name': component_name,
+                    'component_formula': component_formula,
                     'data': component_data
                 })
 
@@ -2745,8 +2790,8 @@ class ThermoDB(ManageData):
                     # ! build data
                     # check eq exists
                     dts = self.matrix_data_load(
-                        databook_id,
-                        table_id
+                        databook=databook_id,
+                        table=table_id
                     )
 
                     # ! check

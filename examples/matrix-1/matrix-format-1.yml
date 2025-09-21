@@ -1,0 +1,61 @@
+REFERENCES:
+    NRTL:
+      TABLES:
+        Non-randomness parameters of the NRTL equation-3:
+          MATRIX-SYMBOL:
+            - Alpha
+            - Beta
+            - Delta
+          MATRIX-DATA:
+            COLUMNS:
+              - No.
+              - Name
+              - Formula
+              - Alpha_i_1
+              - Alpha_i_2
+              - Alpha_i_3
+              - Beta_i_1
+              - Beta_i_2
+              - Beta_i_3
+              - Delta_i_1
+              - Delta_i_2
+              - Delta_i_3
+            SYMBOL:
+              - None
+              - None
+              - None
+              - Alpha_i_1
+              - Alpha_i_2
+              - Alpha_i_3
+              - Beta_i_1
+              - Beta_i_2
+              - Beta_i_3
+              - Delta_i_1
+              - Delta_i_2
+              - Delta_i_3
+            UNIT:
+              - None
+              - None
+              - None
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+            CONVERSION:
+              - None
+              - None
+              - None
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
+              - 1
