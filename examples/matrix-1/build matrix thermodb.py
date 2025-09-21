@@ -15,11 +15,12 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
+# NOTE: format 1
 # files
-yml_file = 'nrtl-3.yml'
+yml_file = 'matrix-format-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 # csv files (data/equation tables)
-# ! new format
+# ! column names: Name/Formula
 csv_file_1 = 'Non-randomness parameters of the NRTL equation-3.csv'
 csv_path_1 = os.path.join(parent_dir, csv_file_1)
 
@@ -28,6 +29,9 @@ ref: Dict[str, Any] = {
     'reference': [yml_path],
     'tables': [csv_path_1]
 }
+
+# NOTE: format 2
+# files
 
 # ====================================
 # INITIALIZATION OWN THERMO DB
@@ -76,28 +80,38 @@ COMP1_check_availability = thermo_db.check_component(
 print(f"Component availability (without query): {COMP1_check_availability}")
 
 # NOTE: using query
-query = f"Name.str.lower() == '{comp1.lower()}' and State.str.lower() == '{state1.lower()}'"
+# query = f"Name.str.lower() == '{comp1.lower()}' and State.str.lower() == '{state1.lower()}'"
+query = f"Name.str.lower() == '{methanol.name.lower()}'"
+# ! using query
 COMP1_check_availability = thermo_db.check_component(
-    component_name=comp1,
+    component_name=methanol.name,
     databook='NRTL',
     table='Non-randomness parameters of the NRTL equation-3',
     column_name=query,
     query=True,
     res_format='dict'
 )
-print(COMP1_check_availability)
+print(f"Component availability (with query): {COMP1_check_availability}")
 
-comp2 = "ethanol"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp2, 'NRTL', "Non-randomness parameters of the NRTL equation")
+# ! using query - multi-component
+query = f"Name.str.lower() == '{methanol.name.lower()}' or Name.str.lower() == '{ethanol.name.lower()}'"
+COMP1_check_availability = thermo_db.check_component(
+    component_name=[methanol.name, ethanol.name],
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    column_name=query,
+    query=True,
+    res_format='dict'
+)
+print(
+    f"Component availability (with query - multi-component): {COMP1_check_availability}")
 
-# comp3
-comp3 = 'benzene'
-# query
-# query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"
-# COMP1_check_availability = thermo_db.check_component(
-#     comp1, 3, 2, query, query=True)
-
+# NOTE: components
+# comp1
+comp1 = methanol.name
+comp2 = ethanol.name
+comp3 = benzene.name
+# components list
 components = [comp1, comp2, comp3]
 
 # ====================================

@@ -381,10 +381,10 @@ class TableReference(ManageData):
             ):
                 # ! search table
                 df = self.search_table(
-                    databook_id,
-                    table_id,
-                    column_name,
-                    lookup,
+                    databook_id=databook_id,
+                    table_id=table_id,
+                    column_name=column_name,
+                    lookup=lookup,
                     query=query
                 )
             elif (
@@ -393,10 +393,10 @@ class TableReference(ManageData):
             ):
                 # ! search matrix table
                 df = self.search_matrix_table(
-                    databook_id,
-                    table_id,
-                    column_name,
-                    lookup,
+                    databook_id=databook_id,
+                    table_id=table_id,
+                    column_name=column_name,
+                    lookup=lookup,
                     query=query
                 )
             else:
@@ -542,7 +542,10 @@ class TableReference(ManageData):
             result of search
         '''
         # NOTE: load tb
-        df = self.load_table(databook_id, table_id)
+        df = self.load_table(
+            databook_id=databook_id,
+            table_id=table_id
+        )
 
         # NOTE: search mode
         search_mode = False
@@ -563,7 +566,7 @@ class TableReference(ManageData):
                 ]
             elif (
                 isinstance(column_name, str) and
-                isinstance(lookup, list),
+                isinstance(lookup, list) and
                 query is False
             ):
                 # ! create filter
@@ -581,16 +584,24 @@ class TableReference(ManageData):
                 ]
             elif (
                 isinstance(column_name, str) and
+                isinstance(lookup, str) and
                 query is True
             ):
                 # ! query based search
                 # used for creating filter using query method
                 # >> use query
                 df_filter = df.query(column_name, engine='python')
-            # list
+            elif (
+                isinstance(column_name, str) and
+                isinstance(lookup, list) and
+                query is True
+            ):
+                # ! query based search
+                # used for creating filter using query method
+                df_filter = df.query(column_name, engine='python')
             elif (
                 isinstance(column_name, list) and
-                isinstance(lookup, list),
+                isinstance(lookup, list) and
                 query is True
             ):
                 # ! query based search
@@ -638,14 +649,14 @@ class TableReference(ManageData):
             result = pd.concat([df_info, df_filter])
 
             # log
-            print("====================================")
-            print(f"Records found: {records_number}")
-            print(df_info)
-            print("====================================")
-            print(df_filter)
-            print("====================================")
-            print(result)
-            print("====================================")
+            # print("====================================")
+            # print(f"Records found: {records_number}")
+            # print(df_info)
+            # print("====================================")
+            # print(df_filter)
+            # print("====================================")
+            # print(result)
+            # print("====================================")
 
             # NOTE: check
             if not df_filter.empty:
