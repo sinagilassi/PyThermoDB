@@ -360,15 +360,15 @@ class TableMatrixData:
 
     def _find_component_prop_data(
             self,
-            component_name_set: str
+            component_id: str,
     ):
         '''
         Get a component property from data table structure
 
         Parameters
         ----------
-        component_name : str
-            component name
+        component_id : str
+            component id
 
         Returns
         -------
@@ -376,14 +376,37 @@ class TableMatrixData:
             component property
         '''
         try:
+            # SECTION: check component id availability
+            if component_id is None or component_id.strip() == "":
+                logger.error("Component id is empty!")
+                return {}
+
+            # NOTE: prop_data_pack keys
+            prop_data_pack_keys = list(self.prop_data_pack.keys())
+            # >> check exact match
+            if component_id not in prop_data_pack_keys:
+                # >> check case insensitive match
+                matched_keys = [
+                    key for key in prop_data_pack_keys if key.lower() == component_id.lower()
+                ]
+                if len(matched_keys) == 0:
+                    logger.error(
+                        f"Component id '{component_id}' not found in property data pack!")
+                    return {}
+                else:
+                    # set component id to matched key
+                    component_id = matched_keys[0]
+
+            # SECTION: find component property
             # exclude key
             exclude_key = 'matrix-data'
 
-            # set res
+            # init
             prop_data = {}
-            # looping through self.prop_data_pack
-            for component_name, component_value in self.prop_data_pack.items():
-                if component_name == component_name_set:
+
+            # NOTE: looping through self.prop_data_pack
+            for component_id_, component_value in self.prop_data_pack.items():
+                if component_id_ == component_id:
                     # check value
                     prop_data = {
                         key: value for key, value in component_value.items() if key != exclude_key
@@ -391,7 +414,8 @@ class TableMatrixData:
                     return prop_data
             # check
             if len(prop_data) == 0:
-                raise Exception("Component not found!")
+                return {}
+
         except Exception as e:
             raise Exception("Finding component property failed!, ", e)
 
@@ -485,12 +509,6 @@ class TableMatrixData:
             self,
             property: str | int,
             component_name: str,
-            component_key: Literal[
-                'Name',
-                'Formula',
-                'Name-State',
-                'Formula-State'
-            ] = 'Name'
     ) -> DataResultType | dict:
         '''
         Get a component property from data table structure
@@ -536,7 +554,9 @@ class TableMatrixData:
         '''
         # REVIEW
         # SECTION: find component property
-        prop_data = self._find_component_prop_data(component_name)
+        prop_data = self._find_component_prop_data(
+            component_id=component_name
+        )
 
         if not isinstance(prop_data, dict):
             raise Exception("Component property data is not a dictionary!")
@@ -858,7 +878,7 @@ class TableMatrixData:
             # define filter for component
             component_name_filter = matrix_table_component_names[i]
 
-            # get component data
+            # NOTE: get component data
             _data_get = matrix_table[
                 matrix_table[selected_column].str.match(
                     component_name_filter,
@@ -876,8 +896,9 @@ class TableMatrixData:
 
             # check
             if len(_data) == 0:
-                raise Exception("No data for component: " +
-                                component_name_filter)
+                raise Exception(
+                    "No data for component: " + component_name_filter
+                )
 
             # get component data
             _component_name = _data[selected_column]
@@ -888,7 +909,7 @@ class TableMatrixData:
             isinstance(property, str) and
             property.endswith('_i_j')
         ):
-            # find the columns
+            # ! find the columns
             _property = property.split('_')
             property_name = _property[0]
 
@@ -911,25 +932,27 @@ class TableMatrixData:
                     # get the column index
                     matrix_column_index.append(column_index)
 
-            # check matrix columns
+            # >> check matrix columns
             if len(matrix_columns) != matrix_table_component_no:
                 raise Exception(
                     "Matrix columns do not match the number of components!")
-            # check matrix column index
+            # >> check matrix column index
             if len(matrix_column_index) != matrix_table_component_no:
                 raise Exception(
                     "Matrix column index does not match the number of components!")
 
-            # property value
+            # NOTE: property value
             comp1_index = matrix_table_component[component_names[0]] - 1
             comp2_index = matrix_table_component[component_names[1]] - 1
 
             # row index component 1
             row_index_comp1 = matrix_table_comp_data[component_names[0]].get(
-                'row_index')
+                'row_index'
+            )
             # row index component 2
             row_index_comp2 = matrix_table_comp_data[component_names[1]].get(
-                'row_index')
+                'row_index'
+            )
 
             # property column
             property_column = matrix_columns[comp2_index]
@@ -954,7 +977,7 @@ class TableMatrixData:
                     f"Property value '{property_value}' is not a number, setting to -1.")
                 property_value = -1
 
-            # get property symbol
+            # NOTE: get property symbol
             symbol_idx = str(matrix_table.iloc[0, property_column_index]).split('_')[
                 0]+'_'+str(comp1_index+1)+'_'+str(comp2_index+1)
             # symbol name
@@ -970,7 +993,7 @@ class TableMatrixData:
                 raise ValueError(
                     f"Symbol format {symbol_format} not recognized.")
 
-            # get property unit
+            # NOTE: get property unit
             property_unit = matrix_table.iloc[1, property_column_index]
 
             # res
