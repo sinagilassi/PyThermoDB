@@ -15,19 +15,15 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
-# NOTE: format 1
+# NOTE: format 2
+# ! Mixture column
 # files
-yml_file = 'matrix-format-1.yml'
+yml_file = 'matrix-format-2.yml'
 yml_path = os.path.join(parent_dir, yml_file)
-# csv files (data/equation tables)
-# ! column names: Name/Formula
-csv_file_1 = 'Non-randomness parameters of the NRTL equation-3.csv'
-csv_path_1 = os.path.join(parent_dir, csv_file_1)
 
 # custom ref
 ref: Dict[str, Any] = {
-    'reference': [yml_path],
-    'tables': [csv_path_1]
+    'reference': [yml_path]
 }
 
 # ====================================
@@ -57,27 +53,29 @@ methanol = Component(name="methanol", formula="CH3OH", state="l")
 ethanol = Component(name="ethanol", formula="C2H5OH", state="l")
 benzene = Component(name="benzene", formula="C6H6", state="l")
 
-# NOTE: without query
-# ! direct match search by column name - Name
-COMP1_check_availability = thermo_db.check_component(
-    component_name=methanol.name,
-    databook='NRTL',
-    table="Non-randomness parameters of the NRTL equation-3",
-    column_name='Name'
-)
-print(f"Component availability (without query): {COMP1_check_availability}")
+# mixture
+mixture_methanol_ethanol = methanol.name + ' | ' + ethanol.name
+print(f"Mixture: {mixture_methanol_ethanol}")
 
-# ! direct match search by column name - Formula
-COMP1_check_availability = thermo_db.check_component(
-    component_name=methanol.formula,
+# NOTE: binary mixture
+# ! direct check
+mixture_check_availability = thermo_db.is_binary_mixture_available(
+    components=[methanol, ethanol],
+    databook='NRTL',
+    table="Non-randomness parameters of the NRTL equation-3"
+)
+print(f"Mixture availability: {mixture_check_availability}")
+
+# ! ignore component state
+mixture_check_availability = thermo_db.is_binary_mixture_available(
+    components=[methanol, ethanol],
     databook='NRTL',
     table="Non-randomness parameters of the NRTL equation-3",
-    column_name='Formula'
+    ignore_component_state=True
 )
-print(f"Component availability (without query): {COMP1_check_availability}")
+print(f"Mixture availability (ignore state): {mixture_check_availability}")
 
 # NOTE: using query
-# query = f"Name.str.lower() == '{comp1.lower()}' and State.str.lower() == '{state1.lower()}'"
 query = f"Name.str.lower() == '{methanol.name.lower()}'"
 # ! using query
 COMP1_check_availability = thermo_db.check_component(
@@ -90,18 +88,18 @@ COMP1_check_availability = thermo_db.check_component(
 )
 print(f"Component availability (with query): {COMP1_check_availability}")
 
-# ! using query - multi-component
-query = f"Name.str.lower() == '{methanol.name.lower()}' or Name.str.lower() == '{ethanol.name.lower()}'"
-COMP1_check_availability = thermo_db.check_component(
-    component_name=[methanol.name, ethanol.name],
+# ! using query - mixture
+query1 = f"Name.str.lower() == '{methanol.name.lower()}' and State.str.lower() == '{methanol.state.lower()}' and Mixture.str.lower() == '{mixture_methanol_ethanol.lower()}'"
+# >> check
+mixture_check_availability = thermo_db.check_component(
+    component_name=methanol.name,
     databook='NRTL',
     table='Non-randomness parameters of the NRTL equation-3',
-    column_name=query,
+    column_name=query1,
     query=True,
     res_format='dict'
 )
-print(
-    f"Component availability (with query - multi-component): {COMP1_check_availability}")
+print(f"Mixture availability (with query): {mixture_check_availability}")
 
 # NOTE: components
 # comp1
@@ -112,21 +110,11 @@ comp3 = benzene.name
 components = [comp1, comp2, comp3]
 
 # ====================================
-# ! LOAD MATRIX DATA
-# ====================================
-tb_data_df = thermo_db.table_data(
-    'NRTL',
-    1
-)
-print(type(tb_data_df))
-print(tb_data_df)
-
-# ====================================
 # ! BUILD MATRIX DATA
 # ====================================
 # NOTE: build a matrix data
-nrtl_alpha = thermo_db.build_thermo_property(
-    [comp1, comp2],
+nrtl_alpha = thermo_db.build_components_thermo_property(
+    [methanol, ethanol],
     'NRTL',
     "Non-randomness parameters of the NRTL equation-3"
 )
