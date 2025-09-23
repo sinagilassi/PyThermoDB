@@ -29,6 +29,8 @@ class TableMatrixData:
     __matrix_item_keys: Optional[List[str]] = None
     # matrix mode
     matrix_mode: Literal['VALUES', 'ITEMS'] = 'VALUES'
+    # mixture id
+    mixture_id: Optional[str] = None
 
     def __init__(
         self,
@@ -42,7 +44,7 @@ class TableMatrixData:
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data  # NOTE: reference template (yml)
-        self.matrix_table = matrix_table  # all elements saved in the matrix-table
+        self.matrix_table = matrix_table  # ! all elements saved in the matrix-table
 
         # NOTE: check
         if matrix_symbol is None:
@@ -419,6 +421,37 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Finding component property failed!, ", e)
 
+    def _get_matrix_data_info(self):
+        '''
+        Get matrix data info
+        '''
+        try:
+            # NOTE: matrix structure
+            table_structure = self._table_structure
+
+            # check
+            if table_structure is None:
+                logger.error("Table structure is None!")
+                return {
+                    'COLUMNS': None,
+                    'SYMBOL': None,
+                    'UNIT': None
+                }
+
+            # extract
+            columns = table_structure.get('COLUMNS', None)
+            symbol = table_structure.get('SYMBOL', None)
+            unit = table_structure.get('UNIT', None)
+
+            # res
+            return {
+                'COLUMNS': columns,
+                'SYMBOL': symbol,
+                'UNIT': unit
+            }
+        except Exception as e:
+            raise Exception("Getting matrix data header failed!, ", e)
+
     def matrix_data_structure(self):
         '''
         Display matrix-data table structure
@@ -732,7 +765,8 @@ class TableMatrixData:
                 component_names=[comp1, comp2],
                 symbol_format=symbol_format,
                 message=message,
-                mixture_name=mixture_name)
+                mixture_name=mixture_name
+            )
 
             return matrix_property
         except Exception as e:
@@ -776,6 +810,9 @@ class TableMatrixData:
         # NOTE: mixture_components
         mixture_name = kwargs.get('mixture_name', None)
 
+        # NOTE: get mixture id
+        mixture_id = self.mixture_id
+
         # NOTE: selected columns based on component_key
         if component_key not in ['Name']:
             raise ValueError("component_key must be 'Name' or 'Formula'!")
@@ -816,7 +853,7 @@ class TableMatrixData:
         if any(
             col.lower() == 'mixture' for col in matrix_table_column_name
         ):
-            # check
+            # NOTE: check
             if mixture_name is None:
                 # set
                 mixture_name = " | ".join(component_names)
@@ -828,6 +865,7 @@ class TableMatrixData:
             # NOTE: Extract header + row1 + row2
             header_rows = matrix_table.iloc[:2]  # row 0 and 1
 
+            # NOTE: Normalize the 'Mixture' column for comparison
             matrix_table['normalized_mixture'] = matrix_table['Mixture'].apply(
                 normalize_mixture
             )
@@ -848,6 +886,10 @@ class TableMatrixData:
         else:
             # log
             logger.info("No 'Mixture' column found in the matrix table.")
+
+        # log
+        # print(f"Matrix table shape: {matrix_table.shape}")
+        # print(matrix_table)
 
         # SECTION: component names
         # load all component names in Name column
@@ -918,13 +960,42 @@ class TableMatrixData:
             # matrix column index
             matrix_column_index = []
 
-            # NOTE: look for the property name in the column names
+            # SECTION: matrix data info
+            # matrix_data_info = self._get_matrix_data_info()
+            # ! check property name availability
+            property_names_available = False
+            # std column names (without _i_j)
+            matrix_table_column_name_std = [
+                col.split('_')[0] for col in matrix_table_column_name
+            ]
+
+            # iterate through std column names
+            for col in matrix_table_column_name_std:
+                if property_name.upper() == col.upper():  # ! exact match
+                    property_names_available = True
+                    break
+
+            if not property_names_available:
+                logger.warning(
+                    f"Property name '{property_name}' not found in matrix table columns!"
+                )
+                return {
+                    "property_name": str(property_name),
+                    "symbol": str("N/A"),
+                    "unit": str("N/A"),
+                    "value": float(-1),
+                    "message": f"Property name '{property_name}' not found in matrix table columns!",
+                    "databook_name": self.databook_name,
+                    "table_name": self.table_name
+                }
+
+            # SECTION: look for the property name in the column names
             for column in matrix_table_column_name:
                 # column name set
                 column_set = column.split('_')[0]
                 # >> check
                 # ! case insensitive
-                if property_name.upper() == column_set.upper():
+                if property_name.upper() == column_set.upper():  # ! exact match
                     # get the column index
                     column_index = matrix_table_column_name.index(column)
                     # get the column
@@ -965,7 +1036,7 @@ class TableMatrixData:
                 property_column_index
             ]
             # >> check empty
-            if not property_value or property_value == 'None':
+            if pd.isna(property_value) or str(property_value).lower() == "none":
                 # log
                 logger.warning(
                     f"Property value for '{property}' is empty, setting to -1.")
@@ -1121,7 +1192,8 @@ class TableMatrixData:
                     # get property
                     val = self.ij(
                         prop_,
-                        mixture_name=mixture_name).get('value')
+                        mixture_name=mixture_name
+                    ).get('value')
 
                     # set
                     key_comp = f"{components[i]}{symbol_delimiter_set}{components[j]}"
