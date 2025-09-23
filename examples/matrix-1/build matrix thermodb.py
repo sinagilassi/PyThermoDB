@@ -159,9 +159,18 @@ print(nrtl_alpha.get_property(4, comp1))
 # print(float(Alpha_i_j['value']))
 
 # SECTION: get matrix property
+# i_j property
 print(nrtl_alpha.get_matrix_property(
     "Alpha_i_j",
     [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value"
+)
+)
+# i_i property
+print(nrtl_alpha.get_matrix_property(
+    "Alpha_i_j",
+    [comp1, comp1],
     symbol_format='alphabetic',
     message="NRTL Alpha value"
 )

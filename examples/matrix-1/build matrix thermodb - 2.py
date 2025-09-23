@@ -10,7 +10,7 @@ from typing import Dict, Any
 print(ptdb.__version__)
 
 # ====================================
-# CUSTOM REFERENCES
+# ☑️ CUSTOM REFERENCES
 # ====================================
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
@@ -27,25 +27,25 @@ ref: Dict[str, Any] = {
 }
 
 # ====================================
-# INITIALIZATION OWN THERMO DB
+# ☑️ INITIALIZATION OWN THERMO DB
 # ====================================
 thermo_db = ptdb.init(custom_reference=ref)
 
 # ====================================
-# GET DATABOOK LIST
+# ☑️ GET DATABOOK LIST
 # ====================================
 db_list = thermo_db.list_databooks()
 print(db_list)
 
 # ====================================
-# SELECT A DATABOOK
+# ☑️ SELECT A DATABOOK
 # ====================================
 # table list
 tb_list = thermo_db.list_tables('NRTL')
 print(tb_list)
 
 # ====================================
-# CHECK COMPONENT AVAILABILITY IN A TABLE
+# ☑️ CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
 # ! component
@@ -105,18 +105,31 @@ print(f"Mixture availability (with query): {mixture_check_availability}")
 # comp1
 comp1 = methanol.name
 comp2 = ethanol.name
-comp3 = benzene.name
 # components list
-components = [comp1, comp2, comp3]
+components = [comp1, comp2]
 
 # ====================================
-# ! BUILD MATRIX DATA
+# ☑️ GET MIXTURE DATA
+# ====================================
+# NOTE: get mixture data
+mixture_data = thermo_db.get_binary_mixture_data(
+    components=[methanol, ethanol],
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    component_key='Name-State',
+    ignore_component_state=True,
+)
+print(f"Mixture data: {mixture_data}")
+
+# ====================================
+# ☑️ BUILD MATRIX DATA
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_components_thermo_property(
     [methanol, ethanol],
     'NRTL',
-    "Non-randomness parameters of the NRTL equation-3"
+    "Non-randomness parameters of the NRTL equation-3",
+    ignore_component_state=True,
 )
 # check type
 if not isinstance(nrtl_alpha, TableMatrixData):
@@ -133,30 +146,62 @@ print(nrtl_alpha.matrix_data_structure())
 
 # SECTION: get property value
 # ! by name
-print(nrtl_alpha.get_property('Alpha_i_1', methanol.name))
+print(nrtl_alpha.get_property('a_i_1', methanol.name))
 # ! by formula
-print(nrtl_alpha.get_property('Alpha_i_1', methanol.formula))
+print(nrtl_alpha.get_property('a_i_1', methanol.formula))
 #
-print(nrtl_alpha.get_property('Alpha_i_2', methanol.name))
-print(nrtl_alpha.get_property('Alpha_i_3', methanol.name))
-print(nrtl_alpha.get_property('Alpha_i_3', methanol.formula))
+print(nrtl_alpha.get_property('a_i_2', methanol.name))
+print(nrtl_alpha.get_property('a_i_2', methanol.name))
+print(nrtl_alpha.get_property('a_i_3', methanol.formula))
 # ! unknown
-print(nrtl_alpha.get_property('Alpha_i_4', comp1))
+print(nrtl_alpha.get_property('b_i_1', comp1))
 print(nrtl_alpha.get_property(4, comp1))
 # by symbol
 # print(float(Alpha_i_j['value']))
 
 # SECTION: get matrix property
+# mixture name
+mixture_name = f"{comp1} | {comp2}"
+print(f"Mixture name: {mixture_name}")
+
+# ! property [i,i]
 print(nrtl_alpha.get_matrix_property(
-    "Alpha_i_j",
+    "a_i_j",
+    [comp1, comp1],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value",
+    mixture_name=mixture_name
+)
+)
+# ! property [i,i]
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp2, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value",
+    mixture_name=mixture_name
+)
+)
+# ! property [i,j]
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
     [comp1, comp2],
     symbol_format='alphabetic',
     message="NRTL Alpha value"
 )
 )
+# ! property [i,j]
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp2, comp1],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value"
+)
+)
+
 
 print(nrtl_alpha.get_matrix_property(
-    "Beta_i_j",
+    "b_i_j",
     [comp1, comp2],
     symbol_format='alphabetic',
     message="NRTL Alpha value"
@@ -164,40 +209,54 @@ print(nrtl_alpha.get_matrix_property(
 )
 
 # SECTION: property name using ij method
-prop_name = f"Alpha_{comp1}_{comp3}"
+prop_name = f"a_{comp1}_{comp2}"
 print(prop_name)
 print(nrtl_alpha.ij(prop_name))
 print(nrtl_alpha.ij(prop_name).get('value'))
 
+prop_name = f"a_{comp1}_{comp1}"
+print(prop_name)
+print(nrtl_alpha.ij(
+    property=prop_name,
+    mixture_name=mixture_name
+)
+)
+print(nrtl_alpha.ij(
+    property=prop_name,
+    mixture_name=mixture_name
+).get('value')
+)
 
 # SECTION: matrix data
-# NOTE: multi-component
-res_1 = nrtl_alpha.mat("Alpha", [comp2, comp1, comp3])
-print(res_1)
-
 # NOTE: binary
-res_2 = nrtl_alpha.mat("Alpha", [comp1, comp2])
+res_2 = nrtl_alpha.mat("a", [comp1, comp2])
 print(res_2)
 
 # SECTION: metric
-print(nrtl_alpha.ijs(f"Alpha | {comp1} | {comp2}"))
+print(nrtl_alpha.ijs(f"a | {comp1} | {comp2}"))
+print(nrtl_alpha.ijs(f"b | {comp1} | {comp2}"))
+print(nrtl_alpha.ijs(f"c | {comp1} | {comp2}"))
 
 # components
 # looping through the matrix data
 for comp1 in components:
     for comp2 in components:
-        prop_name = f"Delta_{comp1}_{comp2}"
+        # set property name
+        prop_name = f"b_{comp1}_{comp2}"
         # get property value
-        prop_value = nrtl_alpha.ij(prop_name).get('value')
+        prop_value = nrtl_alpha.ij(
+            property=prop_name,
+            mixture_name=mixture_name
+        ).get('value')
         # log
         print(f"Property: {prop_name} = {prop_value}")
 
 
 # ====================================
-# ! BUILD THERMODB
+# ☑️ BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = "thermodb_nrtl"
+thermodb_name = "thermodb_nrtl_mixture"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
@@ -213,7 +272,7 @@ thermo_db.save(
 )
 
 # ====================================
-# ! CHECK THERMODB
+# ☑️ CHECK THERMODB
 # ====================================
 # check all properties and functions registered
 print(thermo_db.check_properties())
