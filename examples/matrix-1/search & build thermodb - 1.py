@@ -10,7 +10,7 @@ from rich import print
 print(ptdb.__version__)
 
 # ====================================
-# CUSTOM REFERENCES
+# ☑️ CUSTOM REFERENCES
 # ====================================
 # parent directory
 parent_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,23 +31,23 @@ md_file = 'NRTL Non-randomness parameters-inline-2-2.md'
 md_path = os.path.join(parent_dir, md_file)
 
 # custom ref
-ref = {
+custom_reference = {
     'reference': [yml_path],
 }
 
 # ====================================
-# INITIALIZATION OWN THERMO DB
+# ☑️ INITIALIZATION OWN THERMO DB
 # ====================================
-thermo_db = ptdb.init(custom_reference=ref)
+thermo_db = ptdb.init(custom_reference=custom_reference)
 
 # ====================================
-# GET DATABOOK LIST
+# ☑️ GET DATABOOK LIST
 # ====================================
 db_list = thermo_db.list_databooks()
 print(db_list)
 
 # ====================================
-# SELECT A DATABOOK
+# ☑️ SELECT A DATABOOK
 # ====================================
 # table list
 tb_list = thermo_db.list_tables('NRTL-PARAMETERS')
@@ -61,7 +61,7 @@ tb = thermo_db.select_table(
 print(tb)
 
 # ====================================
-# DISPLAY TABLE INFO
+# ☑️ DISPLAY TABLE INFO
 # ====================================
 # display a table
 tb_info = thermo_db.table_info(
@@ -71,7 +71,7 @@ tb_info = thermo_db.table_info(
 print(tb_info)
 
 # ====================================
-# CHECK COMPONENT AVAILABILITY IN A TABLE
+# ☑️ CHECK COMPONENT AVAILABILITY IN A TABLE
 # ====================================
 # check component availability in the databook and table
 comp1 = "methanol"
@@ -117,7 +117,7 @@ print("Availability (ignore state):")
 print(availability)
 
 # ====================================
-# GET MIXTURE DATA
+# ☑️ GET MIXTURE DATA
 # ====================================
 # NOTE: get mixture data
 mixture_data = thermo_db.get_binary_mixture_data(
@@ -130,7 +130,7 @@ mixture_data = thermo_db.get_binary_mixture_data(
 print(f"Mixture data: {mixture_data}")
 
 # ====================================
-# BUILD MATRIX DATA
+# ☑️ BUILD MATRIX DATA
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_thermo_property(
@@ -221,7 +221,7 @@ print(mat_)
 print("*" * 20)
 
 # ====================================
-# BUILD THERMODB
+# ☑️ BUILD THERMODB
 # ====================================
 # thermodb name
 thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_md_2_inline"
@@ -238,7 +238,7 @@ thermo_db.save(
     f'{thermodb_name}', file_path=parent_dir)
 
 # ====================================
-# CHECK THERMODB
+# ☑️ CHECK THERMODB
 # ====================================
 # check all properties and functions registered
 print(thermo_db.check_properties())
