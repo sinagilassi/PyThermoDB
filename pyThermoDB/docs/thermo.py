@@ -2261,9 +2261,22 @@ class ThermoDB(ManageData):
 
             mixture_df = table_data[mask_]
 
+            # NOTE: initialize
             # count row
             available_count = 0
-            # check availability
+            # combined dataframe
+            combined_df = pd.DataFrame()
+            # component data
+            component_data = {
+                component_1.name: [],
+                component_2.name: []
+            }
+            # data
+            data = []
+            # header
+            header = []
+
+            # NOTE: check availability
             if mixture_df.empty:
                 all_available = False
             else:
@@ -2330,7 +2343,7 @@ class ThermoDB(ManageData):
                     raise ValueError(
                         "Invalid component_key or ignore_component_state configuration.")
 
-                # check
+                # NOTE: check
                 if mask_component_1 is None or mask_component_2 is None:
                     raise ValueError(
                         "Component masks could not be determined.")
@@ -2339,8 +2352,36 @@ class ThermoDB(ManageData):
                     all_available = True
                     # count available rows containing the mixture
                     available_count = len(mixture_df)
+
+                    # ! combine rows (series) to dataframe
+                    combined_df = pd.concat(
+                        [mixture_df[mask_component_1],
+                            mixture_df[mask_component_2]]
+                    ).drop_duplicates().reset_index(drop=True)
                 else:
                     all_available = False
+                    combined_df = pd.DataFrame()
+
+            # NOTE: data
+            if not combined_df.empty:
+                # data as list of dict
+                # data = combined_df.to_dict(orient='records')
+                # component data first row data
+                component_data_1_df = mixture_df[mask_component_1]
+                # >> values
+                component_data[component_1.name] = component_data_1_df.values.tolist()[
+                    0]
+                # component data second row data
+                component_data_2_df = mixture_df[mask_component_2]
+                # >> values
+                component_data[component_2.name] = component_data_2_df.values.tolist()[
+                    0]
+
+                # header
+                header = list(combined_df.columns)
+            else:
+                # data = []
+                header = []
 
             # SECTION: Format results
             res_dict = {
@@ -2350,7 +2391,9 @@ class ThermoDB(ManageData):
                 'table_name': tb_name,
                 'mixture_name': binary_mixture_id,
                 'availability': all_available,
-                'available_count': available_count
+                'available_count': available_count,
+                'component_data': component_data,
+                'header': header
             }
 
             # >> check
@@ -2526,8 +2569,8 @@ class ThermoDB(ManageData):
         try:
             # NOTE: detect table type
             tb_info_res_ = self.table_info(
-                databook,
-                table,
+                databook=databook,
+                table=table,
                 res_format='dict'
             )
 
@@ -3001,8 +3044,6 @@ class ThermoDB(ManageData):
             component state list (e.g. ['g','l'])
         component_key : Literal['Name-State', 'Formula-State'], optional
                 The key to use for identifying the component, by default 'Name-State'.
-        mixture_key : Literal['Name', 'Formula'], optional
-                The key to use for identifying the mixture, by default 'Name'.
         **kwargs
             Additional keyword arguments.
 
@@ -3041,10 +3082,16 @@ class ThermoDB(ManageData):
             # ? usually matrix-table data are limited
             matrix_table = self.table_data(databook, table)
 
+            # SECTION: get binary mixture if provided
+            # FIXME
+            if mixture_id:
+                # binary mixture data
+                pass
+
             # SECTION: get data from api
             component_data_pack = []
 
-            # looping through components
+            # NOTE: looping through components
             for component_name in component_names:
                 # component name
                 component_name = str(component_name).strip()

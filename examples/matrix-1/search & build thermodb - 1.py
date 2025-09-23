@@ -117,6 +117,19 @@ print("Availability (ignore state):")
 print(availability)
 
 # ====================================
+# GET MIXTURE DATA
+# ====================================
+# NOTE: get mixture data
+mixture_data = thermo_db.get_binary_mixture_data(
+    components=[methanol_Comp, ethanol_Comp],
+    databook='NRTL-PARAMETERS',
+    table='NRTL Non-randomness parameters-2',
+    component_key='Name-State',
+    ignore_component_state=True,
+)
+print(f"Mixture data: {mixture_data}")
+
+# ====================================
 # BUILD MATRIX DATA
 # ====================================
 # NOTE: build a matrix data
