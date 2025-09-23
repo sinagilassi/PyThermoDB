@@ -21,6 +21,7 @@ print(f"Parent directory: {parent_dir}")
 
 # ref
 thermodb_file = 'thermodb_nrtl_mixture.pkl'
+thermodb_file = 'thermodb_nrtl_mixture_inline.pkl'
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
 
