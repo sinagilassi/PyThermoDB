@@ -66,6 +66,69 @@ def look_up_component_reference_config(
     return component_reference_config
 
 
+def look_up_binary_mixture_reference_config(
+        component_id_1: str,
+        component_id_2: str,
+        reference_config: Dict[str, Any],
+        reference_config_default_check: Optional[bool] = True
+) -> Dict[str, Any]:
+    '''
+    Look up the reference configuration for a given binary mixture of two components.
+
+    Parameters
+    ----------
+    component_id_1 : str
+        The ID of the first component in the mixture.
+    component_id_2 : str
+        The ID of the second component in the mixture.
+    reference_config : Dict[str, Any]
+        A dictionary containing reference configurations for components and mixtures.
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default True
+
+    Returns
+    -------
+    Dict[str, Any]
+        The reference configuration for the specified binary mixture.
+
+    Raises
+    ------
+    ValueError
+        If no reference configuration is found for the specified binary mixture.
+    '''
+    # Create possible mixture IDs (both orders)
+    mixture_id_1 = f"{component_id_1.strip().lower()}|{component_id_2.strip().lower()}"
+    mixture_id_2 = f"{component_id_2.strip().lower()}|{component_id_1.strip().lower()}"
+
+    # Convert all keys to lowercase for case-insensitive lookup
+    reference_config_lower = {
+        k.lower(): v for k, v in reference_config.items()
+    }
+
+    # Extract binary mixture reference config
+    binary_mixture_reference_config = reference_config_lower.get(
+        mixture_id_1,
+        reference_config_lower.get(mixture_id_2, {})
+    )
+
+    # Check if reference_config is empty
+    if not binary_mixture_reference_config:
+        # Check default
+        if reference_config_default_check:
+            for key in REFERENCE_CONFIG_KEYS:
+                key_lower = key.lower()
+                if key_lower in reference_config_lower:
+                    binary_mixture_reference_config = reference_config_lower[key_lower]
+                    break
+
+    if not binary_mixture_reference_config:
+        raise ValueError(
+            f"No reference config found for binary mixture '{component_id_1}' and '{component_id_2}' in the provided reference config."
+        )
+
+    return binary_mixture_reference_config
+
+
 def is_table_available(
         table_name: str,
         tables: List[str]

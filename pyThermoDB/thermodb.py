@@ -29,7 +29,9 @@ from .utils import (
     look_up_component_reference_config,
     is_table_available,
     is_databook_available,
-    check_file_path
+    check_file_path,
+    create_binary_mixture_id,
+    look_up_binary_mixture_reference_config
 )
 from .builder import CompBuilder
 from .config import DEFAULT_COMPONENT_STATES
@@ -156,7 +158,6 @@ def build_component_thermodb(
             reference_config_default_check = True
 
         # NOTE: check if reference_config is a string
-        # FIXME
         if isinstance(reference_config, str):
             # ! init ReferenceConfig
             ReferenceConfig_ = ReferenceConfig()
@@ -404,6 +405,17 @@ def check_and_build_component_thermodb(
                 'acentric-factor': 'AcFa',
         },
     }
+
+    # str yaml format
+    reference_config_yaml = """
+    component_id:
+        property_name:
+            databook: DATABOOK_NAME
+            table: TABLE_NAME
+            label: LABEL_NAME
+            labels:
+                label_key: LABEL_NAME
+    """
     ```
 
     - Table should contain columns including `Name`, `Formula`, and `State` to identify the component. Otherwise during the check, it will raise an error.
@@ -443,7 +455,8 @@ def check_and_build_component_thermodb(
 
         # NOTE: reference_config check
         if not isinstance(reference_config, (dict, str)):
-            raise TypeError("property must be a dictionary or a string")
+            raise TypeError(
+                "reference config must be a dictionary or a string")
 
         # SECTION: COMPONENT ID
         # set id based on key
@@ -732,7 +745,9 @@ def build_components_thermodb(
     custom_reference: Optional[CustomReference] = None,
     thermodb_name: Optional[str] = None,
     component_key: Literal['Name', 'Formula'] = 'Name',
+    mixture_key: Literal['Name', 'Formula'] = 'Name',
     message: Optional[str] = None,
+    reference_config_default_check: Optional[bool] = True,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
     **kwargs
@@ -752,8 +767,12 @@ def build_components_thermodb(
         Name of the thermodynamic databook to be built, by default None
     component_key : Literal['Name', 'Formula'], optional
         Key to identify the component in the reference content, by default 'Name'
+    mixture_key : Literal['Name', 'Formula'], optional
+        Key to identify the mixture property in the reference content, by default 'Name'
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default True
     thermodb_save : Optional[bool], optional
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
@@ -777,6 +796,14 @@ def build_components_thermodb(
             'table': 'Activity-Coefficient',
         },
     }
+
+    # str yaml format
+    reference_config_yaml = """
+    mixture_id:
+        property_name:
+            databook: DATABOOK_NAME
+            table: TABLE_NAME
+    """
     ```
 
     2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
@@ -800,6 +827,30 @@ def build_components_thermodb(
         if not isinstance(reference_config, (dict, str)):
             raise TypeError("property must be a dictionary")
 
+        # NOTE component id
+        # set component id based on key
+        component_id_1 = component_names[0].strip()
+        component_id_2 = component_names[1].strip()
+
+        # NOTE: check if reference_config is a string
+        if isinstance(reference_config, str):
+            # ! init ReferenceConfig
+            ReferenceConfig_ = ReferenceConfig()
+            # convert to dict
+            reference_config_ = \
+                ReferenceConfig_.set_reference_config(
+                    reference_config
+                )
+
+            # ! extract component reference config
+            # look up
+            reference_config = look_up_binary_mixture_reference_config(
+                component_id_1=component_id_1,
+                component_id_2=component_id_2,
+                reference_config=reference_config_,
+                reference_config_default_check=reference_config_default_check
+            )
+
         # property names
         property_names = list(reference_config.keys())
 
@@ -811,6 +862,7 @@ def build_components_thermodb(
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
+        # >> check
         if not isinstance(databook_list, list):
             raise TypeError("Databook list must be a list")
 
@@ -963,7 +1015,11 @@ def build_components_thermodb(
 
 def check_and_build_components_thermodb(
     components: List[Component],
-    reference_config: Dict[str, Dict[str, str]],
+    reference_config: Union[
+        Dict[str, Dict[str, str]],
+        Dict[str, ComponentConfig],
+        str
+    ],
     custom_reference: Optional[CustomReference] = None,
     component_key: Literal[
         'Name-State', 'Formula-State'
@@ -988,7 +1044,7 @@ def check_and_build_components_thermodb(
     ----------
     components : List[Component]
         List of Component objects to build thermodynamic databook for. Each Component includes name, formula, and state.
-    reference_config : Dict[str, Dict[str, Any]]
+    reference_config : Union[Dict[str, Dict[str, str]], str, Dict[str, ComponentConfig]]
         Dictionary containing properties of the components to be included in the thermodynamic databook.
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
@@ -1085,6 +1141,11 @@ def check_and_build_components_thermodb(
                 "Only binary systems are supported, provide exactly two components."
             )
 
+        # NOTE: reference_config check
+        if not isinstance(reference_config, (dict, str)):
+            raise TypeError(
+                "reference config must be a dictionary or a string")
+
         # extract component names
         component_names = [c.name for c in components]
 
@@ -1125,7 +1186,9 @@ def check_and_build_components_thermodb(
             raise TypeError("property must be a dictionary")
 
         # SECTION: build thermodb
-        thermodb = init(custom_reference=custom_reference)
+        thermodb = init(
+            custom_reference=custom_reference
+        )
 
         # SECTION: init res
         res = {}
