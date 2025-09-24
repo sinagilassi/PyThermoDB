@@ -125,6 +125,7 @@ mixture_data = thermo_db.get_binary_mixture_data(
     databook='NRTL-PARAMETERS',
     table='NRTL Non-randomness parameters-2',
     component_key='Name-State',
+    delimiter='|',
     ignore_component_state=True,
 )
 print(f"Mixture data: {mixture_data}")

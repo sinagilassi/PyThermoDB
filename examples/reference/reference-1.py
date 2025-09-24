@@ -254,13 +254,20 @@ print(f"message: {thermodb_component_.message}")
 # ====================================
 # BUILD COMPONENTS THERMODB
 # ====================================
-# property
+# property - dict
 reference_config_2 = {
     'nrtl': {
         'databook': 'CUSTOM-REF-1',
         'table': "NRTL Non-randomness parameters-2"
     }
 }
+
+# ! yaml
+reference_config_2_yaml = """
+nrtl:
+  databook: CUSTOM-REF-1
+  table: NRTL Non-randomness parameters-2
+"""
 
 # build components thermodb
 thermodb_components_ = ptdb.build_components_thermodb(

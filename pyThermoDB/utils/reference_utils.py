@@ -37,7 +37,9 @@ def look_up_component_reference_config(
     '''
     # Convert all keys to lowercase for case-insensitive lookup
     reference_config_lower = {
-        k.lower(): v for k, v in reference_config.items()}
+        k.lower(): v for k, v in reference_config.items()
+    }
+    # Lowercase component_id for case-insensitive lookup
     component_id_lower = component_id.lower()
 
     # Extract component reference config
