@@ -81,6 +81,19 @@ reference_config = {
     }
 }
 
+# ! yaml
+reference_config_yaml = """
+methanol|ethanol:
+    nrtl:
+        databook: CUSTOM-REF-1
+        table: NRTL Non-randomness parameters-2
+        symbols:
+            alpha: alpha
+            a_i_j: a_i_j
+            b_i_j: b_i_j
+            c_i_j: c_i_j
+"""
+
 # SECTION: define components
 # methanol
 methanol = Component(
@@ -149,6 +162,16 @@ thermodb_components_ = build_components_thermodb(
 # check
 print(thermodb_components_.check())
 print(thermodb_components_.message)
+
+# ! reference config as yaml
+thermodb_components_yaml = build_components_thermodb(
+    component_names=[comp1, comp2],
+    reference_config=reference_config_yaml,
+    custom_reference=custom_reference
+)
+# check
+print(thermodb_components_yaml.check())
+print(thermodb_components_yaml.message)
 
 # SECTION: build multi-component thermodb
 # NOTE: check and build component thermodb

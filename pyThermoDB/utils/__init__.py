@@ -12,7 +12,8 @@ from .prop_utils import ignore_state_in_prop
 from .reference_utils import (
     look_up_component_reference_config,
     is_table_available,
-    is_databook_available
+    is_databook_available,
+    look_up_binary_mixture_reference_config
 )
 from .core_utils import has_prop_nested
 from .extractor import YAMLExtractor
@@ -35,5 +36,6 @@ __all__ = [
     "validate_component_state",
     "YAMLExtractor",
     "check_file_path",
-    "create_binary_mixture_id"
+    "create_binary_mixture_id",
+    "look_up_binary_mixture_reference_config",
 ]
