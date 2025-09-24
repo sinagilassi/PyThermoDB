@@ -103,6 +103,18 @@ COMP1_check_availability = thermo_db.check_component(
 print(
     f"Component availability (with query - multi-component): {COMP1_check_availability}")
 
+# NOTE: check components - multi-component
+COMP_check_availability = thermo_db.check_components(
+    component_names=[methanol.name, ethanol.name],
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    column_name='Name',
+    res_format='dict'
+)
+print(
+    f"Components availability (without query - multi-component): {COMP_check_availability}")
+
+
 # NOTE: components
 # comp1
 comp1 = methanol.name
@@ -128,7 +140,7 @@ print(tb_data_df)
 nrtl_alpha = thermo_db.build_thermo_property(
     [comp1, comp2],
     'NRTL',
-    "Non-randomness parameters of the NRTL equation-3"
+    "Non-randomness parameters of the NRTL equation-3",
 )
 # check type
 if not isinstance(nrtl_alpha, TableMatrixData):
