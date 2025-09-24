@@ -725,7 +725,7 @@ def build_components_thermodb(
     reference_config: Dict[str, Dict[str, str]],
     thermodb_name: Optional[str] = None,
     custom_reference: Optional[CustomReference] = None,
-    component_key: Literal['Name', 'Formula'] = 'Name',
+    column_name: Literal['Name', 'Formula'] = 'Name',
     message: Optional[str] = None,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
@@ -744,8 +744,8 @@ def build_components_thermodb(
         Name of the thermodynamic databook to be built, by default None
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
-    component_key : Literal['Name', 'Formula'], optional
-        Key to identify the component in the reference content, by default 'Name'
+    column_name : Literal['Name', 'Formula'], optional
+        Column name to identify the component in the reference content, by default 'Name'
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
     thermodb_save : Optional[bool], optional
@@ -852,7 +852,8 @@ def build_components_thermodb(
                 raise TypeError("Table info must be a dictionary")
 
             table_data_type = table_info_.get('Type', None)
-            # check
+
+            # >> check
             if table_data_type != 'Matrix-Data':
                 # log
                 logging.error(
@@ -862,10 +863,14 @@ def build_components_thermodb(
                 continue
 
             # SECTION: check component
-            component_checker_ = thermodb.check_component(
-                component_name=component_names,
+            # NOTE: create query name based on column_name
+
+            # ! check component
+            component_checker_ = thermodb.check_components(
+                component_names=component_names,
                 databook=databook_,
                 table=table_,
+                column_name=column_name,
                 res_format='dict'
             )
 
@@ -879,9 +884,10 @@ def build_components_thermodb(
             # NOTE: build thermodb items
             # ! create Tables [TableMatrixData]
             item_ = thermodb.build_thermo_property(
-                component_names,
-                databook_,
-                table_,
+                component_names=component_names,
+                databook=databook_,
+                table=table_,
+                column_name=column_name,
             )
 
             # save
@@ -897,7 +903,7 @@ def build_components_thermodb(
             component_names_ = [c.strip() for c in component_names]
             message = f"Thermodb including {prop_names_list} for components: {component_names_}"
 
-        # init thermodb
+        # NOTE: init thermodb
         thermodb_comp = build_thermodb(
             thermodb_name=thermodb_name,
             message=message
@@ -907,7 +913,8 @@ def build_components_thermodb(
         for prop_name, prop_value in res.items():
             # add item to thermodb
             thermodb_comp.add_data(
-                prop_name, prop_value
+                name=prop_name,
+                value=prop_value
             )
 
         # SECTION: build and save thermodb

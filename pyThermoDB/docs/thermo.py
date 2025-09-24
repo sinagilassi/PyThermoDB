@@ -1315,6 +1315,110 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
+    def check_components(
+            self,
+            component_names: List[str],
+            databook: int | str,
+            table: int | str,
+            column_name: Optional[str | list[str]] = None,
+            query: bool = False,
+            res_format: Literal[
+                'dict', 'json', 'str'
+            ] = 'dict'):
+        '''
+        Check multiple components availability in the selected databook and table
+
+        Parameters
+        ----------
+        component_names : List[str]
+            List of component names (e.g. ['Carbon dioxide', 'Water'])
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+        column_name : str | list, optional
+            column name (e.g. 'Name') | list as ['Name','state'], by default None
+        query : bool, optional
+            query to search a dataframe, by default False
+        res_format : Literal['dict', 'json', 'str'], optional
+            Format of the returned data, by default 'json'
+
+        Returns
+        -------
+        str | dict[str, str]
+            summary of the components availability as a string or dictionary in the specified format.
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'component_name': name of the component,
+            - 'availability': True or False
+
+        Notes
+        -----
+        1. component_names should be a list of strings.
+        2. If column_name is not provided, it defaults to 'Name'.
+        3. If query is provided, it will be used to search the dataframe directly.
+        4. The method returns the result in the specified format: 'dict', 'json', or 'str'.
+        '''
+        try:
+            # NOTE: check
+            if not isinstance(component_names, list) or not component_names:
+                raise ValueError(
+                    "component_names must be a non-empty list of strings.")
+
+            # results
+            results = []
+
+            # NOTE: looping through components
+            for component_name in component_names:
+                res = self.check_component(
+                    component_name=component_name,
+                    databook=databook,
+                    table=table,
+                    column_name=column_name,
+                    query=query,
+                    res_format='dict'
+                )
+                results.append(res)
+
+            # NOTE: check overall availability
+            # init
+            overall_availability = None
+
+            # looping through results
+            for item in results:
+                if not item['availability']:
+                    overall_availability = False
+                    break
+                overall_availability = True
+
+            # ! create results dict
+            results = {
+                'databook_id': results[0]['databook_id'],
+                'databook_name': results[0]['databook_name'],
+                'table_id': results[0]['table_id'],
+                'table_name': results[0]['table_name'],
+                'components': results,
+                'availability': overall_availability,
+            }
+
+            # json
+            res_json = json.dumps(results, indent=4)
+
+            # check
+            if res_format == 'json':
+                return res_json
+            elif res_format == 'dict':
+                return results
+            elif res_format == 'str':
+                return res_json
+            else:
+                raise ValueError('Invalid res_format')
+
+        except Exception as e:
+            raise Exception(f"Components check error! {e}")
+
     def is_component_available(
         self,
         component: Component,
@@ -1807,7 +1911,7 @@ class ThermoDB(ManageData):
         table_id: int,
         column_name: str | list[str],
         query: bool = False,
-        verbose: bool = False
+        verbose: bool = False,
     ) -> bool:
         '''
         Check component availability in the selected databook and table
@@ -1841,7 +1945,7 @@ class ThermoDB(ManageData):
                 isNumber(databook_id) and
                 isNumber(table_id)
             ):
-                # set api
+                # NOTE: set api
                 TableReferenceC = TableReference(custom_ref=self.custom_ref)
 
                 # NOTE: search
@@ -2526,6 +2630,7 @@ class ThermoDB(ManageData):
                     if len(component_names) < 2:
                         raise Exception(
                             'At least two component names required!')
+
                     # build matrix-data
                     return self.build_matrix_data(
                         component_names=component_names,
