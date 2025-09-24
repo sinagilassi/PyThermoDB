@@ -156,6 +156,7 @@ def build_component_thermodb(
             reference_config_default_check = True
 
         # NOTE: check if reference_config is a string
+        # FIXME
         if isinstance(reference_config, str):
             # ! init ReferenceConfig
             ReferenceConfig_ = ReferenceConfig()
@@ -486,6 +487,7 @@ def check_and_build_component_thermodb(
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
+        # >> check
         if not isinstance(databook_list, list):
             raise TypeError("Databook list must be a list")
 
@@ -558,7 +560,7 @@ def check_and_build_component_thermodb(
             # NOTE: >> check label
             label_ = prop_idx.get(
                 'label', None) or prop_idx.get('symbol', None)
-            # check
+            # >> check
             if label_:
                 # append to labels
                 labels.append(str(label_))
@@ -678,6 +680,7 @@ def check_and_build_component_thermodb(
         # NOTE: check thermodb_name
         if thermodb_name is None:
             thermodb_name = component_id
+
         # NOTE: check message
         if message is None:
             prop_names_list = ', '.join(list(reference_config.keys()))
@@ -722,10 +725,13 @@ def check_and_build_component_thermodb(
 
 def build_components_thermodb(
     component_names: List[str],
-    reference_config: Dict[str, Dict[str, str]],
+    reference_config: Union[
+        Dict[str, Dict[str, str]],
+        str
+    ],
     custom_reference: Optional[CustomReference] = None,
     thermodb_name: Optional[str] = None,
-    column_name: Literal['Name', 'Formula'] = 'Name',
+    component_key: Literal['Name', 'Formula'] = 'Name',
     message: Optional[str] = None,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
@@ -738,14 +744,14 @@ def build_components_thermodb(
     ----------
     component_names : List[str]
         List of component names (binary system) to build thermodynamic databook for.
-    reference_config : Dict[str, Dict[str, Any]]
+    reference_config : Dict[str, Dict[str, str]] | str
         Dictionary containing properties of the components to be included in the thermodynamic databook.
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
-    column_name : Literal['Name', 'Formula'], optional
-        Column name to identify the component in the reference content, by default 'Name'
+    component_key : Literal['Name', 'Formula'], optional
+        Key to identify the component in the reference content, by default 'Name'
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
     thermodb_save : Optional[bool], optional
@@ -774,6 +780,9 @@ def build_components_thermodb(
     ```
 
     2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
+
+    3- The table should contain columns including `Name` and `Formula` to identify the components. Otherwise during the check, it will raise an error.
+    4- The `state` is ignored in this method when checking for component availability in the table. Use `check_and_build_component_thermodb` method if you want to check by state such as `CO2-g`, `carbon dioxide-g`.
     '''
     try:
         # NOTE: check inputs
@@ -788,7 +797,7 @@ def build_components_thermodb(
                 "Only binary systems are supported, provide exactly two component names.")
 
         # reference_config check
-        if not isinstance(reference_config, dict):
+        if not isinstance(reference_config, (dict, str)):
             raise TypeError("property must be a dictionary")
 
         # property names
@@ -863,35 +872,47 @@ def build_components_thermodb(
                 continue
 
             # SECTION: check component
+            # NOTE: set column name based on key
+            column_name_ = 'Name' if component_key == 'Name' else 'Formula'
+
             # NOTE: create query name based on column_name
+            try:
+                # ! check component
+                component_checker_ = thermodb.check_components(
+                    component_names=component_names,
+                    databook=databook_,
+                    table=table_,
+                    column_name=column_name_,
+                    res_format='dict'
+                )
 
-            # ! check component
-            component_checker_ = thermodb.check_components(
-                component_names=component_names,
-                databook=databook_,
-                table=table_,
-                column_name=column_name,
-                res_format='dict'
-            )
+                # >> check
+                if not isinstance(component_checker_, dict):
+                    raise TypeError("Component checker must be a dictionary")
 
-            # check
-            if not isinstance(component_checker_, dict):
-                raise TypeError("Component checker must be a dictionary")
-
-            if not component_checker_['availability']:
-                continue  # skip if component is not available in the table
+                if not component_checker_['availability']:
+                    continue  # skip if component is not available in the table
+            except Exception as e:
+                logging.error(
+                    f"Checking components '{component_names}' for property '{prop_name}' failed! {e}")
+                continue
 
             # NOTE: build thermodb items
-            # ! create Tables [TableMatrixData]
-            item_ = thermodb.build_thermo_property(
-                component_names=component_names,
-                databook=databook_,
-                table=table_,
-                column_name=column_name,
-            )
+            try:
+                # ! create Tables [TableMatrixData]
+                item_ = thermodb.build_thermo_property(
+                    component_names=component_names,
+                    databook=databook_,
+                    table=table_,
+                    column_name=column_name_,
+                )
 
-            # save
-            res[prop_name] = item_
+                # >> save
+                res[prop_name] = item_
+            except Exception as e:
+                logging.error(
+                    f"Building property '{prop_name}' for components '{component_names}' failed! {e}")
+                continue
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
@@ -940,25 +961,28 @@ def build_components_thermodb(
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
-def build_and_check_components_thermodb(
+def check_and_build_components_thermodb(
     components: List[Component],
     reference_config: Dict[str, Dict[str, str]],
     custom_reference: Optional[CustomReference] = None,
     component_key: Literal[
         'Name-State', 'Formula-State'
-    ] = 'Formula-State',
+    ] = 'Name-State',
     mixture_key: Literal[
         'Name', 'Formula'
     ] = 'Name',
-    delimiter: str = '-',
+    column_name: Optional[str] = None,
+    delimiter: str = '|',
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None,
+    reference_config_default_check: Optional[bool] = True,
+    mixture_property_name: Optional[str] = None,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
     **kwargs
 ) -> CompBuilder:
     '''
-    Build components thermodynamic databook (thermodb) including matrix-data.
+    Check and build components thermodynamic databook (thermodb) including matrix-data.
 
     Parameters
     ----------
@@ -969,23 +993,25 @@ def build_and_check_components_thermodb(
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     component_key : Literal['Name-State', 'Formula-State'], optional
-        Key to identify the component in the reference content, by default 'Formula-State'
+        Key to identify the component in the reference content, by default 'Name-State'
     mixture_key : Literal['Name', 'Formula'], optional
         Key to identify the components in the mixture, by default 'Name'
         - If 'Name', it will use component names to identify the components in the mixture.
         - If 'Formula', it will use component formulas to identify the components in the mixture.
     delimiter : str, optional
-        Delimiter to separate component names/formulas in the mixture, by default '-'
+        Delimiter to separate component names/formulas in the mixture, by default '|'
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default True
+    mixture_property_name : Optional[str], optional
+        Name of the mixture property, by default None. An example of mixture property name are NRTL, UNIQUAC and etc.
     thermodb_save : Optional[bool], optional
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
-    ignore_component_state : Optional[bool], optional
-        Whether to ignore component state during the build, by default False
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -1071,6 +1097,29 @@ def build_and_check_components_thermodb(
             ) for c in components
         ]
 
+        # SECTION: check if reference_config is a string
+        if isinstance(reference_config, str):
+            # ! init ReferenceConfig
+            ReferenceConfig_ = ReferenceConfig()
+            # convert to dict
+            reference_config_ = \
+                ReferenceConfig_.set_reference_config(
+                    reference_config
+                )
+
+            # ! extract component reference config
+            if mixture_property_name:
+                # set
+                mixture_property_name = mixture_property_name.strip()
+                # check
+                reference_config = look_up_component_reference_config(
+                    component_id=mixture_property_name,
+                    reference_config=reference_config_,
+                    reference_config_default_check=reference_config_default_check
+                )
+            else:
+                reference_config = reference_config_
+
         # reference_config check
         if not isinstance(reference_config, dict):
             raise TypeError("property must be a dictionary")
@@ -1085,11 +1134,15 @@ def build_and_check_components_thermodb(
         # ignore state for all properties
         ignore_component_state: bool = False
 
-        # set column name based on key
-        column_name = 'Name' if mixture_key == 'Name' else 'Formula'
+        # SECTION: set column name based on key
+        column_name = 'Mixture' if column_name is None else column_name
+        # >> check column name
+        if not isinstance(column_name, str):
+            raise TypeError("column_name must be a string")
 
         # NOTE: databook list
         databook_list = thermodb.list_databooks(res_format='list')
+        # >> check
         if not isinstance(databook_list, list):
             raise TypeError("Databook list must be a list")
 
@@ -1119,7 +1172,7 @@ def build_and_check_components_thermodb(
             if not isinstance(table_dict_, dict):
                 raise TypeError("Table list must be a list")
 
-            # table list
+            # ! table list
             table_list_ = list(table_dict_.values())
             if not isinstance(table_list_, list) or not table_list_:
                 raise TypeError("Table list must be a list")
@@ -1163,7 +1216,7 @@ def build_and_check_components_thermodb(
             # NOTE: >> check labels
             labels_ = prop_idx.get(
                 'labels', None) or prop_idx.get('symbols', None)
-            # check
+            # >> check
             if labels_ and isinstance(labels_, dict):
                 # extract labels
                 for lbl_key, lbl_val in labels_.items():
@@ -1192,25 +1245,35 @@ def build_and_check_components_thermodb(
             if ignore_state_all_props:
                 ignore_component_state = True
 
-            # NOTE: ignore component state if specified
-            # >> check mixture
-            component_checker_ = thermodb.is_binary_mixture_available(
-                components=components,
-                databook=databook_,
-                table=table_,
-                component_key=component_key,
-                mixture_key=mixture_key,
-                delimiter=delimiter,
-                ignore_component_state=ignore_component_state,
-                res_format='dict'
-            )
+            # SECTION: ignore component state if specified
+            try:
+                # >> check mixture
+                component_checker_ = thermodb.is_binary_mixture_available(
+                    components=components,
+                    databook=databook_,
+                    table=table_,
+                    column_name=column_name,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    ignore_component_state=ignore_component_state,
+                    res_format='dict'
+                )
 
-            # check
-            if not isinstance(component_checker_, dict):
-                raise TypeError("Component checker must be a dictionary")
+                # check
+                if not isinstance(component_checker_, dict):
+                    raise TypeError("Component checker must be a dictionary")
 
-            if not component_checker_['availability']:
-                continue  # skip if component is not available in the table
+                if not component_checker_['availability']:
+                    # log
+                    logging.error(
+                        f"Components '{component_idx}' for property '{prop_name}' are not found in the table '{table_}' of databook '{databook_}' while setting ignore_component_state={ignore_component_state}, component_key='{component_key}', mixture_key='{mixture_key}', delimiter='{delimiter}'."
+                    )
+                    continue  # skip if component is not available in the table
+            except Exception as e:
+                logging.error(
+                    f"Checking components '{component_idx}' for property '{prop_name}' failed! {e}")
+                continue
 
             # SECTION: build thermodb items
             # ! create Tables [TableMatrixData]
