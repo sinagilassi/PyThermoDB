@@ -30,8 +30,8 @@ from .utils import (
     is_table_available,
     is_databook_available,
     check_file_path,
-    create_binary_mixture_id,
-    look_up_binary_mixture_reference_config
+    look_up_binary_mixture_reference_config,
+    look_up_mixture_reference_config
 )
 from .builder import CompBuilder
 from .config import DEFAULT_COMPONENT_STATES
@@ -383,6 +383,8 @@ def check_and_build_component_thermodb(
     - Property dict should contain the following format:
 
     ```python
+    # reference config for a single component:
+
     # Dict[str, Dict[str, str]]
     reference_config = {
         'heat-capacity': {
@@ -745,7 +747,7 @@ def build_components_thermodb(
     custom_reference: Optional[CustomReference] = None,
     thermodb_name: Optional[str] = None,
     component_key: Literal['Name', 'Formula'] = 'Name',
-    mixture_key: Literal['Name', 'Formula'] = 'Name',
+    delimiter: str = '|',
     message: Optional[str] = None,
     reference_config_default_check: Optional[bool] = True,
     thermodb_save: Optional[bool] = False,
@@ -767,8 +769,8 @@ def build_components_thermodb(
         Name of the thermodynamic databook to be built, by default None
     component_key : Literal['Name', 'Formula'], optional
         Key to identify the component in the reference content, by default 'Name'
-    mixture_key : Literal['Name', 'Formula'], optional
-        Key to identify the mixture property in the reference content, by default 'Name'
+    delimiter : str, optional
+        Delimiter to separate component names in mixture_id, by default '|'
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
     reference_config_default_check : Optional[bool], optional
@@ -788,6 +790,7 @@ def build_components_thermodb(
     Notes
     -----
     1- Property dict should contain the following format:
+
     ```python
     # Dict[str, Dict[str, str]]
     reference_config = {
@@ -829,10 +832,10 @@ def build_components_thermodb(
 
         # NOTE component id
         # set component id based on key
-        component_id_1 = component_names[0].strip()
-        component_id_2 = component_names[1].strip()
+        component_idx = [c.strip() for c in component_names]
 
         # NOTE: check if reference_config is a string
+        # >> str contains mixture_id
         if isinstance(reference_config, str):
             # ! init ReferenceConfig
             ReferenceConfig_ = ReferenceConfig()
@@ -845,17 +848,20 @@ def build_components_thermodb(
             # ! extract component reference config
             # look up
             reference_config = look_up_binary_mixture_reference_config(
-                component_id_1=component_id_1,
-                component_id_2=component_id_2,
+                component_id_1=component_idx[0],
+                component_id_2=component_idx[1],
                 reference_config=reference_config_,
-                reference_config_default_check=reference_config_default_check
+                reference_config_default_check=reference_config_default_check,
+                delimiter=delimiter
             )
 
-        # property names
+        # >> property names
         property_names = list(reference_config.keys())
 
         # SECTION: build thermodb
-        thermodb = init(custom_reference=custom_reference)
+        thermodb = init(
+            custom_reference=custom_reference
+        )
 
         # init res
         res = {}
@@ -1032,7 +1038,6 @@ def check_and_build_components_thermodb(
     thermodb_name: Optional[str] = None,
     message: Optional[str] = None,
     reference_config_default_check: Optional[bool] = True,
-    mixture_property_name: Optional[str] = None,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
     **kwargs
@@ -1054,6 +1059,9 @@ def check_and_build_components_thermodb(
         Key to identify the components in the mixture, by default 'Name'
         - If 'Name', it will use component names to identify the components in the mixture.
         - If 'Formula', it will use component formulas to identify the components in the mixture.
+    column_name : Optional[str], optional
+        Column name to identify the mixture in the table, by default None
+        - If None, it will use 'Mixture' as the default column name.
     delimiter : str, optional
         Delimiter to separate component names/formulas in the mixture, by default '|'
     thermodb_name : Optional[str], optional
@@ -1062,8 +1070,6 @@ def check_and_build_components_thermodb(
         A short description of the component thermodynamic databook, by default None
     reference_config_default_check : Optional[bool], optional
         Whether to perform default checks on the reference configuration, by default True
-    mixture_property_name : Optional[str], optional
-        Name of the mixture property, by default None. An example of mixture property name are NRTL, UNIQUAC and etc.
     thermodb_save : Optional[bool], optional
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
@@ -1096,6 +1102,20 @@ def check_and_build_components_thermodb(
                 }
         },
     }
+
+    # or str format yaml
+    reference_config_yaml = """
+    mixture_id:
+        property_name_1:
+            databook: DATABOOK_NAME
+            table: TABLE_NAME
+            labels:
+                label_key: LABEL_NAME
+        property_name_2:
+            databook: DATABOOK_NAME
+            table: TABLE_NAME
+            label: LABEL_NAME
+    """
     ```
 
     2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
@@ -1146,10 +1166,10 @@ def check_and_build_components_thermodb(
             raise TypeError(
                 "reference config must be a dictionary or a string")
 
-        # extract component names
-        component_names = [c.name for c in components]
-
         # SECTION: COMPONENT ID
+        # extract component names
+        component_names = [c.name.strip() for c in components]
+
         # set id based on key
         component_idx = [
             set_component_id(
@@ -1169,17 +1189,14 @@ def check_and_build_components_thermodb(
                 )
 
             # ! extract component reference config
-            if mixture_property_name:
-                # set
-                mixture_property_name = mixture_property_name.strip()
-                # check
-                reference_config = look_up_component_reference_config(
-                    component_id=mixture_property_name,
-                    reference_config=reference_config_,
-                    reference_config_default_check=reference_config_default_check
-                )
-            else:
-                reference_config = reference_config_
+            # >> based on mixture key
+            reference_config = look_up_mixture_reference_config(
+                components=components,
+                reference_config=reference_config_,
+                reference_config_default_check=reference_config_default_check,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+            )
 
         # reference_config check
         if not isinstance(reference_config, dict):
