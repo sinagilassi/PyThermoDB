@@ -73,6 +73,37 @@ class ComponentThermoDB(BaseModel):
     )
 
 
+class MixtureThermoDB(BaseModel):
+    """
+    Model for mixture thermodynamic database (ThermoDB).
+
+    Attributes
+    ----------
+    components: List[Component]
+        The list of components for which the thermodynamic database is built.
+    thermodb: CompBuilder
+        The thermodynamic database builder instance.
+    reference_thermodb : Optional[ReferenceThermoDB]
+        Reference thermodynamic database, default is None.
+    """
+    components: List[Component] = Field(
+        ...,
+        description="The list of components for which the thermodynamic database is built."
+    )
+    thermodb: CompBuilder = Field(
+        ...,
+        description="The thermodynamic database builder instance."
+    )
+    reference_thermodb: Optional[ReferenceThermoDB] = Field(
+        None, description="Reference thermodynamic database."
+    )
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra='allow'
+    )
+
+
 def build_component_thermodb(
     component_name: str,
     reference_config: Union[
@@ -1775,3 +1806,65 @@ def build_component_thermodb_from_reference(
         # SECTION: init
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
+
+
+def build_binary_mixture_thermodb_from_reference(
+    components: List[Component],
+    reference_content: str,
+    component_key: Literal[
+        'Name-State', 'Formula-State'
+    ] = 'Formula-State',
+    add_label: Optional[bool] = True,
+    check_labels: Optional[bool] = True,
+    thermodb_name: Optional[str] = None,
+    message: Optional[str] = None,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
+    **kwargs
+):
+    '''
+    Build binary mixture thermodynamic databook (thermodb) including matrix-data.
+
+    Parameters
+    ----------
+    components : List[Component]
+        List of two Component objects to build thermodynamic databook for. Each Component includes name, formula, and state.
+    reference_content : str
+        String content of the reference (YAML format) containing databook and tables.
+    component_key : Literal['Name-State', 'Formula-State'], optional
+        Key to identify the component in the reference content, by default 'Formula-State'
+    add_label : Optional[bool], optional
+        Whether to add labels to the component reference config, by default True
+    check_labels : Optional[bool], optional
+        Whether to check labels in the component reference config, by default True
+    thermodb_name : Optional[str], optional
+        Name of the thermodynamic databook to be built, by default None
+    message : Optional[str], optional
+        A short description of the component thermodynamic databook, by default None
+    thermodb_save : Optional[bool], optional
+        Whether to save the built thermodb to a file, by default False
+    thermodb_save_path : Optional[str], optional
+        Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
+    **kwargs
+        Additional keyword arguments.
+        - delimiter: str
+            Delimiter to separate component names in mixture_id, by default '|'
+        - mixture_key: Literal['Name', 'Formula']
+            Key to identify the mixture property in the reference content, by default 'Name'
+        - ignore_state_props: Optional[List[str]]
+            List of property names to ignore state during the build. By default, None.
+
+    Returns
+    -------
+    MixtureThermoDB : object
+        MixtureThermoDB object used for building binary mixture thermodynamic databook
+
+    Notes
+    -----
+    - The `reference_content` should be a valid YAML string containing the necessary databook and table information.
+    - The function utilizes the `ReferenceChecker` class to parse and validate the reference content.
+    - The built `ComponentThermoDB` object includes the component details, the thermodynamic databook, and the reference configuration used.
+    - The `add_label` and `check_labels` parameters help in managing the reference configuration for the component. In this context, labels defined in the reference are compared with the PyThermoDB labels (symbols) to ensure consistency.
+    '''
+    # FIXME: to be implemented
+    pass
