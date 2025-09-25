@@ -1,6 +1,7 @@
 # import libs
 import logging
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Literal
+from pythermodb_settings.models import Component
 # locals
 from ..config import REFERENCE_CONFIG_KEYS
 
@@ -70,7 +71,8 @@ def look_up_binary_mixture_reference_config(
         component_id_1: str,
         component_id_2: str,
         reference_config: Dict[str, Any],
-        reference_config_default_check: Optional[bool] = True
+        reference_config_default_check: Optional[bool] = True,
+        delimiter: str = '|'
 ) -> Dict[str, Any]:
     '''
     Look up the reference configuration for a given binary mixture of two components.
@@ -85,6 +87,8 @@ def look_up_binary_mixture_reference_config(
         A dictionary containing reference configurations for components and mixtures.
     reference_config_default_check : Optional[bool], optional
         Whether to perform default checks on the reference configuration, by default True
+    delimiter : str, optional
+        Delimiter to separate component identifiers in the mixture, by default '|'
 
     Returns
     -------
@@ -97,21 +101,21 @@ def look_up_binary_mixture_reference_config(
         If no reference configuration is found for the specified binary mixture.
     '''
     # Create possible mixture IDs (both orders)
-    mixture_id_1 = f"{component_id_1.strip().lower()}|{component_id_2.strip().lower()}"
-    mixture_id_2 = f"{component_id_2.strip().lower()}|{component_id_1.strip().lower()}"
+    mixture_id_1 = f"{component_id_1.strip().lower()}{delimiter}{component_id_2.strip().lower()}"
+    mixture_id_2 = f"{component_id_2.strip().lower()}{delimiter}{component_id_1.strip().lower()}"
 
     # Convert all keys to lowercase for case-insensitive lookup
     reference_config_lower = {
         k.lower(): v for k, v in reference_config.items()
     }
 
-    # Extract binary mixture reference config
+    # NOTE: Extract binary mixture reference config
     binary_mixture_reference_config = reference_config_lower.get(
         mixture_id_1,
         reference_config_lower.get(mixture_id_2, {})
     )
 
-    # Check if reference_config is empty
+    # NOTE: Check if reference_config is empty
     if not binary_mixture_reference_config:
         # Check default
         if reference_config_default_check:
@@ -127,6 +131,90 @@ def look_up_binary_mixture_reference_config(
         )
 
     return binary_mixture_reference_config
+
+
+def look_up_mixture_reference_config(
+        components: List[Component],
+        reference_config: Dict[str, Any],
+        reference_config_default_check: Optional[bool] = True,
+        mixture_key: Literal['Name', 'Formula'] = 'Name',
+        delimiter: str = '|'
+) -> Dict[str, Any]:
+    '''
+    Look up the reference configuration for a given mixture of components.
+
+    Parameters
+    ----------
+    components : List[Component]
+        A list of Component objects representing the components in the mixture.
+    reference_config : Dict[str, Any]
+        A dictionary containing reference configurations for components and mixtures.
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default True
+    mixture_key : Literal['Name', 'Formula'], optional
+        Key to identify the component in the reference content, by default 'Name'
+    delimiter : str, optional
+        Delimiter to separate component identifiers in the mixture, by default '|'
+
+    Returns
+    -------
+    Dict[str, Any]
+        The reference configuration for the specified mixture.
+
+    Raises
+    ------
+    ValueError
+        If no reference configuration is found for the specified mixture.
+    '''
+    if len(components) < 2:
+        raise ValueError(
+            "At least two components are required to form a mixture.")
+
+    # Generate mixture ID based on component_key
+    if mixture_key == 'Name':
+        component_ids = [
+            comp.name.strip() for comp in components
+        ]
+    elif mixture_key == 'Formula':
+        component_ids = [
+            comp.formula.strip() for comp in components
+        ]
+    else:
+        raise ValueError(
+            "Invalid component_key. Must be 'Name-State' or 'Formula-State'.")
+
+    # NOTE: Create mixture ID by sorting component IDs to ensure order-independence
+    mixture_id = delimiter.join(sorted([cid.lower() for cid in component_ids]))
+
+    # NOTE: Normalize reference_config keys: split, strip, lowercase, sort, join
+    reference_config_normalized = {
+        delimiter.join(sorted([part.strip().lower() for part in k.split(delimiter)])): v
+        for k, v in reference_config.items() if delimiter in k
+    }
+
+    # NOTE: Extract mixture reference config
+    mixture_reference_config = reference_config_normalized.get(
+        mixture_id,
+        {}
+    )
+
+    # NOTE: Check if reference_config is empty
+    if not mixture_reference_config:
+        # Check default (only for mixture keys)
+        if reference_config_default_check:
+            for key in REFERENCE_CONFIG_KEYS:
+                key_lower = key.lower()
+                if key_lower in reference_config_normalized:
+                    mixture_reference_config = reference_config_normalized[key_lower]
+                    break
+
+    if not mixture_reference_config:
+        raise ValueError(
+            f"No reference config found for mixture '{mixture_id}' in the provided reference config."
+        )
+
+    # return mixture reference config
+    return mixture_reference_config
 
 
 def is_table_available(
