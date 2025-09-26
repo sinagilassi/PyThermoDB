@@ -264,32 +264,18 @@ check_result = ReferenceChecker_.check_binary_mixture_availability(
 )
 print(f"Check Result (ignore component state): {check_result}")
 
-# NOTE: get component data
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+# SECTION: get mixture data
+# NOTE: get in all tables
+components_data_ = ReferenceChecker_.get_binary_matrix_data(
+    components=components,
     databook_name='CUSTOM-REF-1',
-    table_name='general-data',
-    component_key='Name-State'
+    table_name='NRTL Non-randomness parameters-2',
+    component_key='Name-State',
+    ignore_component_state=False,
 )
 print(f"Components Data: {components_data_}")
 
 # SECTION: get component reference config
-# ! unknown component
-component_name_unknown = 'unknown'
-component_formula_unknown = 'Un'
-component_state_unknown = 'g'
-component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
-    component_name=component_name_unknown,
-    component_formula=component_formula_unknown,
-    component_state=component_state_unknown,
-    databook_name='CUSTOM-REF-1',
-    add_label=True,
-    check_labels=True
-)
-print(f"Component Reference Config (unknown): {component_reference_config}")
-
 # ! without ignore state
 component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
     component_name=component_name,
@@ -411,26 +397,3 @@ reference_link_component = ReferenceChecker_.generate_reference_link(
 print(
     f"Component Reference Link ({component_name}): {reference_link_component}"
 )
-
-# SECTION: generate reference link (specific component not exists)
-# component not exists
-component_name_not_exists = 'Dimethyl ether'
-component_formula_not_exists = 'C2H6O'
-component_state_not_exists = 'l'
-
-reference_link_component = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1',
-    component_name=component_name_not_exists,
-    component_formula=component_formula_not_exists,
-    component_state=component_state_not_exists
-)
-print(
-    f"Reference Link ({component_name_not_exists}): {reference_link_component}"
-)
-
-# SECTION: generate reference link (specific table)
-reference_link_specific = ReferenceChecker_.generate_reference_link(
-    databook_name='CUSTOM-REF-1',
-    table_names='NRTL Non-randomness parameters-1'
-)
-print(f"Reference Link (Specific Table): {reference_link_specific}")
