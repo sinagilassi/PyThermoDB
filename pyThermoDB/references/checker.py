@@ -2703,9 +2703,9 @@ class ReferenceChecker:
             for databook_name in databook_names:
                 # get component reference config for each databook
                 res_databook: Optional[Dict[str, ComponentConfig]] = self.get_component_reference_config(
-                    component_name,
-                    component_formula,
-                    component_state,
+                    component_name=component_name,
+                    component_formula=component_formula,
+                    component_state=component_state,
                     databook_name=databook_name,
                     add_label=add_label,
                     check_labels=check_labels,
