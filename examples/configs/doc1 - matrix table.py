@@ -127,7 +127,7 @@ REFERENCES:
           DESCRIPTION:
             This table provides the NRTL non-randomness parameters for the NRTL equation.
           MATRIX-SYMBOL:
-            - a
+            - a constant parameter: a
             - b
             - c
             - alpha
@@ -170,6 +170,24 @@ REFERENCES:
             - [14,'benzene','C6H6','l',78.112,562.05,4.895,0.256,0.268,0.2103,-49.10,124.5]
             - [15,'nitrogen','N2','g',28.013,126.2,3.4,0.08921,0.289,0.0377,0,0]
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
+        NRTL Non-randomness parameters-2:
+            TABLE-ID: 5
+            DESCRIPTION:
+              This table provides the NRTL non-randomness parameters for the NRTL equation.
+            MATRIX-SYMBOL:
+              - a
+              - b
+              - c
+              - alpha
+            STRUCTURE:
+              COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+              SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+              UNIT: [None,None,None,None,None,1,1,1,1,1,1,1,1]
+            VALUES:
+              - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+              - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+              - [1,methane|ethanol,methane,CH4,g,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+              - [2,methane|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 """
 
 # SECTION: check custom reference
@@ -263,13 +281,6 @@ components_data_ = ReferenceChecker_.get_components_data(
 print(f"Components Data:")
 print(components_data_)
 
-# SECTION: get table matrix symbols
-table_matrix_symbols_ = ReferenceChecker_.get_table_matrix_symbols(
-    'CUSTOM-REF-1',
-    'NRTL Non-randomness parameters-1'
-)
-print(f"Table Matrix Symbols: {table_matrix_symbols_}")
-
 # SECTION: get table types
 # NOTE: all table types
 all_table_types_ = ReferenceChecker_.get_all_tables_types()
@@ -299,6 +310,24 @@ databook_tables_types_ = ReferenceChecker_.get_databook_tables_types(
     'CUSTOM-REF-1'
 )
 print(f"Databook Tables Types: {databook_tables_types_}")
+
+# SECTION: matrix tables
+# NOTE: get all matrix tables
+all_matrix_tables_ = ReferenceChecker_.get_all_matrix_tables()
+print(f"All Matrix Tables: {all_matrix_tables_}")
+
+# NOTE: matrix tables
+matrix_tables_ = ReferenceChecker_.get_matrix_tables(
+    'CUSTOM-REF-1'
+)
+print(f"Matrix Tables: {matrix_tables_}")
+
+# NOTE: get matrix table symbols
+matrix_table_symbols_ = ReferenceChecker_.get_matrix_table_symbols(
+    'CUSTOM-REF-1',
+    'NRTL Non-randomness parameters'
+)
+print(f"Matrix Table Symbols: {matrix_table_symbols_}")
 
 # SECTION: generate property mapping
 property_mapping_ = ReferenceChecker_.generate_property_mapping(
@@ -347,35 +376,12 @@ props = [
     'EnFo',
     'GiEnFo',
     'Tm',
-    'Tb'
+    'Tb',
+    'a',
+    'alpha'
 ]
 props_availability_ = ReferenceChecker_.prop_available_in_databook(
     props,
     databook_name='CUSTOM-REF-1',
 )
 print(f"Properties Availability: {props_availability_}")
-
-# SECTION: get component data
-# NOTE: component data by name and state
-component_name = 'carbon dioxide'
-component_formula = 'CO2'
-component_state = 'g'
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    table_name='general-data',
-    component_key='Name-State'
-)
-print(f"Components Data: {components_data_}")
-
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-2',
-    table_name='general-data-2',
-    component_key='Name-State'
-)
-print(f"Components Data: {components_data_}")

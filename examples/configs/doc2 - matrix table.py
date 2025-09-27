@@ -129,7 +129,7 @@ REFERENCES:
           DESCRIPTION:
             This table provides the NRTL non-randomness parameters for the NRTL equation.
           MATRIX-SYMBOL:
-            - a
+            - a constant: a
             - b
             - c
             - alpha
@@ -367,7 +367,18 @@ reference_link_ = ReferenceChecker_.generate_reference_link(
 )
 print(f"Reference Link: {reference_link_}")
 
-# ! NOTE: ignore component state is set to True
+# NOTE: mixture reference link
+# ! generate reference link for mixture (without ignore state)
+reference_link_mixture = ReferenceChecker_.generate_binary_mixture_reference_link(
+    databook_name='CUSTOM-REF-1',
+    components=components,
+    component_key='Name-State',
+    mixture_key='Name',
+    ignore_component_state=False
+)
+print(f"Mixture Reference Link: {reference_link_mixture}")
+
+# ! ignore component state is set to True
 reference_link_component = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1',
     component_name=component_name,
