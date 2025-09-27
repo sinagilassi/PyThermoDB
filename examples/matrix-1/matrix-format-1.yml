@@ -3,7 +3,7 @@ REFERENCES:
       TABLES:
         Non-randomness parameters of the NRTL equation-3:
           MATRIX-SYMBOL:
-            - Alpha
+            - Alpha: Alpha
             - Beta
             - Delta
           MATRIX-DATA:

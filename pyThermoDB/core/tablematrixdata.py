@@ -50,7 +50,18 @@ class TableMatrixData:
         if matrix_symbol is None:
             # matrix symbol such as Alpha_i_j
             symbol_ = self.table_data['MATRIX-SYMBOL']
-            self.__matrix_symbol = symbol_
+
+            # init
+            self.__matrix_symbol = []
+
+            # iterate through symbol_
+            for item in symbol_:
+                if isinstance(item, str):
+                    self.__matrix_symbol.append(item)
+                elif isinstance(item, dict):
+                    # add values
+                    for key, value in item.items():
+                        self.__matrix_symbol.append(value)
 
             # matrix items
             items_ = self.table_data.get('ITEMS', None)
