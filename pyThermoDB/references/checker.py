@@ -1381,8 +1381,8 @@ class ReferenceChecker:
             ) == normalized_binary_mixture_id
             # found rows
             mixture_df = df[mask_]
-            # log
-            print(mixture_df)
+            # << log
+            # print(mixture_df)
 
             # NOTE: initialize
             # count row
@@ -2065,9 +2065,9 @@ class ReferenceChecker:
         Notes
         -----
         - The search is `case-insensitive` and ignores leading/trailing whitespace.
-        - If `ignore_component_state` is True, the state of the component will be ignored in the check.
+        - If `ignore_component_state` is True, the state of the component will be ignored in the check for all properties.
         - If `table_name` is provided, only that table will be checked; otherwise, all tables in the databook will be checked.
-        - ignore_state_props can be used to specify state properties to ignore during the check. As a result, if the component state matches any of the properties in this list, the state will be ignored in the comparison. Then, ignore_component_state will be set to True.
+        - `ignore_state_props` can be used to specify state properties to ignore during the check. As a result, if the component state matches any of the properties in this list, the state will be ignored in the comparison. Then, ignore_component_state will be set to True.
         """
         try:
             # SECTION: kwargs
@@ -2306,6 +2306,7 @@ class ReferenceChecker:
         Check if a binary mixture of components is available in the specified databook. The mixture is only found in a matrix table.
 
         Parameters
+        ----------
         components : List[Component]
             A list of components in the mixture.
         databook_name : str
@@ -2324,6 +2325,8 @@ class ReferenceChecker:
             Whether to ignore the component state in the check, by default False.
         **kwargs
             Additional keyword arguments.
+            - ignore_state_props: List[str], optional
+                A list of state properties to ignore in the check.
 
         Returns
         -------
@@ -2337,8 +2340,6 @@ class ReferenceChecker:
             - If the mixture is not found in any table, returns:
 
                 {'results': {'available': False, 'message': 'Mixture not found in any table.'}}
-
-
 
         Notes
         -----
@@ -2360,6 +2361,12 @@ class ReferenceChecker:
         Every mixture has two rows, one for each component in the mixture.
         """
         try:
+            # SECTION: kwargs
+            # get ignore_state_props from kwargs
+            ignore_state_props = kwargs.get('ignore_state_props', [])
+            if not isinstance(ignore_state_props, list):
+                ignore_state_props = []
+
             # SECTION: check inputs
             if not isinstance(components, list) or len(components) != 2:
                 logging.error(
@@ -2411,8 +2418,37 @@ class ReferenceChecker:
 
             # SECTION: iterate through each table
             for table_name, table in tables.items():
+                # NOTE: iterate through each property mapping
+                if ignore_state_props and len(ignore_state_props) > 0:
+
+                    # NOTE: get property mapping
+                    property_mappings = self.get_property_mappings(
+                        databook_name,
+                        table_name
+                    )
+
+                    # >> normalized property mappings
+                    property_mappings_lower = [
+                        prop.strip().lower() for prop in property_mappings
+                    ]
+
+                    for prop in ignore_state_props:
+                        # set ignore state
+                        ignore_component_state = ignore_state_in_prop(
+                            prop_name=prop,
+                            ignore_state_props=property_mappings_lower
+                        )
+
+                        # ! >> check
+                        if ignore_component_state is True:
+                            break
+
                 # NOTE: table type
-                table_type = self.get_table_type(databook_name, table_name)
+                table_type = self.get_table_type(
+                    databook_name=databook_name,
+                    table_name=table_name
+                )
+                # check
                 if table_type is None:
                     logging.error(f"Table type for '{table_name}' not found.")
                     continue
@@ -2554,13 +2590,18 @@ class ReferenceChecker:
                         component_key_ = 'Name' if component_key == 'Name-State' else 'Formula'
 
                         # NOTE: compare
+                        # >> component set id
+                        component_1_id = component_1.name if component_key_ == 'Name' else component_1.formula
+                        component_2_id = component_2.name if component_key_ == 'Name' else component_2.formula
+
+                        # masks
                         mask_component_1 = (
                             mixture_df[component_key_].str.lower().str.strip()
-                            == component_1.name.lower().strip()
+                            == component_1_id.lower().strip()
                         )
                         mask_component_2 = (
                             mixture_df[component_key_].str.lower().str.strip()
-                            == component_2.name.lower().strip()
+                            == component_2_id.lower().strip()
                         )
                     else:
                         raise ValueError(
@@ -2698,7 +2739,10 @@ class ReferenceChecker:
                     res_availability = {}
 
                     # ! table type
-                    table_type = self.get_table_type(databook_name, table_name)
+                    table_type = self.get_table_type(
+                        databook_name=databook_name,
+                        table_name=table_name
+                    )
 
                     if table_type is None:
                         logging.error(
@@ -2897,6 +2941,337 @@ class ReferenceChecker:
             return res
         except Exception as e:
             logging.error(f"Error getting component references: {e}")
+            return None
+
+    def get_binary_mixture_reference_config(
+        self,
+        components: List[Component],
+        databook_name: str,
+        table_name: Optional[str] = None,
+        add_label: Optional[bool] = False,
+        check_labels: Optional[bool] = False,
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State',
+        mixture_key: Literal[
+            'Name', 'Formula'
+        ] = 'Name',
+        delimiter: str = '|',
+        column_name: str = 'Mixture',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None,
+    ):
+        '''
+        Get the reference including the databook name and table name for a binary mixture of components.
+
+        Parameters
+        ----------
+        components : List[Component]
+            A list of two components in the mixture.
+        databook_name : str
+            The name of the databook.
+        table_name : Optional[str], optional
+            The name of the table to check, by default None (checks all tables).
+        add_label : Optional[bool], optional
+            Whether to include the label in the reference, by default False.
+        check_labels : Optional[bool], optional
+            Whether to check if the labels are valid, by default False.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used to separate components in the mixture string, by default '|'.
+        column_name : str, optional
+            The name of the column containing the mixture information, by default 'Mixture'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
+        ignore_state_props : Optional[List[str]], optional
+            A list of properties for which the component state should be ignored during the check, by default
+            None.
+
+        Returns
+        -------
+        Dict[str, Any]
+            A dictionary containing the reference config if the mixture exists, otherwise None.
+            The dictionary has the following structure:
+            {
+                'databook': str,
+                'table': str,
+                'mode': 'DATA' or 'EQUATIONS',
+                'labels': Dict[str, str] (if mode is 'DATA'),
+                'label': str (if mode is 'EQUATIONS')
+            }
+
+        Notes
+        -----
+        - The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - If `ignore_component_state` is True, the state of the components will be ignored in the check (`mixture availability`).
+        - If `table_name` is provided, only that table will be checked; otherwise, all tables in the databook will be checked.
+        - The matrix table has a column named "Mixture" which contains the mixture information.
+        - The mixture is defined as `Component1|Component2` for Name key and `Formula1|Formula2` for Formula key.
+        - The result dictionary keys are in the format "DatabookName::TableName".
+        - The mixture is only found in a matrix table.
+        - The matrix table should look like this:
+
+        COLUMNS:
+        - [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+        VALUES:
+        - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+        - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+
+        Every mixture has two rows, one for each component in the mixture.
+
+        '''
+        try:
+            # SECTION: check inputs
+            if not isinstance(components, list) or len(components) != 2:
+                logging.error(
+                    "components must be a list of two Component objects.")
+                return None
+
+            # ignore_state_props must be a list if provided
+            if ignore_state_props is not None and not isinstance(ignore_state_props, list):
+                logging.error("ignore_state_props must be a list.")
+                ignore_state_props = None
+
+            # SECTION: check mixture availability
+            availability = self.check_binary_mixture_availability(
+                components=components,
+                databook_name=databook_name,
+                table_name=table_name,
+                column_name=column_name,
+                component_key=component_key,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+                ignore_component_state=ignore_component_state,
+                ignore_state_props=ignore_state_props
+            )
+
+            # SECTION: symbol settings
+            # init symbols
+            symbols = None
+            if check_labels:
+                # init symbol controller
+                symbol_controller = SymbolController()
+                # set
+                symbols = symbol_controller.symbols
+                # check if symbols is valid
+                if symbols is None:
+                    logging.error("Symbols not found.")
+                    return None
+
+            # NOTE: init result
+            res: Dict[str, ComponentConfig] = {}
+
+            # SECTION: iterate through each table in availability
+            for table_name, availability_val in availability.items():
+                # NOTE: extract availability
+                is_available = availability_val.get('available', False)
+
+                # only proceed if available
+                if is_available:
+                    # reset res_availability
+                    res_availability = {}
+
+                    # ! table type
+                    table_type = self.get_table_type(
+                        databook_name=databook_name,
+                        table_name=table_name
+                    )
+
+                    if table_type is None:
+                        logging.error(
+                            f"Table type for '{table_name}' not found.")
+                        continue
+
+                    # >> check if table is matrix
+                    is_matrix = self.is_matrix_table(
+                        databook_name=databook_name,
+                        table_name=table_name
+                    )
+
+                    if table_type == 'DATA' and is_matrix is True:
+                        # get symbols
+                        symbols = self.get_table_matrix_symbols(
+                            databook_name=databook_name,
+                            table_name=table_name
+                        )
+
+                        # ! check symbols
+                        if check_labels and symbols is not None:
+                            # convert to list if not already
+                            symbols_: List[str] = list(symbols)
+                            check_symbol_ = symbol_controller.check_symbols(
+                                symbols_
+                            )
+
+                            # >> if any symbol is invalid, skip this table
+                            if not check_symbol_:
+                                logging.error(
+                                    f"One or more symbols in table '{table_name}' are invalid.")
+                                continue
+
+                        # set
+                        res_availability = {
+                            'databook': databook_name,
+                            'table': table_name,
+                            'mode': table_type,
+                            'labels': symbols if add_label else []
+                        }
+
+                    else:
+                        logging.error(
+                            f"Table '{table_name}' is not a matrix DATA table.")
+                        continue
+
+                    # convert to ComponentConfig
+                    res_availability = ComponentConfig(**res_availability)
+                    # >> add to result
+                    res[table_name] = res_availability
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Mixture of components not found in databook '{databook_name}'.")
+                return None
+
+            # return the result
+            return res
+        except Exception as e:
+            logging.error(f"Error getting binary mixture reference: {e}")
+            return None
+
+    def get_binary_mixture_reference_configs(
+        self,
+        components: List[Component],
+        add_label: Optional[bool] = False,
+        check_labels: Optional[bool] = False,
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State',
+        mixture_key: Literal[
+            'Name', 'Formula'
+        ] = 'Name',
+        delimiter: str = '|',
+        column_name: str = 'Mixture',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None,
+    ) -> Optional[Dict[str, ComponentConfig]]:
+        '''
+        Get the reference including the databook name and table name for a binary mixture of components
+        across all databooks.
+
+        Parameters
+        ----------
+        components : List[Component]
+            A list of two components in the mixture.
+        add_label : Optional[bool], optional
+            Whether to include the label in the reference, by default False.
+        check_labels : Optional[bool], optional
+            Whether to check if the labels are valid, by default False.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used to separate components in the mixture string, by default '|'.
+        column_name : str, optional
+            The name of the column containing the mixture information, by default 'Mixture'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
+        ignore_state_props : Optional[List[str]], optional
+            A list of properties for which the component state should be ignored during the check, by default
+            None.
+
+        Returns
+        -------
+        Optional[Dict[str, ComponentConfig]]
+            A dictionary containing the reference config if the mixture exists, otherwise None.
+            The dictionary has the following structure:
+            {
+                'databook': str,
+                'table': str,
+                'mode': 'DATA' or 'EQUATIONS',
+                'labels': Dict[str, str] (if mode is 'DATA'),
+                'label': str (if mode is 'EQUATIONS')
+            }
+
+        Notes
+        -----
+        - The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - If `ignore_component_state` is True, the state of the components will be ignored in the check (`mixture availability`).
+        - The result dictionary keys are in the format "DatabookName::TableName".
+        - The mixture is only found in a matrix table.
+        - The matrix table should look like this:
+
+        COLUMNS:
+        - [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+
+        VALUES:
+        - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+        - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+
+        Every mixture has two rows, one for each component in the mixture.
+
+        '''
+        try:
+            # SECTION: check inputs
+            if not isinstance(components, list) or len(components) != 2:
+                logging.error(
+                    "components must be a list of two Component objects.")
+                return None
+
+            # ignore_state_props must be a list if provided
+            if ignore_state_props is not None and not isinstance(ignore_state_props, list):
+                logging.error("ignore_state_props must be a list.")
+                ignore_state_props = None
+
+            # SECTION: init result
+            res: Dict[str, ComponentConfig] = {}
+
+            # NOTE: databook names
+            databook_names = self.get_databook_names()
+            # check
+            if not databook_names:
+                logging.error("No databooks found.")
+                return None
+
+            # SECTION: iterate through each databook
+            for databook_name in databook_names:
+                # get binary mixture reference config for each databook
+                res_databook: Optional[Dict[str, ComponentConfig]] = self.get_binary_mixture_reference_config(
+                    components=components,
+                    databook_name=databook_name,
+                    table_name=None,
+                    add_label=add_label,
+                    check_labels=check_labels,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    column_name=column_name,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props
+                )
+
+                if res_databook is not None:
+                    # iterate through each table in res_databook
+                    for table_name, table_info in res_databook.items():
+                        # create a unique key for each table in the result
+                        databook_table_key = f"{databook_name}::{table_name}"
+                        # add to result with unique key
+                        res[databook_table_key] = table_info
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Mixture of components not found in any databook.")
+                return None
+
+            # return the result
+            return res
+        except Exception as e:
+            logging.error(f"Error getting binary mixture references: {e}")
             return None
 
     def generate_reference_rules(

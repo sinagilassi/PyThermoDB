@@ -205,7 +205,7 @@ methane = Component(
 )
 
 # components
-components = [methane, ethanol]
+components = [methanol, ethanol]
 
 # SECTION: check mixture availability
 # NOTE: check in all tables
@@ -277,93 +277,85 @@ print(f"Components Data: {components_data_}")
 
 # SECTION: get component reference config
 # ! without ignore state
-component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+binary_mixture_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_config(
+    components=components,
     databook_name='CUSTOM-REF-1',
+    component_key='Name-State',
+    mixture_key='Name',
     add_label=True,
-    check_labels=True
+    check_labels=False
 )
-print(f"Component Reference Config: {component_reference_config}")
+print(f"Binary mixture Reference Config: {binary_mixture_reference_config}")
 
 # ! with ignore state
-component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+binary_mixture_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_config(
+    components=components,
     databook_name='CUSTOM-REF-1',
     add_label=True,
-    check_labels=True,
+    check_labels=False,
     ignore_component_state=True
 )
 
 # print result
 print(
-    f"Component Reference Config (ignore state): {component_reference_config}")
+    f"Binary mixture Reference Config (ignore state): {binary_mixture_reference_config}")
 
 # ! with ignore state by providing 'name' or 'symbol'
-ignore_state_prop = ['VaPr']
-component_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_config(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+ignore_state_prop = ['a']
+binary_mixture_reference_config: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_config(
+    components=components,
     databook_name='CUSTOM-REF-1',
     add_label=True,
-    check_labels=True,
+    check_labels=False,
+    component_key='Name-State',
+    mixture_key='Name',
     ignore_state_props=ignore_state_prop
 )
 print(
-    f"Component Reference Config (ignore state by prop): {component_reference_config}")
+    f"Binary mixture Reference Config (ignore state by prop): {binary_mixture_reference_config}")
 
 # SECTION: get component reference configs (ALL)
 # NOTE: get component reference configs
-component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+binary_mixture_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_configs(
+    components=components,
     add_label=True,
-    check_labels=True
+    check_labels=False
 )
-print(f"Component Reference Configs: {component_reference_configs}")
+print(f"Binary mixture Reference Configs: {binary_mixture_reference_configs}")
 
 # ! with ignore state
-component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+binary_mixture_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_configs(
+    components=components,
     add_label=True,
-    check_labels=True,
+    check_labels=False,
     ignore_component_state=True
 )
 print(
-    f"Component Reference Configs (ignore state): {component_reference_configs}"
+    f"Binary mixture Configs (ignore state): {binary_mixture_reference_configs}"
 )
 
 # ! with ignore state by providing 'name' or 'symbol'
-ignore_state_prop = ['VaPr', 'Molecular-Weight']
-component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
+ignore_state_prop = ['a']
+binary_mixture_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_configs(
+    components=components,
     add_label=True,
-    check_labels=True,
+    check_labels=False,
     ignore_state_props=ignore_state_prop
 )
 print(
-    f"Component Reference Configs (ignore state by prop): {component_reference_configs}"
+    f"Binary mixture Configs (ignore state by prop): {binary_mixture_reference_configs}"
 )
 
 # SECTION: generate reference rules
-if component_reference_configs is not None:
+if binary_mixture_reference_configs is not None:
     reference_rules_ = ReferenceChecker_.generate_reference_rules(
-        reference_configs=component_reference_configs
+        reference_configs=binary_mixture_reference_configs
     )
     print(f"Reference Rules: {reference_rules_}")
 
-if component_reference_configs is not None:
+if binary_mixture_reference_configs is not None:
     component_reference_rules_: Dict[str, ComponentRule] = ReferenceChecker_.generate_component_reference_rules(
-        reference_configs=component_reference_configs
+        reference_configs=binary_mixture_reference_configs
     )
     print(f"Component Reference Rules: {component_reference_rules_}")
 
