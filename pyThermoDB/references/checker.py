@@ -609,6 +609,156 @@ class ReferenceChecker:
             logging.error(f"Error extracting columns from structure: {e}")
             return []
 
+    def get_symbols_from_structure(self, structure: Dict[str, Any]) -> List[str]:
+        """
+        Extract symbols from the table structure.
+
+        Parameters
+        ----------
+        structure : Dict[str, Any]
+            The structure dictionary containing table metadata.
+
+        Returns
+        -------
+        List[str]
+            A list of symbols.
+        """
+        try:
+            # check if structure is a dictionary
+            if not isinstance(structure, dict):
+                logging.error("Structure must be a dictionary.")
+                return []
+
+            # check if 'SYMBOL' key exists in structure
+            if 'SYMBOL' not in structure:
+                logging.error("'SYMBOL' key is missing in structure.")
+                return []
+
+            # get symbols
+            symbols = structure['SYMBOL']
+
+            # check if symbols is a list
+            if not isinstance(symbols, list):
+                logging.error("'SYMBOL' must be a list.")
+                return []
+
+            return symbols
+        except Exception as e:
+            logging.error(f"Error extracting symbols from structure: {e}")
+            return []
+
+    def get_matrix_table_symbols(self, databook_name: str, table_name: str):
+        '''
+
+        Get the matrix symbols from table `MATRIX-SYMBOL`
+
+        Returns
+        -------
+        Dict[str, str] | None
+            A list of matrix symbols if they exist, otherwise None.
+        '''
+        try:
+            # NOTE: get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # check if table has 'MATRIX-SYMBOL' key
+            if not isinstance(table, dict) or 'MATRIX-SYMBOL' not in table:
+                logging.error(
+                    f"Table '{table_name}' does not contain 'MATRIX-SYMBOL' key.")
+                return None
+
+            # NOTE: get matrix symbols
+            matrix_symbols = table['MATRIX-SYMBOL']
+
+            # check if matrix_symbols is a list
+            if not isinstance(matrix_symbols, list):
+                logging.error("'MATRIX-SYMBOL' must be a list.")
+                return None
+
+            # NOTE: extract symbols from the list of dictionaries
+            symbols = self._set_matrix_table_symbols(matrix_symbols)
+
+            return symbols
+        except Exception as e:
+            logging.error(f"Error getting matrix symbols: {e}")
+            return None
+
+    def get_matrix_tables(
+            self,
+            databook_name: str
+    ):
+        """
+        Get the names of all `matrix tables` in a specific databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+
+        Returns
+        -------
+        List[dict]
+            A list of matrix table names in the databook as:
+            - databook name
+            - table name
+        """
+        try:
+            # get databook tables
+            tables = self.get_databook_tables(databook_name)
+
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return []
+
+            # SECTION: get matrix table names
+            matrix_table_names = []
+            for table_name in tables.keys():
+                if self.is_matrix_table(databook_name, table_name):
+                    matrix_table_names.append({
+                        'Databook': databook_name,
+                        'Table': table_name
+                    })
+
+            return matrix_table_names
+        except Exception as e:
+            logging.error(f"Error getting matrix table names: {e}")
+            return []
+
+    def get_all_matrix_tables(self):
+        """
+        Get the names of all `matrix tables` in all databooks.
+
+        Returns
+        -------
+        List[dict]
+            A list of matrix table names in all databooks as:
+            - databook name
+            - table name
+        """
+        try:
+            # get databook names
+            databook_names = self.get_databook_names()
+
+            if not databook_names:
+                logging.error("No databooks found in the reference.")
+                return []
+
+            # SECTION: get matrix table names
+            all_matrix_table_names = []
+            for databook_name in databook_names:
+                matrix_tables = self.get_matrix_tables(databook_name)
+                all_matrix_table_names.extend(matrix_tables)
+
+            return all_matrix_table_names
+        except Exception as e:
+            logging.error(f"Error getting all matrix table names: {e}")
+            return []
+
     def get_table_components(
         self,
         databook_name: str,
@@ -1083,6 +1233,69 @@ class ReferenceChecker:
             logging.error(f"Error getting table matrix symbols: {e}")
             return None
 
+    def _set_matrix_table_symbols(
+        self,
+        matrix_symbols: List[str | Dict[str, str]],
+    ) -> Dict[str, str]:
+        '''
+        Set the matrix symbols in the correct format.
+
+        Parameters
+        ----------
+        matrix_symbols : List[str | Dict[str, str]]
+            A list of matrix symbols as strings or dictionaries.
+
+        Returns
+        -------
+        Dict[str, str]
+            A list of matrix symbols as dictionaries.
+
+        Notes
+        -----
+        The matrix symbols are stored in the `MATRIX-SYMBOL` key of the table as:
+
+        ```yaml
+        TABLE_NAME:
+          MATRIX-SYMBOL:
+            - Description1: Symbol1
+            - Description2: Symbol2
+            - Symbol3
+            - Symbol4
+        ```
+
+        Then they are converted to a dictionary as:
+
+        ```python
+        {
+            'Description1': 'Symbol1',
+            'Description2': 'Symbol2',
+            'Symbol3': 'Symbol3',
+            'Symbol4': 'Symbol4'
+        }
+        ```
+        '''
+        try:
+            # check if matrix_symbols is a list
+            if not isinstance(matrix_symbols, list):
+                logging.error("matrix_symbols must be a list.")
+                return []
+
+            # SECTION: convert matrix_symbols to list of dictionaries
+            matrix_symbols_dict = {}
+            for item in matrix_symbols:
+                if isinstance(item, dict):
+                    matrix_symbols_dict.update(item)
+                elif isinstance(item, str):
+                    matrix_symbols_dict[item] = item
+                else:
+                    logging.warning(
+                        f"Invalid item in matrix_symbols: {item}. Must be a dictionary or string.")
+
+            return matrix_symbols_dict
+        except Exception as e:
+            logging.error(f"Error setting matrix symbols: {e}")
+            return {}
+
     def get_components_data(
         self,
         databook_name: str,
@@ -1238,7 +1451,7 @@ class ReferenceChecker:
         column_name: str = 'Mixture',
         component_key: Literal[
             'Name-State', 'Formula-State'
-        ] = 'Formula-State',
+        ] = 'Name-State',
         mixture_key: Literal[
             'Name', 'Formula'
         ] = 'Name',
@@ -1450,13 +1663,18 @@ class ReferenceChecker:
                     component_key_ = 'Name' if component_key == 'Name-State' else 'Formula'
 
                     # NOTE: compare
+                    # >> component set id
+                    component_1_id = component_1.name if component_key_ == 'Name' else component_1.formula
+                    component_2_id = component_2.name if component_key_ == 'Name' else component_2.formula
+
+                    # masks
                     mask_component_1 = (
                         mixture_df[component_key_].str.lower().str.strip()
-                        == component_1.name.lower().strip()
+                        == component_1_id.lower().strip()
                     )
                     mask_component_2 = (
                         mixture_df[component_key_].str.lower().str.strip()
-                        == component_2.name.lower().strip()
+                        == component_2_id.lower().strip()
                     )
                 else:
                     raise ValueError(
@@ -1532,6 +1750,40 @@ class ReferenceChecker:
         databook_name : str
             The name of the databook.
 
+        Returns
+        -------
+        Dict[str, str]
+            A dictionary mapping property names to their symbols as keys and values.
+
+        Notes
+        -----
+        1- The property mapping is generated by iterating through each table in the databook and extracting the property names and symbols from the table structure.
+        2- If a specific table name is provided, only that table is processed.
+        3- The function handles different table types, including 'DATA' and 'EQUATIONS', and also considers matrix tables.
+        4- The resulting dictionary contains unique property names and symbols, with no duplicates.
+
+        Example
+        -------
+        >>> checker = DataChecker('path/to/databooks')
+        >>> property_mapping = checker.generate_property_mapping('ExampleDatabook')
+        >>> print(property_mapping)
+
+        {
+            'ideal-gas-heat-capacity': 'Cp_IG',
+            'Molecular-Weight': 'MW',
+            'Critical-Temperature': 'Tc',
+            'Critical-Pressure': 'Pc',
+            'Critical-Molar-Volume': 'Vc',
+            'Critical-Compressibility-Factor': 'Zc',
+            'Acentric-Factor': 'AcFa',
+            'Enthalpy-of-Formation': 'EnFo',
+            'Gibbs-Energy-of-Formation': 'GiEnFo',
+            'vapor-pressure': 'VaPr',
+            'a constant parameter': 'a',
+            'b': 'b',
+            'c': 'c',
+            'alpha': 'alpha'
+        }
         '''
         try:
             # SECTION: get tables
@@ -1599,7 +1851,7 @@ class ReferenceChecker:
                     # update property mapping
                     property_mapping.update(table_details)
                 elif table_type == 'DATA' and is_matrix:  # ! matrix
-                    matrix_symbols = self.get_table_matrix_symbols(
+                    matrix_symbols = self.get_matrix_table_symbols(
                         databook_name,
                         table_name
                     )
@@ -1609,10 +1861,10 @@ class ReferenceChecker:
                         continue
 
                     # iterate through each matrix symbol
-                    for symbol in matrix_symbols:
+                    for symbol_description, symbol in matrix_symbols.items():
                         if symbol is not None and str(symbol).strip() not in ['None', '']:
                             # add to property mapping
-                            property_mapping[symbol] = symbol
+                            property_mapping[symbol_description] = symbol
                 elif table_type == 'EQUATIONS':  # ! equations
                     equation_symbol = self.get_table_equation_details(
                         databook_name,
@@ -1654,7 +1906,7 @@ class ReferenceChecker:
         Returns
         -------
         List[str]
-            A list of property names.
+            A list of property names with relevant symbols.
         '''
         try:
             # generate property mapping
@@ -1861,7 +2113,7 @@ class ReferenceChecker:
                     logging.error(f"Table type for '{table_name}' not found.")
                     continue
 
-                # matrix symbols
+                # NOTE: matrix symbols
                 matrix_symbols = table.get('MATRIX-SYMBOL', False)
 
                 # get table structure
@@ -1912,8 +2164,13 @@ class ReferenceChecker:
                                 )
                     else:
                         # ! MATRIX-SYMBOL
-                        # iterate through each matrix symbol
-                        for symbol in matrix_symbols:
+                        # NOTE: build from matrix symbols
+                        matrix_symbols_ = self._set_matrix_table_symbols(
+                            matrix_symbols
+                        )
+
+                        # >> iterate through each matrix symbol
+                        for symbol_des, symbol in matrix_symbols_.items():
                             # check if symbol is None
                             if symbol is not None and symbol not in ['None', '']:
                                 # NOTE: strip and convert to string if not already
@@ -1923,7 +2180,7 @@ class ReferenceChecker:
                                 # add to reference config
                                 reference_config['DATA'].update(
                                     {
-                                        symbol: symbol
+                                        symbol_des: symbol
                                     }
                                 )
 
@@ -2015,6 +2272,217 @@ class ReferenceChecker:
             return reference_config
         except Exception as e:
             logging.error(f"Error generating reference config: {e}")
+            return {
+                'DATA': {},
+                'EQUATIONS': {},
+            }
+
+    def generate_binary_mixture_reference_link(
+        self,
+        databook_name: str,
+        table_names: Optional[str | List[str]] = None,
+        components: Optional[List[Component]] = None,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
+        mixture_key: Literal['Name', 'Formula'] = 'Name',
+        delimiter: str = '|',
+        column_name: str = 'Mixture',
+        ignore_component_state: Optional[bool] = False,
+        **kwargs
+    ):
+        '''
+        Generate a reference link for a binary mixture of components.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_names : Optional[str | List[str]], optional
+            The name(s) of the table(s) to include in the reference link, by default None.
+        components : Optional[List[Component]], optional
+            A list of two Component objects representing the binary mixture, by default None.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter to use for the mixture, by default '-'.
+        column_name : str, optional
+            The name of the column containing the mixture, by default 'Mixture'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state when checking availability, by default False.
+        kwargs : dict, optional
+            Additional keyword arguments, including:
+            - ignore_state_props : Optional[List[str]], optional
+                A list of state properties to ignore when checking availability, by default None.
+
+        Returns
+        -------
+        Dict[str, Dict[str, Union[bool, str, Dict[str, List[str]]]]]
+            A dictionary containing the reference link for the binary mixture.
+        '''
+        try:
+            # SECTION: additional kwargs
+            ignore_state_props: Optional[List[str]] = kwargs.get(
+                'ignore_state_props', None
+            )
+
+            # >>> check
+            if ignore_state_props is None:
+                ignore_state_props = []
+            elif not isinstance(ignore_state_props, list):
+                logger.warning(
+                    "ignore_state_props must be a list. Setting to empty list.")
+                ignore_state_props = []
+
+            # SECTION: get tables
+            tables = self.get_databook_tables(databook_name)
+
+            # check if tables are valid
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return {}
+
+            # SECTION: construct the reference config
+            reference_config = {
+                'DATA': {},
+                'EQUATIONS': {},
+            }
+
+            # NOTE: check if table_name is provided
+            if table_names is not None:
+                # convert table_name to list if it is a string
+                if isinstance(table_names, str):
+                    table_names = [table_names]
+
+                # strip table names
+                table_names = [name.strip() for name in table_names]
+
+                # init tables
+                tables_ = {}
+                # iterate through each table name
+                for name in table_names:
+                    # check if name exists in tables
+                    if name in tables.keys():
+                        # add to tables
+                        tables_[name] = tables[name]
+
+                # update tables
+                tables = tables_
+
+            # SECTION: check mixture availability
+            # NOTE: check if components are provided
+            if components:
+                if not isinstance(components, list) or len(components) != 2:
+                    logging.error(
+                        "Components must be a list of two Component objects.")
+                    return {}
+
+                component_1 = components[0]
+                component_2 = components[1]
+
+                # NOTE: create binary mixture id
+                binary_mixture_id = create_binary_mixture_id(
+                    component_1,
+                    component_2,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+                if not all(isinstance(c, Component) for c in components):
+                    logging.error(
+                        "All items in components must be Component objects.")
+                    return {}
+
+                # NOTE: mixture availability checked in all tables
+                mixture_availability = self.check_binary_mixture_availability(
+                    components=components,
+                    databook_name=databook_name,
+                    table_name=None,
+                    column_name=column_name,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props
+                )
+            else:
+                # NOTE: components not provided
+                mixture_availability = None
+                binary_mixture_id = None
+
+            # NOTE: update tables if component is not available in any table
+            if mixture_availability:
+                # remove tables where component is not available
+                tables = {
+                    k: v for k, v in tables.items()
+                    if mixture_availability.get(k, {}).get('available', False)
+                }
+
+            # SECTION: go through each table content
+            # iterate through each table
+            for table_name, table in tables.items():
+
+                # NOTE: check if component is available in the table
+                if components:
+                    if mixture_availability:
+                        # ! check mixture availability in the current table
+                        check_ = mixture_availability[table_name]
+                        if not check_['available']:
+                            # skip this table
+                            continue
+
+                # NOTE: table type
+                table_type = self.get_table_type(databook_name, table_name)
+                if table_type is None:
+                    logging.error(f"Table type for '{table_name}' not found.")
+                    continue
+
+                # NOTE: matrix symbols
+                matrix_symbols = table.get('MATRIX-SYMBOL', False)
+
+                # check table type
+                if table_type == 'DATA' and matrix_symbols:  # ! matrix (ONLY)
+
+                    # ! MATRIX-SYMBOL
+                    # NOTE: build from matrix symbols
+                    matrix_symbols_ = self._set_matrix_table_symbols(
+                        matrix_symbols
+                    )
+
+                    # >> iterate through each matrix symbol
+                    for symbol_des, symbol in matrix_symbols_.items():
+                        # check if symbol is None
+                        if symbol is not None and symbol not in ['None', '']:
+                            # NOTE: strip and convert to string if not already
+                            # ? symbol must be a string
+                            symbol = symbol.strip() if isinstance(symbol, str) else str(symbol).strip()
+
+                            # add to reference config
+                            reference_config['DATA'].update(
+                                {
+                                    symbol_des: symbol
+                                }
+                            )
+                else:
+                    # skip
+                    logging.warning(
+                        f"Table '{table_name}' is not a matrix DATA table. Skipping.")
+                    continue
+
+            # SECTION: check if reference config is empty
+            if reference_config['DATA'] == {}:
+                # add dummy data
+                pass
+
+            if reference_config['EQUATIONS'] == {}:
+                # add dummy equations
+                pass
+
+            # return the reference config
+            return reference_config
+        except Exception as e:
+            logging.error(
+                f"Error generating binary mixture reference link: {e}")
             return {
                 'DATA': {},
                 'EQUATIONS': {},
@@ -2423,8 +2891,8 @@ class ReferenceChecker:
 
                     # NOTE: get property mapping
                     property_mappings = self.get_property_mappings(
-                        databook_name,
-                        table_name
+                        databook_name=databook_name,
+                        table_name=table_name
                     )
 
                     # >> normalized property mappings
@@ -2767,7 +3235,14 @@ class ReferenceChecker:
                         if check_labels and symbols is not None:
                             # convert to list if not already
                             symbols_: List[str] = list(symbols.values())
-                            symbol_controller.check_symbols(symbols_)
+                            symbol_controller_ = symbol_controller.check_symbols(
+                                symbols_)
+
+                            # >> check if any symbol is invalid
+                            if symbol_controller_ is False:
+                                logging.error(
+                                    f"Invalid symbols found in table '{table_name}'.")
+                                continue
 
                         # set
                         res_availability = {
@@ -2779,7 +3254,7 @@ class ReferenceChecker:
 
                     elif table_type == 'DATA' and is_matrix is True:
                         # get symbols
-                        symbols = self.get_table_matrix_symbols(
+                        symbols = self.get_matrix_table_symbols(
                             databook_name,
                             table_name
                         )
@@ -2787,8 +3262,16 @@ class ReferenceChecker:
                         # ! check symbols
                         if check_labels and symbols is not None:
                             # convert to list if not already
-                            symbols_: List[str] = list(symbols)
-                            symbol_controller.check_symbols(symbols_)
+                            symbols_: List[str] = list(symbols.values())
+                            symbol_controller_ = symbol_controller.check_symbols(
+                                symbols_
+                            )
+
+                            # >> check if any symbol is invalid
+                            if symbol_controller_ is False:
+                                logging.error(
+                                    f"Invalid symbols found in table '{table_name}'.")
+                                continue
 
                         # set
                         res_availability = {
@@ -2806,7 +3289,15 @@ class ReferenceChecker:
 
                         # ! check symbol
                         if check_labels and symbol is not None:
-                            symbol_controller.check_symbols([symbol])
+                            symbol_controller_ = symbol_controller.check_symbols(
+                                [symbol]
+                            )
+
+                            # >> check if any symbol is invalid
+                            if symbol_controller_ is False:
+                                logging.error(
+                                    f"Invalid symbol '{symbol}' found in table '{table_name}'.")
+                                continue
 
                         # set
                         res_availability = {
@@ -3093,7 +3584,7 @@ class ReferenceChecker:
 
                     if table_type == 'DATA' and is_matrix is True:
                         # get symbols
-                        symbols = self.get_table_matrix_symbols(
+                        symbols = self.get_matrix_table_symbols(
                             databook_name=databook_name,
                             table_name=table_name
                         )
@@ -3294,6 +3785,8 @@ class ReferenceChecker:
         Notes
         -----
         The reference_configs dictionary should have the following structure:
+
+        ```python
         {
             'reference_key_1': {
                 'databook': 'Databook Name',
@@ -3307,6 +3800,24 @@ class ReferenceChecker:
                 'label': 'Symbol' (for EQUATIONS mode)
             },
             ...
+        }
+        ```
+
+        The `reference_key` can be any unique identifier for the reference configuration. It could be the name of the property such as `General Data`, `Vapor Pressure`, `Enthalpy of Vaporization`, etc.
+
+        Then reference rule is formed as:
+
+        ```python
+        {
+            'DATA': {
+                'Property1': 'Symbol1',
+                'Property2': 'Symbol2',
+                ...
+            },
+            'EQUATIONS': {
+                'Property3': 'Symbol3',
+                ...
+            }
         }
         """
         try:
