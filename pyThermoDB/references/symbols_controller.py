@@ -1,5 +1,8 @@
 # import libs
 import logging
+from typing import (
+    Dict,
+)
 import yaml
 import os
 from typing import List
@@ -31,7 +34,7 @@ class SymbolController:
         # NOTE: properties
         self.properties = self.list_properties()
 
-    def load_symbols_reference(self) -> dict:
+    def load_symbols_reference(self) -> Dict[str, str]:
         '''
         Load symbols used in the databooks
 
@@ -41,8 +44,8 @@ class SymbolController:
 
         Returns
         -------
-        symbols : list
-            list of symbols
+        symbols : Dict[str, str]
+            dictionary of symbols
         '''
         try:
             # current dir
@@ -87,6 +90,7 @@ class SymbolController:
                 logger.warning("No symbol reference found!")
                 return []
 
+            # ! only return symbols
             return list(self.symbols_reference.values())
 
         except Exception as e:
