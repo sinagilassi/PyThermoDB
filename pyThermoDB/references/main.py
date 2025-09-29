@@ -9,6 +9,7 @@ from typing import (
 # local
 from .checker import ReferenceChecker
 from ..utils import YAMLExtractor
+from .symbols_controller import SymbolController
 
 # NOTE: setup logger
 logger = logging.getLogger(__name__)
@@ -142,3 +143,27 @@ def extract_reference_from_str(
     except Exception as e:
         logging.error(f"Error extracting reference from string: {e}")
         raise
+
+
+def load_default_symbols() -> Dict[str, str]:
+    """
+    Load the default symbols reference.
+
+    Returns
+    -------
+    Dict[str, str]
+        A dictionary containing the default symbols reference.
+    """
+    try:
+        # NOTE: init symbol controller
+        symbol_controller = SymbolController()
+
+        # load symbols reference
+        symbols_reference = symbol_controller.symbols_reference
+
+        # return
+        return symbols_reference
+
+    except Exception as e:
+        logging.error(f"Error loading default symbols reference: {e}")
+        return {}
