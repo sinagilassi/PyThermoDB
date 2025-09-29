@@ -2319,6 +2319,38 @@ class ReferenceChecker:
         -------
         Dict[str, Dict[str, Union[bool, str, Dict[str, List[str]]]]]
             A dictionary containing the reference link for the binary mixture.
+
+        Notes
+        -----
+        1- The function checks the availability of the binary mixture in the specified databook and tables.
+        2- If the components are not available in any table, the reference link will be empty.
+        3- The function handles matrix tables and extracts relevant symbols for the reference link.
+        4- The resulting dictionary contains 'DATA' and 'EQUATIONS' sections with relevant symbols.
+
+        Example
+        -------
+        >>> checker = DataChecker('path/to/databooks')
+        >>> component_1 = Component(name='Methanol', formula='CH3OH', state='liquid')
+        >>> component_2 = Component(name='Water', formula='H2O', state='liquid')
+        >>> reference_link = checker.generate_binary_mixture_reference_link(
+        ...     databook_name='ExampleDatabook',
+        ...     components=[component_1, component_2]
+        ... )
+        >>> print(reference_link)
+
+        {
+            'DATA': {
+                'ideal-gas-heat-capacity': 'Cp_IG',
+                'Molecular-Weight': 'MW
+                'binary-parameters': 'alpha_i_j'
+                '
+                ...
+            },
+            'EQUATIONS': {
+                'vapor-pressure': 'VaPr',
+                ...
+            }
+        }
         '''
         try:
             # SECTION: additional kwargs
@@ -3997,6 +4029,125 @@ class ReferenceChecker:
                 else:
                     logging.error(
                         f"Invalid mode '{mode}' in reference config for '{ref_key}'.")
+                    continue
+
+            # return the reference rules
+            return reference_rules
+        except Exception as e:
+            logging.error(f"Error building reference rules: {e}")
+            return {
+                'DATA': {},
+                'EQUATIONS': {}
+            }
+
+    def generate_binary_mixture_reference_rules(
+        self,
+        reference_configs: Dict[str, ComponentConfig]
+    ) -> Dict[str, ComponentRule]:
+        """
+        generate the reference rules for a binary mixture based on the provided reference configurations. It consists of two main parts: DATA and EQUATIONS. Each part contains thermodynamic properties and their corresponding symbols (labels).
+
+        Parameters
+        ----------
+        reference_configs : Dict[str, ComponentConfig]
+            A dictionary containing the reference configurations for the binary mixture.
+
+        Returns
+        -------
+        Dict[str, ComponentRule]
+            A dictionary containing the reference rules for the binary mixture.
+
+        Notes
+        -----
+        The reference_configs dictionary should have the following structure:
+        {
+            'reference_key_1': {
+                'databook': 'Databook Name',
+                'table': 'Table Name',
+                'mode': 'DATA' or 'EQUATIONS',
+                'labels': {
+                    'Property1': 'Symbol1',
+                    'Property2': 'Symbol2',
+                    ...
+                } (for DATA mode)
+                'label': 'Symbol' (for EQUATIONS mode)
+            },
+            ...
+        }
+        """
+        try:
+            # SECTION: init result
+            reference_rules: Dict[str, ComponentRule] = {
+                'DATA': {},
+                'EQUATIONS': {}
+            }
+
+            # SECTION: iterate through each reference config
+            for ref_key, ref_config in reference_configs.items():
+                # check if ref_config is a dictionary
+                if not isinstance(ref_config, dict):
+                    logging.error(
+                        f"Reference config for '{ref_key}' is not a dictionary.")
+                    continue
+
+                # NOTE: get mode
+                mode = ref_config.get('mode', None)
+                if mode is None:
+                    logging.error(
+                        f"Mode not found in reference config for '{ref_key}'.")
+                    continue
+
+                # NOTE: check matrix table
+                # ! databook
+                databook = ref_config.get('databook', None)
+                # >> check
+                if databook is None:
+                    logging.error(
+                        f"Databook not found in reference config for '{ref_key}'.")
+                    continue
+
+                # ! table
+                table = ref_config.get('table', None)
+                # >> check
+                if table is None:
+                    logging.error(
+                        f"Table not found in reference config for '{ref_key}'.")
+                    continue
+
+                # ! check if table is matrix
+                is_matrix = self.is_matrix_table(
+                    databook_name=databook,
+                    table_name=table
+                )
+
+                if is_matrix is not True:
+                    logging.error(
+                        f"Table '{table}' in databook '{databook}' is not a matrix table.")
+                    continue
+
+                # check mode
+                if mode == 'DATA' and is_matrix is True:
+                    # NOTE: iterate through each label
+                    labels = ref_config.get('labels', None)
+                    if not isinstance(labels, dict):
+                        logging.error(
+                            f"Labels not found or invalid in reference config for '{ref_key}'.")
+                        continue
+
+                    for prop, label in labels.items():
+                        # check if prop and label are valid
+                        if prop is None or label is None or label in ['None', '']:
+                            logging.error(
+                                f"Property or label not found or invalid in reference config for '{ref_key}'.")
+                            continue
+
+                        # add to reference rules
+                        if prop not in reference_rules['DATA']:
+                            reference_rules['DATA'][prop] = label
+
+                else:
+                    logging.error(
+                        f"Invalid mode '{mode}' in reference config for '{ref_key}'. Only 'DATA' mode is supported for binary mixtures.")
                     continue
 
             # return the reference rules
