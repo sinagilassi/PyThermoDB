@@ -2,6 +2,9 @@
 import pyThermoDB as ptdb
 from rich import print
 from pyThermoDB.core import TableData
+from pyThermoDB.references import (
+    load_default_symbols
+)
 
 # versions
 print(ptdb.__version__)
@@ -10,6 +13,11 @@ print(ptdb.__version__)
 # INITIALIZE THE DATABASE
 # ===============================
 tdb = ptdb.init()
+
+# =============================
+# APP DEFAULT SYMBOLS
+default_symbols = load_default_symbols()
+print(default_symbols)
 
 # ===============================
 # DATABOOK LIST
