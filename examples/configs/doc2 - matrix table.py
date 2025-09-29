@@ -359,6 +359,13 @@ if binary_mixture_reference_configs is not None:
     )
     print(f"Component Reference Rules: {component_reference_rules_}")
 
+# NOTE: binary mixture reference rules
+# if binary_mixture_reference_config is not None:
+#     reference_rules_ = ReferenceChecker_.generate_binary_mixture_reference_rules(
+#         reference_configs=binary_mixture_reference_config
+#     )
+#     print(f"Reference Rules: {reference_rules_}")
+
 
 # SECTION: generate reference link (specific component)
 # ! generate reference link (ALL)

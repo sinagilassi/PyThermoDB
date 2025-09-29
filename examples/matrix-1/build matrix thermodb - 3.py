@@ -31,7 +31,7 @@ REFERENCES:
           DESCRIPTION:
             This table provides the NRTL non-randomness parameters for the NRTL equation.
           MATRIX-SYMBOL:
-            - a
+            - a-constant: a
             - b
             - c
             - alpha
