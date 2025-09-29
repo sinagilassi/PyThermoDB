@@ -1419,7 +1419,7 @@ def check_and_build_components_thermodb(
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
         if thermodb_name is None:
-            thermodb_name = '-'.join(component_idx)
+            thermodb_name = 'mixture '+'-'.join(component_idx)
 
         # NOTE: check message
         if message is None:
@@ -1450,10 +1450,21 @@ def check_and_build_components_thermodb(
                 create_dir=True
             )
             # save
-            thermodb_comp.save(
+            save_res_ = thermodb_comp.save(
                 filename=thermodb_name,
                 file_path=thermodb_save_path
             )
+
+            # >> log
+            if save_res_:
+                logging.info(
+                    f"Thermodb '{thermodb_name}' saved successfully at '{thermodb_save_path}'."
+                )
+            else:
+                logging.error(
+                    f"Saving thermodb '{thermodb_name}' at '{thermodb_save_path}' failed!"
+                )
+
         else:
             # build
             thermodb_comp.build()
@@ -2088,7 +2099,7 @@ def build_components_thermodb_from_reference(
         # SECTION: build components thermodb
         # NOTE: check thermodb_name
         if thermodb_name is None:
-            thermodb_name = mixture_id
+            thermodb_name = 'mixture '+'-'.join([c.name for c in components])
         # NOTE: check message
         if message is None:
             prop_names_list = ', '.join(
@@ -2124,10 +2135,20 @@ def build_components_thermodb_from_reference(
                 create_dir=True
             )
             # NOTE: save
-            thermodb_comp.save(
+            save_res_ = thermodb_comp.save(
                 filename=thermodb_name,
                 file_path=thermodb_save_path
             )
+
+            # log
+            if save_res_:
+                logging.info(
+                    f"Mixture thermodb '{thermodb_name}' saved successfully at '{thermodb_save_path}'."
+                )
+            else:
+                logging.warning(
+                    f"Saving mixture thermodb '{thermodb_name}' at '{thermodb_save_path}' failed."
+                )
         else:
             # build
             thermodb_comp.build()
