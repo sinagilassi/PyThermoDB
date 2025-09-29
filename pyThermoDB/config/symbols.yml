@@ -34,7 +34,9 @@ SYMBOLS:
   constant_binary_interaction_parameter_d_i_j: d
   constant_binary_interaction_parameter_e_i_j: e
   non_randomness_parameter_alpha_i_j: alpha
+  binary_interaction_energy_parameter_dg_i_j: dg
+  binary_interaction_energy_parameter_dU_i_j: dU
+  binary_interaction_parameter_tau_i_j: tau
   van_der_Waals_volume_r_i: r
   van_der_Waals_surface_area_q_i: q
-  binary_interaction_parameter_tau_i_j: tau
 

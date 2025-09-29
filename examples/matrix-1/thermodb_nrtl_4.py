@@ -1,7 +1,7 @@
 # import packages/modules
-import pyThermoDB as ptdb
-from pprint import pprint as pp
 import os
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableMatrixData
 from rich import print
 
 # version
@@ -46,7 +46,9 @@ print(tb_list)
 
 # # select a table
 tb = thermo_db.select_table(
-    'NRTL-PARAMETERS', 'NRTL Non-randomness parameters-1')
+    'NRTL-PARAMETERS',
+    'NRTL Non-randomness parameters-1'
+)
 print(tb)
 
 # ====================================
@@ -54,7 +56,9 @@ print(tb)
 # ====================================
 # display a table
 tb_info = thermo_db.table_info(
-    'NRTL-PARAMETERS', "NRTL Non-randomness parameters-1")
+    'NRTL-PARAMETERS',
+    "NRTL Non-randomness parameters-1"
+)
 print(tb_info)
 
 # ====================================
@@ -81,7 +85,14 @@ components = [comp1, comp2]
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_thermo_property(
-    [comp1, comp2], 'NRTL-PARAMETERS', "NRTL Non-randomness parameters-1")
+    [comp1, comp2],
+    'NRTL-PARAMETERS',
+    "NRTL Non-randomness parameters-1"
+)
+
+# >> check
+if not isinstance(nrtl_alpha, TableMatrixData):
+    raise TypeError("nrtl_alpha is not an instance of TableMatrixData")
 
 # matrix table
 print(nrtl_alpha.matrix_table)
@@ -100,11 +111,17 @@ print(nrtl_alpha.table_structure)
 print(nrtl_alpha.get_property('alpha_i_1', comp1))
 
 
-print(nrtl_alpha.get_matrix_property("alpha_i_j",
-                                     [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
+print(nrtl_alpha.get_matrix_property(
+    "alpha_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic', message="NRTL Alpha value"
+))
 
-print(nrtl_alpha.get_matrix_property("dg_i_j",
-                                     [comp1, comp2], symbol_format='alphabetic', message="NRTL Alpha value"))
+print(nrtl_alpha.get_matrix_property(
+    "dg_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic', message="NRTL Alpha value"
+))
 
 # property name using ij method
 prop_name = f"alpha_{comp1}_{comp2}"
@@ -132,22 +149,24 @@ print(prop_matrix, type(prop_matrix))
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_2"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
-pp(type(thermo_db))
+print(type(thermo_db))
 
 # NOTE: add TableMatrixData
 thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
 
 # save
 thermo_db.save(
-    f'{thermodb_name}', file_path=parent_dir)
+    filename=f'{thermodb_name}',
+    file_path=parent_dir
+)
 
 # ====================================
 # CHECK THERMODB
 # ====================================
 # check all properties and functions registered
-pp(thermo_db.check_properties())
-pp(thermo_db.check_functions())
+print(thermo_db.check_properties())
+print(thermo_db.check_functions())
