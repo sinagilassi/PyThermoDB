@@ -28,3 +28,13 @@ SYMBOLS:
   enthalpy_of_fusion: EnFus
   enthalpy_of_sublimation: EnSub
   standard_net_enthalpies_of_combustion: EnCo_STD
+  constant_binary_interaction_parameter_a_i_j: a
+  constant_binary_interaction_parameter_b_i_j: b
+  constant_binary_interaction_parameter_c_i_j: c
+  constant_binary_interaction_parameter_d_i_j: d
+  constant_binary_interaction_parameter_e_i_j: e
+  non_randomness_parameter_alpha_i_j: alpha
+  van_der_Waals_volume_r_i: r
+  van_der_Waals_surface_area_q_i: q
+  binary_interaction_parameter_tau_i_j: tau
+
