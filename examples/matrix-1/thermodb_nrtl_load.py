@@ -1,9 +1,8 @@
 # import packages/modules
-import pyThermoDB as ptdb
-from pprint import pprint as pp
 import os
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableMatrixData
 from rich import print
-
 
 # ====================================
 # COMPONENTS
@@ -22,7 +21,7 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
 # ref
-thermodb_file = 'thermodb_nrtl_1.pkl'
+thermodb_file = 'thermodb_nrtl_methanol_ethanol_md_2_inline.pkl'
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
 
@@ -49,8 +48,9 @@ print(nrtl_thermodb.check_properties())
 nrtl_alpha_data = nrtl_thermodb.check_property('nrtl_alpha')
 print(type(nrtl_alpha_data))
 
-nrtl_alpha_data = nrtl_thermodb.select_property('nrtl_alpha')
-print(type(nrtl_alpha_data))
+# >> check matrix data
+if not isinstance(nrtl_alpha_data, TableMatrixData):
+    raise TypeError("nrtl_alpha_data is not a TableMatrixData instance.")
 
 # heat of formation at 298.15K
 print(nrtl_alpha_data.matrix_data_structure())
@@ -59,8 +59,10 @@ print(nrtl_alpha_data.get_property('Alpha_i_1', comp1))
 # by symbol
 
 # old format
-print(nrtl_alpha_data.get_matrix_property("Alpha_i_j",
-                                          [comp1, comp2], symbol_format='alphabetic'))
+print(nrtl_alpha_data.get_matrix_property(
+    "Alpha_i_j",
+    [comp1, comp2], symbol_format='alphabetic')
+)
 
 # new format
 nrtl_data_ = " nrtl_alpha | Alpha_i_j | methanol | ethanol"
@@ -78,6 +80,10 @@ print(alpha_)
 
 # ! load data
 CO2_general = nrtl_thermodb.check_property('CO2_general_data')
+# >> check component data
+if not isinstance(CO2_general, TableData):
+    raise TypeError("CO2_general is not a TableData instance.")
+
 print(type(CO2_general))
 # heat of formation at 298.15K
 print(CO2_general.data_structure())

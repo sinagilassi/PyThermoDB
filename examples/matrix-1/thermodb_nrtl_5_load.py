@@ -1,6 +1,7 @@
 # import packages/modules
-import pyThermoDB as ptdb
 import os
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableData, TableMatrixData
 from rich import print
 
 
@@ -20,7 +21,7 @@ parent_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"Parent directory: {parent_dir}")
 
 # ref
-thermodb_file = 'thermodb_nrtl_methanol_ethanol_1.pkl'
+thermodb_file = 'thermodb_nrtl_methanol_ethanol_inline.pkl'
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
 
@@ -45,6 +46,10 @@ print(nrtl_thermodb.check_properties())
 
 # load data
 nrtl_alpha_data = nrtl_thermodb.check_property('non-randomness-parameters')
+# >> check matrix data
+if not isinstance(nrtl_alpha_data, TableMatrixData):
+    raise TypeError("nrtl_alpha_data is not a TableMatrixData instance.")
+
 print(type(nrtl_alpha_data))
 
 # symbol
@@ -54,8 +59,10 @@ print(nrtl_alpha_data.matrix_symbol)
 print(nrtl_alpha_data.matrix_data_structure())
 
 # NOTE: old format
-print(nrtl_alpha_data.get_matrix_property("alpha_i_j",
-                                          [comp1, comp2], symbol_format='alphabetic'))
+print(nrtl_alpha_data.get_matrix_property(
+    "alpha_i_j",
+    [comp1, comp2], symbol_format='alphabetic')
+)
 
 # NOTE: new format
 # ! retrieve
