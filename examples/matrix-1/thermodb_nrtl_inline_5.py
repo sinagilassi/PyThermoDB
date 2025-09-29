@@ -177,7 +177,7 @@ print("*" * 20)
 # BUILD THERMODB
 # ====================================
 # thermodb name
-thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_md_2_inline"
+thermodb_name = f"thermodb_nrtl_{comp1}_{comp2}_inline"
 
 # build a thermodb
 thermo_db = ptdb.build_thermodb()
@@ -188,7 +188,9 @@ thermo_db.add_data('non-randomness-parameters', nrtl_alpha)
 
 # save
 thermo_db.save(
-    f'{thermodb_name}', file_path=parent_dir)
+    filename=f'{thermodb_name}',
+    file_path=parent_dir
+)
 
 # ====================================
 # CHECK THERMODB
