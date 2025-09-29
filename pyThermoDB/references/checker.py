@@ -3624,7 +3624,7 @@ class ReferenceChecker:
                         # ! check symbols
                         if check_labels and symbols is not None:
                             # convert to list if not already
-                            symbols_: List[str] = list(symbols)
+                            symbols_: List[str] = list(symbols.values())
                             check_symbol_ = symbol_controller.check_symbols(
                                 symbols_
                             )
