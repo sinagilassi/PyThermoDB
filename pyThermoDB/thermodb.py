@@ -175,6 +175,42 @@ def build_component_thermodb(
     ```
 
     2- This method only checks component by `name`. If you want to check by formula/name and state such as `CO2-g`, `carbon dioxide-g`, use `check_and_build_component_thermodb` method.
+
+    Examples
+    --------
+    ```python
+    reference_config = {
+        'heat-capacity': {
+            'databook': 'CUSTOM-REF-1',
+            'table': 'Ideal-Gas-Molar-Heat-Capacity',
+        },
+        'vapor-pressure': {
+            'databook': 'CUSTOM-REF-1',
+            'table': 'Vapor-Pressure',
+        },
+        'general': {
+            'databook': 'CUSTOM-REF-1',
+            'table': 'General-Data',
+        },
+    }
+
+    # custom reference (yaml format)
+    custom_reference = """
+    REFERENCES:
+        ...
+    """
+
+    # build thermodb for carbon dioxide
+    thermodb = build_component_thermodb(
+        component_name='carbon dioxide',
+        reference_config=reference_config,
+        custom_reference=custom_reference,
+        component_key='Name',
+        thermodb_name='CO2_thermodb',
+        message='Thermodb for carbon dioxide',
+        thermodb_save=True,
+    )
+    ```
     '''
     try:
         # NOTE: check inputs
