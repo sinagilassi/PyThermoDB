@@ -17,7 +17,7 @@ from pythermodb_settings.models import Component
 # internal
 from ..config import API_URL, __version__
 from ..api import Manage
-from ..utils import isNumber, uppercaseStringList, create_binary_mixture_id, create_mixtures
+from ..utils import isNumber, uppercaseStringList, create_binary_mixture_id, create_binary_mixtures
 from .tableref import TableReference
 # transformer
 from ..transformer import TransData
@@ -1576,7 +1576,7 @@ class ThermoDB(ManageData):
         res_format: Literal[
             'dict', 'json', 'str'
         ] = 'dict'
-    ) -> Union[str, dict[str, Union[str, str | float | bool]]]:
+    ) -> str | Dict[str, str | float | bool]:
         '''
         Check if all components in a binary mixture are available in the specified databook and table. A component is defined as:
         - name-state: carbon dioxide-g
@@ -1605,7 +1605,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        str | dict[str, Union[str, str | float | bool]]
+        str | dict[str, str | float | bool]
             Summary of the mixture availability as a string or dictionary in the specified format.
 
             - 'databook_id': databook id,
@@ -1713,6 +1713,7 @@ class ThermoDB(ManageData):
             table_data[normalized_column_name] = table_data[column_name].apply(
                 lambda x: normalize_mixture_id(str(x).strip(), delimiter)
             )
+            # print(table_data)
 
             # SECTION: filter dataframe for the mixture
             # ! normalized binary mixture id
@@ -1726,6 +1727,7 @@ class ThermoDB(ManageData):
             ) == normalized_binary_mixture_id
 
             mixture_df = table_data[mask_]
+            # print(mixture_df)
 
             # count row
             available_count = 0
@@ -1832,7 +1834,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
 
-    def are_mixtures_available(
+    def check_mixtures_availability(
         self,
         components: List[Component],
         databook: int | str,
@@ -1849,7 +1851,7 @@ class ThermoDB(ManageData):
         res_format: Literal[
             'dict', 'json', 'str'
         ] = 'dict'
-    ):
+    ) -> Dict[str, str | Dict[str, str | float | bool]]:
         '''
         Check if all components in multiple binary mixtures are available in the specified databook and table. A component is defined as:
         - name-state: carbon dioxide-g
@@ -1894,15 +1896,43 @@ class ThermoDB(ManageData):
         - All components in each mixture must be available for that mixture to be considered available.
         - All mixtures must be available for the overall availability to be True.
         '''
-        # FIXME
         try:
-            # NOTE: create mixtures
-            mixtures = create_mixtures(
+            # SECTION: create mixtures
+            binary_mixtures = create_binary_mixtures(
                 components=components,
                 mixture_key=mixture_key,
                 delimiter=delimiter
             )
-            return "Not implemented yet."
+
+            # SECTION: check each mixture availability
+            results = {}
+
+            # NOTE: looping through mixtures
+            try:
+                for mixture_id, mixture_components in binary_mixtures.items():
+                    # check
+                    res = self.is_binary_mixture_available(
+                        components=mixture_components,
+                        databook=databook,
+                        table=table,
+                        column_name=column_name,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        ignore_component_state=ignore_component_state,
+                        res_format=res_format
+                    )
+
+                    # append check result
+                    results[mixture_id] = res
+            except Exception as e:
+                logger.warning(
+                    f"Error checking mixture [{mixture_id}] availability: {e}")
+
+            # SECTION: check overall availability
+
+            # res
+            return results
         except Exception as e:
             raise Exception(f"Error checking mixtures availability: {e}")
 
