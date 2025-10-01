@@ -17,7 +17,7 @@ from pythermodb_settings.models import Component
 # internal
 from ..config import API_URL, __version__
 from ..api import Manage
-from ..utils import isNumber, uppercaseStringList, create_binary_mixture_id
+from ..utils import isNumber, uppercaseStringList, create_binary_mixture_id, create_mixtures
 from .tableref import TableReference
 # transformer
 from ..transformer import TransData
@@ -1831,6 +1831,80 @@ class ThermoDB(ManageData):
                 raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
+
+    def are_mixtures_available(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        column_name: str = 'Mixture',
+        component_key: Literal[
+            'Name-State', 'Formula-State',
+        ] = 'Name-State',
+        mixture_key: Literal[
+            'Name', 'Formula',
+        ] = 'Name',
+        delimiter: str = '|',
+        ignore_component_state: bool = False,
+        res_format: Literal[
+            'dict', 'json', 'str'
+        ] = 'dict'
+    ):
+        '''
+        Check if all components in multiple binary mixtures are available in the specified databook and table. A component is defined as:
+        - name-state: carbon dioxide-g
+        - formula-state: CO2-g
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components in the mixtures to check.
+        databook : int | str
+            The databook id or name.
+        table : int | str
+            The table id or name.
+        column_name : str, optional
+            The name of the column containing mixture identifiers, by default 'Mixture'.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for identifying the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used in the mixture identifiers, by default '|'.
+        ignore_component_state : bool, optional
+            Whether to ignore the state of the components when checking availability, by default False.
+        res_format : Literal['dict', 'json', 'str'], optional
+            The format of the returned result, by default 'dict'.
+
+        Returns
+        -------
+        str | dict[str, Union[str, str | float | bool, list]]
+            Summary of the mixtures availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'mixtures': list of mixture availability results,
+            - 'all_available': True if all mixtures are available, False otherwise
+
+        Notes
+        -----
+        - Table should contain columns for 'Mixture', 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        - All components in each mixture must be available for that mixture to be considered available.
+        - All mixtures must be available for the overall availability to be True.
+        '''
+        # FIXME
+        try:
+            # NOTE: create mixtures
+            mixtures = create_mixtures(
+                components=components,
+                mixture_key=mixture_key,
+                delimiter=delimiter
+            )
+            return "Not implemented yet."
+        except Exception as e:
+            raise Exception(f"Error checking mixtures availability: {e}")
 
     def check_component_api(
             self,

@@ -32,7 +32,8 @@ from .utils import (
     check_file_path,
     look_up_binary_mixture_reference_config,
     look_up_mixture_reference_config,
-    create_binary_mixture_id
+    create_binary_mixture_id,
+    create_mixture_ids
 )
 from .builder import CompBuilder
 from .config import DEFAULT_COMPONENT_STATES
@@ -956,10 +957,13 @@ def build_components_thermodb(
 
             # tables
             table_dict_ = thermodb.list_tables(
-                databook=databook_, res_format='dict')
+                databook=databook_,
+                res_format='dict'
+            )
             # check
             if not isinstance(table_dict_, dict):
                 raise TypeError("Table list must be a list")
+
             # table list
             table_list_ = list(table_dict_.values())
             if not isinstance(table_list_, list) or not table_list_:
@@ -1188,6 +1192,23 @@ def check_and_build_components_thermodb(
     ```
 
     2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
+
+    3- The table should contain columns including `Name` and `Formula` to identify the components. Otherwise during the check, it will raise an error.
+
+    4- The `state` can be considered or ignored based on the `ignore_state_props` and `ignore_state_all_props` kwargs.
+
+    - ignore_state_props: List of property names to ignore state during the build. For example, if you want to ignore state for a thermo property such as vapor pressure and use only component name and formula, set `ignore_state_props=['VaPr']`.
+    - ignore_state_all_props: Boolean to ignore state for all properties during the build. Default is False. If True, it will ignore state for all properties.
+
+    5- The `column_name` is used to identify the mixture in the table. If None, it will use 'Mixture' as the default column name.
+
+    6- The `mixture_key` is used to identify the components in the mixture. If 'Name', it will use component names to identify the components in the mixture. If 'Formula', it will use component formulas to identify the components in the mixture.
+
+    7- The `delimiter` is used to separate component names/formulas in the mixture. Default is '|'.
+
+    8- Components combination in the mixture is not order-dependent. For example, 'Water|Ethanol' is considered the same as 'Ethanol|Water'.
+
+    9- All binary combinations of the provided components will be checked in the table. For example, if you provide components A, B, and C, the method will check for mixtures A|B, A|C, and B|C in the table.
     '''
     try:
         # NOTE: kwargs
@@ -1224,11 +1245,10 @@ def check_and_build_components_thermodb(
         if not all(isinstance(c, Component) for c in components):
             raise TypeError("All components must be Component objects")
 
-        # ? check binary system
-        if len(components) != 2:
+        # ? check at least one mixture available in the system
+        if len(components) < 2:
             raise ValueError(
-                "Only binary systems are supported, provide exactly two components."
-            )
+                "At least two components are required to form a mixture.")
 
         # NOTE: reference_config check
         if not isinstance(reference_config, (dict, str)):
@@ -1239,13 +1259,20 @@ def check_and_build_components_thermodb(
         # extract component names
         component_names = [c.name.strip() for c in components]
 
-        # set id based on key
+        # >> set id based on key
         component_idx = [
             set_component_id(
                 component=c,
                 component_key=component_key
             ) for c in components
         ]
+
+        # >> create mixture ids
+        mixture_ids = create_mixture_ids(
+            components=components,
+            mixture_key=mixture_key,
+            delimiter=delimiter
+        )
 
         # SECTION: check if reference_config is a string
         if isinstance(reference_config, str):
