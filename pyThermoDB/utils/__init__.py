@@ -6,7 +6,9 @@ from .component_utils import (
     set_component_id,
     set_component_query,
     validate_component_state,
-    create_binary_mixture_id
+    create_binary_mixture_id,
+    create_mixture_ids,
+    create_mixtures
 )
 from .prop_utils import ignore_state_in_prop
 from .reference_utils import (
@@ -39,5 +41,7 @@ __all__ = [
     "check_file_path",
     "create_binary_mixture_id",
     "look_up_binary_mixture_reference_config",
-    "look_up_mixture_reference_config"
+    "look_up_mixture_reference_config",
+    "create_mixture_ids",
+    "create_mixtures"
 ]

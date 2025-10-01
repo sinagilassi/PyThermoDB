@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import List, Literal
+from typing import List, Literal, Dict
 from pythermodb_settings.models import Component
 # local
 from ..config import DEFAULT_COMPONENT_STATES
@@ -200,4 +200,122 @@ def create_binary_mixture_id(
 
     except Exception as e:
         logging.error(f"Error in create_binary_mixture_id: {e}")
+        raise
+
+
+def create_mixture_ids(
+    components: List[Component],
+    mixture_key: Literal[
+        'Name', 'Formula'
+    ] = 'Name',
+    delimiter: str = "|"
+) -> List[str]:
+    """Create unique mixture IDs for all binary combinations of the provided components.
+
+    Parameters
+    ----------
+    components : List[Component]
+        List of components to create mixtures from.
+    mixture_key : Literal['Name', 'Formula'], optional
+        The key to use for identifying the components, by default 'Name'.
+    delimiter : str, optional
+        Delimiter to separate the two components in the ID, by default "|".
+
+    Returns
+    -------
+    List[str]
+        A list of unique binary mixture IDs.
+
+    Raises
+    ------
+    ValueError
+        If the component_key is not recognized.
+    """
+    try:
+        # SECTION: validate inputs
+        if not isinstance(components, list) or not all(isinstance(c, Component) for c in components):
+            raise TypeError("components must be a list of Component instances")
+        if not isinstance(delimiter, str):
+            raise TypeError("delimiter must be a string")
+
+        # SECTION: create mixture IDs
+        mixture_ids = set()
+        num_components = len(components)
+
+        for i in range(num_components):
+            for j in range(i + 1, num_components):
+                mix_id = create_binary_mixture_id(
+                    components[i],
+                    components[j],
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+                mixture_ids.add(mix_id)
+
+        return list(mixture_ids)
+
+    except Exception as e:
+        logging.error(f"Error in create_mixture_ids: {e}")
+        raise
+
+
+def create_mixtures(
+    components: List[Component],
+    mixture_key: Literal[
+        'Name', 'Formula'
+    ] = 'Name',
+    delimiter: str = "|"
+) -> Dict[str, Dict[str, str]]:
+    """
+    Create unique mixture IDs for all binary combinations of the provided components.
+
+    Parameters
+    ----------
+    components : List[Component]
+        List of components to create mixtures from.
+    mixture_key : Literal['Name', 'Formula'], optional
+        The key to use for identifying the components, by default 'Name'.
+    delimiter : str, optional
+        Delimiter to separate the two components in the ID, by default "|".
+
+    Returns
+    -------
+    Dict[str, Dict[str, str]]
+        A dictionary where keys are unique binary mixture IDs and values are dictionaries
+
+    Raises
+    ------
+    ValueError
+        If the component_key is not recognized.
+    """
+    try:
+        # SECTION: validate inputs
+        if not isinstance(components, list) or not all(isinstance(c, Component) for c in components):
+            raise TypeError("components must be a list of Component instances")
+        if not isinstance(delimiter, str):
+            raise TypeError("delimiter must be a string")
+
+        # SECTION: create mixture IDs
+        mixture_ids = {}
+        num_components = len(components)
+
+        for i in range(num_components):
+            for j in range(i + 1, num_components):
+                mix_id = create_binary_mixture_id(
+                    components[i],
+                    components[j],
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+                mixture_ids[mix_id] = {
+                    'component_1': components[i].name.strip() if mixture_key == 'Name'
+                    else components[i].formula.strip(),
+                    'component_2': components[j].name.strip() if mixture_key == 'Name'
+                    else components[j].formula.strip()
+                }
+
+        return mixture_ids
+
+    except Exception as e:
+        logging.error(f"Error in create_mixture_ids: {e}")
         raise
