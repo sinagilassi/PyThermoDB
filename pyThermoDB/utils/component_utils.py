@@ -259,13 +259,13 @@ def create_mixture_ids(
         raise
 
 
-def create_mixtures(
+def create_binary_mixtures(
     components: List[Component],
     mixture_key: Literal[
         'Name', 'Formula'
     ] = 'Name',
     delimiter: str = "|"
-) -> Dict[str, Dict[str, str]]:
+) -> Dict[str, List[Component]]:
     """
     Create unique mixture IDs for all binary combinations of the provided components.
 
@@ -280,7 +280,7 @@ def create_mixtures(
 
     Returns
     -------
-    Dict[str, Dict[str, str]]
+    Dict[str, List[Component]]
         A dictionary where keys are unique binary mixture IDs and values are dictionaries
 
     Raises
@@ -307,12 +307,9 @@ def create_mixtures(
                     mixture_key=mixture_key,
                     delimiter=delimiter
                 )
-                mixture_ids[mix_id] = {
-                    'component_1': components[i].name.strip() if mixture_key == 'Name'
-                    else components[i].formula.strip(),
-                    'component_2': components[j].name.strip() if mixture_key == 'Name'
-                    else components[j].formula.strip()
-                }
+
+                # >> append
+                mixture_ids[mix_id] = [components[i], components[j]]
 
         return mixture_ids
 

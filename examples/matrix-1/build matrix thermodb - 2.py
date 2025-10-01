@@ -1,6 +1,7 @@
 # import packages/modules
 import pyThermoDB as ptdb
 from pyThermoDB.core import TableMatrixData
+from pyThermoDB.utils import create_binary_mixtures
 from pythermodb_settings.models import Component
 import os
 from rich import print
@@ -51,7 +52,40 @@ print(tb_list)
 # ! component
 methanol = Component(name="methanol", formula="CH3OH", state="l")
 ethanol = Component(name="ethanol", formula="C2H5OH", state="l")
-benzene = Component(name="benzene", formula="C6H6", state="l")
+methane = Component(name="methane", formula="CH4", state="g")
+
+# ! mixture
+components = [methanol, ethanol, methane]
+# >> methanol-ethanol
+# >> methanol-methane
+# >> ethanol-methane
+
+# ====================================
+# ☑️ CHECK MIXTURE AVAILABILITY IN A TABLE
+# ====================================
+# create mixtures
+mixtures = create_binary_mixtures(
+    components=components,
+    mixture_key='Name',
+    delimiter='|'
+)
+print(f"Mixtures:")
+print(mixtures)
+
+# check binary mixtures availability in the databook and table
+check_binary_mixtures_availability = thermo_db.check_mixtures_availability(
+    components=components,
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    delimiter='|',
+    ignore_component_state=True
+)
+print("Binary mixtures availability:")
+print(check_binary_mixtures_availability)
+
 
 # mixture
 mixture_methanol_ethanol = methanol.name + ' | ' + ethanol.name
