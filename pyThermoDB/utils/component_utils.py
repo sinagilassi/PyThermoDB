@@ -316,3 +316,58 @@ def create_binary_mixtures(
     except Exception as e:
         logging.error(f"Error in create_mixture_ids: {e}")
         raise
+
+
+def create_mixture_from_components(
+        mixture_id: str,
+        components: List[Component],
+        delimiter: str = "|"
+):
+    """Create a mixture (list of components) from a mixture ID.
+
+    Parameters
+    ----------
+    mixture_id : str
+        The mixture ID string containing component identifiers separated by the delimiter.
+    components : List[Component]
+        List of components to search for in the mixture ID.
+    delimiter : str, optional
+        Delimiter used in the mixture ID, by default "|".
+
+    Returns
+    -------
+    List[Component]
+        A list of Component objects that are part of the mixture.
+
+    Raises
+    ------
+    ValueError
+        If the mixture_id is not a string or if components is not a list of Component instances.
+    """
+    try:
+        # SECTION: validate inputs
+        if not isinstance(mixture_id, str):
+            raise TypeError("mixture_id must be a string")
+        if not isinstance(components, list) or not all(isinstance(c, Component) for c in components):
+            raise TypeError("components must be a list of Component instances")
+        if not isinstance(delimiter, str):
+            raise TypeError("delimiter must be a string")
+
+        # SECTION: parse mixture ID
+        component_ids = [
+            comp_id.strip() for comp_id in mixture_id.split(delimiter) if delimiter in mixture_id
+        ]
+
+        # SECTION: find matching components
+        mixture_components = []
+        for comp_id in component_ids:
+            for comp in components:
+                if comp_id.lower() == comp.name.strip().lower() or comp_id.lower() == comp.formula.strip().lower():
+                    mixture_components.append(comp)
+                    break
+
+        return mixture_components
+
+    except Exception as e:
+        logging.error(f"Error in create_mixture_from_components: {e}")
+        raise

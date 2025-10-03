@@ -72,7 +72,7 @@ mixtures = create_binary_mixtures(
 print(f"Mixtures:")
 print(mixtures)
 
-# check binary mixtures availability in the databook and table
+# ! check binary mixtures availability in the databook and table
 check_binary_mixtures_availability = thermo_db.check_mixtures_availability(
     components=components,
     databook='NRTL',
@@ -86,11 +86,46 @@ check_binary_mixtures_availability = thermo_db.check_mixtures_availability(
 print("Binary mixtures availability:")
 print(check_binary_mixtures_availability)
 
+# ! check specific mixture availability
+check_binary_mixtures_availability = thermo_db.check_mixtures_availability(
+    components=components,
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    mixture_names=['methanol | ethanol', 'methanol | methane'],
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    delimiter='|',
+    ignore_component_state=True
+)
+print("Specific binary mixtures availability:")
+print(check_binary_mixtures_availability)
 
 # mixture
 mixture_methanol_ethanol = methanol.name + ' | ' + ethanol.name
 print(f"Mixture: {mixture_methanol_ethanol}")
 
+# ====================================
+# ☑️ GET MIXTURES DATA
+# ====================================
+# NOTE: get mixtures data
+mixtures_data = thermo_db.get_mixtures_data(
+    components=components,
+    databook='NRTL',
+    table='Non-randomness parameters of the NRTL equation-3',
+    mixture_names=["methanol | ethanol", "methanol | methane"],
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    delimiter='|',
+    ignore_component_state=True,
+)
+print("Mixtures data:")
+print(mixtures_data)
+
+# ====================================
+# ☑️ CHECK BINARY MIXTURE AVAILABILITY IN A TABLE
+# ====================================
 # NOTE: binary mixture
 # ! direct check
 mixture_check_availability = thermo_db.is_binary_mixture_available(

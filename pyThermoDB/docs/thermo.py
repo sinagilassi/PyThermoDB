@@ -17,7 +17,13 @@ from pythermodb_settings.models import Component
 # internal
 from ..config import API_URL, __version__
 from ..api import Manage
-from ..utils import isNumber, uppercaseStringList, create_binary_mixture_id, create_binary_mixtures
+from ..utils import (
+    isNumber,
+    uppercaseStringList,
+    create_binary_mixture_id,
+    create_binary_mixtures,
+    create_mixture_from_components
+)
 from .tableref import TableReference
 # transformer
 from ..transformer import TransData
@@ -1839,6 +1845,7 @@ class ThermoDB(ManageData):
         components: List[Component],
         databook: int | str,
         table: int | str,
+        mixture_names: Optional[List[str]] = None,
         column_name: str = 'Mixture',
         component_key: Literal[
             'Name-State', 'Formula-State',
@@ -1865,6 +1872,8 @@ class ThermoDB(ManageData):
             The databook id or name.
         table : int | str
             The table id or name.
+        mixture_names : Optional[List[str]], optional
+            List of mixture names to check, by default None. If None, all possible binary mixtures will be created from the components list.
         column_name : str, optional
             The name of the column containing mixture identifiers, by default 'Mixture'.
         component_key : Literal['Name-State', 'Formula-State'], optional
@@ -1898,11 +1907,33 @@ class ThermoDB(ManageData):
         '''
         try:
             # SECTION: create mixtures
-            binary_mixtures = create_binary_mixtures(
-                components=components,
-                mixture_key=mixture_key,
-                delimiter=delimiter
-            )
+            if mixture_names is not None:
+                # ! use provided mixture names
+                # init binary mixtures dict
+                binary_mixtures = {}
+
+                # iterate through mixture names
+                for name in mixture_names:
+                    if not isinstance(name, str) or not name.strip():
+                        raise ValueError(
+                            "Each mixture name must be a non-empty string.")
+
+                    # update
+                    binary_mixtures[name.lower().strip()] = create_mixture_from_components(
+                        mixture_id=name,
+                        components=components,
+                    )
+            else:
+                # ! create all possible binary mixtures
+                binary_mixtures = create_binary_mixtures(
+                    components=components,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+            # >> check
+            if not binary_mixtures:
+                raise ValueError("No binary mixtures to check.")
 
             # SECTION: check each mixture availability
             results = {}
@@ -1928,8 +1959,6 @@ class ThermoDB(ManageData):
             except Exception as e:
                 logger.warning(
                     f"Error checking mixture [{mixture_id}] availability: {e}")
-
-            # SECTION: check overall availability
 
             # res
             return results
@@ -2638,6 +2667,135 @@ class ThermoDB(ManageData):
                 raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
+
+    def get_mixtures_data(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        mixture_names: Optional[list[str]] = None,
+        column_name: str = 'Mixture',
+        component_key: Literal[
+            'Name-State', 'Formula-State',
+        ] = 'Name-State',
+        mixture_key: Literal[
+            'Name', 'Formula',
+        ] = 'Name',
+        delimiter: str = '|',
+        ignore_component_state: bool = False,
+    ) -> Dict[str, Dict[str, str | float | bool]]:
+        '''
+        Get component data in mixtures are available in the specified databook and table. A component is defined as:
+        - name-state: carbon dioxide-g
+        - formula-state: CO2-g
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components in the mixture to check.
+        databook : int | str
+            The databook id or name.
+        table : int | str
+            The table id or name.
+        mixture_names : list[str], optional
+            The list of mixture names to check. If None, all possible binary mixtures will be created from the components.
+        column_name : str, optional
+            The name of the column containing mixture identifiers, by default 'Mixture'.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for identifying the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used in the mixture identifiers, by default '|'.
+        ignore_component_state : bool, optional
+            Whether to ignore the state of the components when checking availability, by default False.
+        res_format : Literal['dict', 'json', 'str'], optional
+            The format of the returned result, by default 'dict'.
+
+        Returns
+        -------
+        str | Dict[str, Dict[str, str | float | bool]]
+            Summary of the mixtures availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'mixtures': list of mixture availability results,
+            - 'all_available': True if all mixtures are available, False otherwise
+
+        Notes
+        -----
+        - Table should contain columns for 'Mixture', 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        - All components in each mixture must be available for that mixture to be considered available.
+        - All mixtures must be available for the overall availability to be True.
+        '''
+        try:
+            # SECTION: create mixtures
+            if mixture_names is not None:
+                # ! use provided mixture names
+                # >> initialize
+                binary_mixtures = {}
+
+                for mix_name in mixture_names:
+                    # >> normalized mixture id
+                    mix_name_normalized = mix_name.lower().strip()
+
+                    # >> create mixture
+                    binary_mixtures[mix_name_normalized] = create_mixture_from_components(
+                        mixture_id=mix_name_normalized,
+                        components=components,
+                        delimiter=delimiter
+                    )
+            else:
+                # ! create all possible binary mixtures from components
+                binary_mixtures = create_binary_mixtures(
+                    components=components,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+            # check
+            if not binary_mixtures:
+                raise ValueError("No mixtures to check.")
+
+            # SECTION: get mixtures data
+            results = {}
+
+            # iterate over mixtures
+            for mix_id, mix_components in binary_mixtures.items():
+                try:
+                    mix_result = self.get_binary_mixture_data(
+                        components=mix_components,
+                        databook=databook,
+                        table=table,
+                        column_name=column_name,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        ignore_component_state=ignore_component_state,
+                        res_format='dict'
+                    )
+
+                    # check
+                    if isinstance(mix_result, str):
+                        # log
+                        logger.warning(
+                            f"Mixture [{mix_id}] check returned string result. Check for errors.")
+                        # skip
+                        continue
+
+                    # store result
+                    results[mix_id] = mix_result
+                except Exception as e:
+                    logger.error(
+                        f"Error checking mixture [{mix_id}] availability: {e}")
+                    continue
+
+            # return
+            return results
+        except Exception as e:
+            raise Exception(f"Error creating mixtures: {e}")
 
     def build_thermo_property(
         self,
