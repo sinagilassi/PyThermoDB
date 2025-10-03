@@ -8,7 +8,8 @@ from .component_utils import (
     validate_component_state,
     create_binary_mixture_id,
     create_mixture_ids,
-    create_binary_mixtures
+    create_binary_mixtures,
+    create_mixture_from_components
 )
 from .prop_utils import ignore_state_in_prop
 from .reference_utils import (
@@ -43,5 +44,6 @@ __all__ = [
     "look_up_binary_mixture_reference_config",
     "look_up_mixture_reference_config",
     "create_mixture_ids",
-    "create_binary_mixtures"
+    "create_binary_mixtures",
+    "create_mixture_from_components"
 ]

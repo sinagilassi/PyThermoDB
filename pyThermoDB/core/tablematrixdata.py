@@ -31,6 +31,8 @@ class TableMatrixData:
     matrix_mode: Literal['VALUES', 'ITEMS'] = 'VALUES'
     # mixture id
     mixture_id: Optional[str] = None
+    # mixture idx
+    mixture_ids: Optional[List[str]] = None
 
     def __init__(
         self,
