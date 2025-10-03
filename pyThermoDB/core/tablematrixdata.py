@@ -434,6 +434,26 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Finding component property failed!, ", e)
 
+    def _fid_component_prop_data_from_mixture(
+            self,
+            component_id: str,
+            mixture_id: str,
+            column_name: str
+    ):
+        '''
+        Get a component property from data table structure based on mixture from data table
+
+        Parameters
+        ----------
+        component_id : str
+            component id
+        mixture_id : str
+            mixture id
+        column_name : str
+            column name
+        '''
+        pass
+
     def _get_matrix_data_info(self):
         '''
         Get matrix data info
@@ -555,6 +575,8 @@ class TableMatrixData:
             self,
             property: str | int,
             component_name: str,
+            mixture_name: Optional[str] = None,
+            column_name: Optional[str] = None
     ) -> DataResultType | dict:
         '''
         Get a component property from data table structure
@@ -565,6 +587,10 @@ class TableMatrixData:
             property name or id
         component_name : str
             component name
+        mixture_name : str, optional
+            mixture name (default is None)
+        column_name : str, optional
+            column name (default is None)
 
         Returns
         -------
@@ -600,10 +626,22 @@ class TableMatrixData:
         '''
         # REVIEW
         # SECTION: find component property
-        prop_data = self._find_component_prop_data(
-            component_id=component_name
-        )
+        if mixture_name is not None:
+            # set column name
+            if column_name is None:
+                column_name = 'Mixture'
+            pass
+        else:
+            prop_data = self._find_component_prop_data(
+                component_id=component_name
+            )
 
+        # >> check
+        if prop_data is None or len(prop_data) == 0:
+            logger.error(
+                f"Component '{component_name}' property data not found!")
+            return {}
+        # >> check
         if not isinstance(prop_data, dict):
             raise Exception("Component property data is not a dictionary!")
 
@@ -819,12 +857,44 @@ class TableMatrixData:
         -------
         DataResult
             component property
+
+        Notes
+        -----
+        - property must be a string as: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
+        - component_names is a list of component names such as ['ethanol', 'methanol']
+        - symbol_format is either 'alphabetic' or 'numeric' (default: 'alphabetic')
+        - component_key is either 'Name' or 'Formula' (default: 'Name')
+        - the function returns a DataResult object with the property data
+        - if the property is not found, an empty DataResult object is returned with a warning message
+        - the function supports two formats for the property name:
+          1. `Alpha_ij` where `i` and `j` are component names separated by an underscore
+          2. `Alpha | component1 | component2` where `component1` and `component2` are component names separated by a pipe (`|`)
+
+        The matrix data table structure is as follows:
+
+        - Format 1 (matrix format):
+
+        | No. | Name     | Formula | Alpha_i_1 | Alpha_i_2 | Alpha_i_3 | Beta_i_1 | Beta_i_2 | Beta_i_3 | Delta_i_1 | Delta_i_2 | Delta_i_3 |
+        |-----|----------|---------|-----------|-----------|-----------|----------|----------|----------|-----------|-----------|-----------|
+        | 1   | methanol | CH3OH   | 0         | 0.3       | -1.709    | 0        | 1        | 2        | 0         | 10        | 20        |
+        | 2   | ethanol  | C2H5OH  | 0.3       | 0         | 0.569     | 3        | 0        | 4        | 30        | 0         | 40        |
+        | 3   | benzene  | C6H6    | 11.58     | -0.916    | 0         | 5        | 6        | 0        | 50        | 60        | 0         |
+
+        - Format 2 (matrix items format):
+
+        | No. | Mixture          | Name     | Formula | State | a_i_1 | a_i_2 | b_i_1      | b_i_2 | c_i_1     | c_i_2 | alpha_i_1  | alpha_i_2 |
+        |-----|------------------|----------|---------|-------|-------|-------|------------|-------|-----------|-------|------------|-----------|
+        | 1   | methanol\|ethanol | methanol | CH3OH   | l     | 0     | 1     | 1.564200272 | 0     | 35.05450323 | 0     | 4.481683583 |
+        | 2   | methanol\|ethanol | ethanol  | C2H5OH  | l     | 2     | 3     | -20.63243601| 0     | 0.059982839 | 0     | 4.481683583 |
+        | 1   | methanol\|methane | methanol | CH3OH   | l     | 1     | 0.300492719 | 0     | 1.564200272 | 0     | 35.05450323 | 0     | 4.481683583 |
+        | 2   | methanol\|methane | methane  | CH4     | g     | 0.380229054 | 0     | -20.63243601| 0     | 0.059982839 | 0     | 4.481683583 | 0     |
+
         '''
         # NOTE: mixture_components
         mixture_name = kwargs.get('mixture_name', None)
 
         # NOTE: get mixture id
-        mixture_id = self.mixture_id
+        # mixture_id = self.mixture_id
 
         # NOTE: selected columns based on component_key
         if component_key not in ['Name']:
