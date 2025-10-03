@@ -105,72 +105,13 @@ print(check_binary_mixtures_availability)
 mixture_methanol_ethanol = methanol.name + ' | ' + ethanol.name
 print(f"Mixture: {mixture_methanol_ethanol}")
 
-# ====================================
-# ☑️ CHECK BINARY MIXTURE AVAILABILITY IN A TABLE
-# ====================================
-# NOTE: binary mixture
-# ! direct check
-mixture_check_availability = thermo_db.is_binary_mixture_available(
-    components=[methanol, ethanol],
-    databook='NRTL',
-    table="Non-randomness parameters of the NRTL equation-3"
-)
-print(f"Mixture availability: {mixture_check_availability}")
-
-# ! ignore component state
-mixture_check_availability = thermo_db.is_binary_mixture_available(
-    components=[methanol, ethanol],
-    databook='NRTL',
-    table="Non-randomness parameters of the NRTL equation-3",
-    ignore_component_state=True
-)
-print(f"Mixture availability (ignore state): {mixture_check_availability}")
-
-# NOTE: using query
-query = f"Name.str.lower() == '{methanol.name.lower()}'"
-# ! using query
-COMP1_check_availability = thermo_db.check_component(
-    component_name=methanol.name,
-    databook='NRTL',
-    table='Non-randomness parameters of the NRTL equation-3',
-    column_name=query,
-    query=True,
-    res_format='dict'
-)
-print(f"Component availability (with query): {COMP1_check_availability}")
-
-# ! using query - mixture
-query1 = f"Name.str.lower() == '{methanol.name.lower()}' and State.str.lower() == '{methanol.state.lower()}' and Mixture.str.lower() == '{mixture_methanol_ethanol.lower()}'"
-# >> check
-mixture_check_availability = thermo_db.check_component(
-    component_name=methanol.name,
-    databook='NRTL',
-    table='Non-randomness parameters of the NRTL equation-3',
-    column_name=query1,
-    query=True,
-    res_format='dict'
-)
-print(f"Mixture availability (with query): {mixture_check_availability}")
-
 # NOTE: components
 # comp1
 comp1 = methanol.name
 comp2 = ethanol.name
+comp3 = methane.name
 # components list
 components = [comp1, comp2]
-
-# ====================================
-# ☑️ GET MIXTURE DATA
-# ====================================
-# NOTE: get mixture data
-mixture_data = thermo_db.get_binary_mixture_data(
-    components=[methanol, ethanol],
-    databook='NRTL',
-    table='Non-randomness parameters of the NRTL equation-3',
-    component_key='Name-State',
-    ignore_component_state=True,
-)
-print(f"Mixture data: {mixture_data}")
 
 # ====================================
 # ☑️ GET MIXTURES DATA
@@ -195,10 +136,11 @@ print(mixtures_data)
 # ====================================
 # NOTE: build a matrix data
 nrtl_alpha = thermo_db.build_components_thermo_property(
-    [methanol, ethanol],
-    'NRTL',
-    "Non-randomness parameters of the NRTL equation-3",
+    components=[methanol, ethanol, methane],
+    databook='NRTL',
+    table="Non-randomness parameters of the NRTL equation-3",
     ignore_component_state=True,
+    mixture_names=["methanol | ethanol", "methanol | methane"],
 )
 # check type
 if not isinstance(nrtl_alpha, TableMatrixData):
@@ -214,41 +156,74 @@ print(nrtl_alpha.matrix_symbol)
 print(nrtl_alpha.matrix_data_structure())
 
 # SECTION: get property value
-# ! by name
-print(nrtl_alpha.get_property('a_i_1', methanol.name))
-# ! by formula
-print(nrtl_alpha.get_property('a_i_1', methanol.formula))
-#
-print(nrtl_alpha.get_property('a_i_2', methanol.name))
-print(nrtl_alpha.get_property('a_i_2', methanol.name))
-print(nrtl_alpha.get_property('a_i_3', methanol.formula))
-# ! unknown
-print(nrtl_alpha.get_property('b_i_1', comp1))
-print(nrtl_alpha.get_property(4, comp1))
-# by symbol
-# print(float(Alpha_i_j['value']))
+# # ! by name
+# print(nrtl_alpha.get_property('a_i_1', methanol.name))
+# # ! by formula
+# print(nrtl_alpha.get_property('a_i_1', methanol.formula))
+# #
+# print(nrtl_alpha.get_property('a_i_2', methanol.name))
+# print(nrtl_alpha.get_property('a_i_2', methanol.name))
+# print(nrtl_alpha.get_property('a_i_3', methanol.formula))
+# # ! unknown
+# print(nrtl_alpha.get_property('b_i_1', comp1))
+# print(nrtl_alpha.get_property(4, comp1))
+# # by symbol
+# # print(float(Alpha_i_j['value']))
 
 # SECTION: get matrix property
 # mixture name
-mixture_name = f"{comp1} | {comp2}"
-print(f"Mixture name: {mixture_name}")
+mixture_name_methanol_ethanol = f"{comp1} | {comp2}"
+print(f"Mixture name: {mixture_name_methanol_ethanol}")
+
+mixture_name_methanol_methane = f"{comp1} | {comp3}"
+print(f"Mixture name: {mixture_name_methanol_methane}")
 
 # ! property [i,i]
+# >> methanol-ethanol mixture
 print(nrtl_alpha.get_matrix_property(
     "a_i_j",
     [comp1, comp1],
     symbol_format='alphabetic',
     message="NRTL Alpha value",
-    mixture_name=mixture_name
+    mixture_name=mixture_name_methanol_ethanol
 )
 )
+
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp1, comp2],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value",
+    mixture_name=mixture_name_methanol_ethanol
+)
+)
+
+# >> methanol-methane mixture
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp1, comp1],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value",
+    mixture_name=mixture_name_methanol_methane
+)
+)
+
+print(nrtl_alpha.get_matrix_property(
+    "a_i_j",
+    [comp1, comp3],
+    symbol_format='alphabetic',
+    message="NRTL Alpha value",
+    mixture_name=mixture_name_methanol_methane
+)
+)
+
 # ! property [i,i]
 print(nrtl_alpha.get_matrix_property(
     "a_i_j",
     [comp2, comp2],
     symbol_format='alphabetic',
     message="NRTL Alpha value",
-    mixture_name=mixture_name
+    mixture_name=mixture_name_methanol_ethanol
 )
 )
 # ! property [i,j]
@@ -287,12 +262,12 @@ prop_name = f"a_{comp1}_{comp1}"
 print(prop_name)
 print(nrtl_alpha.ij(
     property=prop_name,
-    mixture_name=mixture_name
+    mixture_name=mixture_name_methanol_ethanol
 )
 )
 print(nrtl_alpha.ij(
     property=prop_name,
-    mixture_name=mixture_name
+    mixture_name=mixture_name_methanol_ethanol
 ).get('value')
 )
 
@@ -315,7 +290,7 @@ for comp1 in components:
         # get property value
         prop_value = nrtl_alpha.ij(
             property=prop_name,
-            mixture_name=mixture_name
+            mixture_name=mixture_name_methanol_ethanol
         ).get('value')
         # log
         print(f"Property: {prop_name} = {prop_value}")

@@ -22,7 +22,8 @@ from ..utils import (
     uppercaseStringList,
     create_binary_mixture_id,
     create_binary_mixtures,
-    create_mixture_from_components
+    create_mixture_from_components,
+    create_binary_mixtures
 )
 from .tableref import TableReference
 # transformer
@@ -37,7 +38,7 @@ from ..core import (
     TableMatrixData
 )
 from ..data import TableTypes
-from ..models import DataBookTableTypes
+from ..models import DataBookTableTypes, PayLoadType
 # web app
 from ..ui import Launcher
 
@@ -2242,7 +2243,7 @@ class ThermoDB(ManageData):
         dataframe: bool = False,
         query: bool = False,
         matrix_tb: bool = False
-    ):
+    ) -> Union[pd.DataFrame, PayLoadType, None]:
         '''
         Get component data from database (local csv files)
 
@@ -2267,8 +2268,8 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        payload : dict | pandas dataframe
-            component information
+        DataFrame | PayLoadType | None
+            component data
         '''
         try:
             # check databook_id and table_id are number or not
@@ -2326,7 +2327,9 @@ class ThermoDB(ManageData):
                     raise Exception(
                         "Data for {} not available!".format(component_name))
             else:
-                print("databook and table id required!")
+                logger.warning(
+                    "Invalid input. Please check the input type (databook_id and table_id).")
+                return None
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
@@ -2347,7 +2350,7 @@ class ThermoDB(ManageData):
         res_format: Literal[
             'dict', 'json', 'str'
         ] = 'dict'
-    ) -> Union[str, dict[str, Union[str, str | float | bool]]]:
+    ) -> Union[str, dict]:
         '''
         Get component data in a binary mixture are available in the specified databook and table. A component is defined as:
         - name-state: carbon dioxide-g
@@ -2376,7 +2379,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        str | dict[str, Union[str, str | float | bool]]
+        str | dict
             Summary of the mixture availability as a string or dictionary in the specified format.
 
             - 'databook_id': databook id,
@@ -2683,7 +2686,7 @@ class ThermoDB(ManageData):
         ] = 'Name',
         delimiter: str = '|',
         ignore_component_state: bool = False,
-    ) -> Dict[str, Dict[str, str | float | bool]]:
+    ) -> Dict[str, Dict]:
         '''
         Get component data in mixtures are available in the specified databook and table. A component is defined as:
         - name-state: carbon dioxide-g
@@ -2714,7 +2717,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        str | Dict[str, Dict[str, str | float | bool]]
+        str | Dict
             Summary of the mixtures availability as a string or dictionary in the specified format.
 
             - 'databook_id': databook id,
@@ -2922,6 +2925,7 @@ class ThermoDB(ManageData):
         delimiter: str = '|',
         ignore_component_state: bool = False,
         column_name: Optional[str] = None,
+        mixture_names: Optional[list[str]] = None,
     ) -> ThermoProperty:
         '''
         Build thermo property for a component including data, equation, matrix-data and matrix-equation.
@@ -2946,6 +2950,8 @@ class ThermoDB(ManageData):
             Whether to ignore the state of the components when checking availability, by default False.
         column_name : str, optional
             The name of the column to use for component identification. Default is None.
+        mixture_names : list[str], optional
+            The list of mixture names to check. If None, all possible binary mixtures will be created from the components.
 
         Returns
         -------
@@ -2961,7 +2967,11 @@ class ThermoDB(ManageData):
         - Table should contain columns for 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
         - For 'Equation' and 'Data' types, only one component should be provided.
         - For 'Matrix-Equation' and 'Matrix-Data' types, at least two components should be provided.
-        - The `component_key` parameter determines whether to use the component's name or formula along
+        - The `component_key` parameter determines whether to use the component's name or formula along with its state for identification.
+        - The `mixture_key` parameter determines whether to use the components' names or formulas
+        - The `ignore_component_state` parameter allows ignoring the state of the components when checking availability in mixture types.
+        - The `column_name` parameter allows specifying a custom column name for component or mixture identification.
+
         '''
         try:
             # NOTE: detect table type
@@ -3038,25 +3048,17 @@ class ThermoDB(ManageData):
                         component_state=component_state_,
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
-                    # NOTE: check components
-                    if len(components) != 2:
-                        raise Exception(
-                            'Two components required for matrix-data!')
-
+                    # check
                     if not all(isinstance(comp, Component) for comp in components):
                         raise Exception('Invalid components!')
 
-                    # NOTE: mixture key
-                    mixture_id = create_binary_mixture_id(
-                        component_1=components[0],
-                        component_2=components[1],
-                        mixture_key=mixture_key
-                    )
+                    # check
+                    if len(components) < 2:
+                        raise Exception(
+                            'At least two component names required!')
 
                     # set component names
                     component_names_ = [comp.name for comp in components]
-                    # set component formulas
-                    component_formulas_ = [comp.formula for comp in components]
                     # set component states
                     component_states_ = [comp.state for comp in components]
 
@@ -3064,49 +3066,116 @@ class ThermoDB(ManageData):
                     if column_name is None:
                         column_name = 'Mixture'
 
-                    # NOTE: mixture data
-                    # component data
-                    component_data = None
+                    # SECTION: build matrix-data with respect to components number
+                    if len(components) == 2:
+                        # NOTE: binary mixture
+                        mixture_id = create_binary_mixture_id(
+                            component_1=components[0],
+                            component_2=components[1],
+                            mixture_key=mixture_key
+                        )
 
-                    try:
-                        mixture_data = self.get_binary_mixture_data(
+                        # NOTE: mixture data
+                        # component data
+                        components_data = None
+
+                        try:
+                            binary_mixture_data = self.get_binary_mixture_data(
+                                components=components,
+                                databook=databook,
+                                table=table,
+                                column_name=column_name,
+                                component_key=component_key,
+                                mixture_key=mixture_key,
+                                delimiter=delimiter,
+                                ignore_component_state=ignore_component_state,
+                                res_format='dict'
+                            )
+
+                            # >> set
+                            if (
+                                isinstance(binary_mixture_data, dict) and
+                                binary_mixture_data.get('availability', False)
+                            ):
+                                # component data
+                                components_data = binary_mixture_data.get(
+                                    'component_data',
+                                    None
+                                )
+
+                                # >> check
+                                if (
+                                    components_data is None or
+                                    not isinstance(components_data, dict)
+                                ):
+                                    raise Exception(
+                                        'Mixture component data not available!')
+                            else:
+                                logger.error(
+                                    'Mixture data not available! Checking component state ignore option may help.')
+                                raise
+                        except Exception as e:
+                            raise Exception(f'Loading mixture data error {e}')
+
+                        # NOTE: build matrix-data
+                        return self.build_matrix_data(
+                            component_names=component_names_,
+                            databook=databook,
+                            table=table,
+                            column_name=column_name,
+                            query=False,
+                            mixture_id=mixture_id,
+                            components_state=component_states_,
+                            mixture_data=components_data,
+                        )
+                    else:
+                        # NOTE: create binary mixtures
+                        binary_mixtures = create_binary_mixtures(
+                            components=components,
+                            mixture_key=mixture_key,
+                            delimiter=delimiter
+                        )
+
+                        # >> mixture names
+                        if mixture_names is None:
+                            mixture_ids = list(binary_mixtures.keys())
+                        else:
+                            mixture_ids = mixture_names
+
+                        # NOTE: mixture data
+                        # get mixtures data
+                        mixtures_data = self.get_mixtures_data(
                             components=components,
                             databook=databook,
                             table=table,
+                            mixture_names=mixture_ids,
                             column_name=column_name,
                             component_key=component_key,
                             mixture_key=mixture_key,
                             delimiter=delimiter,
                             ignore_component_state=ignore_component_state,
-                            res_format='dict'
                         )
 
-                        # >> set
-                        if (
-                            isinstance(mixture_data, dict) and
-                            mixture_data.get('availability', False)
-                        ):
-                            # component data
-                            component_data = mixture_data.get(
-                                'component_data',
-                                None
-                            )
-                        else:
-                            logger.error(
-                                'Mixture data not available! Checking component state ignore option may help.')
-                            raise
-                    except Exception as e:
-                        raise Exception(f'Loading mixture data error {e}')
+                        # ! check all mixtures available
+                        for k, v in mixtures_data.items():
+                            if not v.get('availability', False):
+                                logger.error(
+                                    f"Mixture [{k}] data not available! Checking component state ignore option may help. or choose specific available mixtures.")
+                                raise Exception(
+                                    'Some mixtures data not available!')
 
-                    # NOTE: build matrix-data
-                    return self.build_matrix_data(
-                        component_names=component_names_,
-                        databook=databook,
-                        table=table,
-                        mixture_id=mixture_id,
-                        components_state=component_states_,
-                        mixture_data=component_data,
-                    )
+                        # NOTE: build matrices-data
+                        return self.build_matrices_data(
+                            component_names=component_names_,
+                            databook=databook,
+                            table=table,
+                            column_name=column_name,
+                            query=False,
+                            mixture_ids=mixture_ids,
+                            component_key=component_key,
+                            components_state=component_states_,
+                            mixtures_data=mixtures_data,
+                        )
                 else:
                     raise Exception('No data/equation found!')
             else:
@@ -3474,12 +3543,12 @@ class ThermoDB(ManageData):
         query : bool
             query to search a dataframe
         mixture_id : str, optional
-            mixture id (e.g. 'Methanol-Ethanol')
+            mixture id (e.g. 'Methanol|Ethanol')
         component_key : Literal['Name-State', 'Formula-State'], optional
                 The key to use for identifying the component, by default 'Name-State'.
         **kwargs
             Additional keyword arguments.
-            - mixture_data: dict, optional
+            - mixtures_data: dict, optional
                 Pre-fetched mixture data to use instead of querying the database again.
 
         Returns
@@ -3523,26 +3592,26 @@ class ThermoDB(ManageData):
                 table=table
             )
 
-            # SECTION: get binary mixture if provided
+            # NOTE: get binary mixture if provided
             # init mixture data
-            mixture_data = None
+            mixtures_data = None
 
-            # check mixture id
-            if mixture_id:
+            # NOTE: get data from api
+            component_data_pack = []
+
+            # ! >> check mixture id
+            if mixture_id is not None and len(mixture_id) > 0:
                 # binary mixture data
-                mixture_data = kwargs.get('mixture_data', None)
+                mixtures_data = kwargs.get('mixture_data', None)
                 # >> check
-                if mixture_data is None:
+                if mixtures_data is None:
                     # log
                     logging.info(
                         f'Loading mixture data for {mixture_id} from databook {databook_id} table {table_id}...')
                     raise NotImplementedError(
-                        'Loading mixture data from databook is not implemented yet. Please provide mixture_data as an argument.')
+                        'Loading mixture data from databook is not implemented yet. Please provide mixtures_data as an argument.')
 
-            # SECTION: get data from api
-            component_data_pack = []
-
-            # NOTE: looping through components
+            # SECTION: looping through components
             for component_name in component_names:
                 # component name
                 component_name = str(component_name).strip()
@@ -3551,10 +3620,11 @@ class ThermoDB(ManageData):
                 # ! (check only by Name/Formula)
                 # component data consists of:
                 # header, symbol, units, records
-                if mixture_data:
+                if mixtures_data:
                     # get data from mixture_data
-                    component_data = mixture_data.get(
-                        component_name, None
+                    component_data = mixtures_data.get(
+                        component_name,
+                        None
                     )
                 else:
                     # get data from api/local
@@ -3563,18 +3633,16 @@ class ThermoDB(ManageData):
                         databook_id=databook_id,
                         table_id=table_id,
                         column_name=column_name,
+                        dataframe=False,
                         query=query,
                         matrix_tb=True
                     )
 
                 # NOTE: get component formula
-                # check type to consider only PayLoadType
+                # ! check type to consider only PayLoadType
                 if (
                     component_data is not None and
-                    (
-                        not isinstance(component_data, pd.DataFrame) or
-                        not component_data.empty
-                    )
+                    isinstance(component_data, dict)
                 ):
                     # header
                     header_ = component_data['header']
@@ -3615,7 +3683,7 @@ class ThermoDB(ManageData):
                     component_formula = None
                     component_state = None
 
-                # save
+                # >> save
                 component_data_pack.append({
                     'component_name': component_name,
                     'component_formula': component_formula,
@@ -3664,8 +3732,12 @@ class ThermoDB(ManageData):
                                 dts.matrix_elements = component_names
                                 # NOTE: mixture id
                                 dts.mixture_id = mixture_id
+                                # NOTE: mixture idx
+                                dts.mixture_ids = [
+                                    mixture_id
+                                ] if mixture_id else []
 
-                                # res
+                                # ! TableMatrixData
                                 return dts
                             else:
                                 raise Exception('Building data failed!')
@@ -3678,6 +3750,136 @@ class ThermoDB(ManageData):
                         ', '.join(component_names)))
             else:
                 raise Exception("Building data failed!")
+        except Exception as e:
+            raise Exception(f'Building matrix data error {e}')
+
+    def build_matrices_data(
+        self,
+        component_names: list[str],
+        databook: int | str,
+        table: int | str,
+        column_name: Optional[str | list[str]] = None,
+        query: bool = False,
+        mixture_ids: Optional[List[str]] = None,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
+        **kwargs
+    ) -> TableMatrixData:
+        '''
+        Build matrix data when multiple binary mixtures are provided.
+
+        Parameters
+        ----------
+        component_names : list[str]
+            component name list (e.g. ['Methanol','Ethanol'])
+        databook : int | str
+            databook id or name
+        table : int | str
+            table id or name
+        column_name : str | list
+            column name (e.g. 'Name') | list as ['Name','state']
+        query : bool
+            query to search a dataframe
+        mixture_ids : List[str], optional
+            mixture id list (e.g. ['Methanol|Ethanol', 'Methanol|Methane'])
+        component_key : Literal['Name-State', 'Formula-State'], optional
+                The key to use for identifying the component, by default 'Name-State'.
+        **kwargs
+            Additional keyword arguments.
+            - mixtures_data: dict, optional
+                Pre-fetched mixture data to use instead of querying the database again.
+
+        Returns
+        -------
+        TableMatrixData
+            matrix-data object
+        '''
+        try:
+            # check component list
+            if not isinstance(component_names, list):
+                raise Exception('Component names must be a list')
+
+            # check component name
+            if not all(isinstance(name, str) for name in component_names):
+                raise Exception('Component names must be strings')
+
+            # check search option
+            if column_name is None:
+                # column_name = 'Name'
+                # set based on component_key
+                column_name = 'Name' if component_key == 'Name-State' else 'Formula'
+
+            # find databook zero-based id (real)
+            db, db_name, db_rid = self.find_databook(databook)
+            # databook id
+            databook_id = db_rid + 1
+
+            # find table zero-based id
+            tb_id, tb_name = self.find_table(
+                databook=databook,
+                table=table
+            )
+            # table id
+            table_id = tb_id + 1
+
+            # NOTE: matrix table
+            # ! retrieve all data from matrix-table
+            # ? usually matrix-table data are limited
+            matrix_table = self.table_data(
+                databook=databook,
+                table=table
+            )
+
+            # NOTE: get binary mixture if provided
+            # init mixture data
+            mixtures_data = None
+
+            # NOTE: get data from api
+            component_data_pack = []
+
+            # ! >> check mixture id
+            if mixture_ids is not None and len(mixture_ids) > 0:
+                # binary mixture data
+                mixtures_data = kwargs.get('mixtures_data', None)
+                # >> check
+                if mixtures_data is None:
+                    # log
+                    logging.info(
+                        f'Loading mixture data for {mixture_ids} from databook {databook_id} table {table_id}...')
+                    raise NotImplementedError(
+                        'Loading mixture data from databook is not implemented yet. Please provide mixtures_data as an argument.')
+
+            # NOTE load matrix-data
+            dts = self.matrix_data_load(
+                databook=databook_id,
+                table=table_id
+            )
+
+            # >> check
+            if dts is None:
+                raise Exception('Building data failed!')
+
+            # NOTE: matrix table settings
+            # check type
+            if isinstance(dts, TableMatrixData):
+                if (
+                    hasattr(dts, 'trans_data_pack') and
+                    hasattr(dts, 'prop_data_pack')
+                ):
+                    # NOTE: update trans_data
+                    dts.trans_data_pack = None
+                    # NOTE: prop data
+                    dts.prop_data_pack = None
+                    # NOTE: matrix table
+                    dts.matrix_table = matrix_table
+                    # NOTE: matrix element
+                    dts.matrix_elements = component_names
+
+                    # ! TableMatrixData
+                    return dts
+                else:
+                    raise Exception('Building data failed!')
+            else:
+                raise Exception('Building data failed!')
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
 
