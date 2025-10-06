@@ -571,12 +571,234 @@ class TableMatrixData:
         except Exception as e:
             raise Exception("Getting matrix table failed!, ", e)
 
+    def _get_component_data_from_mixture_table(
+        self,
+        component_id: str,
+        mixture_name: str,
+        component_column_id: str,
+        mixture_column_id: str,
+    ):
+        '''
+        Retrieve component data from mixture table based on component id and mixture id
+
+        Parameters
+        ----------
+        component_id : str
+            component id
+        mixture_name : str
+            mixture name
+        component_column_id : str
+            component column name
+        mixture_column_id : str
+            mixture column name
+
+        Returns
+        -------
+        dict
+            component data
+        '''
+        try:
+            # NOTE: check matrix mode
+            if self.matrix_mode == 'ITEMS':
+                # SECTION: check matrix items
+                # matrix_table = self.__generate_table_items(component_names)
+                raise Exception(
+                    "Matrix items are not available! Please use the matrix table instead!")
+
+            elif self.matrix_mode == 'VALUES':
+                # SECTION: matrix structure (all data)
+                # ! load matrix table
+                matrix_table = self.matrix_table
+            else:
+                raise Exception("Matrix mode is not recognized!")
+
+            # ! check dataframe
+            if not isinstance(matrix_table, pd.DataFrame):
+                raise Exception("Matrix data is not a dataframe!")
+
+            # >> column name
+            matrix_table_column_name = list(matrix_table.columns)
+
+            # >> check column name exists
+            if component_column_id not in matrix_table_column_name:
+                raise Exception(
+                    f"Column name '{component_column_id}' not found in matrix table!")
+
+            if mixture_column_id not in matrix_table_column_name:
+                raise Exception(
+                    f"Column name '{mixture_column_id}' not found in matrix table!")
+
+            # SECTION: check columns names
+            # Function to normalize mixtures
+            def normalize_mixture(mix):
+                parts = [x.strip() for x in mix.split('|')]
+                parts.sort()
+                return ' | '.join(parts)
+
+            # SECTION: mixture
+            # >> if 'Mixture' column exists, filter rows based on mixture_name
+            if any(
+                col.lower() == 'mixture' for col in matrix_table_column_name
+            ):
+                # sorted
+                mixture_name = normalize_mixture(mixture_name)
+
+                # build dataframe for the mixture
+                # NOTE: Extract header + row1 + row2
+                header_rows = matrix_table.iloc[:2]  # row 0 and 1
+
+                # NOTE: Normalize the 'Mixture' column for comparison
+                matrix_table['normalized_mixture'] = matrix_table[mixture_column_id].apply(
+                    normalize_mixture
+                )
+
+                # NOTE: Filter rows where 'mixture' == specific_name
+                filtered_rows = matrix_table[
+                    matrix_table['normalized_mixture'] == mixture_name
+                ]
+
+                # Combine into new DataFrame
+                # (remove duplicates if overlap with header_rows)
+                matrix_table = pd.concat(
+                    [header_rows, filtered_rows]
+                ).drop_duplicates().reset_index(drop=True)
+
+                # drop the normalized_mixture column
+                matrix_table = matrix_table.drop(
+                    columns=['normalized_mixture'])
+            else:
+                # log
+                logger.info("No 'Mixture' column found in the matrix table.")
+
+            # SECTION: find component data
+            # >> check component id availability
+            if component_id is None or component_id.strip() == "":
+                logger.error("Component id is empty!")
+                return {}
+
+            # SECTION: component names
+            # load all component names in Name column
+            comp_i = 1
+            matrix_table_component = {}
+            # looping through Name column
+            for i, item in enumerate(list(matrix_table[component_column_id])):
+                # check item is a component name
+                if (
+                    item != "-" and
+                    len(item) > 1 and
+                    item != 'None' and
+                    item != 'None'
+                ):
+                    matrix_table_component[item] = comp_i
+                    comp_i += 1
+
+            # component names
+            matrix_table_component_no = len(matrix_table_component)
+
+            # matrix table component keys
+            matrix_table_component_names = list(matrix_table_component.keys())
+
+            # SECTION: get component data (row)
+            matrix_table_comp_data = {}
+
+            # looping through component
+            for i in range(matrix_table_component_no):
+                # define filter for component
+                component_name_filter = matrix_table_component_names[i]
+
+                # check component name matches component id
+                if component_name_filter.lower() != component_id.lower():
+                    continue
+
+                # NOTE: get component data
+                _data_get = matrix_table[
+                    matrix_table[component_column_id].str.match(
+                        component_name_filter,
+                        case=False,
+                        na=False
+                    )
+                ]
+
+                # set
+                _row_index = int(_data_get.index[0])
+                _data = _data_get.to_dict(orient='records')[0]
+
+                # update
+                _data['row_index'] = _row_index
+
+                # check
+                if len(_data) == 0:
+                    raise Exception(
+                        "No data for component: " + component_name_filter
+                    )
+
+                # get component data
+                _component_name = _data[component_column_id]
+                matrix_table_comp_data[_component_name] = _data
+
+            # NOTE: check
+            if len(matrix_table_comp_data) == 0:
+                logger.error(
+                    f"Component id '{component_id}' not found in matrix table!")
+                return {}
+
+            # SECTION: config: add symbol and unit to each property
+            # NOTE: matrix data info
+            matrix_data_info = self._get_matrix_data_info()
+            # >> check
+            if matrix_data_info is None:
+                raise Exception("Matrix data info is None!")
+
+            # >> extract
+            matrix_data_columns = matrix_data_info.get('COLUMNS', [])
+            matrix_data_symbol = matrix_data_info.get('SYMBOL', [])
+            matrix_data_unit = matrix_data_info.get('UNIT', [])
+
+            # >> check
+            if matrix_data_columns is None or len(matrix_data_columns) == 0:
+                raise Exception("Matrix data columns is None or empty!")
+            if matrix_data_symbol is None or len(matrix_data_symbol) == 0:
+                raise Exception("Matrix data symbol is None or empty!")
+            if matrix_data_unit is None or len(matrix_data_unit) == 0:
+                raise Exception("Matrix data unit is None or empty!")
+
+            # looping through matrix_table_comp_data
+            for comp_name, comp_data in matrix_table_comp_data.items():
+                # looping through columns
+                for col in matrix_data_columns:
+                    # check column exists in comp_data
+                    if col in comp_data.keys():
+                        # get index
+                        col_index = matrix_data_columns.index(col)
+                        # set symbol and unit
+                        symbol = matrix_data_symbol[col_index] if col_index < len(
+                            matrix_data_symbol) else ''
+                        unit = matrix_data_unit[col_index] if col_index < len(
+                            matrix_data_unit) else ''
+
+                        # update comp_data
+                        comp_data[col] = {
+                            'value': comp_data[col],
+                            'unit': unit,
+                            'symbol': symbol,
+                        }
+
+                # update
+                matrix_table_comp_data[comp_name] = comp_data
+
+            # res
+            return matrix_table_comp_data.get(component_id, {})
+        except Exception as e:
+            raise Exception(
+                "Getting component data from mixture table failed!, ", e)
+
     def get_property(
-            self,
-            property: str | int,
-            component_name: str,
-            mixture_name: Optional[str] = None,
-            column_name: Optional[str] = None
+        self,
+        property: str | int,
+        component_name: str,
+        mixture_name: Optional[str] = None,
+        component_key: Literal['Name', 'Formula'] = 'Name',
+        mixture_column: str = 'Mixture',
     ) -> DataResultType | dict:
         '''
         Get a component property from data table structure
@@ -589,8 +811,10 @@ class TableMatrixData:
             component name
         mixture_name : str, optional
             mixture name (default is None)
-        column_name : str, optional
-            column name (default is None)
+        component_key : Literal['Name', 'Formula']
+            component key Name or Formula (default: Name)
+        mixture_column : str
+            mixture column name (default: Mixture)
 
         Returns
         -------
@@ -622,16 +846,27 @@ class TableMatrixData:
         {'value': 0.3, 'unit': '', 'symbol': 'Alpha_i_1', 'description': 'Non-randomness parameter Alpha_i_1'}
         >>> get_property(4, 'ethanol')
         {'value': 0.3, 'unit': '', 'symbol': 'Alpha_i_1', 'description': 'Non-randomness parameter Alpha_i_1'}
+        >>> get_property('Alpha_i_1', 'ethanol', mixture_name='methanol | ethanol', component_key='Name-State', mixture_key='Name')
+        {'value': 0.3, 'unit': '', 'symbol': 'Alpha_i_1', 'description': 'Non-randomness parameter Alpha_i_1'}
 
         '''
         # REVIEW
         # SECTION: find component property
         if mixture_name is not None:
             # set column name
-            if column_name is None:
-                column_name = 'Mixture'
-            pass
+            if mixture_column is None:
+                # set column name
+                mixture_column = 'Mixture'
+
+            # ! build prop data from matrix data
+            prop_data = self._get_component_data_from_mixture_table(
+                component_id=component_name,
+                mixture_name=mixture_name,
+                component_column_id=component_key,
+                mixture_column_id=mixture_column
+            )
         else:
+            # ! build prop data from prop_data_pack
             prop_data = self._find_component_prop_data(
                 component_id=component_name
             )
