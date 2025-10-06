@@ -618,15 +618,17 @@ class TableMatrixData:
 
             # >> column name
             matrix_table_column_name = list(matrix_table.columns)
+            # to str
+            matrix_table_column_name_str = ", ".join(matrix_table_column_name)
 
             # >> check column name exists
             if component_column_id not in matrix_table_column_name:
                 raise Exception(
-                    f"Column name '{component_column_id}' not found in matrix table!")
+                    f"Column name '{component_column_id}' not found in matrix table as {matrix_table_column_name_str}!")
 
             if mixture_column_id not in matrix_table_column_name:
                 raise Exception(
-                    f"Column name '{mixture_column_id}' not found in matrix table!")
+                    f"Column name '{mixture_column_id}' not found in matrix table as {matrix_table_column_name_str}!")
 
             # SECTION: check columns names
             # Function to normalize mixtures
@@ -883,6 +885,9 @@ class TableMatrixData:
         # NOTE: dataframe (selected component data)
         df = pd.DataFrame(prop_data)
 
+        # NOTE: prop keys
+        prop_keys = list(prop_data.keys())
+
         # >> init
         get_data = {}
 
@@ -896,18 +901,25 @@ class TableMatrixData:
             else:
                 # check symbol value in each item
                 for key, value in prop_data.items():
-                    if property == value['symbol']:
-                        get_data = prop_data[key]
-                        break
+                    # check symbol key
+                    if 'symbol' in prop_keys:
+                        if property == value['symbol']:
+                            get_data = prop_data[key]
+                            break
+                    elif 'Symbol' in prop_keys:
+                        if property == value['Symbol']:
+                            get_data = prop_data[key]
+                            break
+                    else:
+                        continue
 
-            # log empty data
+            # << log empty data
             if len(get_data) == 0:
                 logger.warning(
-                    f"Property '{property}' not found for component '{component_name}'!")
+                    f"Property '{property}' not found for component '{component_name}' while searching in `symbol` or `Symbol` keys!")
 
-            # res
+            # >> res
             return get_data
-
         elif isinstance(property, int):
             # get column index
             column_index = df.columns[property-1]
