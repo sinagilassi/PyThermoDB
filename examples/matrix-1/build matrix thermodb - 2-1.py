@@ -157,7 +157,11 @@ print(nrtl_alpha.matrix_data_structure())
 
 # SECTION: get property value
 # # ! by name
-# print(nrtl_alpha.get_property('a_i_1', methanol.name))
+print(nrtl_alpha.get_property(
+    'a_i_1',
+    methanol.name,
+    mixture_name=mixture_methanol_ethanol)
+)
 # # ! by formula
 # print(nrtl_alpha.get_property('a_i_1', methanol.formula))
 # #

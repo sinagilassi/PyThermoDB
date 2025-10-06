@@ -90,9 +90,9 @@ class ThermoDB(ManageData):
     __selected_tb = ''
 
     def __init__(
-            self,
-            custom_ref=None,
-            data_source='local'
+        self,
+        custom_ref=None,
+        data_source='local'
     ):
         # NOTE: set
         self.data_source = data_source
