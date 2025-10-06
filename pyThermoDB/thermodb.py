@@ -1538,6 +1538,14 @@ def check_and_build_components_thermodb(
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
+def check_and_build_mixture_thermodb():
+    pass
+
+
+def check_and_build_mixtures_thermodb():
+    pass
+
+
 def build_component_thermodb_from_reference(
     component_name: str,
     component_formula: str,
