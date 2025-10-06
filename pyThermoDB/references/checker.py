@@ -1,6 +1,7 @@
 # import libs
 import logging
 import pandas as pd
+import json
 
 # Ensure there is no local DataFrame definition that could shadow pandas.DataFrame
 from typing import (
@@ -9,8 +10,7 @@ from typing import (
     Dict,
     List,
     Any,
-    Literal,
-    Tuple
+    Literal
 )
 from pythermodb_settings.models import (
     ComponentConfig,
@@ -22,7 +22,12 @@ from pythermodb_settings.models import (
 from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
-from ..utils import ignore_state_in_prop, create_binary_mixture_id
+from ..utils import (
+    ignore_state_in_prop,
+    create_binary_mixture_id,
+    create_mixture_from_components,
+    create_binary_mixtures
+)
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -3138,6 +3143,125 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error checking mixture availability: {e}")
             return {"results": {'available': False, 'message': str(e)}}
+
+    def check_mixtures_availability(
+        self,
+        components: List[Component],
+        databook: str,
+        table: str,
+        mixture_names: Optional[List[str]] = None,
+        column_name: str = 'Mixture',
+        component_key: Literal[
+            'Name-State', 'Formula-State',
+        ] = 'Name-State',
+        mixture_key: Literal[
+            'Name', 'Formula',
+        ] = 'Name',
+        delimiter: str = '|',
+        ignore_component_state: bool = False,
+    ) -> Dict[str, str | Dict[str, str | float | bool]]:
+        '''
+        Check if all components in multiple binary mixtures are available in the specified databook and table. A component is defined as:
+        - name-state: carbon dioxide-g
+        - formula-state: CO2-g
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components in the mixtures to check.
+        databook : str
+            The databook name.
+        table : int | str
+            The table name.
+        mixture_names : Optional[List[str]], optional
+            List of mixture names to check, by default None. If None, all possible binary mixtures will be created from the components list.
+        column_name : str, optional
+            The name of the column containing mixture identifiers, by default 'Mixture'.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for identifying the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used in the mixture identifiers, by default '|'.
+        ignore_component_state : bool, optional
+            Whether to ignore the state of the components when checking availability, by default False.
+
+        Returns
+        -------
+        str | dict[str, Union[str, str | float | bool, list]]
+            Summary of the mixtures availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'mixtures': list of mixture availability results,
+            - 'all_available': True if all mixtures are available, False otherwise
+
+        Notes
+        -----
+        - Table should contain columns for 'Mixture', 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        - All components in each mixture must be available for that mixture to be considered available.
+        - All mixtures must be available for the overall availability to be True.
+        '''
+        try:
+            # SECTION: create mixtures
+            if mixture_names is not None:
+                # ! use provided mixture names
+                # init binary mixtures dict
+                binary_mixtures = {}
+
+                # iterate through mixture names
+                for name in mixture_names:
+                    if not isinstance(name, str) or not name.strip():
+                        raise ValueError(
+                            "Each mixture name must be a non-empty string.")
+
+                    # update
+                    binary_mixtures[name.lower().strip()] = create_mixture_from_components(
+                        mixture_id=name,
+                        components=components,
+                    )
+            else:
+                # ! create all possible binary mixtures
+                binary_mixtures = create_binary_mixtures(
+                    components=components,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+            # >> check
+            if not binary_mixtures:
+                raise ValueError("No binary mixtures to check.")
+
+            # SECTION: check each mixture availability
+            results = {}
+
+            # NOTE: looping through mixtures
+            try:
+                for mixture_id, mixture_components in binary_mixtures.items():
+                    # check
+                    res = self.check_binary_mixture_availability(
+                        components=mixture_components,
+                        databook_name=databook,
+                        table_name=table,
+                        column_name=column_name,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        ignore_component_state=ignore_component_state,
+                    )
+
+                    # append check result
+                    results[mixture_id] = res
+            except Exception as e:
+                logger.warning(
+                    f"Error checking mixture [{mixture_id}] availability: {e}")
+
+            # res
+            return results
+        except Exception as e:
+            raise Exception(f"Error checking mixtures availability: {e}")
 
     def get_component_reference_config(
         self,
