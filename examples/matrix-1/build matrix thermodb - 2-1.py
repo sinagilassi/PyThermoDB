@@ -105,6 +105,10 @@ print(check_binary_mixtures_availability)
 mixture_methanol_ethanol = methanol.name + ' | ' + ethanol.name
 print(f"Mixture: {mixture_methanol_ethanol}")
 
+# mixture
+mixture_methanol_methane = methanol.name + ' | ' + methane.name
+print(f"Mixture: {mixture_methanol_methane}")
+
 # NOTE: components
 # comp1
 comp1 = methanol.name
@@ -162,17 +166,70 @@ print(nrtl_alpha.get_property(
     methanol.name,
     mixture_name=mixture_methanol_ethanol)
 )
-# # ! by formula
-# print(nrtl_alpha.get_property('a_i_1', methanol.formula))
-# #
-# print(nrtl_alpha.get_property('a_i_2', methanol.name))
-# print(nrtl_alpha.get_property('a_i_2', methanol.name))
-# print(nrtl_alpha.get_property('a_i_3', methanol.formula))
-# # ! unknown
-# print(nrtl_alpha.get_property('b_i_1', comp1))
-# print(nrtl_alpha.get_property(4, comp1))
-# # by symbol
-# # print(float(Alpha_i_j['value']))
+
+print(nrtl_alpha.get_property(
+    'a_i_1',
+    methanol.name,
+    mixture_name=mixture_methanol_methane)
+)
+
+# ! by formula
+print(nrtl_alpha.get_property(
+    'a_i_1',
+    methanol.formula,
+    component_key='Formula',
+    mixture_name=mixture_methanol_ethanol
+))
+
+print(nrtl_alpha.get_property(
+    'a_i_1',
+    methanol.formula,
+    component_key='Formula',
+    mixture_name=mixture_methanol_methane
+))
+
+# ! other props
+print(nrtl_alpha.get_property(
+    'a_i_2',
+    methanol.name,
+    mixture_name=mixture_methanol_ethanol
+))
+
+print(nrtl_alpha.get_property(
+    'a_i_2',
+    methanol.name,
+    mixture_name=mixture_methanol_methane
+))
+
+print(nrtl_alpha.get_property(
+    'a_i_2',
+    methanol.formula,
+    component_key='Formula',
+    mixture_name=mixture_methanol_ethanol
+))
+
+print(nrtl_alpha.get_property(
+    'b_i_1',
+    methanol.name,
+    mixture_name=mixture_methanol_ethanol
+))
+
+# ! by index
+print(nrtl_alpha.get_property(
+    6,
+    methanol.name,
+    mixture_name=mixture_methanol_ethanol
+))
+
+# ! unknown props
+print(nrtl_alpha.get_property(
+    'a_i_3',
+    methanol.formula,
+    component_key='Formula',
+    mixture_name=mixture_methanol_ethanol
+))
+# by symbol
+# print(float(Alpha_i_j['value']))
 
 # SECTION: get matrix property
 # mixture name
