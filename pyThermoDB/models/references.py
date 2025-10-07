@@ -134,6 +134,39 @@ class ComponentReferenceThermoDB(BaseModel):
     )
 
 
+class MixtureReferenceThermoDB(BaseModel):
+    """
+    Model for mixture thermodynamic database (ThermoDB).
+
+    Attributes
+    ----------
+    components : List[Component]
+        The list of components forming the mixture for which the thermodynamic database is built.
+    reference_thermodb : ReferenceThermoDB
+        Reference thermodynamic database.
+    mixture_key : Literal['Name', 'Formula'], optional
+        Key to identify the mixture in the reference content, by default 'Name'.
+    """
+    components: List[Component] = Field(
+        ...,
+        description="The list of components forming the mixture for which the thermodynamic database is built."
+    )
+    reference_thermodb: ReferenceThermoDB = Field(
+        ..., description="Reference thermodynamic database."
+    )
+    mixture_key: Literal[
+        'Name', 'Formula'
+    ] = Field(
+        default='Name',
+        description="Key to identify the mixture in the reference content."
+    )
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra="allow"
+    )
+
+
 # NOTE: references thermodb model
 class ReferencesThermoDB(BaseModel):
     """

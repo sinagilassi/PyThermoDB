@@ -179,7 +179,7 @@ component = Component(
 component_ref_thermodb_default: ComponentReferenceThermoDB = component_reference_mapper(
     component=component,
     reference_content=REFERENCE_CONTENT,
-    key='Formula-State'
+    component_key='Formula-State'
 )
 # print result
 print(
@@ -198,7 +198,7 @@ component_thermodb = check_and_build_component_thermodb(
     component=component,
     reference_config=reference_config,
     custom_reference=custom_reference,
-    key='Formula-State',
+    component_key='Formula-State',
     ignore_state_props=ignore_labels
 )
 # print result
@@ -212,7 +212,7 @@ print(
 component_ref_thermodb: ComponentReferenceThermoDB = component_reference_mapper(
     component=component,
     reference_content=REFERENCE_CONTENT,
-    key='Formula-State',
+    component_key='Formula-State',
     ignore_component_state=True,
 )
 # print result
@@ -232,7 +232,7 @@ component_thermodb = check_and_build_component_thermodb(
     component=component,
     reference_config=reference_config,
     custom_reference=custom_reference,
-    key='Formula-State',
+    component_key='Formula-State',
     ignore_state_props=ignore_labels
 )
 # print result
@@ -247,7 +247,7 @@ ignore_state_props = ['Cp_IG', 'MW']
 component_ref_thermodb2: ComponentReferenceThermoDB = component_reference_mapper(
     component=component,
     reference_content=REFERENCE_CONTENT,
-    key='Formula-State',
+    component_key='Formula-State',
     ignore_state_props=ignore_state_props
 )
 # print result
@@ -267,7 +267,7 @@ component_thermodb = check_and_build_component_thermodb(
     component=component,
     reference_config=reference_config,
     custom_reference=custom_reference,
-    key='Formula-State',
+    component_key='Formula-State',
     ignore_state_props=ignore_labels
 )
 # print result

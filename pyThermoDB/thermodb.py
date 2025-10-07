@@ -1538,12 +1538,573 @@ def check_and_build_components_thermodb(
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
-def check_and_build_mixture_thermodb():
-    pass
+def check_and_build_mixture_thermodb(
+    components: List[Component],
+    reference_config: Union[
+        Dict[str, Dict[str, str]],
+        Dict[str, ComponentConfig],
+        str
+    ],
+    custom_reference: Optional[CustomReference] = None,
+    component_key: Literal[
+        'Name-State', 'Formula-State'
+    ] = 'Name-State',
+    mixture_key: Literal[
+        'Name', 'Formula'
+    ] = 'Name',
+    column_name: Optional[str] = None,
+    delimiter: str = '|',
+    mixture_names: Optional[List[str]] = None,
+    thermodb_name: Optional[str] = None,
+    message: Optional[str] = None,
+    reference_config_default_check: Optional[bool] = True,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
+    verbose: bool = False,
+    **kwargs
+) -> CompBuilder | None:
+    '''
+    Check and build `multi-component mixture` thermodynamic databook (thermodb) including matrix-data. The mixture is defined by a list of Component objects. For instance, three components can form a ternary mixture. Thus, the matrix table containing binary parameters for the three binary pairs will be checked and built in the thermodb.
 
+    Parameters
+    ----------
+    components : List[Component]
+        List of Component objects to build thermodynamic databook for. Each Component includes name, formula, and state.
+    reference_config : Union[Dict[str, Dict[str, str]], str, Dict[str, ComponentConfig]]
+        Dictionary containing properties of the components to be included in the thermodynamic databook.
+    custom_reference : Optional[CustomReference], optional
+        Custom reference dictionary for external references, by default None
+    component_key : Literal['Name-State', 'Formula-State'], optional
+        Key to identify the component in the reference content, by default 'Name-State'
+    mixture_key : Literal['Name', 'Formula'], optional
+        Key to identify the components in the mixture, by default 'Name'
+        - If 'Name', it will use component names to identify the components in the mixture.
+        - If 'Formula', it will use component formulas to identify the components in the mixture.
+    column_name : Optional[str], optional
+        Column name to identify the mixture in the table, by default None
+        - If None, it will use 'Mixture' as the default column name.
+    delimiter : str, optional
+        Delimiter to separate component names/formulas in the mixture, by default '|'
+    thermodb_name : Optional[str], optional
+        Name of the thermodynamic databook to be built, by default None
+    message : Optional[str], optional
+        A short description of the component thermodynamic databook, by default None
+    reference_config_default_check : Optional[bool], optional
+        Whether to perform default checks on the reference configuration, by default True
+    thermodb_save : Optional[bool], optional
+        Whether to save the built thermodb to a file, by default False
+    thermodb_save_path : Optional[str], optional
+        Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
+    verbose : bool, optional
+        Whether to enable verbose logging, by default False
+    **kwargs
+        Additional keyword arguments.
+        - ignore_state_props: Optional[List[str]]
+            List of property names to ignore state during the build. By default, None.
+        - ignore_state_all_props: Optional[bool]
+            Whether to ignore state for all properties during the build. By default, False.
 
-def check_and_build_mixtures_thermodb():
-    pass
+    Returns
+    -------
+    CompBuilder : object | None
+        CompBuilder object used for building component thermodynamic databook, or None if no valid properties were found to build the thermodb.
+
+    Notes
+    -----
+    1- Property dict should contain the following format:
+    ```python
+    # Dict[str, Dict[str, str]]
+    reference_config = {
+        'NRTL': {
+            'databook': 'CUSTOM-REF-1',
+            'table': 'Activity-Coefficient',
+            'labels': {
+                'g12': 'g12',
+                'g21': 'g21',
+                'alpha': 'alpha',
+                }
+        },
+    }
+
+    # or str format yaml
+    reference_config_yaml = """
+    mixture_id:
+        property_name_1:
+            databook: DATABOOK_NAME
+            table: TABLE_NAME
+            labels:
+                label_key: LABEL_NAME
+        property_name_2:
+            databook: DATABOOK_NAME
+            table: TABLE_NAME
+            label: LABEL_NAME
+    """
+    ```
+
+    2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
+
+    3- The table should contain columns including `Name` and `Formula` to identify the components. Otherwise during the check, it will raise an error.
+
+    4- The `state` can be considered or ignored based on the `ignore_state_props` and `ignore_state_all_props` kwargs.
+
+    - ignore_state_props: List of property names to ignore state during the build. For example, if you want to ignore state for a thermo property such as vapor pressure and use only component name and formula, set `ignore_state_props=['VaPr']`.
+    - ignore_state_all_props: Boolean to ignore state for all properties during the build. Default is False. If True, it will ignore state for all properties.
+
+    5- The `column_name` is used to identify the mixture in the table. If None, it will use 'Mixture' as the default column name.
+
+    6- The `mixture_key` is used to identify the components in the mixture. If 'Name', it will use component names to identify the components in the mixture. If 'Formula', it will use component formulas to identify the components in the mixture.
+
+    7- The `delimiter` is used to separate component names/formulas in the mixture. Default is '|'.
+
+    8- Components combination in the mixture is not order-dependent. For example, 'Water|Ethanol' is considered the same as 'Ethanol|Water'.
+
+    9- All binary combinations of the provided components will be checked in the table. For example, if you provide components A, B, and C, the method will check for mixtures A|B, A|C, and B|C in the table.
+    '''
+    try:
+        # NOTE: kwargs
+        ignore_state_props: Optional[List[str]] = kwargs.get(
+            'ignore_state_props',
+            None
+        )
+
+        # set default if None
+        if ignore_state_props is None:
+            ignore_state_props = []
+
+        # NOTE: check if ignore state for all properties
+        ignore_state_all_props: bool = kwargs.get(
+            'ignore_state_all_props',
+            False
+        )
+
+        if not isinstance(ignore_state_all_props, bool):
+            # logging warning
+            logging.warning(
+                "ignore_state_all_props must be a boolean, setting to False."
+            )
+            ignore_state_all_props = False
+
+        # ! check both ignore_state_props and ignore_state_all_props
+        if len(ignore_state_props) > 0:
+            # set ignore_state_all_props to False
+            ignore_state_all_props = False
+
+        # NOTE: check inputs
+        if not isinstance(components, list):
+            raise TypeError("components must be a list")
+        if not all(isinstance(c, Component) for c in components):
+            raise TypeError("All components must be Component objects")
+
+        # ? check at least one mixture available in the system
+        if len(components) < 2:
+            raise ValueError(
+                "At least two components are required to form a mixture.")
+
+        # NOTE: reference_config check
+        if not isinstance(reference_config, (dict, str)):
+            raise TypeError(
+                "reference config must be a dictionary or a string")
+
+        # SECTION: COMPONENT ID
+        # extract component names
+        component_names = [c.name.strip() for c in components]
+
+        # NOTE: >> set id based on key
+        component_idx = [
+            set_component_id(
+                component=c,
+                component_key=component_key
+            ) for c in components
+        ]
+
+        # NOTE: >> create mixture ids
+        mixture_ids = create_mixture_ids(
+            components=components,
+            mixture_key=mixture_key,
+            delimiter=delimiter
+        )
+
+        # check mixture names are valid
+        if mixture_names is not None:
+            if not isinstance(mixture_names, list):
+                raise TypeError("mixture_names must be a list of strings")
+            if not all(isinstance(m, str) for m in mixture_names):
+                raise TypeError("All mixture names must be strings")
+            # strip whitespace
+            mixture_names = [m.strip() for m in mixture_names]
+
+            # mixture std
+            mixture_names_std = []
+
+            # standardize mixture names
+            for i in range(len(mixture_names)):
+                # split by delimiter
+                parts = [
+                    part.strip() for part in mixture_names[i].split(delimiter) if part.strip() != ''
+                ]
+                # sort parts
+                parts_sorted = sorted(parts)
+                # join back
+                mixture_name_std = delimiter.join(parts_sorted)
+                mixture_names_std.append(mixture_name_std)
+
+        # NOTE: mixture type
+        mixture_type = 'BINARY' if len(components) == 2 else 'MULTI-COMPONENT'
+
+        # SECTION: check if reference_config is a string
+        if isinstance(reference_config, str):
+            # ! init ReferenceConfig
+            ReferenceConfig_ = ReferenceConfig()
+            # convert to dict
+            reference_config_ = \
+                ReferenceConfig_.set_reference_config(
+                    reference_config
+                )
+
+            # ! extract component reference config
+            # >> based on mixture key
+            reference_config = look_up_mixture_reference_config(
+                components=components,
+                reference_config=reference_config_,
+                reference_config_default_check=reference_config_default_check,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+            )
+
+        # reference_config check
+        if not isinstance(reference_config, dict):
+            raise TypeError("property must be a dictionary")
+
+        # SECTION: build thermodb
+        thermodb = init(
+            custom_reference=custom_reference
+        )
+
+        # SECTION: init res
+        res = {}
+        # labels
+        labels: List[str] = []
+        # ignore state for all properties
+        ignore_component_state: bool = False
+
+        # SECTION: set column name based on key
+        column_name = 'Mixture' if column_name is None else column_name
+        # >> check column name
+        if not isinstance(column_name, str):
+            raise TypeError("column_name must be a string")
+
+        # NOTE: databook list
+        databook_list = thermodb.list_databooks(res_format='list')
+        # >> check
+        if not isinstance(databook_list, list):
+            raise TypeError("Databook list must be a list")
+
+        # check both databook and table
+        for prop_name, prop_idx in reference_config.items():
+            # ! property name
+            prop_name = prop_name.strip()
+
+            # ! databook
+            databook_ = prop_idx.get('databook', None)
+            if databook_ is None:
+                raise ValueError(
+                    f"Databook for property '{prop_name}' is not specified.")
+            # >> check databook exists
+            if is_databook_available(databook_, databook_list) is False:
+                logger.error(
+                    f"Databook '{databook_}' for property '{prop_name}' is not found in the databook list."
+                )
+                continue
+
+            # ! tables
+            table_dict_ = thermodb.list_tables(
+                databook=databook_,
+                res_format='dict'
+            )
+            # check
+            if not isinstance(table_dict_, dict):
+                raise TypeError("Table list must be a list")
+
+            # ! table list
+            table_list_ = list(table_dict_.values())
+            if not isinstance(table_list_, list) or not table_list_:
+                raise TypeError("Table list must be a list")
+
+            # ! table
+            table_ = prop_idx.get('table', None)
+            if table_ is None:
+                raise ValueError(
+                    f"Table for property '{prop_name}' is not specified.")
+
+            # check table
+            if is_table_available(table_, table_list_) is False:
+                logging.error(
+                    f"Table '{table_}' for property '{prop_name}' is not found in the databook '{databook_}'."
+                )
+                # ? skip if table is not found
+                continue
+
+            # ! table info
+            table_info_ = thermodb.table_info(
+                databook=databook_,
+                table=table_,
+                res_format='dict'
+            )
+
+            # check table info
+            if not isinstance(table_info_, dict):
+                raise TypeError("Table info must be a dictionary")
+
+            # ! data type
+            table_data_type = table_info_.get('Type', None)
+            # >> check
+            if table_data_type != 'Matrix-Data':
+                # log
+                logging.error(
+                    f"Table '{table_}' for property '{prop_name}' is not a matrix data table."
+                )
+                # skip if table is not matrix data
+                continue
+
+            # ! label/labels
+            # NOTE: >> check labels
+            labels_ = prop_idx.get('labels', None) or \
+                prop_idx.get('symbols', None)
+            # >> check
+            if labels_ and isinstance(labels_, dict):
+                # extract labels
+                for lbl_key, lbl_val in labels_.items():
+                    if lbl_val and isinstance(lbl_val, str):
+                        # append to labels
+                        labels.append(str(lbl_val))
+
+                # >> set ignore state
+                # iterate over labels
+                if len(ignore_state_props) > 0:
+                    for item in labels_.values():
+                        # set ignore state
+                        # ! for labels
+                        ignore_component_state = ignore_state_in_prop(
+                            item,
+                            ignore_state_props
+                        )
+                        # check
+                        if ignore_component_state:
+                            break
+                else:
+                    ignore_component_state = False
+
+            # >> override if ignore all state is True
+            # ! for all property skip
+            if ignore_state_all_props:
+                ignore_component_state = True
+
+            # SECTION: ignore component state if specified
+            try:
+                # NOTE: binary mixture only
+                if mixture_type == 'BINARY':
+                    # >> check mixture::binary
+                    mixture_checker_ = thermodb.is_binary_mixture_available(
+                        components=components,
+                        databook=databook_,
+                        table=table_,
+                        column_name=column_name,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        ignore_component_state=ignore_component_state,
+                        res_format='dict'
+                    )
+                elif mixture_type == 'MULTI-COMPONENT':
+                    # >> check mixture::multi-component
+                    mixtures_checker_ = thermodb.check_mixtures_availability(
+                        components=components,
+                        databook=databook_,
+                        table=table_,
+                        mixture_names=mixture_names,
+                        column_name=column_name,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        ignore_component_state=ignore_component_state,
+                        res_format='dict'
+                    )
+
+                    # >> check availability for all binary pairs
+                    if not isinstance(mixtures_checker_, dict):
+                        raise TypeError(
+                            "Mixtures checker must be a dictionary."
+                        )
+
+                    # NOTE: overall availability
+                    overall_availability = []
+
+                    # >> iterate over mixtures
+                    for mix_id, mix_check in mixtures_checker_.items():
+                        if not isinstance(mix_check, dict):
+                            raise TypeError(
+                                f"Mixture checker for mixture '{mix_id}' must be a dictionary."
+                            )
+
+                        # check availability
+                        if mix_check['availability'] is True:
+                            overall_availability.append(True)
+                        else:
+                            overall_availability.append(False)
+
+                            # >> log
+                            if verbose:
+                                logging.warning(
+                                    f"Mixture '{mix_id}' for property '{prop_name}' is not found in the table '{table_}' of databook '{databook_}' while setting ignore_component_state={ignore_component_state}, component_key='{component_key}', mixture_key='{mixture_key}', delimiter='{delimiter}'."
+                                )
+
+                    # >> set overall availability
+                    mixture_checker_ = {
+                        'availability': all(overall_availability)
+                    }
+
+                else:
+                    raise ValueError(
+                        f"Mixture type '{mixture_type}' is not supported."
+                    )
+
+                # check
+                if not isinstance(mixture_checker_, dict):
+                    raise TypeError("mixture checker must be a dictionary.")
+
+                if not mixture_checker_['availability']:
+                    # log
+                    logging.error(
+                        f"Components '{component_idx}' for property '{prop_name}' are not found in the table '{table_}' of databook '{databook_}' while setting ignore_component_state={ignore_component_state}, component_key='{component_key}', mixture_key='{mixture_key}', delimiter='{delimiter}'."
+                    )
+                    continue  # skip if component is not available in the table
+            except Exception as e:
+                logging.error(
+                    f"Checking components '{component_idx}' for property '{prop_name}' failed! {e}")
+                continue
+
+            # SECTION: build thermodb items
+            # ! create Tables [TableMatrixData]
+            # >> build thermo based on Component object (consider state)
+            try:
+                item_ = thermodb.build_components_thermo_property(
+                    components=components,
+                    databook=databook_,
+                    table=table_,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    ignore_component_state=ignore_component_state,
+                    column_name=column_name,
+                    mixture_names=mixture_names
+                )
+
+                # save
+                res[prop_name] = item_
+            except Exception as e:
+                logging.error(
+                    f"Building property '{prop_name}' for components '{component_idx}' failed! {e}")
+                continue
+
+            # NOTE: reset loop vars
+            # ! ignore state
+            if len(ignore_state_props) > 0:
+                ignore_component_state = False
+
+        # SECTION: build component thermodb
+        # NOTE: check thermodb_name
+        if thermodb_name is None:
+            thermodb_name = 'mixture '+'-'.join(component_idx)
+
+        # NOTE: check message
+        if message is None:
+            prop_names_list = ', '.join(list(reference_config.keys()))
+            component_names_ = [c.strip() for c in component_names]
+            message = f"Thermodb including {prop_names_list} for components: {component_names_}"
+
+        # SECTION: thermodb configuration
+        # >> check results
+        if len(res) == 0:
+            logger.error(
+                f"No valid properties found to build the thermodb for components: {component_names}."
+            )
+            return None
+
+        # NOTE: init thermodb
+        thermodb_comp = build_thermodb(
+            thermodb_name=thermodb_name,
+            message=message
+        )
+
+        # >> log
+        if verbose:
+            logging.info(
+                f"Building thermodb '{thermodb_name}' including properties: {list(res.keys())} for components: {component_names}."
+            )
+
+        # add items to thermodb
+        for prop_name, prop_value in res.items():
+            # add item to thermodb
+            add_data_res_ = thermodb_comp.add_data(
+                name=prop_name,
+                value=prop_value
+            )
+
+            # >> log
+            if verbose:
+                if add_data_res_:
+                    logging.info(
+                        f"Property '{prop_name}' added successfully to thermodb '{thermodb_name}'."
+                    )
+                else:
+                    logging.error(
+                        f"Adding property '{prop_name}' to thermodb '{thermodb_name}' failed!"
+                    )
+
+        # SECTION: build and save thermodb
+        if thermodb_save:
+            # check path
+            thermodb_save_path = check_file_path(
+                file_path=thermodb_save_path,
+                default_path=None,
+                create_dir=True
+            )
+            # save
+            save_res_ = thermodb_comp.save(
+                filename=thermodb_name,
+                file_path=thermodb_save_path
+            )
+
+            # >> log
+            if verbose:
+                if save_res_:
+                    logging.info(
+                        f"Thermodb '{thermodb_name}' saved successfully at '{thermodb_save_path}'."
+                    )
+                else:
+                    logging.error(
+                        f"Saving thermodb '{thermodb_name}' at '{thermodb_save_path}' failed!"
+                    )
+
+        else:
+            # build
+            build_res_ = thermodb_comp.build()
+
+            # >> log
+            if verbose:
+                if build_res_:
+                    logging.info(
+                        f"Thermodb '{thermodb_name}' built successfully."
+                    )
+                else:
+                    logging.error(
+                        f"Building thermodb '{thermodb_name}' failed!"
+                    )
+
+        # return
+        return thermodb_comp
+    except Exception as e:
+        raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
 def build_component_thermodb_from_reference(
