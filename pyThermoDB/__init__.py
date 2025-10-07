@@ -22,6 +22,7 @@ from .thermodb import (
     check_and_build_component_thermodb,
     check_and_build_components_thermodb,
     build_components_thermodb_from_reference,
+    check_and_build_mixture_thermodb,
     ComponentThermoDB,
     MixtureThermoDB
 )
@@ -48,6 +49,7 @@ __all__ = [
     'check_and_build_component_thermodb',
     'check_and_build_components_thermodb',
     'build_components_thermodb_from_reference',
+    'check_and_build_mixture_thermodb',
     'ComponentThermoDB',
     'MixtureThermoDB'
 ]

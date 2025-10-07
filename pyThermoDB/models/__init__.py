@@ -12,7 +12,8 @@ from .references import (
     ComponentReferenceThermoDB,
     ReferenceThermoDB,
     CustomReference,
-    ReferencesThermoDB
+    ReferencesThermoDB,
+    MixtureReferenceThermoDB
 )
 from .property import PropertyMatch
 from .configs import ComponentConfig
@@ -35,5 +36,6 @@ __all__ = [
     'Pressure',
     'Temperature',
     'CustomReference',
-    'ReferencesThermoDB'
+    'ReferencesThermoDB',
+    'MixtureReferenceThermoDB'
 ]

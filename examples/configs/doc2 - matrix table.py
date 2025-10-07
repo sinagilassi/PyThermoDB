@@ -456,7 +456,8 @@ if binary_mixture_reference_configs is not None:
 reference_link_ = ReferenceChecker_.generate_reference_link(
     databook_name='CUSTOM-REF-1'
 )
-print(f"Reference Link: {reference_link_}")
+print("Reference Link:")
+print(f"{reference_link_}")
 
 # NOTE: mixture reference link
 # ! generate reference link for mixture (without ignore state)
@@ -467,7 +468,20 @@ reference_link_mixture = ReferenceChecker_.generate_binary_mixture_reference_lin
     mixture_key='Name',
     ignore_component_state=False
 )
-print(f"Mixture Reference Link: {reference_link_mixture}")
+print("Mixture Reference Link:")
+print(f"{reference_link_mixture}")
+
+# NOTE: mixtures reference link
+# ! generate reference link for mixtures (with ignore state)
+reference_link_mixtures = ReferenceChecker_.generate_mixtures_reference_link(
+    databook_name='CUSTOM-REF-1',
+    components=components_3,
+    component_key='Name-State',
+    mixture_key='Name',
+    ignore_component_state=True
+)
+print("Mixtures Reference Link (ignore state)")
+print(f"{reference_link_mixtures}")
 
 # ! ignore component state is set to True
 reference_link_component = ReferenceChecker_.generate_reference_link(

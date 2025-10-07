@@ -2654,9 +2654,9 @@ class ReferenceChecker:
 
     def generate_mixtures_reference_link(
         self,
+        components: List[Component],
         databook_name: str,
         table_names: Optional[str | List[str]] = None,
-        components: Optional[List[Component]] = None,
         mixture_names: Optional[List[str]] = None,
         component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
         mixture_key: Literal['Name', 'Formula'] = 'Name',
@@ -2670,12 +2670,12 @@ class ReferenceChecker:
 
         Parameters
         ----------
+        components : List[Component]
+            A list of Component objects to create mixtures from.
         databook_name : str
             The name of the databook.
         table_names : Optional[str | List[str]], optional
             The name(s) of the table(s) to include in the reference link, by default None.
-        components : Optional[List[Component]], optional
-            A list of Component objects representing the mixture components, by default None.
         mixture_names : Optional[List[str]], optional
             A list of mixture names to check for availability, by default None.
         component_key : Literal['Name-State', 'Formula-State'], optional
@@ -2728,7 +2728,70 @@ class ReferenceChecker:
             }
         }
         '''
-        pass
+        try:
+            # SECTION: additional kwargs
+            ignore_state_props: Optional[List[str]] = kwargs.get(
+                'ignore_state_props', None
+            )
+
+            # SECTION: create mixtures
+            if mixture_names is not None:
+                # ! use provided mixture names
+                # init binary mixtures dict
+                binary_mixtures = {}
+
+                # iterate through mixture names
+                for name in mixture_names:
+                    if not isinstance(name, str) or not name.strip():
+                        raise ValueError(
+                            "Each mixture name must be a non-empty string.")
+
+                    # update
+                    binary_mixtures[name.lower().strip()] = create_mixture_from_components(
+                        mixture_id=name,
+                        components=components,
+                    )
+            else:
+                # ! create all possible binary mixtures
+                binary_mixtures = create_binary_mixtures(
+                    components=components,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+            # >> check
+            if not binary_mixtures:
+                raise ValueError("No binary mixtures to check.")
+
+            # SECTION: check each mixture availability
+            results = {}
+
+            # NOTE: looping through mixtures
+            try:
+                for mixture_id, mixture_components in binary_mixtures.items():
+                    # check
+                    res = self.generate_binary_mixture_reference_link(
+                        databook_name=databook_name,
+                        table_names=table_names,
+                        components=mixture_components,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        column_name=column_name,
+                        ignore_component_state=ignore_component_state,
+                        ignore_state_props=ignore_state_props
+                    )
+
+                    # append check result
+                    results[mixture_id] = res
+            except Exception as e:
+                logger.warning(
+                    f"Error checking mixture [{mixture_id}] availability: {e}")
+
+            # res
+            return results
+        except Exception as e:
+            raise Exception(f"Error checking mixtures availability: {e}")
 
     def check_component_availability(
         self,
