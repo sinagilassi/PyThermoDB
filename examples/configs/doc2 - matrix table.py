@@ -201,13 +201,14 @@ ethanol = Component(
 methane = Component(
     name='methane',
     formula='CH4',
-    state='l'
+    state='g'
 )
 
 # components
 components = [methanol, ethanol]
+components_3 = [methanol, ethanol, methane]
 
-# SECTION: check mixture availability
+# SECTION: check binary mixture availability
 # NOTE: check in all tables
 # ! Formula-State
 check_result = ReferenceChecker_.check_binary_mixture_availability(
@@ -264,6 +265,49 @@ check_result = ReferenceChecker_.check_binary_mixture_availability(
 )
 print(f"Check Result (ignore component state): {check_result}")
 
+# SECTION: check mixture availability
+# ! all components must be in the mixture
+# ! without ignore state
+check_result = ReferenceChecker_.check_mixtures_availability(
+    components=components_3,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    ignore_component_state=False
+)
+print("Check Result (mixture):")
+print(f"{check_result}")
+
+# ! with ignore state
+check_result = ReferenceChecker_.check_mixtures_availability(
+    components=components_3,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    ignore_component_state=True
+)
+print("Check Result (mixture with ignore state):")
+print(f"{check_result}")
+
+# ! with mixture names provided
+mixture_names = ['methanol|ethanol', 'methane|ethanol']
+check_result = ReferenceChecker_.check_mixtures_availability(
+    components=components_3,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    mixture_names=mixture_names,
+    ignore_component_state=True
+)
+print("Check Result (mixture with names provided):")
+print(f"{check_result}")
+
 # SECTION: get mixture data
 # NOTE: get in all tables
 components_data_ = ReferenceChecker_.get_binary_matrix_data(
@@ -273,7 +317,21 @@ components_data_ = ReferenceChecker_.get_binary_matrix_data(
     component_key='Name-State',
     ignore_component_state=False,
 )
-print(f"Components Data: {components_data_}")
+print("Components Data:")
+print(f"{components_data_}")
+
+# ! all components must be in the mixture
+components_data_ = ReferenceChecker_.get_mixtures_data(
+    components=components_3,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    ignore_component_state=False,
+)
+print("Components Data (mixture):")
+print(f"{components_data_}")
 
 # SECTION: get component reference config
 # ! without ignore state
@@ -314,6 +372,22 @@ binary_mixture_reference_config: Dict[str, ComponentConfig] | None = ReferenceCh
 print(
     f"Binary mixture Reference Config (ignore state by prop): {binary_mixture_reference_config}")
 
+# NOTE: mixture reference config
+# ! all possible mixtures
+mixture_reference_config = ReferenceChecker_.get_mixtures_reference_config(
+    components=components_3,
+    databook_name='CUSTOM-REF-1',
+    table_name='NRTL Non-randomness parameters-2',
+    column_name='Mixture',
+    component_key='Name-State',
+    mixture_key='Name',
+    add_label=True,
+    check_labels=False,
+    ignore_component_state=True,
+)
+print("Mixture Reference Config:")
+print(f"{mixture_reference_config}")
+
 # SECTION: get component reference configs (ALL)
 # NOTE: get component reference configs
 binary_mixture_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_binary_mixture_reference_configs(
@@ -345,6 +419,16 @@ binary_mixture_reference_configs: Dict[str, ComponentConfig] | None = ReferenceC
 print(
     f"Binary mixture Configs (ignore state by prop): {binary_mixture_reference_configs}"
 )
+
+# NOTE: mixture reference configs
+mixture_reference_configs = ReferenceChecker_.get_mixtures_reference_configs(
+    components=components_3,
+    add_label=True,
+    check_labels=False,
+    ignore_component_state=True,
+)
+print("Mixture Reference Configs:")
+print(f"{mixture_reference_configs}")
 
 # SECTION: generate reference rules
 if binary_mixture_reference_configs is not None:

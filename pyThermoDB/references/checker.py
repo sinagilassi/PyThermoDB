@@ -1563,7 +1563,6 @@ class ReferenceChecker:
                 return None
 
             # NOTE: normalize mixture id function
-
             def normalize_mixture_id(
                 mixture: str,
                 delimiter: str
@@ -1741,6 +1740,134 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting components matrix data: {e}")
             return None
+
+    def get_mixtures_data(
+        self,
+        components: List[Component],
+        databook_name: str,
+        table_name: str,
+        mixture_names: Optional[list[str]] = None,
+        column_name: str = 'Mixture',
+        component_key: Literal[
+            'Name-State', 'Formula-State',
+        ] = 'Name-State',
+        mixture_key: Literal[
+            'Name', 'Formula',
+        ] = 'Name',
+        delimiter: str = '|',
+        ignore_component_state: bool = False,
+    ) -> Dict[str, Dict]:
+        '''
+        Get component data in mixtures are available in the specified databook and table. A component is defined as:
+        - name-state: carbon dioxide-g
+        - formula-state: CO2-g
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components in the mixture to check.
+        databook_name : str
+            The databook name.
+        table_name : str
+            The table name.
+        mixture_names : list[str], optional
+            The list of mixture names to check. If None, all possible binary mixtures will be created from the components.
+        column_name : str, optional
+            The name of the column containing mixture identifiers, by default 'Mixture'.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for identifying the component, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for identifying the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used in the mixture identifiers, by default '|'.
+        ignore_component_state : bool, optional
+            Whether to ignore the state of the components when checking availability, by default False.
+        res_format : Literal['dict', 'json', 'str'], optional
+            The format of the returned result, by default 'dict'.
+
+        Returns
+        -------
+        str | Dict
+            Summary of the mixtures availability as a string or dictionary in the specified format.
+
+            - 'databook_id': databook id,
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_id': table id,
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'mixtures': list of mixture availability results,
+            - 'all_available': True if all mixtures are available, False otherwise
+
+        Notes
+        -----
+        - Table should contain columns for 'Mixture', 'Name', 'Formula', and 'State'. Otherwise an error will be raised.
+        - All components in each mixture must be available for that mixture to be considered available.
+        - All mixtures must be available for the overall availability to be True.
+        '''
+        try:
+            # SECTION: create mixtures
+            if mixture_names is not None:
+                # ! use provided mixture names
+                # >> initialize
+                binary_mixtures = {}
+
+                for mix_name in mixture_names:
+                    # >> normalized mixture id
+                    mix_name_normalized = mix_name.lower().strip()
+
+                    # >> create mixture
+                    binary_mixtures[mix_name_normalized] = create_mixture_from_components(
+                        mixture_id=mix_name_normalized,
+                        components=components,
+                        delimiter=delimiter
+                    )
+            else:
+                # ! create all possible binary mixtures from components
+                binary_mixtures = create_binary_mixtures(
+                    components=components,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+            # check
+            if not binary_mixtures:
+                raise ValueError("No mixtures to check.")
+
+            # SECTION: get mixtures data
+            results = {}
+
+            # iterate over mixtures
+            for mix_id, mix_components in binary_mixtures.items():
+                try:
+                    mix_result = self.get_binary_matrix_data(
+                        components=mix_components,
+                        databook_name=databook_name,
+                        table_name=table_name,
+                        column_name=column_name,
+                        component_key=component_key,
+                        mixture_key=mixture_key,
+                        delimiter=delimiter,
+                        ignore_component_state=ignore_component_state,
+                    )
+
+                    # check
+                    if isinstance(mix_result, str):
+                        # log
+                        logger.warning(
+                            f"Mixture [{mix_id}] check returned string result. Check for errors.")
+                        # skip
+                        continue
+
+                    # store result
+                    results[mix_id] = mix_result
+                except Exception as e:
+                    logger.error(
+                        f"Error checking mixture [{mix_id}] availability: {e}")
+                    continue
+
+            # return
+            return results
+        except Exception as e:
+            raise Exception(f"Error creating mixtures: {e}")
 
     def generate_property_mapping(
             self,
@@ -2525,6 +2652,84 @@ class ReferenceChecker:
                 'EQUATIONS': {},
             }
 
+    def generate_mixtures_reference_link(
+        self,
+        databook_name: str,
+        table_names: Optional[str | List[str]] = None,
+        components: Optional[List[Component]] = None,
+        mixture_names: Optional[List[str]] = None,
+        component_key: Literal['Name-State', 'Formula-State'] = 'Name-State',
+        mixture_key: Literal['Name', 'Formula'] = 'Name',
+        delimiter: str = '|',
+        column_name: str = 'Mixture',
+        ignore_component_state: Optional[bool] = False,
+        **kwargs
+    ):
+        '''
+        Generate a reference link for mixtures of components.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_names : Optional[str | List[str]], optional
+            The name(s) of the table(s) to include in the reference link, by default None.
+        components : Optional[List[Component]], optional
+            A list of Component objects representing the mixture components, by default None.
+        mixture_names : Optional[List[str]], optional
+            A list of mixture names to check for availability, by default None.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Name-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter to use for the mixture, by default '-'.
+        column_name : str, optional
+            The name of the column containing the mixture, by default 'Mixture'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state when checking availability, by default False.
+        kwargs : dict, optional
+            Additional keyword arguments, including:
+            - ignore_state_props : Optional[List[str]], optional
+                A list of state properties to ignore when checking availability, by default None.
+
+        Returns
+        -------
+        Dict[str, Dict[str, Union[bool, str, Dict[str, List[str]]]]]
+            A dictionary containing the reference link for the mixtures.
+
+        Notes
+        -----
+        1- The function checks the availability of the mixtures in the specified databook and tables.
+        2- If the components are not available in any table, the reference link will be empty.
+        3- The function handles matrix tables and extracts relevant symbols for the reference link.
+        4- The resulting dictionary contains 'DATA' and 'EQUATIONS' sections with relevant symbols.
+
+        Example
+        -------
+        >>> checker = DataChecker('path/to/databooks')
+        >>> component_1 = Component(name='Methanol', formula='CH3OH', state='liquid')
+        >>> component_2 = Component(name='Water', formula='H2O', state='liquid')
+        >>> reference_link = checker.generate_mixtures_reference_link(
+        ...     databook_name='ExampleDatabook',
+        ...     components=[component_1, component_2]
+        ... )
+        >>> print(reference_link)
+        {
+            'DATA': {
+                'ideal-gas-heat-capacity': 'Cp_IG',
+                'Molecular-Weight': 'MW
+                'binary-parameters': 'alpha_i_j'
+                ...
+            },
+            'EQUATIONS': {
+                'vapor-pressure': 'VaPr',
+                ...
+            }
+        }
+        '''
+        pass
+
     def check_component_availability(
         self,
         component_name: str,
@@ -3147,8 +3352,8 @@ class ReferenceChecker:
     def check_mixtures_availability(
         self,
         components: List[Component],
-        databook: str,
-        table: str,
+        databook_name: str,
+        table_name: str,
         mixture_names: Optional[List[str]] = None,
         column_name: str = 'Mixture',
         component_key: Literal[
@@ -3169,9 +3374,9 @@ class ReferenceChecker:
         ----------
         components : List[Component]
             The list of components in the mixtures to check.
-        databook : str
+        databook_name : str
             The databook name.
-        table : int | str
+        table_name : str
             The table name.
         mixture_names : Optional[List[str]], optional
             List of mixture names to check, by default None. If None, all possible binary mixtures will be created from the components list.
@@ -3243,8 +3448,8 @@ class ReferenceChecker:
                     # check
                     res = self.check_binary_mixture_availability(
                         components=mixture_components,
-                        databook_name=databook,
-                        table_name=table,
+                        databook_name=databook_name,
+                        table_name=table_name,
                         column_name=column_name,
                         component_key=component_key,
                         mixture_key=mixture_key,
@@ -3607,7 +3812,7 @@ class ReferenceChecker:
         column_name: str = 'Mixture',
         ignore_component_state: Optional[bool] = False,
         ignore_state_props: Optional[List[str]] = None,
-    ):
+    ) -> Optional[Dict[str, ComponentConfig]]:
         '''
         Get the reference including the databook name and table name for a binary mixture of components.
 
@@ -3639,7 +3844,7 @@ class ReferenceChecker:
 
         Returns
         -------
-        Dict[str, Any]
+        Dict[str, Any] | None
             A dictionary containing the reference config if the mixture exists, otherwise None.
             The dictionary has the following structure:
             {
@@ -3668,7 +3873,6 @@ class ReferenceChecker:
         - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 
         Every mixture has two rows, one for each component in the mixture.
-
         '''
         try:
             # SECTION: check inputs
@@ -3919,6 +4123,325 @@ class ReferenceChecker:
             return res
         except Exception as e:
             logging.error(f"Error getting binary mixture references: {e}")
+            return None
+
+    def get_mixtures_reference_config(
+        self,
+        components: List[Component],
+        databook_name: str,
+        table_name: Optional[str] = None,
+        add_label: Optional[bool] = False,
+        check_labels: Optional[bool] = False,
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State',
+        mixture_key: Literal[
+            'Name', 'Formula'
+        ] = 'Name',
+        delimiter: str = '|',
+        column_name: str = 'Mixture',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None,
+        mixture_names: Optional[List[str]] = None
+    ) -> Optional[Dict[str, Dict[str, ComponentConfig]]]:
+        '''
+        Get the reference including the databook name and table name for a mixture of components.
+
+        Parameters
+        ----------
+        components : List[Component]
+            A list of components in the mixture.
+        databook_name : str
+            The name of the databook.
+        table_name : Optional[str], optional
+            The name of the table to check, by default None (checks all tables).
+        add_label : Optional[bool], optional
+            Whether to include the label in the reference, by default False.
+        check_labels : Optional[bool], optional
+            Whether to check if the labels are valid, by default False.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used to separate components in the mixture string, by default '|'.
+        column_name : str, optional
+            The name of the column containing the mixture information, by default 'Mixture'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
+        ignore_state_props : Optional[List[str]], optional
+            A list of properties for which the component state should be ignored during the check, by default
+            None.
+        mixture_names : Optional[List[str]], optional
+            A list of mixture names to check. If provided, only these mixtures will be checked. If None,
+            all mixtures will be checked.
+
+        Returns
+        -------
+        Dict[str, Any] | None
+            A dictionary containing the reference config if the mixture exists, otherwise None.
+            The dictionary has the following structure:
+            {
+                'databook': str,
+                'table': str,
+                'mode': 'DATA' or 'EQUATIONS',
+                'labels': Dict[str, str] (if mode is 'DATA'),
+                'label': str (if mode is 'EQUATIONS')
+            }
+
+        Notes
+        -----
+        - The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - If `ignore_component_state` is True, the state of the components will be ignored in the check (`mixture availability`).
+        - If `table_name` is provided, only that table will be checked; otherwise, all tables in the databook will be checked.
+        - The matrix table has a column named "Mixture" which contains the mixture information.
+        - The mixture is defined as `Component1|Component2|...|ComponentN` for Name key and `Formula1|Formula2|...|FormulaN` for Formula key.
+        - The result dictionary keys are in the format "DatabookName::TableName".
+        - The mixture is only found in a matrix table.
+        - The matrix table should look like this:
+
+        COLUMNS:
+        - [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+        VALUES:
+        - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+        - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+
+        Every mixture has N rows, one for each component in the mixture.
+        '''
+        try:
+            # SECTION: check inputs
+            if not isinstance(components, list) or len(components) < 2:
+                logging.error(
+                    "components must be a list of two or more Component objects.")
+                return None
+
+            # ignore_state_props must be a list if provided
+            if ignore_state_props is not None and not isinstance(ignore_state_props, list):
+                logging.error("ignore_state_props must be a list.")
+                ignore_state_props = None
+
+            # mixture_names must be a list if provided
+            if mixture_names is not None and not isinstance(mixture_names, list):
+                logging.error("mixture_names must be a list.")
+                mixture_names = None
+
+            # SECTION: create binary mixture names if not provided
+            if mixture_names is not None:
+                # ! use provided mixture names
+                # init binary mixtures dict
+                binary_mixtures = {}
+
+                # iterate through mixture names
+                for name in mixture_names:
+                    if not isinstance(name, str) or not name.strip():
+                        raise ValueError(
+                            "Each mixture name must be a non-empty string.")
+
+                    # update
+                    binary_mixtures[name.lower().strip()] = create_mixture_from_components(
+                        mixture_id=name,
+                        components=components,
+                    )
+            else:
+                # ! create all possible binary mixtures
+                binary_mixtures = create_binary_mixtures(
+                    components=components,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter
+                )
+
+            # >> check
+            if not binary_mixtures:
+                raise ValueError("No binary mixtures to check.")
+
+            # SECTION: init result
+            res = {}
+
+            # iterate through each binary mixture
+            for mixture_name, mixture_components in binary_mixtures.items():
+                # get binary mixture reference config for each binary mixture
+                res_mixture: Optional[Dict[str, ComponentConfig]] = self.get_binary_mixture_reference_config(
+                    components=mixture_components,
+                    databook_name=databook_name,
+                    table_name=table_name,
+                    add_label=add_label,
+                    check_labels=check_labels,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    column_name=column_name,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props,
+                )
+
+                if res_mixture is not None:
+                    # add to result with unique key
+                    res[mixture_name] = res_mixture
+                else:
+                    logging.info(
+                        f"Mixture '{mixture_name}' not found in databook '{databook_name}'.")
+                    res[mixture_name] = {}
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Mixture of components not found in databook '{databook_name}'.")
+                return None
+
+            # return the result
+            return res
+        except Exception as e:
+            logging.error(f"Error getting mixture reference: {e}")
+            return None
+
+    def get_mixtures_reference_configs(
+        self,
+        components: List[Component],
+        add_label: Optional[bool] = False,
+        check_labels: Optional[bool] = False,
+        component_key: Literal[
+            'Name-State', 'Formula-State'
+        ] = 'Formula-State',
+        mixture_key: Literal[
+            'Name', 'Formula'
+        ] = 'Name',
+        delimiter: str = '|',
+        column_name: str = 'Mixture',
+        ignore_component_state: Optional[bool] = False,
+        ignore_state_props: Optional[List[str]] = None,
+        mixture_names: Optional[List[str]] = None
+    ) -> Optional[Dict[str, Dict[str, ComponentConfig]]]:
+        '''
+        Get the reference including the databook name and table name for a mixture of components
+        across all databooks.
+
+        Parameters
+        ----------
+        components : List[Component]
+            A list of components in the mixture.
+        add_label : Optional[bool], optional
+            Whether to include the label in the reference, by default False.
+        check_labels : Optional[bool], optional
+            Whether to check if the labels are valid, by default False.
+        component_key : Literal['Name-State', 'Formula-State'], optional
+            The key to use for the components, by default 'Formula-State'.
+        mixture_key : Literal['Name', 'Formula'], optional
+            The key to use for the mixture, by default 'Name'.
+        delimiter : str, optional
+            The delimiter used to separate components in the mixture string, by default '|'.
+        column_name : str, optional
+            The name of the column containing the mixture information, by default 'Mixture'.
+        ignore_component_state : Optional[bool], optional
+            Whether to ignore the component state in the check, by default False.
+        ignore_state_props : Optional[List[str]], optional
+            A list of properties for which the component state should be ignored during the check, by default
+            None.
+        mixture_names : Optional[List[str]], optional
+            A list of mixture names to check. If provided, only these mixtures will be checked. If None,
+            all mixtures will be checked.
+
+        Returns
+        -------
+        Optional[Dict[str, Dict[str, ComponentConfig]]]
+            A dictionary containing the reference config if the mixture exists, otherwise None.
+            The dictionary has the following structure:
+            {
+                'mixture_name_1': {
+                    'databook_table_key_1': ComponentConfig,
+                    'databook_table_key_2': ComponentConfig,
+                    ...
+                },
+                'mixture_name_2': {
+                    ...
+                },
+                ...
+            }
+
+        Notes
+        -----
+        - The search is `case-insensitive` and ignores leading/trailing whitespace.
+        - If `ignore_component_state` is True, the state of the components will be ignored in the check (`mixture availability`).
+        - The result dictionary keys are in the format "DatabookName::TableName".
+        - The mixture is only found in a matrix table.
+        - The matrix table should look like this:
+
+        COLUMNS:
+        - [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+
+        VALUES:
+        - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+        - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+
+        Every mixture has N rows, one for each component in the mixture.
+        '''
+        try:
+            # SECTION: check inputs
+            if not isinstance(components, list) or len(components) < 2:
+                logging.error(
+                    "components must be a list of two or more Component objects.")
+                return None
+
+            # ignore_state_props must be a list if provided
+            if ignore_state_props is not None and not isinstance(ignore_state_props, list):
+                logging.error("ignore_state_props must be a list.")
+                ignore_state_props = None
+
+            # mixture_names must be a list if provided
+            if mixture_names is not None and not isinstance(mixture_names, list):
+                logging.error("mixture_names must be a list.")
+                mixture_names = None
+
+            # SECTION: init result
+            res: Dict[str, Dict[str, ComponentConfig]] = {}
+
+            # NOTE: databook names
+            databook_names = self.get_databook_names()
+            # check
+            if not databook_names:
+                logging.error("No databooks found.")
+                return None
+
+            # SECTION: iterate through each databook
+            for databook_name in databook_names:
+                # get mixture reference config for each databook
+                res_databook: Optional[Dict[str, Dict[str, ComponentConfig]]] = self.get_mixtures_reference_config(
+                    components=components,
+                    databook_name=databook_name,
+                    table_name=None,
+                    add_label=add_label,
+                    check_labels=check_labels,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    column_name=column_name,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props,
+                    mixture_names=mixture_names
+                )
+
+                if res_databook is not None:
+                    # iterate through each mixture in res_databook
+                    for mixture_name, mixture_info in res_databook.items():
+                        if mixture_name not in res:
+                            res[mixture_name] = {}
+
+                        # iterate through each table in mixture_info
+                        for table_name, table_info in mixture_info.items():
+                            # create a unique key for each table in the result
+                            databook_table_key = f"{databook_name}::{table_name}"
+                            # add to result with unique key
+                            res[mixture_name][databook_table_key] = table_info
+
+            # check if res is empty
+            if not res:
+                logging.warning(
+                    f"Mixture of components not found in any databook.")
+                return None
+
+            # return the result
+            return res
+        except Exception as e:
+            logging.error(f"Error getting mixture references: {e}")
             return None
 
     def generate_reference_rules(
