@@ -419,7 +419,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "pythermodb-settings", specifier = ">=0.1.2" },
+    { name = "pythermodb-settings", specifier = ">=0.1.4" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "rich", specifier = ">=14.1.0" },
@@ -428,15 +428,15 @@ provides-extras = ["web"]
 
 [[package]]
 name = "pythermodb-settings"
-version = "0.1.3"
+version = "0.1.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/62/68/d7c03f1f1bb7cdb67b44605583e796f3f951d65d2c33889195daf2215881/pythermodb_settings-0.1.3.tar.gz", hash = "sha256:e25af18142671686d3e7d68f7f4565908ec7b530f5a27c080f0ce88fd50ea36e", size = 9573, upload-time = "2025-09-20T03:39:58.381Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/de/b7dfef5317b04dc5a1bec36136947e797006d76a97592a5bfc2f30d13204/pythermodb_settings-0.1.5.tar.gz", hash = "sha256:a5325f2c8e977e7604def7baa6c2b4c59493a57738a5d4dc9c3c1b4fdac9c682", size = 9714, upload-time = "2025-10-08T19:44:37.571Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f4/50/8037c08800ab1d5fe7352bcd97f42545c177c3479e2de35caf6399594c5c/pythermodb_settings-0.1.3-py3-none-any.whl", hash = "sha256:511c30c16e6047be0a9222bdaa10df9b1a0dda273f1ed839dd671d66e1454ad5", size = 11203, upload-time = "2025-09-20T03:39:57.432Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/a2/2181d8ced8b8be1e9a5894b3c0818d65c7474e552aba56d37b68457872e3/pythermodb_settings-0.1.5-py3-none-any.whl", hash = "sha256:23a72750b135c3b20fe1c8d26b66b9a389e57f23cf3ff381cbcbe66719eb2bc9", size = 11290, upload-time = "2025-10-08T19:44:36.881Z" },
 ]
 
 [[package]]
