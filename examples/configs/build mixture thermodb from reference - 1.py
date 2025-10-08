@@ -1,8 +1,6 @@
 # import libs
 import os
 from pyThermoDB import (
-    build_component_thermodb_from_reference,
-    ComponentThermoDB,
     build_mixture_thermodb_from_reference,
     MixtureThermoDB
 )
@@ -172,10 +170,6 @@ parent_path = os.path.dirname(os.path.abspath(__file__))
 print(parent_path)
 
 # SECTION: check component availability
-component_name = 'carbon dioxide'
-component_formula = 'CO2'
-component_state = 'g'
-
 # methanol
 methanol = Component(
     name='methanol',
@@ -194,63 +188,99 @@ ethanol = Component(
 methane = Component(
     name='methane',
     formula='CH4',
-    state='l'
+    state='g'
 )
 
 # NOTE: components
 comp1 = methanol.name  # 'methanol'
 comp2 = ethanol.name  # 'ethanol'
-# >> multi-component
-components = [methanol, ethanol]
+# ! >> binary mixture
+binary_mixture = [methanol, ethanol]
+# ! >> multi-component mixture
+multi_component_mixture = [methanol, ethanol, methane]
 
 # >> mixture name
 mixture_name = f"{comp1}-{comp2}"
 print(f"mixture_name: {mixture_name}")
 
 # SECTION: build component thermodb
-thermodb_components_: MixtureThermoDB = build_mixture_thermodb_from_reference(
-    components=components,
+# NOTE: normal build
+# ! >> binary mixture
+thermodb_components_: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
+    components=binary_mixture,
     reference_content=REFERENCE_CONTENT,
 )
-print(f"thermodb_components_: {thermodb_components_}")
+print(f"thermodb_components_: {type(thermodb_components_)}")
 
-# NOTE: thermodb
-thermodb_ = thermodb_components_.thermodb
-print(f"thermodb_: {thermodb_}")
-# check
-print(f"thermodb checks: {thermodb_.check()}")
+# >> thermodb
+if thermodb_components_ is not None:
+    # check
+    print(f"thermodb checks: {thermodb_components_.thermodb.check()}")
 
 # NOTE: build and save
-thermodb_component_save_: MixtureThermoDB = build_mixture_thermodb_from_reference(
-    components=components,
+thermodb_component_save_: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
+    components=binary_mixture,
     reference_content=REFERENCE_CONTENT,
     thermodb_save=True,
     thermodb_save_path=parent_path,
 )
-print(f"thermodb_component_save_: {thermodb_component_save_}")
-# check
-print(
-    f"thermodb_component_save_ checks: {thermodb_component_save_.thermodb.check()}")
+print(f"thermodb_component_save_: {type(thermodb_component_save_)}")
+
+# >> thermodb
+if thermodb_component_save_ is not None:
+    # check
+    print(
+        f"thermodb_component_save_ checks: {thermodb_component_save_.thermodb.check()}")
+
+# ! >> multi-component mixture
+# NOTE: normal build
+thermodb_components_multi_: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
+    components=multi_component_mixture,
+    reference_content=REFERENCE_CONTENT,
+)
+print(f"thermodb_components_multi_: {type(thermodb_components_multi_)}")
+
+# >> thermodb
+if thermodb_components_multi_ is not None:
+    # check
+    print(
+        f"thermodb_multi checks: {thermodb_components_multi_.thermodb.check()}")
+
+# ! mixture names
+thermodb_components_multi_: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
+    components=multi_component_mixture,
+    reference_content=REFERENCE_CONTENT,
+    mixture_names=["methanol | ethanol", "methane | ethanol"],
+    verbose=True,
+)
+print(f"thermodb_components_multi_: {type(thermodb_components_multi_)}")
+
+# >> thermodb
+if thermodb_components_multi_ is not None:
+    # check
+    print(
+        f"thermodb_multi checks: {thermodb_components_multi_.thermodb.check()}")
 
 # SECTION: build component thermodb with ignore state
 # NOTE: ignore state for specific properties
 ignore_state_props = ['a']
-thermodb_component_ignore_state_: MixtureThermoDB = build_mixture_thermodb_from_reference(
-    components=components,
+thermodb_component_ignore_state_: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
+    components=binary_mixture,
     reference_content=REFERENCE_CONTENT,
     ignore_state_props=ignore_state_props,
 )
+print(
+    f"thermodb_component_ignore_state_: {type(thermodb_component_ignore_state_)}")
 
-print(f"thermodb_component_ignore_state_: {thermodb_component_ignore_state_}")
-# NOTE: thermodb
-thermodb_ignore_state_ = thermodb_component_ignore_state_.thermodb
-print(f"thermodb_ignore_state_: {thermodb_ignore_state_}")
-# check
-print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")
+# >> thermodb
+if thermodb_component_ignore_state_ is not None:
+    # check
+    print(
+        f"thermodb_ignore_state_ checks: {thermodb_component_ignore_state_.thermodb.check()}")
 
 # NOTE: build and save
-thermodb_component_ignore_state_save_: MixtureThermoDB = build_mixture_thermodb_from_reference(
-    components=components,
+thermodb_component_ignore_state_save_: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
+    components=binary_mixture,
     reference_content=REFERENCE_CONTENT,
     ignore_state_props=ignore_state_props,
     thermodb_save=True,
@@ -258,7 +288,10 @@ thermodb_component_ignore_state_save_: MixtureThermoDB = build_mixture_thermodb_
     thermodb_name=f"{mixture_name} with ignore state props",
 )
 print(
-    f"thermodb_component_ignore_state_save_: {thermodb_component_ignore_state_save_}")
-# check
-print(
-    f"thermodb_component_ignore_state_save_ checks: {thermodb_component_ignore_state_save_.thermodb.check()}")
+    f"thermodb_component_ignore_state_save_: {type(thermodb_component_ignore_state_save_)}")
+
+# >> thermodb
+if thermodb_component_ignore_state_save_ is not None:
+    # check
+    print(
+        f"thermodb_component_ignore_state_save_ checks: {thermodb_component_ignore_state_save_.thermodb.check()}")

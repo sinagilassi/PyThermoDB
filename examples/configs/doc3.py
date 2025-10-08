@@ -171,7 +171,7 @@ component_formula = 'CO2'
 component_state = 'g'
 
 # SECTION: build component thermodb
-thermodb_component_: ComponentThermoDB = build_component_thermodb_from_reference(
+thermodb_component_: ComponentThermoDB | None = build_component_thermodb_from_reference(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -179,14 +179,15 @@ thermodb_component_: ComponentThermoDB = build_component_thermodb_from_reference
 )
 print(f"thermodb_component_: {thermodb_component_}")
 
-# NOTE: thermodb
-thermodb_ = thermodb_component_.thermodb
-print(f"thermodb_: {thermodb_}")
-# check
-print(f"thermodb checks: {thermodb_.check()}")
+if thermodb_component_ is not None:
+    # NOTE: thermodb
+    thermodb_ = thermodb_component_.thermodb
+    print(f"thermodb_: {thermodb_}")
+    # check
+    print(f"thermodb checks: {thermodb_.check()}")
 
 # NOTE: build and save
-thermodb_component_save_: ComponentThermoDB = build_component_thermodb_from_reference(
+thermodb_component_save_: ComponentThermoDB | None = build_component_thermodb_from_reference(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -196,14 +197,15 @@ thermodb_component_save_: ComponentThermoDB = build_component_thermodb_from_refe
     thermodb_name="CO2_thermodb",
 )
 print(f"thermodb_component_save_: {thermodb_component_save_}")
-# check
-print(
-    f"thermodb_component_save_ checks: {thermodb_component_save_.thermodb.check()}")
+if thermodb_component_save_ is not None:
+    # check
+    print(
+        f"thermodb_component_save_ checks: {thermodb_component_save_.thermodb.check()}")
 
 # SECTION: build component thermodb with ignore state
 # NOTE: ignore state for specific properties
 ignore_state_props = ['Cp_IG']
-thermodb_component_ignore_state_: ComponentThermoDB = build_component_thermodb_from_reference(
+thermodb_component_ignore_state_: ComponentThermoDB | None = build_component_thermodb_from_reference(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -212,14 +214,15 @@ thermodb_component_ignore_state_: ComponentThermoDB = build_component_thermodb_f
 )
 
 print(f"thermodb_component_ignore_state_: {thermodb_component_ignore_state_}")
-# NOTE: thermodb
-thermodb_ignore_state_ = thermodb_component_ignore_state_.thermodb
-print(f"thermodb_ignore_state_: {thermodb_ignore_state_}")
-# check
-print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")
+if thermodb_component_ignore_state_ is not None:
+    # NOTE: thermodb
+    thermodb_ignore_state_ = thermodb_component_ignore_state_.thermodb
+    print(f"thermodb_ignore_state_: {thermodb_ignore_state_}")
+    # check
+    print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")
 
 # NOTE: build and save
-thermodb_component_ignore_state_save_: ComponentThermoDB = build_component_thermodb_from_reference(
+thermodb_component_ignore_state_save_: ComponentThermoDB | None = build_component_thermodb_from_reference(
     component_name=component_name,
     component_formula=component_formula,
     component_state=component_state,
@@ -231,6 +234,7 @@ thermodb_component_ignore_state_save_: ComponentThermoDB = build_component_therm
 )
 print(
     f"thermodb_component_ignore_state_save_: {thermodb_component_ignore_state_save_}")
-# check
-print(
-    f"thermodb_component_ignore_state_save_ checks: {thermodb_component_ignore_state_save_.thermodb.check()}")
+if thermodb_component_ignore_state_save_ is not None:
+    # check
+    print(
+        f"thermodb_component_ignore_state_save_ checks: {thermodb_component_ignore_state_save_.thermodb.check()}")
