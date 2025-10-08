@@ -150,7 +150,8 @@ def create_binary_mixture_id(
     ] = 'Name',
     delimiter: str = "|"
 ) -> str:
-    """Create a unique binary mixture ID based on two components.
+    """
+    Create a unique binary mixture ID based on two components. The binary mixture ID is formed by concatenating the identifiers of the two components, separated by the specified delimiter. The order of components does not matter (sorted alphabetically).
 
     Parameters
     ----------
@@ -358,14 +359,22 @@ def create_mixture_from_components(
             comp_id.strip() for comp_id in mixture_id.split(delimiter) if delimiter in mixture_id
         ]
 
+        # sorted
+        component_ids = sorted(component_ids)
+
         # SECTION: find matching components
         mixture_components = []
         for comp_id in component_ids:
             for comp in components:
-                if comp_id.lower() == comp.name.strip().lower() or comp_id.lower() == comp.formula.strip().lower():
+                if (
+                    comp_id.lower() == comp.name.strip().lower() or
+                    comp_id.lower() == comp.formula.strip().lower()
+                ):
+                    # append and break
                     mixture_components.append(comp)
                     break
 
+        # res
         return mixture_components
 
     except Exception as e:
