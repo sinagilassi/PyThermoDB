@@ -8,12 +8,12 @@ from typing import (
 from pythermodb_settings.models import (
     Component,
     ComponentReferenceThermoDB,
-    ReferenceThermoDB
+    ReferenceThermoDB,
+    MixtureReferenceThermoDB
 )
 # local
 from .checker import ReferenceChecker
-from ..utils import ignore_state_in_prop
-from ..models import MixtureReferenceThermoDB
+from ..utils import ignore_state_in_prop, create_mixture_ids
 
 # NOTE: set logger
 logger = logging.getLogger(__name__)
@@ -247,7 +247,7 @@ def mixture_reference_mapper(
     **kwargs
 ) -> Optional[MixtureReferenceThermoDB]:
     '''
-    Build mixture thermodynamic databook (thermodb) for matrix-data.
+    Build `mixture` thermodynamic databook (thermodb) for matrix-data.
 
     Parameters
     ----------
@@ -311,19 +311,49 @@ def mixture_reference_mapper(
         if not isinstance(reference_content, str) or not reference_content.strip():
             raise ValueError("reference_content must be a non-empty string")
 
-        # mixture names
-        if mixture_names is not None:
-            if not isinstance(mixture_names, list) or not mixture_names:
-                raise ValueError(
-                    "mixture_names must be a non-empty list of strings or None")
-            if not all(isinstance(name, str) and name.strip() for name in mixture_names):
-                raise ValueError(
-                    "All items in mixture_names must be non-empty strings")
-
         # SECTION: extract component details
         component_names = [comp.name.strip() for comp in components]
         component_formulas = [comp.formula.strip() for comp in components]
         component_states = [comp.state.strip() for comp in components]
+
+        # NOTE: mixture config
+        # mixture type
+        mixture_type = 'BINARY' if len(components) == 2 else 'MULTI-COMPONENT'
+
+        # ! >> mixture (sorted by name or formula)
+        mixture_ids = create_mixture_ids(
+            components=components,
+            mixture_key=mixture_key,
+            delimiter=delimiter
+        )
+
+        # ! >> mixture names
+        # init std mixture names
+        mixture_names_std: Optional[List[str]] = None
+
+        # check mixture names are valid
+        if mixture_names is not None:
+            if not isinstance(mixture_names, list):
+                raise TypeError("mixture_names must be a list of strings")
+            if not all(isinstance(m, str) for m in mixture_names):
+                raise TypeError("All mixture names must be strings")
+            # strip whitespace
+            mixture_names = [m.strip() for m in mixture_names]
+
+            # set mixture names std
+            mixture_names_std = []
+
+            # >> standardize mixture names
+            for i in range(len(mixture_names)):
+                # split by delimiter
+                parts = [
+                    part.strip() for part in mixture_names[i].split(delimiter) if part.strip() != ''
+                ]
+                # sort parts
+                parts_sorted = sorted(parts)
+                # join back
+                mixture_name_std = delimiter.join(parts_sorted)
+                mixture_names_std.append(mixture_name_std)
 
         # NOTE: check component_state
         # component_state = cast(DEFAULT_COMPONENT_STATES, component_state)
@@ -339,36 +369,76 @@ def mixture_reference_mapper(
             raise ValueError("No databooks found in the reference content.")
 
         # NOTE: component reference config
-        mixture_reference_configs = ReferenceChecker_.get_mixtures_reference_configs(
-            components=components,
-            add_label=add_label,
-            check_labels=check_labels,
-            component_key=component_key,
-            mixture_key=mixture_key,
-            mixture_names=mixture_names,
-            delimiter=delimiter,
-            column_name=column_name,
-            ignore_component_state=ignore_component_state,
-            ignore_state_props=ignore_state_props
-        )
-
-        # FIXME
-        # >> check
-        if not mixture_reference_configs:
-            logger.warning(
-                f"No valid properties found to build thermodb for components: {', '.join(component_names)}"
+        if mixture_type == 'BINARY':
+            # ! >> binary mixture
+            mixture_reference_configs = ReferenceChecker_.get_binary_mixture_reference_configs(
+                components=components,
+                add_label=add_label,
+                check_labels=check_labels,
+                component_key=component_key,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+                column_name=column_name,
+                ignore_component_state=ignore_component_state,
+                ignore_state_props=ignore_state_props
             )
+        elif mixture_type == 'MULTI-COMPONENT':
+            # ! >> multi-component mixture
+            mixtures_reference_configs = ReferenceChecker_.get_mixtures_reference_configs(
+                components=components,
+                add_label=add_label,
+                check_labels=check_labels,
+                component_key=component_key,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+                column_name=column_name,
+                ignore_component_state=ignore_component_state,
+                ignore_state_props=ignore_state_props,
+                mixture_names=mixture_names_std
+            )
+
+            # >> check all mixture reference config is valid
+            if not isinstance(mixtures_reference_configs, dict) or not mixtures_reference_configs:
+                raise ValueError(
+                    f"No reference config found for '{mixture_ids}' in the provided reference content."
+                )
+
+            # >> not empty
+            if not all(isinstance(v, dict) and v for v in mixtures_reference_configs.values()):
+                # >> log
+                logger.error(
+                    f"No valid reference config found for all mixtures in the provided reference content."
+                )
+                return None
+
+            # NOTE: set mixture config due to similarity source
+            # ! >> set mixture_reference_configs (first mixture)
+            mixture_reference_configs = next(
+                iter(mixtures_reference_configs.values())
+            )
+
+            # check
+            if not mixture_reference_configs:
+                # log
+                logger.error(
+                    f"No valid reference config found for '{mixture_ids[0]}' in the provided reference content."
+                )
+                return None
+        else:
+            logger.error(
+                f"Mixture type '{mixture_type}' is not supported."
+            )
+            # res
             return None
 
         # NOTE: check if reference_config is a dict
         if not isinstance(mixture_reference_configs, dict) or not mixture_reference_configs:
             raise ValueError(
-                f"No reference config found for component '{component_names}' in the provided reference content."
+                f"No reference config found for '{mixture_ids}' in the provided reference content."
             )
 
-        # SECTION: generate reference rules
-        # ! from component_reference_configs
-        reference_rules = ReferenceChecker_.generate_component_reference_rules(
+        # SECTION: generate reference rules (link)
+        reference_rules = ReferenceChecker_.generate_mixture_reference_rules(
             reference_configs=mixture_reference_configs
         )
 
@@ -472,7 +542,7 @@ def mixture_reference_mapper(
 
         # NOTE: component reference thermodb
         return MixtureReferenceThermoDB(
-            component=component,
+            components=components,
             reference_thermodb=reference_thermodb,
         )
     except Exception as e:
