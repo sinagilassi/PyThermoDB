@@ -1,6 +1,7 @@
 # import libs
 import logging
 import os
+import time
 from typing import (
     Optional,
     Dict,
@@ -32,7 +33,6 @@ from .utils import (
     check_file_path,
     look_up_binary_mixture_reference_config,
     look_up_mixture_reference_config,
-    create_binary_mixture_id,
     create_mixture_ids
 )
 from .builder import CompBuilder
@@ -408,8 +408,9 @@ def check_and_build_component_thermodb(
     reference_config_default_check: Optional[bool] = True,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
+    verbose: Optional[bool] = False,
     **kwargs
-) -> CompBuilder:
+) -> Optional[CompBuilder]:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
 
@@ -435,6 +436,8 @@ def check_and_build_component_thermodb(
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
+    verbose : Optional[bool], optional
+        Whether to print verbose logs, by default False
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -444,8 +447,8 @@ def check_and_build_component_thermodb(
 
     Returns
     -------
-    CompBuilder : object
-        CompBuilder object used for building component thermodynamic databook
+    CompBuilder : object | None
+        CompBuilder object used for building component thermodynamic databook, or None if no properties were built.
 
     Notes
     -----
@@ -493,6 +496,11 @@ def check_and_build_component_thermodb(
     - ignore_state_props: List of property names to ignore state during the build. For example, if you want to ignore state for a thermo property such as vapor pressure and use only component name and formula, set `ignore_state_props=['VaPr']`.
     '''
     try:
+        # LINK: start time
+        if verbose:
+            start_time = time.time()
+            logging.info("Starting mixture thermodb check and build...")
+
         # NOTE: kwargs
         ignore_state_props: Optional[List[str]] = kwargs.get(
             'ignore_state_props',
@@ -776,13 +784,34 @@ def check_and_build_component_thermodb(
             message=message
         )
 
+        # SECTION: check if res is empty
+        if len(res) == 0:
+            # log
+            if verbose:
+                logging.warning(
+                    f"No properties were built for component '{component_id}'. Thermodb will not be created."
+                )
+
+            # res
+            return None
+
         # add items to thermodb
         for prop_name, prop_value in res.items():
             # add item to thermodb
-            thermodb_comp.add_data(
+            add_data_res_ = thermodb_comp.add_data(
                 prop_name,
                 prop_value
             )
+
+            # log
+            if verbose:
+                if add_data_res_:
+                    logging.info(
+                        f"Property '{prop_name}' added to thermodb '{thermodb_name}'.")
+                else:
+                    logging.warning(
+                        f"Adding property '{prop_name}' to thermodb '{thermodb_name}' may have issues, please check the logs."
+                    )
 
         # SECTION: build and save thermodb
         if thermodb_save:
@@ -793,13 +822,43 @@ def check_and_build_component_thermodb(
                 create_dir=True
             )
             # NOTE: save
-            thermodb_comp.save(
+            save_res_ = thermodb_comp.save(
                 filename=thermodb_name,
                 file_path=thermodb_save_path
             )
+
+            # log
+            if verbose:
+                if save_res_:
+                    logging.info(
+                        f"Thermodb '{thermodb_name}' saved to {thermodb_save_path}."
+                    )
+                else:
+                    logging.warning(
+                        f"Saving thermodb '{thermodb_name}' may have issues, please check the logs."
+                    )
         else:
             # build
-            thermodb_comp.build()
+            build_res_ = thermodb_comp.build()
+
+            # log
+            if verbose:
+                if build_res_:
+                    logging.info(
+                        f"Thermodb '{thermodb_name}' built successfully."
+                    )
+                else:
+                    logging.warning(
+                        f"Building thermodb '{thermodb_name}' may have issues, please check the logs."
+                    )
+
+        # LINK: end time
+        if verbose:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            logging.info(
+                f"Mixture thermodb check and build completed in {elapsed_time:.2f} seconds."
+            )
 
         # return
         return thermodb_comp
@@ -1562,7 +1621,7 @@ def check_and_build_mixture_thermodb(
     thermodb_save_path: Optional[str] = None,
     verbose: bool = False,
     **kwargs
-) -> CompBuilder:
+) -> Optional[CompBuilder]:
     '''
     Check and build `multi-component mixture` thermodynamic databook (thermodb) including matrix-data. The mixture is defined by a list of Component objects. For instance, three components can form a ternary mixture. Thus, the matrix table containing binary parameters for the three binary pairs will be checked and built in the thermodb.
 
@@ -1606,8 +1665,8 @@ def check_and_build_mixture_thermodb(
 
     Returns
     -------
-    CompBuilder : object
-        CompBuilder object used for building component thermodynamic databook.
+    CompBuilder : object | None
+        CompBuilder object used for building component thermodynamic databook, or None if no valid properties were found to build the thermodb.
 
     Notes
     -----
@@ -1667,6 +1726,11 @@ def check_and_build_mixture_thermodb(
     9- All binary combinations of the provided components will be checked in the table. For example, if you provide components A, B, and C, the method will check for mixtures A|B, A|C, and B|C in the table.
     '''
     try:
+        # LINK: start time
+        if verbose:
+            start_time = time.time()
+            logging.info("Checking and building mixture thermodb...")
+
         # NOTE: kwargs
         ignore_state_props: Optional[List[str]] = kwargs.get(
             'ignore_state_props',
@@ -2038,7 +2102,8 @@ def check_and_build_mixture_thermodb(
                 f"No valid properties found to build the thermodb for components: {component_names}."
             )
             # <> raise error
-            raise
+            # raise
+            return None
 
         # NOTE: init thermodb
         thermodb_comp = build_thermodb(
@@ -2111,6 +2176,14 @@ def check_and_build_mixture_thermodb(
                         f"Building thermodb '{thermodb_name}' failed!"
                     )
 
+        # LINK: end time
+        if verbose:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            logging.info(
+                f"Mixture thermodb check and build completed in {elapsed_time:.2f} seconds."
+            )
+
         # return
         return thermodb_comp
     except Exception as e:
@@ -2131,8 +2204,9 @@ def build_component_thermodb_from_reference(
     message: Optional[str] = None,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
+    verbose: bool = False,
     **kwargs
-) -> ComponentThermoDB:
+) -> Optional[ComponentThermoDB]:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
 
@@ -2160,6 +2234,8 @@ def build_component_thermodb_from_reference(
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
+    verbose : bool, optional
+        Whether to enable verbose logging, by default False
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -2167,8 +2243,14 @@ def build_component_thermodb_from_reference(
 
     Returns
     -------
-    ComponentThermoDB : object
-        ComponentThermoDB object used for building component thermodynamic databook
+    ComponentThermoDB : object | None
+        ComponentThermoDB object used for building component thermodynamic databook as:
+        - `component`: Component
+            component object including name, formula, and state
+        - `thermodb`: CompBuilder
+            CompBuilder object including the built thermodynamic databook
+        - `reference_reference`: ReferenceThermoDB
+            ReferenceThermoDB object including the reference content, configs, rules, labels, and ignore settings.
 
     Notes
     -----
@@ -2178,6 +2260,11 @@ def build_component_thermodb_from_reference(
     - The `add_label` and `check_labels` parameters help in managing the reference configuration for the component. In this context, labels defined in the reference are compared with the PyThermoDB labels (symbols) to ensure consistency.
     '''
     try:
+        # LINK: start time
+        if verbose:
+            start_time = time.time()
+            logging.info("Building component thermodb from reference...")
+
         # NOTE: kwargs
         ignore_state_props: Optional[List[str]] = kwargs.get(
             'ignore_state_props',
@@ -2412,13 +2499,39 @@ def build_component_thermodb_from_reference(
             message=message
         )
 
+        # >> log
+        if verbose:
+            logging.info(
+                f"Building thermodb '{thermodb_name}' including properties: {list(res.keys())} for component: {component_name}."
+            )
+
+        # check results
+        if len(res) == 0:
+            logger.error(
+                f"No valid properties found to build the thermodb for component: {component_name}."
+            )
+            # <> raise error
+            # raise
+            return None
+
         # add items to thermodb
         for prop_name, prop_value in res.items():
             # add item to thermodb
-            thermodb_comp.add_data(
+            add_data_res_ = thermodb_comp.add_data(
                 prop_name,
                 prop_value
             )
+
+            # >> log
+            if verbose:
+                if add_data_res_:
+                    logging.info(
+                        f"Property '{prop_name}' added successfully to thermodb '{thermodb_name}'."
+                    )
+                else:
+                    logging.error(
+                        f"Adding property '{prop_name}' to thermodb '{thermodb_name}' failed!"
+                    )
 
         # SECTION: build and save thermodb
         if thermodb_save:
@@ -2429,13 +2542,35 @@ def build_component_thermodb_from_reference(
                 create_dir=True
             )
             # NOTE: save
-            thermodb_comp.save(
+            save_res_ = thermodb_comp.save(
                 filename=thermodb_name,
                 file_path=thermodb_save_path
             )
+
+            # >> log
+            if verbose:
+                if save_res_:
+                    logging.info(
+                        f"Thermodb '{thermodb_name}' saved successfully at '{thermodb_save_path}'."
+                    )
+                else:
+                    logging.error(
+                        f"Saving thermodb '{thermodb_name}' at '{thermodb_save_path}' failed!"
+                    )
         else:
             # build
-            thermodb_comp.build()
+            build_res_ = thermodb_comp.build()
+
+            # >> log
+            if verbose:
+                if build_res_:
+                    logging.info(
+                        f"Thermodb '{thermodb_name}' built successfully."
+                    )
+                else:
+                    logging.error(
+                        f"Building thermodb '{thermodb_name}' failed!"
+                    )
 
         # SECTION: ComponentThermoDB settings
         # NOTE: reference thermodb
@@ -2455,6 +2590,14 @@ def build_component_thermodb_from_reference(
             thermodb=thermodb_comp,
             reference_thermodb=reference_thermodb,
         )
+
+        # LINK: end time
+        if verbose:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            logging.info(
+                f"Component thermodb check and build completed in {elapsed_time:.2f} seconds."
+            )
 
         # return
         return component_thermodb
@@ -2482,7 +2625,7 @@ def build_mixture_thermodb_from_reference(
     thermodb_save_path: Optional[str] = None,
     verbose: Optional[bool] = False,
     **kwargs
-) -> MixtureThermoDB:
+) -> Optional[MixtureThermoDB]:
     '''
     Build mixture thermodynamic databook (thermodb) including only matrix-data.
 
@@ -2529,8 +2672,14 @@ def build_mixture_thermodb_from_reference(
 
     Returns
     -------
-    MixtureThermoDB : object
-        MixtureThermoDB object used for building binary mixture thermodynamic databook
+    MixtureThermoDB : object | None
+        MixtureThermoDB object used for building binary mixture thermodynamic databook as:
+        - `components`: List[Component]
+            List of Component objects used for building the mixture thermodynamic databook.
+        - `thermodb`: CompBuilder
+            ThermoDB object including the mixture thermodynamic databook.
+        - `reference_thermodb`: ReferenceThermoDB
+            ReferenceThermoDB object including the reference content, configs, rules, labels, and ignore settings.
 
     Notes
     -----
@@ -2538,8 +2687,39 @@ def build_mixture_thermodb_from_reference(
     - The function utilizes the `ReferenceChecker` class to parse and validate the reference content.
     - The built `ComponentThermoDB` object includes the component details, the thermodynamic databook, and the reference configuration used.
     - The `add_label` and `check_labels` parameters help in managing the reference configuration for the component. In this context, labels defined in the reference are compared with the PyThermoDB labels (symbols) to ensure consistency.
+    - ignore_component_state is always False, instead use ignore_state_props to ignore state in specific properties.
+
+    Example
+    -------
+    The matrix-table format for NRTL is defined as:
+
+    ```
+    NRTL Non-randomness parameters-2:
+        TABLE-ID: 5
+        DESCRIPTION:
+        This table provides the NRTL non-randomness parameters for the NRTL equation.
+        MATRIX-SYMBOL:
+        - a constant: a
+        - b
+        - c
+        - alpha
+        STRUCTURE:
+        COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+        SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+        UNIT: [None,None,None,None,None,1,1,1,1,1,1,1,1]
+        VALUES:
+        - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+        - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+        - [1,methane|ethanol,methane,CH4,g,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+        - [2,methane|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+    ```
     '''
     try:
+        # LINK: start time
+        if verbose:
+            start_time = time.time()
+            logging.info("Building mixture thermodb from reference...")
+
         # SECTION: kwargs
         ignore_state_props: Optional[List[str]] = kwargs.get(
             'ignore_state_props',
@@ -2570,7 +2750,7 @@ def build_mixture_thermodb_from_reference(
         component_formulas = [c.formula for c in components]
         component_states = [c.state for c in components]
 
-        # ! >> mixture
+        # ! >> mixture (sorted by name or formula)
         mixture_ids = create_mixture_ids(
             components=components,
             mixture_key=mixture_key,
@@ -2593,7 +2773,7 @@ def build_mixture_thermodb_from_reference(
             # set mixture names std
             mixture_names_std = []
 
-            # standardize mixture names
+            # >> standardize mixture names
             for i in range(len(mixture_names)):
                 # split by delimiter
                 parts = [
@@ -2616,8 +2796,9 @@ def build_mixture_thermodb_from_reference(
             raise ValueError("No databooks found in the reference content.")
 
         # NOTE: component reference config
+        # NOTE: ignore_component_state is always False, instead use ignore_state_props
         if mixture_type == 'BINARY':
-            # >> binary mixture
+            # ! >> binary mixture
             mixture_reference_configs = ReferenceChecker_.get_binary_mixture_reference_configs(
                 components=components,
                 add_label=add_label,
@@ -2625,10 +2806,11 @@ def build_mixture_thermodb_from_reference(
                 component_key=component_key,
                 mixture_key=mixture_key,
                 delimiter=delimiter,
+                column_name=column_name,
                 ignore_state_props=ignore_state_props
             )
         elif mixture_type == 'MULTI-COMPONENT':
-            # >> multi-component mixture
+            # ! >> multi-component mixture
             mixtures_reference_configs = ReferenceChecker_.get_mixtures_reference_configs(
                 components=components,
                 add_label=add_label,
@@ -2649,24 +2831,31 @@ def build_mixture_thermodb_from_reference(
 
             # >> not empty
             if not all(isinstance(v, dict) and v for v in mixtures_reference_configs.values()):
-                raise ValueError(
-                    f"No valid reference config found for '{mixture_ids}' in the provided reference content."
+                # >> log
+                logger.error(
+                    f"No valid reference config found for all mixtures in the provided reference content."
                 )
+                return None
 
-            # >> set mixture_reference_configs
-            mixture_reference_configs = mixtures_reference_configs[
-                mixture_ids[0]
-            ] if mixture_ids[0] in mixtures_reference_configs else {}
+            # NOTE: set mixture config due to similarity source
+            # ! >> set mixture_reference_configs (first mixture)
+            mixture_reference_configs = next(
+                iter(mixtures_reference_configs.values())
+            )
 
             # check
             if not mixture_reference_configs:
-                raise ValueError(
-                    f"No reference config found for '{mixture_ids[0]}' in the provided reference content."
+                # log
+                logger.error(
+                    f"No valid reference config found for '{mixture_ids[0]}' in the provided reference content."
                 )
+                return None
         else:
-            raise ValueError(
+            logger.error(
                 f"Mixture type '{mixture_type}' is not supported."
             )
+            # res
+            return None
 
         # NOTE: check if reference_config is a dict
         if not isinstance(mixture_reference_configs, dict) or not mixture_reference_configs:
@@ -2679,13 +2868,25 @@ def build_mixture_thermodb_from_reference(
             reference_configs=mixture_reference_configs
         )
 
+        # >> log
+        if verbose:
+            logging.info(
+                f"Mixture reference rules generated: {reference_rules}"
+            )
+
         # SECTION: build thermodb
         # set reference
-        reference: CustomReference = {'reference': [reference_content]}
+        reference: CustomReference = {
+            'reference': [reference_content]
+        }
 
         thermodb = init(
             custom_reference=reference
         )
+
+        # >> log
+        if verbose:
+            logging.info("Thermodb initialized with custom reference.")
 
         # NOTE: init res
         res = {}
@@ -2772,7 +2973,7 @@ def build_mixture_thermodb_from_reference(
             # SECTION: check mixture availability
             # >> check mixture
             if mixture_type == 'BINARY':
-                # >> binary mixture
+                # ! >> binary mixture
                 mixture_checker_ = ReferenceChecker_.check_binary_mixture_availability(
                     components=components,
                     databook_name=databook_,
@@ -2784,7 +2985,7 @@ def build_mixture_thermodb_from_reference(
                     ignore_state_props=ignore_state_props
                 )
             elif mixture_type == 'MULTI-COMPONENT':
-                # >> multi-component mixture
+                # ! >> multi-component mixture
                 mixtures_checker_ = ReferenceChecker_.check_mixtures_availability(
                     components=components,
                     databook_name=databook_,
@@ -2802,7 +3003,46 @@ def build_mixture_thermodb_from_reference(
                 if not isinstance(mixtures_checker_, dict):
                     raise TypeError("Mixtures checker must be a dictionary")
 
-                # FIXME
+                # NOTE: check availability of all mixtures
+                mixture_availability = []
+
+                # iterate over all mixtures
+                for mix_id, mix_check in mixtures_checker_.items():
+                    # get src
+                    if not isinstance(mix_check, dict):
+                        logger.error(
+                            f"Mixture checker for '{mix_id}' must be a dictionary"
+                        )
+                        continue
+                    if table_ not in mix_check:
+                        logger.error(
+                            f"Table '{table_}' not found in mixture checker for '{mix_id}'."
+                        )
+                        continue
+
+                    # get table check
+                    mix_check_src = mix_check[table_]
+
+                    # >>> check
+                    if isinstance(mix_check_src, dict):
+                        # availability
+                        available_ = mix_check_src.get('available', False)
+                    else:
+                        available_ = False
+                    # append
+                    mixture_availability.append(available_)
+
+                # ! if any mixture is not available, skip
+                if not all(mixture_availability):
+                    logger.error(
+                        f"Mixture '{mixture_ids}' is not available in the table '{table_}' of databook '{databook_}'."
+                    )
+                    continue
+
+                # ! set mixture_checker_ (first mixture) ::: assume all mixtures have similar source
+                mixture_checker_ = next(
+                    iter(mixtures_checker_.values())
+                )
             else:
                 raise ValueError(
                     f"Mixture type '{mixture_type}' is not supported."
@@ -2876,13 +3116,37 @@ def build_mixture_thermodb_from_reference(
             message=message
         )
 
+        # >> log
+        if verbose:
+            logging.info(
+                f"Building thermodb '{thermodb_name}' including properties: {list(res.keys())} for mixture: {mixture_ids}."
+            )
+
+        # SECTION: check property is not empty
+        if not res:
+            logger.error(
+                f"No valid properties found for mixture '{mixture_ids}' in the provided reference content."
+            )
+            return None
+
         # add items to thermodb
         for prop_name, prop_value in res.items():
             # add item to thermodb
-            thermodb_comp.add_data(
+            add_data_res_ = thermodb_comp.add_data(
                 prop_name,
                 prop_value
             )
+
+            # >> log
+            if verbose:
+                if add_data_res_:
+                    logging.info(
+                        f"Property '{prop_name}' added successfully to thermodb '{thermodb_name}'."
+                    )
+                else:
+                    logging.error(
+                        f"Adding property '{prop_name}' to thermodb '{thermodb_name}' failed!"
+                    )
 
         # SECTION: build and save thermodb
         if thermodb_save:
@@ -2909,14 +3173,25 @@ def build_mixture_thermodb_from_reference(
                 )
         else:
             # build
-            thermodb_comp.build()
+            build_res_ = thermodb_comp.build()
+
+            # >> log
+            if verbose:
+                if build_res_:
+                    logging.info(
+                        f"Mixture thermodb '{thermodb_name}' built successfully."
+                    )
+                else:
+                    logging.error(
+                        f"Building mixture thermodb '{thermodb_name}' failed!"
+                    )
 
         # SECTION: ComponentThermoDB settings
         # NOTE: reference thermodb
         reference_thermodb = ReferenceThermoDB(
             reference=reference,
             contents=[reference_content],
-            configs=mixtures_reference_configs,
+            configs=mixture_reference_configs,
             rules=reference_rules,
             labels=labels,
             ignore_labels=ignore_labels,
@@ -2930,7 +3205,16 @@ def build_mixture_thermodb_from_reference(
             reference_thermodb=reference_thermodb,
         )
 
+        # LINK: end time
+        if verbose:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            logging.info(
+                f"Mixture thermodb check and build completed in {elapsed_time:.2f} seconds."
+            )
+
         # return
         return component_thermodb
     except Exception as e:
-        raise Exception(f"Building {mixture_ids} thermodb failed! {e}")
+        raise Exception(
+            f"Building mixture:::{mixture_ids} thermodb failed! {e}")

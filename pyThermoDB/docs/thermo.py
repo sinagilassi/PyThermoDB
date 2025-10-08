@@ -564,8 +564,14 @@ class ThermoDB(ManageData):
 
             if res_format == 'dataframe':
                 # column names
-                column_names = ['Table Name', 'Type', 'Equations',
-                                'Data', 'Matrix-Equations', 'Matrix-Data']
+                column_names = [
+                    'Table Name',
+                    'Type',
+                    'Equations',
+                    'Data',
+                    'Matrix-Equations',
+                    'Matrix-Data'
+                ]
                 # dataframe
                 df = pd.DataFrame([tb_summary], columns=column_names)
                 return df
