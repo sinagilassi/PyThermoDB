@@ -111,11 +111,33 @@ reference_config = {
     }
 }
 
+# >> yaml reference config
+reference_config_yaml = '''
+methanol | ethanol:
+  nrtl:
+    databook: CUSTOM-REF-1
+    table: Non-randomness parameters of the NRTL equation-3
+    symbols:
+      alpha: alpha
+      a_i_j: a_i_j
+      b_i_j: b_i_j
+      c_i_j: c_i_j
+methanol | methane | ethanol:
+  nrtl:
+    databook: CUSTOM-REF-1
+    table: Non-randomness parameters of the NRTL equation-3
+    symbols:
+      alpha: alpha
+      a_i_j: a_i_j
+      b_i_j: b_i_j
+      c_i_j: c_i_j
+'''
+
 # NOTE: build a binary mixture thermodb
 # ! mixture thermodb (binary mixture)
 mixture_thermodb = check_and_build_mixture_thermodb(
     components=[methanol, ethanol],
-    reference_config=reference_config,
+    reference_config=reference_config_yaml,
     custom_reference=custom_reference,
     component_key='Name-State',
     mixture_key='Name',
@@ -146,6 +168,21 @@ print(type(mixture_thermodb_multi))
 mixture_thermodb_multi = check_and_build_mixture_thermodb(
     components=[methanol, ethanol, methane],
     reference_config=reference_config,
+    custom_reference=custom_reference,
+    component_key='Name-State',
+    mixture_key='Name',
+    mixture_names=['methanol|ethanol', 'methanol | methane'],
+    thermodb_name='mixture_thermodb_nrtl_multi',
+    thermodb_save=False,
+    thermodb_save_path=parent_dir,
+    verbose=True,
+)
+print(type(mixture_thermodb_multi))
+
+# ! with yaml reference config
+mixture_thermodb_multi = check_and_build_mixture_thermodb(
+    components=[methanol, ethanol, methane],
+    reference_config=reference_config_yaml,
     custom_reference=custom_reference,
     component_key='Name-State',
     mixture_key='Name',

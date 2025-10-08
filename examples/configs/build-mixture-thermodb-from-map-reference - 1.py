@@ -1,8 +1,13 @@
 # import libs
-from typing import Dict, List
-from pyThermoDB import check_and_build_component_thermodb
-from pyThermoDB.references import component_reference_mapper
-from pythermodb_settings.models import Component, ComponentReferenceThermoDB
+import os
+from typing import List, Dict, Optional
+from pyThermoDB import (
+    build_mixture_thermodb_from_reference,
+    MixtureThermoDB
+)
+from pyThermoDB import check_and_build_mixture_thermodb
+from pyThermoDB.references import mixture_reference_mapper
+from pythermodb_settings.models import Component, MixtureReferenceThermoDB
 from rich import print
 
 # SECTION: reference content
@@ -109,7 +114,7 @@ REFERENCES:
             SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr]
             UNIT: [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
           VALUES:
-            - [1,'carbon dioxide','CO2','l',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
+            - [1,'carbon dioxide','CO2','g',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
             - [2,'carbon monoxide','CO','g',45.698,-1076.6,-4.8814,7.57E-05,2,68.15,1.54E+04,132.92,3.49E+06,1]
             - [3,'hydrogen','H2','g',12.69,-94.9,1.1125,3.29E-04,2,13.95,7.21E+03,33.19,1.32E+06,1]
             - [4,'methanol','CH3OH','g',82.718,-6904.5,-8.8622,7.47E-06,2,175.47,1.11E-01,512.5,8.15E+06,1]
@@ -148,133 +153,179 @@ REFERENCES:
           DESCRIPTION:
             This table provides the NRTL non-randomness parameters for the NRTL equation.
           MATRIX-SYMBOL:
-            - a
+            - a constant: a
             - b
             - c
             - alpha
           STRUCTURE:
-            COLUMNS: [No.,Mixture,Name,Formula,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-            SYMBOL: [None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
-            UNIT: [None,None,None,None,1,1,1,1,1,1,1,1]
+            COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+            SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+            UNIT: [None,None,None,None,None,1,1,1,1,1,1,1,1]
           VALUES:
-            - [1,methanol|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-            - [2,methanol|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
-            - [1,methane|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
-            - [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+            - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+            - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+            - [1,methane|ethanol,methane,CH4,g,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+            - [2,methane|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 """
 
+# NOTE: current file path
+parent_path = os.path.dirname(os.path.abspath(__file__))
+print(parent_path)
+
 # SECTION: check component availability
-component_name = 'carbon dioxide'
-component_formula = 'CO2'
-component_state = 'g'
-
-component = Component(
-    name=component_name,
-    formula=component_formula,
-    state=component_state
+# methanol
+methanol = Component(
+    name='methanol',
+    formula='CH3OH',
+    state='l'
 )
 
-# SECTION: map reference content to component
-# ! default check with state
-component_ref_thermodb_default: ComponentReferenceThermoDB = component_reference_mapper(
-    component=component,
+# ethanol
+ethanol = Component(
+    name='ethanol',
+    formula='C2H5OH',
+    state='l'
+)
+
+# methane
+methane = Component(
+    name='methane',
+    formula='CH4',
+    state='g'
+)
+
+# NOTE: components
+comp1 = methanol.name  # 'methanol'
+comp2 = ethanol.name  # 'ethanol'
+# ! >> binary mixture
+binary_mixture = [methanol, ethanol]
+# ! >> multi-component mixture
+multi_component_mixture = [methanol, ethanol, methane]
+
+# >> mixture name
+mixture_name = f"{comp1}-{comp2}"
+print(f"mixture_name: {mixture_name}")
+
+# ================================
+# LINK: BINARY MIXTURE
+# ================================
+# SECTION: map reference content
+# ! default check with state (binary mixture)
+mixture_ref_thermodb_default: MixtureReferenceThermoDB | None = mixture_reference_mapper(
+    components=binary_mixture,
     reference_content=REFERENCE_CONTENT,
-    component_key='Formula-State'
 )
-# print result
-print(
-    f"[bold green]Component Reference ThermoDB (default check with state):[/bold green] {component_ref_thermodb_default}\n")
+print(f"mixture_ref_thermodb_default: {type(mixture_ref_thermodb_default)}")
+
+if mixture_ref_thermodb_default is None:
+    raise ValueError("mixture_ref_thermodb_default is None")
 
 # NOTE: build component thermodb
 # ! custom reference
 custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! reference config
-reference_config = component_ref_thermodb_default.reference_thermodb.configs
+reference_config = mixture_ref_thermodb_default.reference_thermodb.configs
 # ! ignore labels
-ignore_labels = component_ref_thermodb_default.reference_thermodb.ignore_labels
+ignore_labels = mixture_ref_thermodb_default.reference_thermodb.ignore_labels
 
-# build component thermodb
-component_thermodb = check_and_build_component_thermodb(
-    component=component,
+# NOTE: normal build
+# ! >> binary mixture
+thermodb_mixture_ = check_and_build_mixture_thermodb(
+    components=binary_mixture,
     reference_config=reference_config,
     custom_reference=custom_reference,
-    component_key='Formula-State',
-    ignore_state_props=ignore_labels
 )
-# print result
-print(
-    f"[bold green]Component ThermoDB (from custom reference):[/bold green] {component_thermodb}\n")
-if component_thermodb:
-    print(
-        f"[bold green]Component ThermoDB Data:[/bold green] {component_thermodb.check()}\n")
+print(f"thermodb_mixture_: {type(thermodb_mixture_)}")
 
-# SECTION: ignore state check
-# ! ignore_component_state=True to ignore all state check for properties
-component_ref_thermodb: ComponentReferenceThermoDB = component_reference_mapper(
-    component=component,
+# >> thermodb
+if thermodb_mixture_ is None:
+    raise ValueError("thermodb_mixture_ is None")
+
+# check
+print(f"thermodb checks: {thermodb_mixture_.check()}")
+
+# ================================
+# LINK: MULTI-COMPONENT MIXTURE
+# ================================
+# ! multi-component mixture
+mixture_ref_thermodb_multi: MixtureReferenceThermoDB | None = mixture_reference_mapper(
+    components=multi_component_mixture,
     reference_content=REFERENCE_CONTENT,
-    component_key='Formula-State',
+    mixture_names=["methanol | ethanol", "methane | ethanol"],
     ignore_component_state=True,
 )
-# print result
-print(
-    f"[bold green]Component Reference ThermoDB:[/bold green] {component_ref_thermodb}\n")
+print(f"mixture_ref_thermodb_multi: {type(mixture_ref_thermodb_multi)}")
+
+if mixture_ref_thermodb_multi is None:
+    raise ValueError("mixture_ref_thermodb_multi is None")
 
 # NOTE: build component thermodb
 # ! custom reference
 custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! reference config
-reference_config = component_ref_thermodb.reference_thermodb.configs
+reference_config = mixture_ref_thermodb_multi.reference_thermodb.configs
 # ! ignore labels
-ignore_labels = component_ref_thermodb.reference_thermodb.ignore_labels
+ignore_labels = mixture_ref_thermodb_multi.reference_thermodb.ignore_labels
 
-# build component thermodb
-component_thermodb = check_and_build_component_thermodb(
-    component=component,
+# ! >> multi-component mixture
+# NOTE: normal build
+thermodb_mixture_multi_ = check_and_build_mixture_thermodb(
+    components=multi_component_mixture,
     reference_config=reference_config,
     custom_reference=custom_reference,
-    component_key='Formula-State',
+    mixture_names=["methanol | ethanol", "methane | ethanol"],
     ignore_state_props=ignore_labels
 )
-# print result
-print(
-    f"[bold green]Component ThermoDB (from custom reference, ignore_component_state=True):[/bold green] {component_thermodb}\n")
-if component_thermodb:
-    print(
-        f"[bold green]Component ThermoDB Data:[/bold green] {component_thermodb.check()}\n")
+print(f"thermodb_components_multi_: {type(thermodb_mixture_multi_)}")
 
-# SECTION: ignore state for specific properties
-# ! ignore_state_props to ignore state check for specific properties
-ignore_state_props = ['Cp_IG', 'MW']
-component_ref_thermodb2: ComponentReferenceThermoDB = component_reference_mapper(
-    component=component,
+# >> thermodb
+if thermodb_mixture_multi_ is None:
+    raise ValueError("thermodb_components_multi_ is None")
+# check
+print(
+    f"thermodb_multi checks: {thermodb_mixture_multi_.check()}")
+
+# ================================
+# LINK: MULTI-COMPONENT MIXTURE WITH IGNORE STATE
+# ================================
+# SECTION: build component thermodb with ignore state
+ignore_state_props = ['a']
+
+# ! multi-component mixture
+mixture_ref_thermodb_multi: MixtureReferenceThermoDB | None = mixture_reference_mapper(
+    components=multi_component_mixture,
     reference_content=REFERENCE_CONTENT,
-    component_key='Formula-State',
+    mixture_names=["methanol | ethanol", "methane | ethanol"],
     ignore_state_props=ignore_state_props
 )
-# print result
-print(
-    f"[bold green]Component Reference ThermoDB (ignore_state_props={ignore_state_props}):[/bold green] {component_ref_thermodb2}\n")
+print(f"mixture_ref_thermodb_multi: {type(mixture_ref_thermodb_multi)}")
+
+if mixture_ref_thermodb_multi is None:
+    raise ValueError("mixture_ref_thermodb_multi is None")
 
 # NOTE: build component thermodb
 # ! custom reference
 custom_reference: Dict[str, List[str]] = {'reference': [REFERENCE_CONTENT]}
 # ! reference config
-reference_config = component_ref_thermodb2.reference_thermodb.configs
+reference_config = mixture_ref_thermodb_multi.reference_thermodb.configs
 # ! ignore labels
-ignore_labels = component_ref_thermodb2.reference_thermodb.ignore_labels
+ignore_labels = mixture_ref_thermodb_multi.reference_thermodb.ignore_labels
 
-# build component thermodb
-component_thermodb = check_and_build_component_thermodb(
-    component=component,
+# NOTE: ignore state for specific properties
+thermodb_component_ignore_state_ = check_and_build_mixture_thermodb(
+    components=multi_component_mixture,
     reference_config=reference_config,
     custom_reference=custom_reference,
-    component_key='Formula-State',
+    mixture_names=["methanol | ethanol", "methane | ethanol"],
     ignore_state_props=ignore_labels
 )
-# print result
 print(
-    f"[bold green]Component ThermoDB (from custom reference, ignore_state_props={ignore_state_props}):[/bold green] {component_thermodb}\n")
-if component_thermodb:
-    print(
-        f"[bold green]Component ThermoDB Data:[/bold green] {component_thermodb.check()}\n")
+    f"thermodb_component_ignore_state_: {type(thermodb_component_ignore_state_)}")
+
+# >> thermodb
+if thermodb_component_ignore_state_ is None:
+    raise ValueError("thermodb_component_ignore_state_ is None")
+
+# check
+print(
+    f"thermodb_ignore_state_ checks: {thermodb_component_ignore_state_.check()}")
