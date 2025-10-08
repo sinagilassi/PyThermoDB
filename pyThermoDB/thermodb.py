@@ -1562,7 +1562,7 @@ def check_and_build_mixture_thermodb(
     thermodb_save_path: Optional[str] = None,
     verbose: bool = False,
     **kwargs
-) -> CompBuilder | None:
+) -> CompBuilder:
     '''
     Check and build `multi-component mixture` thermodynamic databook (thermodb) including matrix-data. The mixture is defined by a list of Component objects. For instance, three components can form a ternary mixture. Thus, the matrix table containing binary parameters for the three binary pairs will be checked and built in the thermodb.
 
@@ -1606,8 +1606,8 @@ def check_and_build_mixture_thermodb(
 
     Returns
     -------
-    CompBuilder : object | None
-        CompBuilder object used for building component thermodynamic databook, or None if no valid properties were found to build the thermodb.
+    CompBuilder : object
+        CompBuilder object used for building component thermodynamic databook.
 
     Notes
     -----
@@ -2037,7 +2037,8 @@ def check_and_build_mixture_thermodb(
             logger.error(
                 f"No valid properties found to build the thermodb for components: {component_names}."
             )
-            return None
+            # <> raise error
+            raise
 
         # NOTE: init thermodb
         thermodb_comp = build_thermodb(
@@ -2461,7 +2462,7 @@ def build_component_thermodb_from_reference(
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
 
-def build_components_thermodb_from_reference(
+def build_mixture_thermodb_from_reference(
     components: List[Component],
     reference_content: str,
     component_key: Literal[
@@ -2470,6 +2471,8 @@ def build_components_thermodb_from_reference(
     mixture_key: Literal[
         'Name', 'Formula'
     ] = 'Name',
+    mixture_names: Optional[List[str]] = None,
+    column_name: str = 'Mixture',
     delimiter: str = '|',
     add_label: Optional[bool] = True,
     check_labels: Optional[bool] = True,
@@ -2477,10 +2480,11 @@ def build_components_thermodb_from_reference(
     message: Optional[str] = None,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
+    verbose: Optional[bool] = False,
     **kwargs
-):
+) -> MixtureThermoDB:
     '''
-    Build components (binary mixture) thermodynamic databook (thermodb) including matrix-data.
+    Build mixture thermodynamic databook (thermodb) including only matrix-data.
 
     Parameters
     ----------
@@ -2494,6 +2498,10 @@ def build_components_thermodb_from_reference(
         Key to identify the components in the mixture, by default 'Name'
         - If 'Name', it will use component names to identify the components in the mixture.
         - If 'Formula', it will use component formulas to identify the components in the mixture.
+    mixture_names : Optional[List[str]], optional
+        List of mixture names to identify the mixture in the reference content, by default None
+    column_name : str, optional
+        Column name to identify the mixture property in the reference content, by default 'Mixture'
     delimiter : str, optional
         Delimiter to separate component names/formulas in the mixture, by default '|'
     add_label : Optional[bool], optional
@@ -2508,6 +2516,8 @@ def build_components_thermodb_from_reference(
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
+    verbose : Optional[bool], optional
+        Whether to print verbose messages during the build process, by default False
     **kwargs
         Additional keyword arguments.
         - delimiter: str
@@ -2547,18 +2557,53 @@ def build_components_thermodb_from_reference(
             raise TypeError("All components must be Component objects")
 
         # create binary system
-        if len(components) != 2:
+        if len(components) < 2:
             raise ValueError(
-                "Only binary systems are supported, provide exactly two components."
-            )
+                "At least two components are required to form a binary mixture.")
+
+        # NOTE: mixture config
+        # mixture type
+        mixture_type = 'BINARY' if len(components) == 2 else 'MULTI-COMPONENT'
+
+        # component details
+        component_names = [c.name for c in components]
+        component_formulas = [c.formula for c in components]
+        component_states = [c.state for c in components]
 
         # ! >> mixture
-        mixture_id = create_binary_mixture_id(
-            component_1=components[0],
-            component_2=components[1],
+        mixture_ids = create_mixture_ids(
+            components=components,
             mixture_key=mixture_key,
             delimiter=delimiter
         )
+
+        # ! >> mixture names
+        # init std mixture names
+        mixture_names_std: Optional[List[str]] = None
+
+        # check mixture names are valid
+        if mixture_names is not None:
+            if not isinstance(mixture_names, list):
+                raise TypeError("mixture_names must be a list of strings")
+            if not all(isinstance(m, str) for m in mixture_names):
+                raise TypeError("All mixture names must be strings")
+            # strip whitespace
+            mixture_names = [m.strip() for m in mixture_names]
+
+            # set mixture names std
+            mixture_names_std = []
+
+            # standardize mixture names
+            for i in range(len(mixture_names)):
+                # split by delimiter
+                parts = [
+                    part.strip() for part in mixture_names[i].split(delimiter) if part.strip() != ''
+                ]
+                # sort parts
+                parts_sorted = sorted(parts)
+                # join back
+                mixture_name_std = delimiter.join(parts_sorted)
+                mixture_names_std.append(mixture_name_std)
 
         # SECTION: create ReferenceChecker instance
         ReferenceChecker_ = ReferenceChecker(reference_content)
@@ -2570,26 +2615,68 @@ def build_components_thermodb_from_reference(
         if not isinstance(databooks, list) or not databooks:
             raise ValueError("No databooks found in the reference content.")
 
-        # init component reference config
-        component_reference_configs = ReferenceChecker_.get_binary_mixture_reference_configs(
-            components=components,
-            add_label=add_label,
-            check_labels=check_labels,
-            component_key=component_key,
-            mixture_key=mixture_key,
-            delimiter=delimiter,
-            ignore_state_props=ignore_state_props
-        )
+        # NOTE: component reference config
+        if mixture_type == 'BINARY':
+            # >> binary mixture
+            mixture_reference_configs = ReferenceChecker_.get_binary_mixture_reference_configs(
+                components=components,
+                add_label=add_label,
+                check_labels=check_labels,
+                component_key=component_key,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+                ignore_state_props=ignore_state_props
+            )
+        elif mixture_type == 'MULTI-COMPONENT':
+            # >> multi-component mixture
+            mixtures_reference_configs = ReferenceChecker_.get_mixtures_reference_configs(
+                components=components,
+                add_label=add_label,
+                check_labels=check_labels,
+                component_key=component_key,
+                mixture_key=mixture_key,
+                delimiter=delimiter,
+                column_name=column_name,
+                ignore_state_props=ignore_state_props,
+                mixture_names=mixture_names_std
+            )
+
+            # >> check all mixture reference config is valid
+            if not isinstance(mixtures_reference_configs, dict) or not mixtures_reference_configs:
+                raise ValueError(
+                    f"No reference config found for '{mixture_ids}' in the provided reference content."
+                )
+
+            # >> not empty
+            if not all(isinstance(v, dict) and v for v in mixtures_reference_configs.values()):
+                raise ValueError(
+                    f"No valid reference config found for '{mixture_ids}' in the provided reference content."
+                )
+
+            # >> set mixture_reference_configs
+            mixture_reference_configs = mixtures_reference_configs[
+                mixture_ids[0]
+            ] if mixture_ids[0] in mixtures_reference_configs else {}
+
+            # check
+            if not mixture_reference_configs:
+                raise ValueError(
+                    f"No reference config found for '{mixture_ids[0]}' in the provided reference content."
+                )
+        else:
+            raise ValueError(
+                f"Mixture type '{mixture_type}' is not supported."
+            )
 
         # NOTE: check if reference_config is a dict
-        if not isinstance(component_reference_configs, dict) or not component_reference_configs:
+        if not isinstance(mixture_reference_configs, dict) or not mixture_reference_configs:
             raise ValueError(
-                f"No reference config found for '{mixture_id}' in the provided reference content."
+                f"No reference config found for '{mixture_ids}' in the provided reference content."
             )
 
         # SECTION: generate reference rules (link)
-        reference_rules = ReferenceChecker_.generate_binary_mixture_reference_rules(
-            reference_configs=component_reference_configs
+        reference_rules = ReferenceChecker_.generate_mixture_reference_rules(
+            reference_configs=mixture_reference_configs
         )
 
         # SECTION: build thermodb
@@ -2619,7 +2706,7 @@ def build_components_thermodb_from_reference(
             raise TypeError("Databook list must be a list")
 
         # SECTION: check both databook and table
-        for prop_name, prop_idx in component_reference_configs.items():
+        for prop_name, prop_idx in mixture_reference_configs.items():
             # property name
             prop_name = prop_name.strip()
 
@@ -2638,6 +2725,8 @@ def build_components_thermodb_from_reference(
             # ! label/labels
             # >> check label
             label_ = prop_idx.get('label', None)
+
+            # >> check label
             if label_:
                 # append to labels
                 labels.append(str(label_))
@@ -2646,8 +2735,8 @@ def build_components_thermodb_from_reference(
                 if len(ignore_state_props) > 0:
                     # ! for label
                     ignore_state_props_check = ignore_state_in_prop(
-                        label_,
-                        ignore_state_props
+                        prop_name=label_,
+                        ignore_state_props=ignore_state_props
                     )
 
                     # >> set & append to ignore labels
@@ -2680,17 +2769,44 @@ def build_components_thermodb_from_reference(
                             ignore_labels.append(str(item))
                             ignore_props.append(str(prop_name))
 
-            # SECTION: check component
-            mixture_checker_ = ReferenceChecker_.check_binary_mixture_availability(
-                components=components,
-                databook_name=databook_,
-                table_name=table_,
-                component_key=component_key,
-                mixture_key=mixture_key,
-                delimiter=delimiter,
-                ignore_component_state=ignore_component_state,
-                ignore_state_props=ignore_state_props
-            )
+            # SECTION: check mixture availability
+            # >> check mixture
+            if mixture_type == 'BINARY':
+                # >> binary mixture
+                mixture_checker_ = ReferenceChecker_.check_binary_mixture_availability(
+                    components=components,
+                    databook_name=databook_,
+                    table_name=table_,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props
+                )
+            elif mixture_type == 'MULTI-COMPONENT':
+                # >> multi-component mixture
+                mixtures_checker_ = ReferenceChecker_.check_mixtures_availability(
+                    components=components,
+                    databook_name=databook_,
+                    table_name=table_,
+                    component_key=component_key,
+                    mixture_key=mixture_key,
+                    delimiter=delimiter,
+                    column_name=column_name,
+                    mixture_names=mixture_names_std,
+                    ignore_component_state=ignore_component_state,
+                    ignore_state_props=ignore_state_props
+                )
+
+                # check mixture_checker_
+                if not isinstance(mixtures_checker_, dict):
+                    raise TypeError("Mixtures checker must be a dictionary")
+
+                # FIXME
+            else:
+                raise ValueError(
+                    f"Mixture type '{mixture_type}' is not supported."
+                )
 
             # check
             if not isinstance(mixture_checker_, dict):
@@ -2722,14 +2838,15 @@ def build_components_thermodb_from_reference(
                     mixture_key=mixture_key,
                     delimiter=delimiter,
                     ignore_component_state=ignore_component_state,
-                    column_name=None
+                    column_name=column_name,
+                    mixture_names=mixture_names_std
                 )
 
                 # save
                 res[prop_name] = item_
             except Exception as e:
                 logging.error(
-                    f"Building property '{prop_name}' for mixture '{mixture_id}' failed! {e}")
+                    f"Building property '{prop_name}' for mixture '{mixture_ids}' failed! {e}")
                 continue
 
             # NOTE: reset loop vars
@@ -2744,8 +2861,8 @@ def build_components_thermodb_from_reference(
         # NOTE: check message
         if message is None:
             prop_names_list = ', '.join(
-                list(component_reference_configs.keys()))
-            message = f"Thermodb including {prop_names_list} for mixture: {mixture_id}"
+                list(mixture_reference_configs.keys()))
+            message = f"Thermodb including {prop_names_list} for mixture: {mixture_ids}"
 
         # NOTE: remove duplicate labels
         if labels and isinstance(labels, list):
@@ -2799,7 +2916,7 @@ def build_components_thermodb_from_reference(
         reference_thermodb = ReferenceThermoDB(
             reference=reference,
             contents=[reference_content],
-            configs=component_reference_configs,
+            configs=mixtures_reference_configs,
             rules=reference_rules,
             labels=labels,
             ignore_labels=ignore_labels,
@@ -2816,4 +2933,4 @@ def build_components_thermodb_from_reference(
         # return
         return component_thermodb
     except Exception as e:
-        raise Exception(f"Building {mixture_id} thermodb failed! {e}")
+        raise Exception(f"Building {mixture_ids} thermodb failed! {e}")

@@ -6,7 +6,7 @@ import pyThermoDB as ptdb
 from pyThermoDB import (
     build_components_thermodb,
     check_and_build_components_thermodb,
-    build_components_thermodb_from_reference
+    build_mixture_thermodb_from_reference
 )
 from pyThermoDB.core import TableMatrixData
 from pyThermoDB.references import ReferenceConfig

@@ -3,7 +3,7 @@ import os
 from pyThermoDB import (
     build_component_thermodb_from_reference,
     ComponentThermoDB,
-    build_components_thermodb_from_reference,
+    build_mixture_thermodb_from_reference,
     MixtureThermoDB
 )
 from pythermodb_settings.models import Component
@@ -208,7 +208,7 @@ mixture_name = f"{comp1}-{comp2}"
 print(f"mixture_name: {mixture_name}")
 
 # SECTION: build component thermodb
-thermodb_components_: MixtureThermoDB = build_components_thermodb_from_reference(
+thermodb_components_: MixtureThermoDB = build_mixture_thermodb_from_reference(
     components=components,
     reference_content=REFERENCE_CONTENT,
 )
@@ -221,7 +221,7 @@ print(f"thermodb_: {thermodb_}")
 print(f"thermodb checks: {thermodb_.check()}")
 
 # NOTE: build and save
-thermodb_component_save_: MixtureThermoDB = build_components_thermodb_from_reference(
+thermodb_component_save_: MixtureThermoDB = build_mixture_thermodb_from_reference(
     components=components,
     reference_content=REFERENCE_CONTENT,
     thermodb_save=True,
@@ -235,7 +235,7 @@ print(
 # SECTION: build component thermodb with ignore state
 # NOTE: ignore state for specific properties
 ignore_state_props = ['a']
-thermodb_component_ignore_state_: MixtureThermoDB = build_components_thermodb_from_reference(
+thermodb_component_ignore_state_: MixtureThermoDB = build_mixture_thermodb_from_reference(
     components=components,
     reference_content=REFERENCE_CONTENT,
     ignore_state_props=ignore_state_props,
@@ -249,7 +249,7 @@ print(f"thermodb_ignore_state_: {thermodb_ignore_state_}")
 print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")
 
 # NOTE: build and save
-thermodb_component_ignore_state_save_: MixtureThermoDB = build_components_thermodb_from_reference(
+thermodb_component_ignore_state_save_: MixtureThermoDB = build_mixture_thermodb_from_reference(
     components=components,
     reference_content=REFERENCE_CONTENT,
     ignore_state_props=ignore_state_props,
