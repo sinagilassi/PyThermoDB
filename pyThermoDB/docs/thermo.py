@@ -2976,7 +2976,6 @@ class ThermoDB(ManageData):
         - The `mixture_key` parameter determines whether to use the components' names or formulas
         - The `ignore_component_state` parameter allows ignoring the state of the components when checking availability in mixture types.
         - The `column_name` parameter allows specifying a custom column name for component or mixture identification.
-
         '''
         try:
             # NOTE: detect table type

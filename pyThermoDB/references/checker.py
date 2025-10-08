@@ -4288,6 +4288,9 @@ class ReferenceChecker:
                 logging.error("mixture_names must be a list.")
                 mixture_names = None
 
+            # std mixture names
+            mixture_names_std: Optional[List[str]] = None
+
             # SECTION: create binary mixture names if not provided
             if mixture_names is not None:
                 # ! use provided mixture names
@@ -4300,8 +4303,18 @@ class ReferenceChecker:
                         raise ValueError(
                             "Each mixture name must be a non-empty string.")
 
+                    # split by delimiter
+                    parts = [part.strip() for part in name.split(delimiter)]
+                    if len(parts) < 2:
+                        raise ValueError(
+                            f"Mixture name '{name}' must contain at least two components separated by '{delimiter}'.")
+
+                    # rebuild standardized mixture name
+                    # FIXME
+                    name_std = delimiter.join(sorted(parts))
+
                     # update
-                    binary_mixtures[name.lower().strip()] = create_mixture_from_components(
+                    binary_mixtures[name_std] = create_mixture_from_components(
                         mixture_id=name,
                         components=components,
                     )
@@ -4750,7 +4763,7 @@ class ReferenceChecker:
                 'EQUATIONS': {}
             }
 
-    def generate_binary_mixture_reference_rules(
+    def generate_mixture_reference_rules(
         self,
         reference_configs: Dict[str, ComponentConfig]
     ) -> Dict[str, ComponentRule]:
