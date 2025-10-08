@@ -9,7 +9,7 @@ from .main import (
     extract_reference_from_str,
     load_default_symbols
 )
-from .reference_mapper import component_reference_mapper
+from .reference_mapper import component_reference_mapper, mixture_reference_mapper
 
 __all__ = [
     "ReferenceConfig",
@@ -23,4 +23,5 @@ __all__ = [
     "component_reference_mapper",
     "extract_reference_from_str",
     "load_default_symbols",
+    "mixture_reference_mapper"
 ]

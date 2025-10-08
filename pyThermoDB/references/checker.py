@@ -3427,6 +3427,7 @@ class ReferenceChecker:
         ] = 'Name',
         delimiter: str = '|',
         ignore_component_state: bool = False,
+        **kwargs
     ) -> Dict[str, str | Dict[str, str | float | bool]]:
         '''
         Check if all components in multiple binary mixtures are available in the specified databook and table. A component is defined as:
@@ -3453,18 +3454,21 @@ class ReferenceChecker:
             The delimiter used in the mixture identifiers, by default '|'.
         ignore_component_state : bool, optional
             Whether to ignore the state of the components when checking availability, by default False.
+        **kwargs
+            Additional keyword arguments.
+            - ignore_state_props: List[str], optional
+                A list of state properties to ignore in the check.
 
         Returns
         -------
         str | dict[str, Union[str, str | float | bool, list]]
             Summary of the mixtures availability as a string or dictionary in the specified format.
 
-            - 'databook_id': databook id,
-            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
-            - 'table_id': table id,
-            - 'table_name': 'Physical Properties of Pure Compounds',
-            - 'mixtures': list of mixture availability results,
-            - 'all_available': True if all mixtures are available, False otherwise
+            - 'available': all_available,
+            - 'ignore_component_state': ignore_component_state,
+            - 'component_key': component_key,
+            - 'mixture_key': mixture_key,
+            - 'available_count': available_count,
 
         Notes
         -----
@@ -3480,14 +3484,15 @@ class ReferenceChecker:
                 binary_mixtures = {}
 
                 # iterate through mixture names
-                for name in mixture_names:
-                    if not isinstance(name, str) or not name.strip():
+                for mix_id in mixture_names:
+                    if not isinstance(mix_id, str) or not mix_id.strip():
                         raise ValueError(
-                            "Each mixture name must be a non-empty string.")
+                            "Each mixture mix_id must be a non-empty string.")
 
                     # update
-                    binary_mixtures[name.lower().strip()] = create_mixture_from_components(
-                        mixture_id=name,
+                    # based on mixture key (already formed)
+                    binary_mixtures[mix_id.lower().strip()] = create_mixture_from_components(
+                        mixture_id=mix_id,
                         components=components,
                     )
             else:
@@ -3518,6 +3523,7 @@ class ReferenceChecker:
                         mixture_key=mixture_key,
                         delimiter=delimiter,
                         ignore_component_state=ignore_component_state,
+                        **kwargs
                     )
 
                     # append check result
