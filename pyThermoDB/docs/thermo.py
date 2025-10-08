@@ -1910,6 +1910,11 @@ class ThermoDB(ManageData):
             # SECTION: create mixtures
             if mixture_names is not None:
                 # ! use provided mixture names
+                # >> check names validity
+                if not isinstance(mixture_names, list) or not mixture_names:
+                    raise ValueError(
+                        "mixture_names must be a non-empty list of strings.")
+
                 # init binary mixtures dict
                 binary_mixtures = {}
 
@@ -3140,6 +3145,12 @@ class ThermoDB(ManageData):
                         if mixture_names is None:
                             mixture_ids = list(binary_mixtures.keys())
                         else:
+                            # ! use provided mixture names
+                            # >> check provided mixture names
+                            if not isinstance(mixture_names, list) or not mixture_names:
+                                raise Exception(
+                                    'mixture_names must be a non-empty list!')
+                            # set
                             mixture_ids = mixture_names
 
                         # NOTE: mixture data

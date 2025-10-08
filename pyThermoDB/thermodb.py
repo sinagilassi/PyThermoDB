@@ -1611,7 +1611,8 @@ def check_and_build_mixture_thermodb(
 
     Notes
     -----
-    1- Property dict should contain the following format:
+    1- Reference config contains property dict which should contain the following format:
+
     ```python
     # Dict[str, Dict[str, str]]
     reference_config = {
@@ -1623,6 +1624,11 @@ def check_and_build_mixture_thermodb(
                 'g21': 'g21',
                 'alpha': 'alpha',
                 }
+        },
+        'property_name_2': {
+            'databook': 'CUSTOM-REF-1',
+            'table': 'Activity-Coefficient',
+            'label': 'label_name_2'
         },
     }
 
@@ -1724,6 +1730,9 @@ def check_and_build_mixture_thermodb(
             delimiter=delimiter
         )
 
+        # mixture names std
+        mixture_names_std = None
+
         # check mixture names are valid
         if mixture_names is not None:
             if not isinstance(mixture_names, list):
@@ -1733,7 +1742,7 @@ def check_and_build_mixture_thermodb(
             # strip whitespace
             mixture_names = [m.strip() for m in mixture_names]
 
-            # mixture std
+            # set mixture names std
             mixture_names_std = []
 
             # standardize mixture names
@@ -1921,7 +1930,7 @@ def check_and_build_mixture_thermodb(
                         components=components,
                         databook=databook_,
                         table=table_,
-                        mixture_names=mixture_names,
+                        mixture_names=mixture_names_std,
                         column_name=column_name,
                         component_key=component_key,
                         mixture_key=mixture_key,
@@ -1996,7 +2005,7 @@ def check_and_build_mixture_thermodb(
                     delimiter=delimiter,
                     ignore_component_state=ignore_component_state,
                     column_name=column_name,
-                    mixture_names=mixture_names
+                    mixture_names=mixture_names_std
                 )
 
                 # save
