@@ -224,7 +224,19 @@ table_components_ = ReferenceChecker_.get_table_components(
     'CUSTOM-REF-1',
     'general-data'
 )
-print(f"Table Components: {table_components_}")
+print("Table Components:")
+print(table_components_)
+
+# NOTE: get all table components
+all_table_components_ = ReferenceChecker_.get_all_table_components(
+    databook_name='CUSTOM-REF-1'
+)
+print("All Table Components:")
+print(all_table_components_)
+
+all_table_components_ = ReferenceChecker_.get_all_table_components()
+print("All Table Components:")
+print(all_table_components_)
 
 # SECTION: get table data
 table_data_ = ReferenceChecker_.get_table_data(
