@@ -884,6 +884,64 @@ class ReferenceChecker:
             logging.error(f"Error getting table components: {e}")
             return None
 
+    def get_all_table_components(
+        self,
+        databook_name: Optional[str] = None,
+        column_names: List[str] = ['Name', 'Formula', 'State']
+    ):
+        """
+        Get the components registered in all tables in all databooks.
+
+        Parameters
+        ----------
+        databook_name : Optional[str], optional
+            The name of the databook. If None, all databooks are considered, by default None.
+        column_names : List[str], optional
+            The names of the columns to extract from the table, by default ['Name', 'Formula', 'State'].
+
+        Returns
+        -------
+        Optional[Dict[str, Dict[str, Dict[str, Any]]]]
+            A dictionary containing the components for each table in each databook if they exist, otherwise None.
+        """
+        try:
+            # SECTION: check if databook_name is provided
+            if databook_name is not None:
+                # append databook_name to a list
+                databook_names = [databook_name]
+            else:
+                # get databook names
+                databook_names = self.get_databook_names()
+
+            if not databook_names:
+                logging.error("No databooks found in the reference.")
+                return None
+
+            # SECTION: extract components from all tables
+            all_components = {}
+            for databook_name in databook_names:
+                tables = self.get_databook_tables(databook_name)
+                if tables is None:
+                    logging.error(
+                        f"No tables found for databook: {databook_name}")
+                    continue
+
+                for table_name in tables.keys():
+                    components = self.get_table_components(
+                        databook_name=databook_name,
+                        table_name=table_name,
+                        column_names=column_names
+                    )
+                    if components is not None:
+                        all_components.setdefault(databook_name, {})[
+                            table_name
+                        ] = components
+
+            return all_components
+        except Exception as e:
+            logging.error(f"Error getting all table components: {e}")
+            return None
+
     def get_table_data(
         self,
         databook_name: str,
