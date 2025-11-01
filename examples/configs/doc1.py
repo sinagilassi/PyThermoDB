@@ -210,7 +210,8 @@ databook_table_values_ = ReferenceChecker_.get_table_values(
     'CUSTOM-REF-1',
     'general-data'
 )
-print(f"Databook Table Values: {databook_table_values_}")
+print(f"Databook Table Values:")
+print(databook_table_values_)
 
 # SECTION: get table description
 table_description_ = ReferenceChecker_.get_table_description(
@@ -243,7 +244,8 @@ table_data_ = ReferenceChecker_.get_table_data(
     'CUSTOM-REF-1',
     'general-data'
 )
-print(f"Table Data: {table_data_}")
+print("Table Data:")
+print(table_data_)
 
 # NOTE: get table data details (property name and symbols)
 table_data_details_ = ReferenceChecker_.get_table_data_details(
@@ -251,6 +253,25 @@ table_data_details_ = ReferenceChecker_.get_table_data_details(
     'general-data'
 )
 print(f"Table Data Details: {table_data_details_}")
+
+# NOTE: get table data structure
+table_data_structure_ = ReferenceChecker_.get_table_structure(
+    'CUSTOM-REF-1',
+    'general-data'
+)
+print("Table Data Structure: ")
+print(table_data_structure_)
+
+# NOTE: get full table data
+ignore_columns = ['No.', 'Name', 'Formula', 'State']
+full_table_data_ = ReferenceChecker_.get_full_table_data(
+    'CUSTOM-REF-1',
+    'general-data',
+    component_key='Name-Formula-State',
+    ignore_columns=ignore_columns
+)
+print("Full Table Data: ")
+print(full_table_data_)
 
 # SECTION: get table equations
 table_equations_ = ReferenceChecker_.get_table_equations(
