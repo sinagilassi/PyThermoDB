@@ -1014,6 +1014,163 @@ class ReferenceChecker:
             logging.error(f"Error getting table data: {e}")
             return None
 
+    def get_full_table_data(
+        self,
+        databook_name: str,
+        table_name: str,
+        component_key: Literal['Name-State', 'Formula-State',
+                               'Name-Formula-State'] = 'Name-State',
+        ignore_columns: Optional[List[str]] = None
+    ) -> List | None:
+        """
+        Get the full data of a specific table in a databook, including structure and values.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+        component_key : Literal['Name-State', 'Formula-State', 'name-Formula-State], optional
+            The key to use for components, by default 'Name-State'.
+
+        Returns
+        -------
+
+            A dictionary containing the full table data if it exists, otherwise None.
+        """
+        try:
+            # NOTE: get table structure
+            table_structure = self.get_table_structure(
+                databook_name,
+                table_name
+            )
+
+            if table_structure is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return None
+
+            # ! column
+            columns = table_structure.get('COLUMNS', [])
+            if not isinstance(columns, list):
+                logging.error("Table structure 'COLUMNS' must be a list.")
+                return None
+
+            # >> Name index
+            name_index = None
+            formula_index = None
+            state_index = None
+            for idx, col in enumerate(columns):
+                if col.lower() == 'name':
+                    name_index = idx
+                elif col.lower() == 'formula':
+                    formula_index = idx
+                elif col.lower() == 'state':
+                    state_index = idx
+
+            # check required indices based on component_key
+            if component_key == 'Name-State':
+                if name_index is None or state_index is None:
+                    logging.error(
+                        f"Table '{table_name}' does not contain required columns for 'Name-State'.")
+                    return None
+
+            elif component_key == 'Formula-State':
+                if formula_index is None or state_index is None:
+                    logging.error(
+                        f"Table '{table_name}' does not contain required columns for 'Formula-State'.")
+                    return None
+
+            elif component_key == 'Name-Formula-State':
+                if name_index is None or formula_index is None or state_index is None:
+                    logging.error(
+                        f"Table '{table_name}' does not contain required columns for 'Name-Formula-State'.")
+                    return None
+
+            # ! symbol
+            symbols = table_structure.get('SYMBOL', [])
+            if not isinstance(symbols, list):
+                logging.error("Table structure 'SYMBOL' must be a list.")
+                return None
+
+            # ! unit
+            units = table_structure.get('UNIT', [])
+            if not isinstance(units, list):
+                logging.error("Table structure 'UNIT' must be a list.")
+                return None
+
+            # NOTE: get table values
+            table_values = self.get_table_values(
+                databook_name,
+                table_name
+            )
+
+            if table_values is None:
+                logging.error(
+                    f"Table '{table_name}' values not found in databook '{databook_name}'.")
+                return None
+
+            # NOTE: construct full table data
+            full_table_data = []
+
+            # iterate over table values
+            for i, row in enumerate(table_values):
+                # check if row is a list
+                if not isinstance(row, list):
+                    logging.error("Table values must be a list of lists.")
+                    return None
+
+                # create key from component_key
+                if component_key == 'Name-State':
+                    if name_index is None or state_index is None:
+                        logging.error(
+                            f"Table '{table_name}' does not contain required columns for 'Name-State'.")
+                        return None
+                    key_ = f"{row[name_index]}-{row[state_index]}"
+                elif component_key == 'Formula-State':
+                    if formula_index is None or state_index is None:
+                        logging.error(
+                            f"Table '{table_name}' does not contain required columns for 'Formula-State'.")
+                        return None
+                    key_ = f"{row[formula_index]}-{row[state_index]}"
+                elif component_key == 'Name-Formula-State':
+                    if name_index is None or formula_index is None or state_index is None:
+                        logging.error(
+                            f"Table '{table_name}' does not contain required columns for 'Name-Formula-State'.")
+                        return None
+                    key_ = f"{row[name_index]}-{row[formula_index]}-{row[state_index]}"
+                else:
+                    logger.warning(
+                        f"Invalid component_key: {component_key}. Using row index as key.")
+                    return None
+
+                # create a dictionary for each row
+                row_data = {}
+                for idx, value in enumerate(row):
+                    # ! ignore columns if specified
+                    if ignore_columns and columns[idx] in ignore_columns:
+                        continue
+
+                    # create a dictionary for each column
+                    data_ = {
+                        "value": value.strip() if isinstance(value, str) else value,
+                        "symbol": symbols[idx] if idx < len(symbols) else None,
+                        "unit": units[idx] if idx < len(units) else None
+                    }
+
+                    # add to row_data
+                    row_data[columns[idx]] = data_
+
+                # append the row data to full_table_data
+                full_table_data.append({key_: row_data})
+
+            return full_table_data
+
+        except Exception as e:
+            logging.error(f"Error getting full table data: {e}")
+            return None
+
     def get_table_data_details(
         self,
         databook_name: str,
