@@ -263,6 +263,8 @@ print("Table Data Structure: ")
 print(table_data_structure_)
 
 # NOTE: get full table data
+# ! ignore columns example
+ignore_columns = None
 ignore_columns = ['No.', 'Name', 'Formula', 'State']
 full_table_data_ = ReferenceChecker_.get_full_table_data(
     'CUSTOM-REF-1',
