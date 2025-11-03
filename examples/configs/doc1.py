@@ -223,7 +223,8 @@ print(f"Table Description: {table_description_}")
 # SECTION: get table components
 table_components_ = ReferenceChecker_.get_table_components(
     'CUSTOM-REF-1',
-    'general-data'
+    'general-data',
+    key_names=['name', 'formula', 'state']
 )
 print("Table Components:")
 print(table_components_)

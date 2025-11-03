@@ -768,7 +768,8 @@ class ReferenceChecker:
         self,
         databook_name: str,
         table_name: str,
-        column_names: List[str] = ['Name', 'Formula', 'State']
+        column_names: List[str] = ['Name', 'Formula', 'State'],
+        key_names: List[str] = ['Name', 'Formula', 'State']
     ) -> Optional[Dict[str, Dict[str, Any]]]:
         """
         Get the components registered in a specific table in a databook.
@@ -781,6 +782,8 @@ class ReferenceChecker:
             The name of the table.
         column_names : List[str], optional
             The names of the columns to extract from the table, by default ['Name', 'Formula', 'State'].
+        key_names : List[str], optional
+            The names of the keys to use in the returned dictionary, by default ['Name', 'Formula', 'State'].
 
         Returns
         -------
@@ -816,6 +819,21 @@ class ReferenceChecker:
             if not isinstance(table_values, list):
                 logging.error(
                     f"Table '{table_name}' values are not a list.")
+                return None
+
+            # NOTE: check key name types
+            if not isinstance(key_names, list):
+                logging.error("key_names must be a list.")
+                return None
+
+            if len(key_names) != len(column_names):
+                logging.error(
+                    "key_names and column_names must have the same length.")
+                return None
+
+            # >> all elements type str
+            if not all(isinstance(k, str) for k in key_names):
+                logging.error("All elements in key_names must be strings.")
                 return None
 
             # SECTION: extract components
@@ -874,9 +892,9 @@ class ReferenceChecker:
 
                 # add component to components dictionary
                 components[component_name] = {
-                    'Name': component_name,
-                    'Formula': component_formula,
-                    'State': component_state
+                    key_names[0].strip(): component_name,
+                    key_names[1].strip(): component_formula,
+                    key_names[2].strip(): component_state
                 }
 
             return components
