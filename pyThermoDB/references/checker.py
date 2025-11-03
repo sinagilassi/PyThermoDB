@@ -1149,6 +1149,14 @@ class ReferenceChecker:
                     return None
 
                 # create a dictionary for each row
+                # NOTE: component id
+                row_id = {
+                    'name': row[name_index] if name_index is not None else None,
+                    'formula': row[formula_index] if formula_index is not None else None,
+                    'state': row[state_index] if state_index is not None else None
+                }
+
+                # NOTE: row data
                 row_data = {}
                 for idx, value in enumerate(row):
                     # ! ignore columns if specified
@@ -1165,8 +1173,14 @@ class ReferenceChecker:
                     # add to row_data
                     row_data[columns[idx]] = data_
 
+                # component id & prop data
+                comp_data = {
+                    'id': row_id,
+                    'properties': row_data
+                }
+
                 # append the row data to full_table_data
-                full_table_data.append({key_: row_data})
+                full_table_data.append(comp_data)
 
             return full_table_data
 
