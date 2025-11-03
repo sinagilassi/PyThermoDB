@@ -1018,8 +1018,11 @@ class ReferenceChecker:
         self,
         databook_name: str,
         table_name: str,
-        component_key: Literal['Name-State', 'Formula-State',
-                               'Name-Formula-State'] = 'Name-State',
+        component_key: Literal[
+            'Name-State',
+            'Formula-State',
+            'Name-Formula-State'
+        ] = 'Name-State',
         ignore_columns: Optional[List[str]] = None
     ) -> List | None:
         """
