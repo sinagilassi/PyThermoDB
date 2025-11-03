@@ -905,7 +905,8 @@ class ReferenceChecker:
     def get_all_table_components(
         self,
         databook_name: Optional[str] = None,
-        column_names: List[str] = ['Name', 'Formula', 'State']
+        column_names: List[str] = ['Name', 'Formula', 'State'],
+        key_names: List[str] = ['Name', 'Formula', 'State']
     ):
         """
         Get the components registered in all tables in all databooks.
@@ -916,6 +917,8 @@ class ReferenceChecker:
             The name of the databook. If None, all databooks are considered, by default None.
         column_names : List[str], optional
             The names of the columns to extract from the table, by default ['Name', 'Formula', 'State'].
+        key_names : List[str], optional
+            The names of the keys to use in the returned dictionary, by default ['Name', 'Formula', 'State'].
 
         Returns
         -------
@@ -948,7 +951,8 @@ class ReferenceChecker:
                     components = self.get_table_components(
                         databook_name=databook_name,
                         table_name=table_name,
-                        column_names=column_names
+                        column_names=column_names,
+                        key_names=key_names
                     )
                     if components is not None:
                         all_components.setdefault(databook_name, {})[

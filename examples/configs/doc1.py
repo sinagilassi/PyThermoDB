@@ -231,7 +231,8 @@ print(table_components_)
 
 # NOTE: get all table components
 all_table_components_ = ReferenceChecker_.get_all_table_components(
-    databook_name='CUSTOM-REF-1'
+    databook_name='CUSTOM-REF-1',
+    key_names=['name', 'formula', 'state']
 )
 print("All Table Components:")
 print(all_table_components_)
