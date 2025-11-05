@@ -4,7 +4,8 @@ from .ref import (
     DataResultType,
     MatrixDataType,
     DataResult,
-    EquationResult
+    EquationResult,
+    EquationRangeResult
 )
 
 from .references import (
@@ -37,5 +38,6 @@ __all__ = [
     'Temperature',
     'CustomReference',
     'ReferencesThermoDB',
-    'MixtureReferenceThermoDB'
+    'MixtureReferenceThermoDB',
+    'EquationRangeResult'
 ]

@@ -63,3 +63,15 @@ class EquationResult(TypedDict):
     message: Optional[str]
     databook_name: Optional[Union[str, int]]
     table_name: Optional[Union[str, int]]
+
+
+class EquationRangeResult(TypedDict):
+    """Equation Range Result Type Definition"""
+    name: Optional[str]
+    symbol: Optional[str]
+    unit: Optional[str]
+    x: Optional[List[float]]
+    y: Optional[List[float]]
+    message: Optional[str]
+    databook_name: Optional[Union[str, int]]
+    table_name: Optional[Union[str, int]]

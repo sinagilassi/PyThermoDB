@@ -121,7 +121,8 @@ class ThermoDB(ManageData):
             self,
             res_format: Literal[
                 'dict', 'list', 'dataframe', 'json'
-            ] = 'dataframe'):
+            ] = 'dataframe'
+    ):
         '''
         List all symbols
 
@@ -239,7 +240,8 @@ class ThermoDB(ManageData):
             self,
             res_format: Literal[
                 'list', 'dataframe', 'json'
-            ] = 'dataframe'):
+            ] = 'dataframe'
+    ):
         '''
         List all databooks
 
@@ -271,12 +273,13 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"databooks loading error! {e}")
 
-    def list_tables(self,
-                    databook: int | str,
-                    res_format: Literal[
-                        'list', 'dataframe', 'json', 'dict'
-                    ] = 'dataframe'
-                    ) -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
+    def list_tables(
+        self,
+        databook: int | str,
+        res_format: Literal[
+            'list', 'dataframe', 'json', 'dict'
+        ] = 'dataframe'
+    ) -> list[list[str]] | pd.DataFrame | str | dict[str, str]:
         '''
         List all tables in the selected databook
 
@@ -584,7 +587,73 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
-    def table_view(self, databook: str | int, table: str | int):
+    def data_table_structure(
+        self,
+        databook: int | str,
+        table: int | str
+    ):
+        """
+        Get the structure of `data-table` including: column, symbol, unit names.
+
+        Parameters
+        ----------
+        databook : int | str
+            databook name or id
+        table : int | str
+            table name or id
+
+        """
+        try:
+            # NOTE: get the tb
+            tb_data = self.data_load(
+                databook=databook,
+                table=table
+            )
+
+            # NOTE: extract structure
+            if isinstance(tb_data, TableData):
+                return tb_data.table_structure
+            else:
+                raise ValueError("No such data table found!")
+        except Exception as e:
+            raise Exception(f"Table structure loading error {e}")
+
+    def equation_table_structure(
+        self,
+        databook: int | str,
+        table: int | str
+    ):
+        """
+        Get the structure of `equation-table` including: column, symbol, unit names.
+
+        Parameters
+        ----------
+        databook : int | str
+            databook name or id
+        table : int | str
+            table name or id
+
+        """
+        try:
+            # NOTE: get the tb
+            tb_eq = self.equation_load(
+                databook=databook,
+                table=table
+            )
+
+            # NOTE: extract structure
+            if isinstance(tb_eq, TableEquation):
+                return tb_eq.table_structure
+            else:
+                raise ValueError("No such equation table found!")
+        except Exception as e:
+            raise Exception(f"Table structure loading error {e}")
+
+    def table_view(
+            self,
+            databook: str | int,
+            table: str | int
+    ):
         '''
         Display a table header columns and other info
 
