@@ -234,6 +234,9 @@ thermodb_component_ = ptdb.check_and_build_component_thermodb(
     custom_reference=ref,
     component_key='Formula-State'
 )
+# >> check
+if not thermodb_component_:
+    raise ValueError("ThermoDB component not built!")
 
 #  check
 print(f"check: {thermodb_component_.check()}")
@@ -246,6 +249,9 @@ thermodb_component_ = ptdb.check_and_build_component_thermodb(
     custom_reference=ref,
     component_key='Name-State'
 )
+# >> check
+if not thermodb_component_:
+    raise ValueError("ThermoDB component not built!")
 
 #  check
 print(f"check: {thermodb_component_.check()}")
