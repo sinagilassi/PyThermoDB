@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import Literal
+from typing import Literal, List
 # locals
 from ..models import PropertyMatch
 
@@ -131,3 +131,76 @@ class TableUtil:
                 availability=False,
                 search_mode='COLUMN',
             )
+
+    @staticmethod
+    def get_variable_range(
+        variable_names: List[str],
+        symbol_names: List[str],
+        range_suffix_brackets: List[str] = ["[@]", "(@)", "{@}", "@"],
+        range_names: List[str] = ["min", "max", "low", "high"],
+    ) -> dict[str, List[str]]:
+        """
+        Create a dictionary of variable range names based on the specified bracket type.
+
+        Parameters
+        ----------
+        variable_names : List[str]
+            The list of variable names to create range names for.
+        symbol_names : List[str]
+            The list of symbol names associated with the variables.
+        range_suffix_brackets : List[str]
+            The type of brackets to use for the range suffix.
+        range_names : List[str]
+            The list of range names to append the suffix to.
+
+        Returns
+        -------
+        Dict[str, List[str]]
+            A dictionary with variable names as keys and lists of available range names as values.
+        """
+        try:
+            # SECTION: create variable range names with respect to bracket type
+            variable_range_names = {}
+
+            # determine suffix based on bracket type
+            for var in variable_names:
+                # create
+                variable_range_names[var] = []
+                # create range names
+                for range_name in range_names:
+                    # iterate bracket types
+                    for range_suffix_bracket in range_suffix_brackets:
+                        if range_suffix_bracket == "[@]":
+                            range_name_full = f"{var}[{range_name}]"
+                        elif range_suffix_bracket == "(@)":
+                            range_name_full = f"{var}({range_name})"
+                        elif range_suffix_bracket == "{@}":
+                            range_name_full = f"{var}{{{range_name}}}"
+                        elif range_suffix_bracket == "@":
+                            range_name_full = f"{var}{range_name}"
+                        else:
+                            logger.warning(
+                                "Invalid range suffix bracket type!"
+                            )
+                            continue
+
+                        variable_range_names[var].append(range_name_full)
+
+            # SECTION: check if variable range names exist in symbol names
+            available_variable_ranges = {}
+
+            # >> iterate through variable range names
+            for var, range_names_list in variable_range_names.items():
+                # create var key
+                available_variable_ranges[var] = []
+
+                # >> iterate through range names
+                for range_name in range_names_list:
+                    if range_name in symbol_names:
+                        available_variable_ranges[var].append(range_name)
+
+            return available_variable_ranges
+
+        except Exception as e:
+            logger.error(f"Error creating variable range names: {e}")
+            return {}

@@ -5,7 +5,7 @@ import math
 import json
 from typing import Literal, Optional, List, Dict, Any
 # local
-from ..models import EquationResult, PropertyMatch
+from ..models import EquationResult, PropertyMatch, EquationRangeResult
 from ..utils import format_eq_data
 from .table_util import TableUtil
 
@@ -363,6 +363,23 @@ class TableEquation:
             logger.error(f'Loading error {e}!')
             return []
 
+    def get_arg_symbols(self):
+        '''Get argument symbols.'''
+        try:
+            # get arg symbols
+            _arg_symbols = self.arg_symbols
+
+            # extract symbols
+            symbols = []
+
+            # iterate through arg_symbols
+            for key, value in _arg_symbols.items():
+                symbols.append(value['symbol'])
+
+            return symbols
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
     def eq_info(self):
         '''Get equation information.'''
         try:
@@ -370,12 +387,110 @@ class TableEquation:
             _return = self.returns
 
             # check length
-            if len(_return) == 1:
+            # for dict
+            if isinstance(_return, dict):
                 return list(_return.values())[0]
+            elif isinstance(_return, list):
+                return _return[0]
+
+            # if len(_return) == 1:
+            #     return list(_return.values())[0]
             else:
                 raise Exception("Every equation has only one return")
         except Exception as e:
             raise Exception(f'Loading error {e}!')
+
+    def get_variable_range_values(
+            self,
+    ):
+        '''
+        Get variable range values for given variable names.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        Dict[str, List[float]]
+            A dictionary with variable names as keys and their range values as lists.
+
+        Examples
+        --------
+        >>> res = get_variable_range_values(variable_names=['T', 'P'])
+        >>> print(res)
+
+        ```python
+            {
+            'T': [100.0, 500.0],
+            'P': [1.0, 10.0]
+            }
+        ```
+        '''
+        try:
+            # SECTION: table structure
+            table_structure = self.table_structure
+
+            # check table structure
+            if table_structure is None:
+                raise Exception('Table structure not defined!')
+
+            # SECTION: get range names in the table structure
+            # NOTE: symbol
+            symbols = table_structure.get('SYMBOL', [])
+            # >> check
+            if not symbols:
+                logger.error('No symbols found in table structure!')
+                return {}
+
+            # NOTE: return variable names
+            args_symbols = self.get_arg_symbols()
+
+            # >> check
+            if not args_symbols:
+                logger.error('No argument symbols found!')
+                return {}
+
+            # NOTE: get valid variable range names
+            valid_variables = TableUtil.get_variable_range(
+                variable_names=args_symbols,
+                symbol_names=symbols
+            )
+            # >> check
+            if not valid_variables:
+                logger.error('No valid variable range names found!')
+                return {}
+
+            # SECTION: extract variable range values
+            # NOTE: table data
+            # ! values for the component
+            data = self.trans_data
+
+            # res
+            variable_ranges = {}
+
+            # iterate through variable names
+            for var_name, var_range_names in valid_variables.items():
+                # create key
+                variable_ranges[var_name] = {}
+
+                # iterate through range names
+                for range_name in var_range_names:
+                    # extract range data
+                    dt_ = data.get(range_name, None)
+
+                    if dt_ is None:
+                        logger.warning(
+                            f'No data found for range name: {range_name}!'
+                        )
+                        continue
+
+                    variable_ranges[var_name][range_name] = dt_
+
+            return variable_ranges
+        except Exception as e:
+            logger.error(f'Loading error {e}!')
+            return {}
 
     def cal(
         self,
@@ -442,6 +557,116 @@ class TableEquation:
         except Exception as e:
             logger.error(f'Calculation error {e}!')
             raise Exception(f'Calculation error {e}!')
+
+    def cal_range(
+        self,
+        variable_id: str,
+        variable_range_values: List[float],
+        message: str = '',
+        decimal_accuracy: int = 4,
+        **args,
+    ) -> EquationRangeResult:
+        """
+        Calculate over a specified range for a given variable.
+
+        Parameters
+        ----------
+        variable_id : str
+            The name or symbol of the variable to calculate over.
+        variable_range_values : List[float]
+            A list containing the range values for the variable.
+        message : str
+            A message to be printed.
+        decimal_accuracy : int
+            Decimal accuracy (default is 4).
+        args : dict
+            A dictionary containing other variable names and values.
+
+        Returns
+        -------
+        res: EquationRangeResult
+            Calculation results over the specified range.
+            - x: List of variable values.
+            - y: List of calculated results.
+            - name: Name of the calculated property.
+            - unit: Unit of the calculated property.
+            - symbol: Symbol of the calculated property.
+            - databook_name: Name of the databook.
+            - table_name: Name of the table.
+            - message: Message associated with the calculation.
+        """
+        try:
+            # SECTION: validate inputs
+            if not variable_id:
+                raise Exception('Variable name not defined!')
+
+            if not variable_range_values or len(variable_range_values) < 2:
+                raise Exception('Variable range values not properly defined!')
+
+            # NOTE: check variable availability
+            # variable symbol
+            variable_symbol = None
+
+            # iterate over args_symbols
+            for arg_k, arg_v in self.arg_symbols.items():
+                # check both name and symbol
+                if variable_id == arg_v['symbol']:
+                    # found
+                    variable_symbol = arg_v['symbol']
+                    break
+                elif variable_id == arg_v['name']:
+                    # found
+                    variable_symbol = arg_v['symbol']
+                    break
+
+            # >> check
+            if variable_symbol is None:
+                raise Exception(f'Variable {variable_id} not found!')
+
+            # SECTION: calculation over range
+            # init res
+            res = {
+                'x': [],
+                'y': [],
+                'name': '',
+                'unit': '',
+                'symbol': '',
+                'databook_name': self.databook_name,
+                'table_name': self.table_name,
+                'message': message or 'No message'
+            }
+
+            # NOTE: loop over range values
+            for var_value in variable_range_values:
+                # build args
+                calc_args = args.copy()
+                calc_args[variable_symbol] = var_value
+
+                # perform calculation
+                res_ = self.cal(
+                    message=message,
+                    decimal_accuracy=decimal_accuracy,
+                    **calc_args
+                )
+
+                # store result
+                res['x'].append(var_value)
+                res['y'].append(res_['value'])
+
+            # set name, unit, symbol
+            res['unit'] = res_['unit']
+            res['symbol'] = res_['symbol']
+            res['name'] = res_.get('name', None) or res_.get(
+                'equation_name', None)
+
+            # NOTE: convert to EquationRangeResult
+            res = EquationRangeResult(**res)
+
+            # res
+            return res
+        except Exception as e:
+            logger.error(f'Calculation over range error {e}!')
+            raise Exception(f'Calculation over range error {e}!')
 
     def cal_integral(self, **args):
         '''
