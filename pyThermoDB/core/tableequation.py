@@ -428,6 +428,14 @@ class TableEquation:
         ```
         '''
         try:
+            def parse_min_max(var_name: str) -> dict:
+                if var_name.endswith("min"):
+                    return {"base": var_name[:-3], "type": "min"}
+                elif var_name.endswith("max"):
+                    return {"base": var_name[:-3], "type": "max"}
+                else:
+                    return {"base": var_name, "type": None}
+
             # SECTION: table structure
             table_structure = self.table_structure
 
@@ -485,7 +493,11 @@ class TableEquation:
                         )
                         continue
 
-                    variable_ranges[var_name][range_name] = dt_
+                    # find min and max in range_name
+                    parse_key = parse_min_max(range_name)
+                    key_id = parse_key['type']
+
+                    variable_ranges[var_name][key_id] = dt_
 
             return variable_ranges
         except Exception as e:
