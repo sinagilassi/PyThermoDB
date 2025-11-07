@@ -22,6 +22,7 @@ from .reference_utils import (
 from .core_utils import has_prop_nested
 from .extractor import YAMLExtractor
 from .file_manager import check_file_path
+from .equation_parser import EquationParser
 
 __all__ = [
     "log2Col",
@@ -45,5 +46,6 @@ __all__ = [
     "look_up_mixture_reference_config",
     "create_mixture_ids",
     "create_binary_mixtures",
-    "create_mixture_from_components"
+    "create_mixture_from_components",
+    "EquationParser"
 ]

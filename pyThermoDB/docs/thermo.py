@@ -3351,7 +3351,9 @@ class ThermoDB(ManageData):
                     # ! build equation
                     # check eq exists
                     eqs = self.equation_load(
-                        databook_id, table_id)
+                        databook_id,
+                        table_id
+                    )
 
                     # update trans_data
                     eqs.trans_data = transform_api_data
