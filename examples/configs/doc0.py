@@ -4,6 +4,7 @@ from pyThermoDB.references import (
     load_custom_reference,
     load_reference_from_str
 )
+from pyThermoDB.manager import parse_equation_body
 from rich import print
 
 # SECTION: reference content
@@ -177,3 +178,16 @@ print(load_)
 load_str_ = load_reference_from_str(REFERENCE_CONTENT)
 print(type(load_str_))
 print(load_str_)
+
+# SECTION: parse equation body
+equation_body = """
+- parms['C1 | C1 | 1'] = parms['C1 | C1 | 1']/1
+- parms['C2 | C2 | 1'] = parms['C2 | C2 | 1']/1
+- parms['C3 | C3 | 1'] = parms['C3 | C3 | 1']/1
+- parms['C4 | C4 | 1'] = parms['C4 | C4 | 1']/1
+- parms['C5 | C5 | 1'] = parms['C5 | C5 | 1']/1
+- res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
+"""
+
+parsed_equation = parse_equation_body(equation_body)
+print(parsed_equation)

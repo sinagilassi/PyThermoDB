@@ -80,7 +80,7 @@ eq_str_res_ = thermo_db.equation_table_structure(
     'CUSTOM-REF-1',
     'vapor-pressure'
 )
-# >> chekc
+# >> check
 if eq_str_res_ is None:
     raise ValueError("No equation table structure found!")
 
