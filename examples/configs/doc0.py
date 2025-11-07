@@ -1,10 +1,12 @@
 # import libs
+from typing import List
 from pyThermoDB.references import (
     check_custom_reference,
     load_custom_reference,
     load_reference_from_str
 )
 from pyThermoDB.manager import parse_equation_body
+from pyThermoDB.models import EquationDefinition
 from rich import print
 
 # SECTION: reference content
@@ -189,5 +191,5 @@ equation_body = """
 - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
 """
 
-parsed_equation = parse_equation_body(equation_body)
+parsed_equation: List[EquationDefinition] = parse_equation_body(equation_body)
 print(parsed_equation)
