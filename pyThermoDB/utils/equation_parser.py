@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal, Optional
 import re
 import os
 import yaml
@@ -48,9 +48,24 @@ class EquationParser:
     ```
     '''
 
-    def __init__(self, equation_body: str | dict):
+    def __init__(
+            self,
+            equation_body: str | dict,
+            key_mode: Literal[
+                'upper',
+                'lower'
+            ] = 'lower',
+            key_names: Optional[List[str]] = None
+    ):
         # NOTE: set equation body
         self.equation_body = equation_body
+        self.key_mode = key_mode
+        self.key_names = key_names if key_names is not None else [
+            'id', 'body', 'args', 'parms', 'return',
+        ]
+
+        # capitalize key names
+        self.key_names_upper = [k.upper() for k in self.key_names]
 
         # SECTION: process equation body
         if isinstance(self.equation_body, dict):
@@ -136,7 +151,7 @@ class EquationParser:
             eq_dict = {}
             eq_dict['ARGS'] = {}
             eq_dict['PARMS'] = {}
-            eq_dict['RETURNS'] = {}
+            eq_dict['RETURN'] = {}
             eq_dict['BODY'] = []
 
             # NOTE: value generator
@@ -233,9 +248,9 @@ class EquationParser:
                             key, val = val_generator(match)
                             symbol = val['symbol']
                             # check
-                            if match not in eq_dict['RETURNS']:
+                            if match not in eq_dict['RETURN']:
                                 # set
-                                eq_dict['RETURNS'][key] = val
+                                eq_dict['RETURN'][key] = val
                                 # set body
                                 body_ = body_.replace(f"res['{match}']", "res")
 
@@ -252,6 +267,10 @@ class EquationParser:
     ):
         '''
         Format equations
+
+        Parameters
+        ----------
+        None
         '''
         try:
             # NOTE: eqs
@@ -261,13 +280,78 @@ class EquationParser:
             eqs = list(self.equation_holder.values())
 
             # NOTE: check eqs
-            for eq in eqs:
+            for i, eq in enumerate(eqs):
+                # check type
+                if not isinstance(eq, dict):
+                    logger.error("Equation must be a dictionary!")
+                    continue
+
+                # extract keys
+                keys_ = list(eq.keys())
+                # lower keys
+                keys_lower = [k.upper() for k in keys_]
+
                 # check keys
-                if "ARGS" not in eq or "PARMS" not in eq or "RETURNS" not in eq:
+                if (
+                    "args" not in keys_lower or
+                    "parms" not in keys_lower or
+                    "returns" not in keys_lower or
+                    "return" not in keys_lower
+                ):
                     # parse eq to generate equation structure
                     eq_ = self.equation_formatter(eq)
+
+                    # >> keys formatting
+                    if self.key_mode == 'lower':
+                        # add id key
+                        if (
+                            'id' not in eq_.keys() and
+                            'id' in self.key_names
+                        ):
+                            eq_['id'] = i
+
+                        # >> keys formatting
+                        eq_ = {
+                            k.lower(): v for k, v in eq_.items()
+                            if k.lower() in self.key_names
+                        }
+                    elif self.key_mode == 'upper':
+                        # add id key
+                        if (
+                            'ID' not in eq_.keys() and
+                            'ID' in self.key_names_upper
+                        ):
+                            eq_['ID'] = i
+
+                        # >> keys formatting
+                        eq_ = {
+                            k.upper(): v for k, v in eq_.items()
+                            if k.upper() in self.key_names_upper
+                        }
+                    else:
+                        raise ValueError(
+                            "key_mode must be 'upper' or 'lower'!"
+                        )
+
+                    # append
                     eqs_formatted.append(eq_)
                 else:
+                    # >> keys formatting
+                    if self.key_mode == 'lower':
+                        eq = {
+                            k.lower(): v for k, v in eq.items()
+                            if k.lower() in self.key_names
+                        }
+                    elif self.key_mode == 'upper':
+                        eq = {
+                            k.upper(): v for k, v in eq.items()
+                            if k.upper() in self.key_names_upper
+                        }
+                    else:
+                        raise ValueError(
+                            "key_mode must be 'upper' or 'lower'!"
+                        )
+                    # append
                     eqs_formatted.append(eq)
 
             # res
