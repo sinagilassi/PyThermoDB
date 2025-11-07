@@ -5,6 +5,7 @@ import re
 import os
 import yaml
 # locals
+from ..models import EquationDefinition
 
 
 # NOTE: logger
@@ -51,21 +52,18 @@ class EquationParser:
     def __init__(
             self,
             equation_body: str | dict,
-            key_mode: Literal[
-                'upper',
-                'lower'
-            ] = 'lower',
             key_names: Optional[List[str]] = None
     ):
         # NOTE: set equation body
         self.equation_body = equation_body
-        self.key_mode = key_mode
         self.key_names = key_names if key_names is not None else [
-            'id', 'body', 'args', 'parms', 'return',
+            'id', 'body', 'args', 'parms', 'returns',
         ]
 
         # capitalize key names
         self.key_names_upper = [k.upper() for k in self.key_names]
+        # lowercase key names
+        self.key_names_lower = [k.lower() for k in self.key_names]
 
         # SECTION: process equation body
         if isinstance(self.equation_body, dict):
@@ -151,7 +149,7 @@ class EquationParser:
             eq_dict = {}
             eq_dict['ARGS'] = {}
             eq_dict['PARMS'] = {}
-            eq_dict['RETURN'] = {}
+            eq_dict['RETURNS'] = {}
             eq_dict['BODY'] = []
 
             # NOTE: value generator
@@ -248,9 +246,9 @@ class EquationParser:
                             key, val = val_generator(match)
                             symbol = val['symbol']
                             # check
-                            if match not in eq_dict['RETURN']:
+                            if match not in eq_dict['RETURNS']:
                                 # set
-                                eq_dict['RETURN'][key] = val
+                                eq_dict['RETURNS'][key] = val
                                 # set body
                                 body_ = body_.replace(f"res['{match}']", "res")
 
@@ -264,20 +262,25 @@ class EquationParser:
 
     def eq_formatter(
         self,
-    ):
+    ) -> List[EquationDefinition]:
         '''
         Format equations
 
         Parameters
         ----------
         None
+
+        Returns
+        -------
+        list[EquationDefinition]
+            A list of formatted equations.
         '''
         try:
             # NOTE: eqs
             eqs_formatted = []
 
             # get eqs
-            eqs = list(self.equation_holder.values())
+            eqs: List[Dict[str, Any]] = list(self.equation_holder.values())
 
             # NOTE: check eqs
             for i, eq in enumerate(eqs):
@@ -289,7 +292,9 @@ class EquationParser:
                 # extract keys
                 keys_ = list(eq.keys())
                 # lower keys
-                keys_lower = [k.upper() for k in keys_]
+                keys_lower = [k.lower() for k in keys_]
+                # upper keys
+                keys_upper = [k.upper() for k in keys_]
 
                 # check keys
                 if (
@@ -298,60 +303,45 @@ class EquationParser:
                     "returns" not in keys_lower or
                     "return" not in keys_lower
                 ):
-                    # parse eq to generate equation structure
+                    # NOTE: parse eq to generate equation structure
                     eq_ = self.equation_formatter(eq)
 
+                    # add id key
+                    if (
+                        'id' not in keys_lower and
+                        'id' in self.key_names_lower
+                    ):
+                        eq_['id'] = i
+
                     # >> keys formatting
-                    if self.key_mode == 'lower':
-                        # add id key
-                        if (
-                            'id' not in eq_.keys() and
-                            'id' in self.key_names
-                        ):
-                            eq_['id'] = i
+                    eq_ = {
+                        k.lower(): v for k, v in eq_.items()
+                        if k.lower() in self.key_names_lower
+                    }
 
-                        # >> keys formatting
-                        eq_ = {
-                            k.lower(): v for k, v in eq_.items()
-                            if k.lower() in self.key_names
-                        }
-                    elif self.key_mode == 'upper':
-                        # add id key
-                        if (
-                            'ID' not in eq_.keys() and
-                            'ID' in self.key_names_upper
-                        ):
-                            eq_['ID'] = i
+                    # NOTE: convert to EquationDefinition
+                    eq_ = EquationDefinition(**eq_)
 
-                        # >> keys formatting
-                        eq_ = {
-                            k.upper(): v for k, v in eq_.items()
-                            if k.upper() in self.key_names_upper
-                        }
-                    else:
-                        raise ValueError(
-                            "key_mode must be 'upper' or 'lower'!"
-                        )
-
-                    # append
+                    # NOTE: append
                     eqs_formatted.append(eq_)
                 else:
+                    # check and add id key
+                    if (
+                        'id' not in keys_lower and
+                        'id' in self.key_names_lower
+                    ):
+                        eq['id'] = i
+
                     # >> keys formatting
-                    if self.key_mode == 'lower':
-                        eq = {
-                            k.lower(): v for k, v in eq.items()
-                            if k.lower() in self.key_names
-                        }
-                    elif self.key_mode == 'upper':
-                        eq = {
-                            k.upper(): v for k, v in eq.items()
-                            if k.upper() in self.key_names_upper
-                        }
-                    else:
-                        raise ValueError(
-                            "key_mode must be 'upper' or 'lower'!"
-                        )
-                    # append
+                    eq = {
+                        k.lower(): v for k, v in eq.items()
+                        if k.lower() in self.key_names_lower
+                    }
+
+                    # NOTE: convert to EquationDefinition
+                    eq = EquationDefinition(**eq)
+
+                    # NOTE: append
                     eqs_formatted.append(eq)
 
             # res

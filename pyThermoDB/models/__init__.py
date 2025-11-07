@@ -20,6 +20,7 @@ from .property import PropertyMatch
 from .configs import ComponentConfig
 from .rules import ComponentRule
 from .conditions import Pressure, Temperature
+from .eq import EquationDefinition
 
 __all__ = [
     'DataBookTableTypes',
@@ -39,5 +40,6 @@ __all__ = [
     'CustomReference',
     'ReferencesThermoDB',
     'MixtureReferenceThermoDB',
-    'EquationRangeResult'
+    'EquationRangeResult',
+    'EquationDefinition'
 ]
