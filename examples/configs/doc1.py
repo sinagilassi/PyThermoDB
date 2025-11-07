@@ -1,6 +1,7 @@
 # import libs
 from pyThermoDB.references import check_custom_reference, ReferenceChecker
 from rich import print
+from pyThermoDB.manager import parse_equation_body
 
 # SECTION: reference content
 REFERENCE_CONTENT = """
@@ -249,6 +250,13 @@ table_data_ = ReferenceChecker_.get_table_data(
 print("Table Data:")
 print(table_data_)
 
+# ! vapor-pressure table example
+table_data_ = ReferenceChecker_.get_table_data(
+    'CUSTOM-REF-1',
+    'vapor-pressure'
+)
+print("Vapor Pressure Table Data:")
+
 # NOTE: get table data details (property name and symbols)
 table_data_details_ = ReferenceChecker_.get_table_data_details(
     'CUSTOM-REF-1',
@@ -277,6 +285,16 @@ full_table_data_ = ReferenceChecker_.get_full_table_data(
 print("Full Table Data: ")
 print(full_table_data_)
 
+# ! vapor-pressure table example
+full_table_data_ = ReferenceChecker_.get_full_table_data(
+    'CUSTOM-REF-1',
+    'vapor-pressure',
+    component_key='Name-Formula-State',
+    ignore_columns=ignore_columns
+)
+print("Full Table Data: ")
+print(full_table_data_)
+
 # SECTION: get table equations
 table_equations_ = ReferenceChecker_.get_table_equations(
     'CUSTOM-REF-1',
@@ -284,17 +302,44 @@ table_equations_ = ReferenceChecker_.get_table_equations(
 )
 print(f"Table Equations: {table_equations_}")
 
+# ! vapor pressure table example
+table_equations_ = ReferenceChecker_.get_table_equations(
+    'CUSTOM-REF-1',
+    'vapor-pressure'
+)
+print(f"Vapor Pressure Table Equations: ")
+print(table_equations_)
+
+if not table_equations_:
+    raise ValueError("No equations found.")
+
+# SECTION: Parse table equations
+parsed_equation = parse_equation_body(table_equations_)
+print(parsed_equation)
+
 # NOTE: get table equation details
 table_equation_details_ = ReferenceChecker_.get_table_equation_details(
     'CUSTOM-REF-1',
     'ideal-gas-heat-capacity'
 )
 print(f"Table Equation Details: {table_equation_details_}")
+# >> check
+if table_equation_details_ is None:
+    raise ValueError("No equation details found.")
 
 # SECTION: get components data
 components_data_ = ReferenceChecker_.get_components_data(
     'CUSTOM-REF-1',
     'general-data',
+    component_key='Name-State'
+)
+print(f"Components Data:")
+print(components_data_)
+
+# ! vapor-pressure table example
+components_data_ = ReferenceChecker_.get_components_data(
+    'CUSTOM-REF-1',
+    'vapor-pressure',
     component_key='Name-State'
 )
 print(f"Components Data:")
@@ -413,6 +458,17 @@ components_data_ = ReferenceChecker_.get_component_data(
     component_state=component_state,
     databook_name='CUSTOM-REF-2',
     table_name='general-data-2',
+    component_key='Name-State'
+)
+print(f"Components Data: {components_data_}")
+
+# ! vapor pressure table example
+components_data_ = ReferenceChecker_.get_component_data(
+    component_name=component_name,
+    component_formula=component_formula,
+    component_state=component_state,
+    databook_name='CUSTOM-REF-1',
+    table_name='vapor-pressure',
     component_key='Name-State'
 )
 print(f"Components Data: {components_data_}")

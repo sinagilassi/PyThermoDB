@@ -216,6 +216,10 @@ component_thermodb = check_and_build_component_thermodb(
     thermodb_save=True,
     thermodb_save_path=current_dir
 )
+# >> check
+if component_thermodb is None:
+    raise ValueError("Component ThermoDB build failed!")
+
 # print result
 print(
     f"[bold green]Component ThermoDB (from custom reference, ignore_state_props={ignore_state_props}):[/bold green] {component_thermodb}\n")

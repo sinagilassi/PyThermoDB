@@ -2,6 +2,7 @@
 from typing import Dict, List
 from pyThermoDB import check_and_build_component_thermodb
 from pyThermoDB.references import component_reference_mapper
+from pyThermoDB.core import TableEquation
 from pythermodb_settings.models import Component, ComponentReferenceThermoDB
 from rich import print
 
@@ -285,5 +286,13 @@ print(
 # SECTION: calc
 # NOTE: ideal-gas-heat-capacity calculation
 Cp_eq = component_thermodb.select_function(
-    function_name='ideal-gas-heat-capacity')
+    function_name='CUSTOM-REF-1::ideal-gas-heat-capacity'
+)
 print(type(Cp_eq))
+
+# TableEquation instance
+if not isinstance(Cp_eq, TableEquation):
+    raise TypeError("Cp_eq is not an instance of TableEquation.")
+
+# equation summary
+print(Cp_eq.summary)
