@@ -1061,7 +1061,7 @@ class ReferenceChecker:
 
         Returns
         -------
-
+        Optional[List]
             A dictionary containing the full table data if it exists, otherwise None.
         """
         try:

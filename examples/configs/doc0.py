@@ -1,4 +1,5 @@
 # import libs
+import os
 from typing import List
 from pyThermoDB.references import (
     check_custom_reference,
@@ -8,9 +9,11 @@ from pyThermoDB.references import (
 from pyThermoDB.manager import parse_equation_body
 from pyThermoDB.models import EquationDefinition
 from rich import print
+# locals
+from private.thermo_data_1 import REFERENCE_CONTENT
 
 # SECTION: reference content
-REFERENCE_CONTENT = """
+REFERENCE_CONTENT_0 = """
 REFERENCES:
     CUSTOM-REF-1:
       DATABOOK-ID: 1
@@ -166,6 +169,9 @@ REFERENCES:
             - [1,methane|ethanol,methanol,CH3OH,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
             - [2,methane|ethanol,ethanol,C2H5OH,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 """
+# SECTION: dir configuration
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
 
 # SECTION: load custom reference
 ref1 = {'reference': [REFERENCE_CONTENT]}
