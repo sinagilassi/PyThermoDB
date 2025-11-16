@@ -2,9 +2,11 @@
 from pyThermoDB.references import check_custom_reference, ReferenceChecker
 from rich import print
 from pyThermoDB.manager import parse_equation_body
+# locals
+from private.thermo_data_1 import REFERENCE_CONTENT
 
 # SECTION: reference content
-REFERENCE_CONTENT = """
+REFERENCE_CONTENT_0 = """
 REFERENCES:
     CUSTOM-REF-1:
       DATABOOK-ID: 1
