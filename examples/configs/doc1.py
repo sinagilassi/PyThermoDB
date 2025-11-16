@@ -258,6 +258,7 @@ table_data_ = ReferenceChecker_.get_table_data(
     'vapor-pressure'
 )
 print("Vapor Pressure Table Data:")
+print(table_data_)
 
 # NOTE: get table data details (property name and symbols)
 table_data_details_ = ReferenceChecker_.get_table_data_details(
