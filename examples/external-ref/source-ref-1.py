@@ -168,7 +168,9 @@ print(comp1_eq_1.table_columns)
 print(comp1_eq_1.table_symbols)
 
 # cal
-res_ = comp1_eq_1.cal(T=290)
+res_ = comp1_eq_1.cal(T=90.69)
+print(res_)
+res_ = comp1_eq_1.cal(T=190.56)
 print(res_)
 
 # ! build equation
@@ -189,7 +191,8 @@ print(comp1_eq_2.equation_body())
 print(comp1_eq_2.equation_return())
 
 # cal
-res_ = comp1_eq_2.cal(T=290)
+# ! methane
+res_ = comp1_eq_2.cal(T=298)
 print(res_)
 
 # ====================================
