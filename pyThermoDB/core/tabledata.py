@@ -132,7 +132,21 @@ class TableData:
             list of symbols
         '''
         try:
-            return self.table_data[symbol_name]
+            # get all symbols
+            symbols_ = self.table_data[symbol_name]
+
+            # remove None values
+            symbols = [s for s in symbols_ if s is not None]
+            # remove 'None' strings
+            symbols = [s for s in symbols if s.lower() != 'none']
+            # remove dash/hyphen/underscore/empty strings
+            symbols = [s for s in symbols if s not in ('-', '', '_')]
+
+            # remove duplicates while preserving order (Python 3.7+)
+            seen = set()
+            symbols = [s for s in symbols if s not in seen and not seen.add(s)]
+
+            return symbols
         except KeyError:
             raise KeyError(
                 "Table symbols not found in the data table structure!")
@@ -164,6 +178,31 @@ class TableData:
                 "Table units not found in the data table structure!")
         except Exception as e:
             raise Exception(f"Error retrieving table units: {e}")
+
+    @property
+    def property_names(self) -> List[str]:
+        '''
+        Get all property names from data-table structure
+
+        Returns
+        -------
+        property_names : list
+            list of property names
+        '''
+        try:
+            # NOTE: column names
+            prop_names = self.table_columns
+
+            # NOTE: remove "Name", "Formula", "State" from property names
+            exclude_props = ['id', 'no.', 'no', 'name', 'formula', 'state']
+
+            property_names = [
+                prop for prop in prop_names if prop.lower() not in exclude_props
+            ]
+
+            return property_names
+        except Exception as e:
+            raise Exception(f"Error retrieving property names: {e}")
 
     def data_structure(self):
         '''
