@@ -46,28 +46,28 @@ def parse_equation_body(
     }
 
     eq2 = {
-    'id': 0,
-    'body': [
-        "parms['C1'] = parms['C1']/1",
-        "parms['C2'] = parms['C2']/1",
-        "parms['C3'] = parms['C3']/1",
-        "parms['C4'] = parms['C4']/1",
-        "parms['C5'] = parms['C5']/1",
-        "res = math.exp(parms['C1'] + parms['C2']/args['T'] + parms['C3']*math.log(args['T']) + parms['C4']*(args['T']**parms['C5']))"
-    ],
-    'args': {'Temperature': {'name': 'Temperature', 'symbol': 'T', 'unit': 'K'}},
-    'parms': {
-        'C1': {'name': 'C1', 'symbol': 'C1', 'unit': '1'},
-        'C2': {'name': 'C2', 'symbol': 'C2', 'unit': '1'},
-        'C3': {'name': 'C3', 'symbol': 'C3', 'unit': '1'},
-        'C4': {'name': 'C4', 'symbol': 'C4', 'unit': '1'},
-        'C5': {'name': 'C5', 'symbol': 'C5', 'unit': '1'}
-    },
-    'return': {'vapor-pressure': {'name': 'vapor-pressure', 'symbol': 'VaPr', 'unit': 'Pa'}},
-    'body_integral': None,
-    'body_first_derivative': None,
-    'body_second_derivative': None,
-    'custom_integral': None
+        'id': 0,
+        'body': [
+            "parms['C1'] = parms['C1']/1",
+            "parms['C2'] = parms['C2']/1",
+            "parms['C3'] = parms['C3']/1",
+            "parms['C4'] = parms['C4']/1",
+            "parms['C5'] = parms['C5']/1",
+            "res = math.exp(parms['C1'] + parms['C2']/args['T'] + parms['C3']*math.log(args['T']) + parms['C4']*(args['T']**parms['C5']))"
+        ],
+        'args': {'Temperature': {'name': 'Temperature', 'symbol': 'T', 'unit': 'K'}},
+        'parms': {
+            'C1': {'name': 'C1', 'symbol': 'C1', 'unit': '1'},
+            'C2': {'name': 'C2', 'symbol': 'C2', 'unit': '1'},
+            'C3': {'name': 'C3', 'symbol': 'C3', 'unit': '1'},
+            'C4': {'name': 'C4', 'symbol': 'C4', 'unit': '1'},
+            'C5': {'name': 'C5', 'symbol': 'C5', 'unit': '1'}
+        },
+        'return': {'vapor-pressure': {'name': 'vapor-pressure', 'symbol': 'VaPr', 'unit': 'Pa'}},
+        'body_integral': None,
+        'body_first_derivative': None,
+        'body_second_derivative': None,
+        'custom_integral': None
     }
     ```
     '''
