@@ -29,14 +29,13 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
+    "numpy>=2.3.2",
+    "pandas>=2.3.2",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
-    "pandas>=2.3.2",
     "requests>=2.32.5",
-    "numpy>=2.3.2",
     "pyyaml>=6.0.2",
-    "pythermodb-settings>=0.1.5",
-    "rich>=14.1.0",
+    "pythermodb-settings",
 ]
 
 [project.urls]
@@ -46,7 +45,17 @@ Source = "https://github.com/sinagilassi/PyThermoDB"
 Tracker = "https://github.com/sinagilassi/PyThermoDB/issues"
 
 [project.optional-dependencies]
-web = ["jinja2"]
+dev = [
+    "rich>=14.2.0",
+]
+web = [
+    "jinja2",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "rich>=14.2.0",
+]
 
 [tool.setuptools]
 include-package-data = true
