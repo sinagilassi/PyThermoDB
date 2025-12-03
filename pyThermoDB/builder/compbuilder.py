@@ -3,10 +3,14 @@ import logging
 import pickle
 import yaml
 import os
-from typing import Optional, Union, Literal
+import datetime
+import sys
+import functools
+from typing import Optional, Union, Literal, ClassVar
 
 # local
 from .compexporter import CompExporter
+from .comp_tools import CompTools
 from ..core import (
     TableEquation,
     TableMatrixEquation,
@@ -20,16 +24,34 @@ logger = logging.getLogger(__name__)
 
 
 class CompBuilder(CompExporter):
-    """Used to build thermodb library"""
+    """
+    Used to build thermodb library, including thermodynamic data and functions.
+    """
 
-    # vars
+    # NOTE: # shared CompTools instance (lazy-created). Safe if CompTools is stateless.
+    CompTools_: ClassVar[Optional[CompTools]] = None
+
+    # NOTE: init attributes
     __data = {}
     # thermodb name (optional)
     __thermodb_name: str | None = None
     # message
     __message: str | None = None
-    # thermodb version
+    # ! thermodb version
     build_version = __version__
+
+    # NOTE: build date/time/python version
+    @functools.cached_property
+    def build_date(self) -> str:
+        return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    @functools.cached_property
+    def build_timestamp(self) -> float:
+        return datetime.datetime.now(datetime.timezone.utc).timestamp()
+
+    @functools.cached_property
+    def build_python(self) -> str:
+        return sys.version.split()[0]
 
     def __init__(
         self,
@@ -43,9 +65,20 @@ class CompBuilder(CompExporter):
         ----------
         thermodb_name : str
             name of the thermodb (default is None)
+        message : str
+            message (default is None)
         '''
-        # init class
-        super().__init__()
+        # SECTION: super init
+        CompExporter.__init__(self)
+
+        # NOTE: ensure a shared CompTools_ exists and attach to the instance
+        if CompBuilder.CompTools_ is None:
+            try:
+                CompBuilder.CompTools_ = CompTools()
+            except Exception:
+                CompBuilder.CompTools_ = None
+
+        # SECTION: set attributes
         # set name
         self.__thermodb_name = thermodb_name
         # set message
@@ -85,6 +118,19 @@ class CompBuilder(CompExporter):
             # return default message
             return 'CompBuilder instance created!'
         return self.__message
+
+    @property
+    def comp_tools(self) -> Optional[CompTools]:
+        """
+        Instance accessor for the shared CompTools_. Lazily creates the class-level
+        CompTools_ if it does not exist yet.
+        """
+        if CompBuilder.CompTools_ is None:
+            try:
+                CompBuilder.CompTools_ = CompTools()
+            except Exception:
+                CompBuilder.CompTools_ = None
+        return CompBuilder.CompTools_
 
     def add_data(
         self,
@@ -831,3 +877,79 @@ class CompBuilder(CompExporter):
         except Exception as e:
             logger.error(f'Cleaning properties/functions failed!, {e}')
             return False
+
+    def all_function_details(self):
+        '''
+        Retrieve all functions' structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            functions' structure
+        '''
+        try:
+            # NOTE: get functions
+            all_functions = self.check_functions()
+
+            # NOTE: get TableEquation objects
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableEquation)
+            ]
+
+            # >> check
+            if not functions:
+                logger.warning(
+                    'No TableEquation functions found in the thermodb!')
+                return None
+
+            # NOTE: get structure (use the instance accessor)
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get function structure')
+                return None
+
+            # NOTE: get structure
+            return tools.get_fn_structure(functions)
+        except Exception as e:
+            logger.error(f'Getting equations structure failed!, {e}')
+            return None
+
+    def all_data_details(self):
+        '''
+        Retrieve all data's structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            data's structure
+        '''
+        try:
+            # NOTE: get data
+            all_data = self.check_properties()
+
+            # NOTE: get TableData objects
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableData)
+            ]
+
+            # >> check
+            if not data:
+                logger.warning(
+                    'No TableData found in the thermodb!')
+                return None
+
+            # NOTE: get structure (use the instance accessor)
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get data structure')
+                return None
+
+            # NOTE: get structure
+            return tools.get_data_structure(data)
+        except Exception as e:
+            logger.error(f'Getting data structure failed!, {e}')
+            return None
