@@ -843,12 +843,14 @@ class ReferenceChecker:
             # ! header
             COLUMNS = table_structure.get('COLUMNS', [])
             if not isinstance(COLUMNS, list):
-                logging.error("Table structure 'COLUMNS' must be a list.")
+                logging.error(
+                    f"Table structure 'COLUMNS' must be a list in databook: {databook_name} and table {table_name}.")
                 return None
 
             # if empty COLUMNS, return empty components
             if not COLUMNS:
-                logging.warning("Table structure 'COLUMNS' is empty.")
+                logging.warning(
+                    f"Table structure 'COLUMNS' is empty in databook: {databook_name} and table {table_name}.")
                 return {}
 
             # NOTE: find column name indices in the table header
@@ -856,7 +858,8 @@ class ReferenceChecker:
             if column_names is not None:
                 # check if column_names is a list
                 if not isinstance(column_names, list):
-                    logging.error("column_names must be a list.")
+                    logging.error(
+                        f"column_names must be a list in databook: {databook_name} and table {table_name}")
                     return None
 
                 # find indices of the specified columns
@@ -865,7 +868,7 @@ class ReferenceChecker:
                         column_indices.append(COLUMNS.index(col_name))
                     else:
                         logging.warning(
-                            f"Column '{col_name}' not found in table structure.")
+                            f"Column '{col_name}' not found in table structure in databook: {databook_name} and table {table_name}.")
 
             # SECTION: extract components from table values
             for row in table_values:
