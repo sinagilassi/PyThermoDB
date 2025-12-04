@@ -23,6 +23,7 @@ from .core_utils import has_prop_nested
 from .extractor import YAMLExtractor
 from .file_manager import check_file_path
 from .equation_parser import EquationParser
+from .component_data_extractor import filter_yaml_for_component
 
 __all__ = [
     "log2Col",
@@ -47,5 +48,6 @@ __all__ = [
     "create_mixture_ids",
     "create_binary_mixtures",
     "create_mixture_from_components",
-    "EquationParser"
+    "EquationParser",
+    "filter_yaml_for_component",
 ]
