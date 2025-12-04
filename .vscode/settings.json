@@ -9,6 +9,7 @@
         "ndarray",
         "NRTL",
         "ptdb",
+        "representer",
         "tabledata",
         "tableequation",
         "tablematrixdata",
