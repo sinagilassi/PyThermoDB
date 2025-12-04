@@ -21,6 +21,7 @@ SYMBOLS:
   ideal_gas_enthalpy_of_formation: EnFo_IG
   ideal_gas_Gibbs_energy_of_formation: GiEnFo_IG
   ideal_gas_entropy: Ent_IG
+  standard_entropy: Ent_STD
   ideal_gas_heat_capacity_at_constant_pressure: Cp_IG
   liquid_heat_capacity_at_constant_pressure: Cp_LIQ
   solid_heat_capacity_at_constant_pressure: Cp_SOL
