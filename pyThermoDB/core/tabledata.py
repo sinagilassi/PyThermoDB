@@ -5,6 +5,8 @@ from typing import Optional, List, Dict, Any, Literal
 # local imports
 from ..models import DataResult, PropertyMatch
 from .table_util import TableUtil
+# ! deps
+from ..config.deps import get_config
 
 # logger
 logger = logging.getLogger(__name__)
@@ -39,12 +41,36 @@ class TableData:
         table_structure : dict, optional
             table structure (default: None), taken directly from yml file if exists
         '''
+        # NOTE: get config
+        config = get_config()
+        # ! include data tables based on config
+        self.include_data = config.include_data
+        # logging
+        logger.debug(
+            f"TableData initialized with include_data={self.include_data}"
+        )
+
+        # NOTE: set attributes
         self.databook_name = databook_name
         self.table_name = table_name
-        self.table_data = table_data  # reference template (yml)
+
+        # reference template (yml)
+        self.table_data = table_data
+
         # table values (yml)
         self.__table_values = table_values if table_values else None
+
+        # table structure (yml)
         self.__table_structure = table_structure if table_structure else None
+
+        # SECTION: set data only if include_data is True
+        if self.include_data is False:
+            # logging
+            logger.info(
+                f"Data tables are excluded as per configuration. "
+                f"Table data for '{self.table_name}' will not include property data."
+            )
+            self.__table_values = None
 
     @property
     def trans_data(self):
