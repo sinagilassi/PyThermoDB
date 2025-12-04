@@ -37,6 +37,8 @@ from .utils import (
 )
 from .builder import CompBuilder
 from .config import DEFAULT_COMPONENT_STATES
+# ! deps
+from .config.deps import set_config, AppConfig
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -121,6 +123,7 @@ def build_component_thermodb(
     reference_config_default_check: Optional[bool] = True,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
+    include_data: bool = True,
 ) -> CompBuilder:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
@@ -147,6 +150,8 @@ def build_component_thermodb(
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
+    include_data : bool
+        Whether to include data tables in the built thermodb, by default True
 
     Returns
     -------
@@ -214,6 +219,17 @@ def build_component_thermodb(
     ```
     '''
     try:
+        # LINK: set include_data in config
+        cfg = AppConfig(
+            include_data=include_data,
+            build_type='single',
+            component_name=component_name if component_key == 'Name' else None,
+            component_formula=component_name if component_key == 'Formula' else None,
+            component_state=None,
+        )
+        # ! set config
+        set_config(cfg)
+
         # NOTE: check inputs
         if not isinstance(component_name, str):
             raise TypeError("component_name must be a string")
@@ -409,6 +425,7 @@ def check_and_build_component_thermodb(
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
     verbose: Optional[bool] = False,
+    include_data: bool = True,
     **kwargs
 ) -> Optional[CompBuilder]:
     '''
@@ -438,6 +455,8 @@ def check_and_build_component_thermodb(
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     verbose : Optional[bool], optional
         Whether to print verbose logs, by default False
+    include_data : bool
+        Whether to include data tables in the built thermodb, by default True
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -531,6 +550,17 @@ def check_and_build_component_thermodb(
         # NOTE: check inputs
         if not isinstance(component, Component):
             raise TypeError("component_name must be a string")
+
+        # LINK: set include_data in config
+        cfg = AppConfig(
+            include_data=include_data,
+            build_type='single',
+            component_name=component.name,
+            component_formula=component.formula,
+            component_state=component.state,
+        )
+        # ! set config
+        set_config(cfg)
 
         # NOTE: reference_config check
         if not isinstance(reference_config, (dict, str)):
@@ -814,6 +844,7 @@ def check_and_build_component_thermodb(
                     )
 
         # SECTION: build and save thermodb
+        # ! save thermodb if specified
         if thermodb_save:
             # NOTE: check path
             thermodb_save_path = check_file_path(
@@ -2205,6 +2236,7 @@ def build_component_thermodb_from_reference(
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
     verbose: bool = False,
+    include_data: bool = True,
     **kwargs
 ) -> Optional[ComponentThermoDB]:
     '''
@@ -2236,6 +2268,8 @@ def build_component_thermodb_from_reference(
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     verbose : bool, optional
         Whether to enable verbose logging, by default False
+    include_data : bool, optional
+        Whether to include data in the built thermodb, by default True
     **kwargs
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
@@ -2291,6 +2325,17 @@ def build_component_thermodb_from_reference(
             formula=component_formula,
             state=component_state,
         )
+
+        # LINK: set include_data in config
+        cfg = AppConfig(
+            include_data=include_data,
+            build_type='single',
+            component_name=component_name,
+            component_formula=component_formula,
+            component_state=component_state,
+        )
+        # ! set config
+        set_config(cfg)
 
         # SECTION: create ReferenceChecker instance
         ReferenceChecker_ = ReferenceChecker(reference_content)
