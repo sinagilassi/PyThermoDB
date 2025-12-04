@@ -88,6 +88,7 @@ component_thermodb = check_and_build_component_thermodb(
     thermodb_name=component_id,
     thermodb_save=True,
     thermodb_save_path=db_path,
+    include_data=False,
 )
 
 print(

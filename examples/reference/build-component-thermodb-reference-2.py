@@ -345,28 +345,13 @@ if thermodb_component_:
 # print(f"message: {thermodb_component_.message}")
 
 # ====================================
-# BUILD COMPONENTS THERMODB
+# SECTION: SELECT PROPERTY
 # ====================================
-# property
-reference_config_2 = {
-    'nrtl': {
-        'databook': 'CUSTOM-REF-1',
-        'table': "NRTL Non-randomness parameters-2"
-    }
-}
+# ! >> check
+if not thermodb_component_:
+    raise ValueError("thermodb_component_ is None")
 
-# build components thermodb
-thermodb_components_ = ptdb.build_components_thermodb(
-    component_names=['ethanol', 'methanol'],
-    reference_config=reference_config_2,
-    custom_reference=ref)
-# check
-print(thermodb_components_.check())
-print(thermodb_components_.message)
-
-# ====================================
-# SELECT PROPERTY
-# ====================================
+# select a property
 prop1_ = thermodb_component_.select('general')
 # check
 if not isinstance(prop1_, TableData):
@@ -398,110 +383,10 @@ print(func2_.args)
 print(func2_.cal(T=295.15, message="vapor pressure result"))
 
 # ====================================
-# BUILD MATRIX DATA
-# ====================================
-# components
-comp1 = "methanol"
-comp2 = "ethanol"
-
-components = [comp1, comp2]
-
-# NOTE: build a matrix data
-nrtl_alpha = thermodb_components_.select('nrtl')
-# check
-if not isinstance(nrtl_alpha, TableMatrixData):
-    raise TypeError("Not TableMatrixData")
-
-# matrix table
-print(nrtl_alpha.matrix_table)
-# matrix table
-res_ = nrtl_alpha.get_matrix_table(mode='selected')
-print(res_, type(res_))
-
-# symbol
-print(nrtl_alpha.matrix_symbol)
-
-print(nrtl_alpha.matrix_data_structure())
-
-# matrix data
-print(nrtl_alpha.get_matrix_property(
-    "a_i_j",
-    [comp1, comp2],
-    symbol_format='alphabetic',
-    message="NRTL Alpha value")
-)
-
-print(nrtl_alpha.get_matrix_property(
-    "b_i_j",
-    [comp1, comp2],
-    symbol_format='alphabetic',
-    message="NRTL Alpha value")
-)
-
-# property name using ij method
-prop_name = f"a_{comp1}_{comp2}"
-print(prop_name)
-res_1 = nrtl_alpha.ij(prop_name)
-print(res_1)
-print(res_1.get('value'))
-
-# get property value using the matrix data
-# format 1
-# prop_name = f"dg_{comp1}_{comp2}"
-# format 2
-prop_name = f"a | {comp1} | {comp2}"
-# get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
-print(prop_matrix, type(prop_matrix))
-
-print("*" * 20)
-prop_name = f"b | {comp1} | {comp2}"
-# get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
-print(prop_matrix, type(prop_matrix))
-
-print("*" * 20)
-prop_name = f"c | {comp1} | {comp2}"
-# get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
-print(prop_matrix, type(prop_matrix))
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
-print(prop_matrix, type(prop_matrix))
-mat_ = nrtl_alpha.mat('c', [comp1, comp2])
-print(mat_)
-# get values
-prop_name = f"c | {comp2} | {comp1}"
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
-print(prop_matrix, type(prop_matrix))
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='numeric')
-print(prop_matrix, type(prop_matrix))
-# ! ij matrix
-mat_ = nrtl_alpha.mat('c', [comp2, comp1])
-print(mat_)
-print("*" * 20)
-
-prop_name = f"alpha | {comp1} | {comp2}"
-# get values
-prop_matrix = nrtl_alpha.ijs(prop_name, res_format='alphabetic')
-print(prop_matrix, type(prop_matrix))
-
-# ! ij matrix
-mat_ = nrtl_alpha.mat('alpha', [comp2, comp1])
-print(mat_)
-print("*" * 20)
-
-# ====================================
 # SAVE THERMODB
 # ====================================
-# thermodb_file = thermodb_component_.thermodb_name or 'thermodb_component'
-
-# # save (pkl format)
-# res_ = thermodb_component_.save(thermodb_file, file_path=parent_dir)
-# print(f"ThermoDB saved: {res_}")
-
-# multi-component
-thermodb_file = thermodb_components_.thermodb_name or 'thermodb_component'
+thermodb_file = thermodb_component_.thermodb_name or 'thermodb_component'
 
 # save (pkl format)
-res_ = thermodb_components_.save(thermodb_file, file_path=parent_dir)
+res_ = thermodb_component_.save(thermodb_file, file_path=parent_dir)
 print(f"ThermoDB saved: {res_}")
