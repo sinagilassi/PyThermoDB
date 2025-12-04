@@ -21,8 +21,8 @@ db_path = os.path.join(parent_path, 'thermodb')
 print(f"db_path: {db_path}")
 
 # SECTION: check component availability
-component_name = 'carbon dioxide'
-component_formula = 'CO2'
+component_name = 'acetaldehyde'
+component_formula = 'C2H4O'
 component_state = 'g'
 
 component = Component(
@@ -70,7 +70,7 @@ print(data_thermodb.all_data_details())
 
 # SECTION: select property
 # general data
-prop1_ = data_thermodb.select('CUSTOM-REF-1::general-data')
+prop1_ = data_thermodb.select('CUSTOM-REF-1::general_data')
 # check
 if not isinstance(prop1_, TableData):
     raise TypeError("Not TableEquation")
@@ -96,7 +96,7 @@ print(prop1_.get_property("MW"))
 # NOTE: ideal-gas-heat-capacity calculation
 # ? ==============================================
 Cp_eq = data_thermodb.select_function(
-    function_name='CUSTOM-REF-1::ideal-gas-heat-capacity'
+    function_name='CUSTOM-REF-1::ideal_gas_heat_capacity_at_constant_pressure'
 )
 print(type(Cp_eq))
 
@@ -116,7 +116,7 @@ print(Cp_value)
 
 
 # NOTE: check general data
-general_data = data_thermodb.select('CUSTOM-REF-1::general-data')
+general_data = data_thermodb.select('CUSTOM-REF-1::general_data')
 print(type(general_data))
 
 # TableData instance
