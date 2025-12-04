@@ -2197,7 +2197,7 @@ def build_component_thermodb_from_reference(
     reference_content: str,
     component_key: Literal[
         'Name-State', 'Formula-State'
-    ] = 'Formula-State',
+    ] = 'Name-State',
     add_label: Optional[bool] = True,
     check_labels: Optional[bool] = True,
     thermodb_name: Optional[str] = None,
