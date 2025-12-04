@@ -2927,6 +2927,7 @@ class ThermoDB(ManageData):
 
             # SECTION: build thermo property
             if isinstance(tb_info_res_, dict):
+                # LINK: equation
                 # check
                 if tb_info_res_['Type'] == 'Equation':  # ! equation
                     # check
@@ -2945,6 +2946,7 @@ class ThermoDB(ManageData):
                         query=query
                     )
                 elif tb_info_res_['Type'] == 'Data':  # ! data
+                    # LINK: data
                     # check
                     if len(component_names) > 1:
                         raise Exception('Only one component name required!')
@@ -2961,6 +2963,7 @@ class ThermoDB(ManageData):
                         query=query
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Equation':  # ! matrix-equation
+                    # LINK: matrix-equation
                     # check
                     if len(component_names) < 2:
                         raise Exception(
@@ -2972,6 +2975,7 @@ class ThermoDB(ManageData):
                         table
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
+                    # LINK: matrix-data
                     # check
                     if len(component_names) < 2:
                         raise Exception(
