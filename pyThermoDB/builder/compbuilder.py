@@ -18,6 +18,8 @@ from ..core import (
     TableMatrixData
 )
 from ..config import __version__
+# ! deps
+from ..config.deps import get_config
 
 # logger
 logger = logging.getLogger(__name__)
@@ -40,6 +42,9 @@ class CompBuilder(CompExporter):
     # ! thermodb version
     build_version = __version__
 
+    # ! thermodb type
+    _build_type: Optional[Literal['single', 'mixture']] = None
+
     # NOTE: build date/time/python version
     @functools.cached_property
     def build_date(self) -> str:
@@ -52,6 +57,23 @@ class CompBuilder(CompExporter):
     @functools.cached_property
     def build_python(self) -> str:
         return sys.version.split()[0]
+
+    # ! component identifiers
+    _component_name: Optional[str] = None
+    _component_formula: Optional[str] = None
+    _component_state: Optional[str] = None
+
+    @functools.cached_property
+    def component_name(self) -> Optional[str]:
+        return self._component_name
+
+    @functools.cached_property
+    def component_formula(self) -> Optional[str]:
+        return self._component_formula
+
+    @functools.cached_property
+    def component_state(self) -> Optional[str]:
+        return self._component_state
 
     def __init__(
         self,
@@ -68,6 +90,15 @@ class CompBuilder(CompExporter):
         message : str
             message (default is None)
         '''
+        # SECTION: get config
+        config = get_config()
+        # ! set build type
+        self._build_type = config.build_type
+        # ! set component identifiers
+        self._component_name = config.component_name
+        self._component_formula = config.component_formula
+        self._component_state = config.component_state
+
         # SECTION: super init
         CompExporter.__init__(self)
 
@@ -131,6 +162,18 @@ class CompBuilder(CompExporter):
             except Exception:
                 CompBuilder.CompTools_ = None
         return CompBuilder.CompTools_
+
+    @property
+    def build_type(self) -> Optional[Literal['single', 'mixture']]:
+        '''
+        Get build type
+
+        Returns
+        -------
+        str
+            build type
+        '''
+        return self._build_type
 
     def add_data(
         self,
@@ -787,7 +830,7 @@ class CompBuilder(CompExporter):
     def save(
         self,
         filename: str,
-        file_path: Optional[str] = None
+        file_path: Optional[str] = None,
     ) -> bool:
         """
         Saves the instance to a file using pickle
