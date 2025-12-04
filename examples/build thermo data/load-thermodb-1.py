@@ -20,8 +20,8 @@ db_path = os.path.join(parent_path, 'thermodb')
 print(f"db_path: {db_path}")
 
 # SECTION: check component availability
-component_name = 'carbon dioxide'
-component_formula = 'CO2'
+component_name = 'acetaldehyde'
+component_formula = 'C2H4O'
 component_state = 'g'
 
 component = Component(
