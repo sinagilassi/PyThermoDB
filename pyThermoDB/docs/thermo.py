@@ -746,12 +746,14 @@ class ThermoDB(ManageData):
                         return static_dir
                     return '#'
 
-                def render_page(databook_name: str,
-                                table_name: str,
-                                sample_data: List[Dict],
-                                page: int = 1,
-                                rows_per_page: int = 50,
-                                theme: Literal['light', 'dark'] = "light"):
+                def render_page(
+                    databook_name: str,
+                    table_name: str,
+                    sample_data: List[Dict],
+                    page: int = 1,
+                    rows_per_page: int = 50,
+                    theme: Literal['light', 'dark'] = "light"
+                ):
                     """
                     Render the HTML page using Jinja2 templates
 
@@ -856,7 +858,6 @@ class ThermoDB(ManageData):
 
                 # Return the path to the temporary file in case needed elsewhere
                 return temp_file.name
-
             else:
                 raise Exception('Table loading error!')
         except Exception as e:
