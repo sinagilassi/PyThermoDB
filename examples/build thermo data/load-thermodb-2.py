@@ -18,7 +18,7 @@ parent_path = os.path.dirname(os.path.abspath(__file__))
 print(f"parent_path: {parent_path}")
 
 # database
-db_path = r''
+db_path = r'D:\Google Cloud\Python Source\pyThermoDB\data\upd\thermodb'
 print(f"db_path: {db_path}")
 
 # SECTION: check component availability
