@@ -1263,6 +1263,63 @@ class TableEquation:
         except Exception as e:
             raise Exception("Making return symbols failed!, ", e)
 
+    def make_identifiers(
+            self,
+            param_id: Literal['arg', 'return'],
+            mode: Literal['name', 'symbol'] = 'symbol'
+    ) -> List[str]:
+        '''
+        Get return identifiers.
+
+        Returns
+        -------
+        List[str]
+            List of return symbols.
+        '''
+        try:
+            # SECTION: get symbols source
+            if param_id == 'arg':
+                # arg symbols
+                symbols_source = self.arg_symbols
+            elif param_id == 'return':
+                # return symbols
+                symbols_source = self.return_symbols
+            else:
+                logger.error("Invalid param_id! Use 'arg' or 'return'.")
+                return []
+
+            # NOTE: validate mode
+            if mode not in ['name', 'symbol']:
+                logger.error("Invalid mode! Use 'name' or 'symbol'.")
+                return []
+
+            # NOTE: empty check
+            if not symbols_source:
+                logger.warning(f"No {param_id} symbols found!")
+                return []
+
+            # NOTE: type
+            if not isinstance(symbols_source, dict):
+                logger.error(f"{param_id} symbols is not a dictionary!")
+                return []
+
+            # SECTION: build symbol list
+            # extract symbols
+            symbols = []
+
+            # iterate through return_symbols
+            for key, value in symbols_source.items():
+                if mode == 'symbol':
+                    symbols.append(value['symbol'])
+                elif mode == 'name':
+                    symbols.append(value['name'])
+                else:
+                    raise Exception("Invalid mode! Use 'name' or 'symbol'.")
+
+            return symbols
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
     def is_symbol_available(self, symbol: str):
         '''
         Check if a symbol is available in the table data. This method is case-insensitive.
