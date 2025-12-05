@@ -1,8 +1,9 @@
 # import libs
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 # local
 from pyThermoDB.core import TableEquation, TableData
+from ..references.symbols_controller import SymbolController
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -14,7 +15,8 @@ class CompTools:
     """
 
     def __init__(self):
-        pass
+        # LINK: Initialize SymbolController
+        self.symbol_controller = SymbolController()
 
     def get_fn_structure(
             self,
@@ -31,8 +33,16 @@ class CompTools:
                 eq_number = fn.eq_num
                 returns = fn.returns
                 return_symbols = fn.return_symbols
+                return_identifiers = fn.make_identifiers(
+                    param_id="return",
+                    mode="symbol"
+                )
                 args = fn.args
                 arg_symbols = fn.arg_symbols
+                arg_identifiers = fn.make_identifiers(
+                    param_id="arg",
+                    mode="symbol"
+                )
                 fn_body = fn.body
                 fn_body_integral = fn.body_integral
 
@@ -44,8 +54,10 @@ class CompTools:
                     "function_numbers": eq_number,
                     "returns": returns,
                     "return_symbols": return_symbols,
+                    "return_identifiers": return_identifiers,
                     "args": args,
                     "arg_symbols": arg_symbols,
+                    "arg_identifiers": arg_identifiers,
                     "function_body": fn_body,
                     "function_body_integral": fn_body_integral
                 }
@@ -53,6 +65,27 @@ class CompTools:
             return res
         except Exception as e:
             logger.error(f"Error in getting functions' structure: {e}")
+            return None
+
+    def get_fn_identifier(
+            self,
+            func: List[TableEquation]
+    ) -> Optional[List[Dict[str, str]]]:
+        try:
+            res = [
+                {
+                    f"{fn.databook_name}::{fn.table_name}": fn.make_identifiers(
+                        param_id="return",
+                        mode="symbol"
+                    )[0]
+                }
+                for fn in func
+            ]
+
+            # res
+            return res
+        except Exception as e:
+            logger.error(f"Error in getting functions' identifiers: {e}")
             return None
 
     def get_data_structure(
@@ -83,3 +116,59 @@ class CompTools:
         except Exception as e:
             logger.error(f"Error in getting data structure: {e}")
             return None
+
+    def get_data_identifier(
+            self,
+            data: List[TableData]
+    ) -> Optional[List[Dict[str, List[str]]]]:
+        try:
+            res = [
+                {
+                    f"{dt.databook_name}::{dt.table_name}": dt.table_symbols
+                }
+                for dt in data
+            ]
+
+            # res
+            return res
+        except Exception as e:
+            logger.error(f"Error in getting data identifiers: {e}")
+            return None
+
+    def get_data_id_labels(
+            self,
+            data: List[TableData]
+    ) -> List[Dict[str, str]]:
+        '''
+        Get all available symbol labels
+
+        Parameters
+        ----------
+        data : List[TableData]
+            List of TableData objects to extract symbols from.
+
+        Returns
+        -------
+        List[Dict[str, str]]
+            A list of dictionaries containing symbol and their labels.
+        '''
+        try:
+            # SECTION: get TableData symbols
+            symbols = self.get_data_identifier(data)
+            if not symbols:
+                return []
+
+            # SECTION: find labels using SymbolController
+            res: List[Dict[str, str]] = []
+
+            for symbol_dict in symbols:
+                for symbol_list in symbol_dict.values():
+                    for symbol in symbol_list:
+                        label = self.symbol_controller.map_symbol_to_property_name(
+                            symbol)
+                        res.append({symbol: label})
+
+            return res
+        except Exception as e:
+            logger.error(f"Error listing properties: {e}")
+            return []
