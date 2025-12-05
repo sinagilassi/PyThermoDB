@@ -959,6 +959,44 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting equations structure failed!, {e}')
             return None
 
+    def all_function_identifiers(self):
+        '''
+        Retrieve all functions' identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            functions' identifiers
+        '''
+        try:
+            # NOTE: get functions
+            all_functions = self.check_functions()
+
+            # NOTE: get TableEquation objects
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableEquation)
+            ]
+
+            # >> check
+            if not functions:
+                logger.warning(
+                    'No TableEquation functions found in the thermodb!')
+                return None
+
+            # NOTE: get structure (use the instance accessor)
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get function identifiers')
+                return None
+
+            # NOTE: get identifiers
+            return tools.get_fn_identifier(functions)
+        except Exception as e:
+            logger.error(f'Getting equations identifiers failed!, {e}')
+            return None
+
     def all_data_details(self):
         '''
         Retrieve all data's structures in the thermodb.
@@ -995,4 +1033,80 @@ class CompBuilder(CompExporter):
             return tools.get_data_structure(data)
         except Exception as e:
             logger.error(f'Getting data structure failed!, {e}')
+            return None
+
+    def all_data_identifiers(self):
+        '''
+        Retrieve all data's identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            data's identifiers
+        '''
+        try:
+            # NOTE: get data
+            all_data = self.check_properties()
+
+            # NOTE: get TableData objects
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableData)
+            ]
+
+            # >> check
+            if not data:
+                logger.warning(
+                    'No TableData found in the thermodb!')
+                return None
+
+            # NOTE: get structure (use the instance accessor)
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get data identifiers')
+                return None
+
+            # NOTE: get identifiers
+            return tools.get_data_identifier(data)
+        except Exception as e:
+            logger.error(f'Getting data identifiers failed!, {e}')
+            return None
+
+    def all_data_id_labels(self):
+        '''
+        Retrieve all data's symbol labels in the thermodb.
+
+        Returns
+        -------
+        res : list
+            data's symbol labels
+        '''
+        try:
+            # NOTE: get data
+            all_data = self.check_properties()
+
+            # NOTE: get TableData objects
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableData)
+            ]
+
+            # >> check
+            if not data:
+                logger.warning(
+                    'No TableData found in the thermodb!')
+                return None
+
+            # NOTE: get structure (use the instance accessor)
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get data symbol labels')
+                return None
+
+            # NOTE: get symbol labels
+            return tools.get_data_id_labels(data)
+        except Exception as e:
+            logger.error(f'Getting data symbol labels failed!, {e}')
             return None
