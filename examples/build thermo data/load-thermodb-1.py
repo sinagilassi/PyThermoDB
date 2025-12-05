@@ -21,8 +21,8 @@ db_path = os.path.join(parent_path, 'thermodb')
 print(f"db_path: {db_path}")
 
 # SECTION: check component availability
-component_name = 'acetaldehyde'
-component_formula = 'C2H4O'
+component_name = 'carbon dioxide'
+component_formula = 'CO2'
 component_state = 'g'
 
 component = Component(
@@ -67,6 +67,18 @@ print(data_thermodb.all_function_details())
 # SECTION: get all data details
 print("[bold green]Data Details:[/bold green]")
 print(data_thermodb.all_data_details())
+
+# SECTION: get all identifiers
+print("[bold green]All Identifiers:[/bold green]")
+print(data_thermodb.all_function_identifiers())
+
+# SECTION: get all data identifiers
+print("[bold green]All Data Identifiers:[/bold green]")
+print(data_thermodb.all_data_identifiers())
+
+# SECTION: get all data labels
+print("[bold green]All Data Labels:[/bold green]")
+print(data_thermodb.all_data_id_labels())
 
 # SECTION: select property
 # general data
