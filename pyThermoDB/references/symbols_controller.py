@@ -164,3 +164,38 @@ class SymbolController:
             return True
         except Exception as e:
             raise Exception(f"Symbol checking error! {e}")
+
+    def map_symbol_to_property_name(
+            self,
+            symbol: str
+    ) -> str:
+        '''
+        Get property name from symbol
+
+        Parameters
+        ----------
+        symbol : str
+            The symbol to get the property name for.
+
+        Returns
+        -------
+        property_name : str
+            The property name corresponding to the symbol.
+        '''
+        try:
+            # NOTE: check input
+            if not isinstance(symbol, str) or not symbol:
+                logger.error(
+                    "Invalid symbol input. It must be a non-empty string.")
+                return ""
+
+            # NOTE: reverse lookup
+            for prop_name, sym in self.symbols_reference.items():
+                if sym == symbol:
+                    return prop_name
+
+            # not found
+            logger.warning(f"Symbol '{symbol}' not found in reference.")
+            return "Not Found"
+        except Exception as e:
+            raise Exception(f"Get symbol property name error! {e}")
