@@ -121,6 +121,9 @@ if not isinstance(Cp_eq, TableEquation):
 # equation summary
 print(Cp_eq.summary)
 
+# ! normalized equation
+print(Cp_eq.normalized_fn_body(1))
+
 # NOTE: calculate Cp at T=300 K
 T = 300  # temperature in K
 Cp_value = Cp_eq.cal(T=T)
