@@ -7,6 +7,7 @@ from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult, PropertyMatch, EquationRangeResult
 from ..utils import format_eq_data
+from ..utils import is_number
 from .table_util import TableUtil
 # ! deps
 from ..config.deps import get_config
@@ -1444,3 +1445,89 @@ class TableEquation:
                 availability=False,
                 search_mode=search_mode,
             )
+
+    def normalized_fn_body(
+            self,
+            eq_id: int
+    ) -> Optional[Dict[str, Any]]:
+        '''
+        Get normalized function body with appropriate parameter units.
+
+        Parameters
+        ----------
+        eq_id : int
+            Equation ID for which to normalize the function body (non-zero Id).
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            Normalized function body with parameter units, or None if table structure is not defined.
+
+        Notes
+        -----
+        This method retrieves the equation structure for the specified equation ID,
+        extracts the parameter units, and constructs a normalized function body, finally returning all equation data including the normalized body, parameters, arguments, and returns.
+        '''
+        try:
+            # SECTION: retrieve equation structure
+            # NOTE: equations
+            equations: Dict[str, Any] = self.eq_structure(eq_id)
+            # NOTE: parms
+            parms_src: Dict = equations.get('parms', {})
+            # >> parms
+            parms_id = list(parms_src.keys())
+            # NOTE: body
+            body_lines: List = equations.get('body', [])
+
+            # SECTION: retrieve structure data
+            # NOTE init block
+            parms_unit_block = []
+
+            # iterate through parms to create parms/unit block
+            for parm_key in parms_id:
+                # parm details
+                parm_details = parms_src.get(parm_key, {})
+                parm_symbol = parm_details.get('symbol', '')
+                parm_unit = parm_details.get('unit', '')
+
+                # ! check numeric unit
+                if is_number(parm_unit) is False:
+                    continue
+
+                # create parms/unit line
+                if parm_symbol and parm_unit:
+                    # create block line
+                    block_line = f"parms['{parm_symbol}'] = parms['{parm_symbol}'] / {parm_unit}"
+                    parms_unit_block.append(block_line)
+
+            # SECTION: normalize function body (merge blocks)
+            if len(parms_unit_block) > 0:
+                # append parms/unit block to body
+                normalized_body_lines = parms_unit_block + body_lines
+            else:
+                normalized_body_lines = body_lines
+
+            # normalized body
+            # normalized_body = ';'.join(normalized_body_lines)
+
+            # SECTION: construct equation data
+            eq_summary = {
+                'id': eq_id-1,
+                'body': normalized_body_lines,
+                'args': equations.get('args', {}),
+                'parms': equations.get('parms', {}),
+                'return': equations.get('return', {}),
+                'body_integral': equations.get('body_integral', None),
+                'body_first_derivativeE': equations.get(
+                    'body_first_derivative', None
+                ),
+                'body_second_derivative': equations.get(
+                    'body_second_derivative', None
+                ),
+                'custom_integralL': equations.get('custom_integral', None)
+            }
+
+            return eq_summary
+        except Exception as e:
+            logger.error(f'Normalizing function body error: {e}!')
+            return None
