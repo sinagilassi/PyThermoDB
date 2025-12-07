@@ -24,3 +24,11 @@ def uppercaseStringList(value):
     '''
     uppercaseList = list(map(str.upper, value))
     return uppercaseList
+
+
+def is_number(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except (ValueError, TypeError):
+        return False
