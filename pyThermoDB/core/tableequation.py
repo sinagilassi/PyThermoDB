@@ -1263,6 +1263,112 @@ class TableEquation:
         except Exception as e:
             raise Exception("Making return symbols failed!, ", e)
 
+    def make_parm_identifiers(self, parms: Optional[Dict] = None) -> List[str]:
+        '''
+        Create formatted parameter identifiers in the format 'name | symbol | unit'.
+        
+        This method processes parameter information and creates formatted strings
+        that can be used as identifiers in equation bodies. Each parameter's
+        column/name, symbol, and unit are combined into a standardized format.
+
+        Parameters
+        ----------
+        parms : dict, optional
+            Parameters dictionary. If None, uses self.parms.
+
+        Returns
+        -------
+        List[str]
+            List of formatted parameter identifiers in the format 'name | symbol | unit'.
+
+        Raises
+        ------
+        Exception
+            If parameter processing fails or if required attributes are missing.
+
+        Examples
+        --------
+        >>> parm_ids = eq.make_parm_identifiers()
+        >>> print(parm_ids)
+        ['a | a | None', 'b | b | 1E2', 'c | c | 1E5', 'd | d | 1E9']
+
+        Notes
+        -----
+        - Each parameter must have 'name', 'symbol', and 'unit' attributes
+        - Missing attributes will be logged as errors
+        - Empty or None parameter dictionaries return empty lists
+        '''
+        try:
+            # Use provided parms or fall back to self.parms
+            _parms = parms if parms is not None else self.parms
+            
+            # Initialize result list
+            parm_identifiers = []
+            
+            # Validate input
+            if _parms is None:
+                logger.debug("No parameters provided, returning empty list")
+                return parm_identifiers
+            
+            # Check if parms is a dictionary
+            if not isinstance(_parms, dict):
+                logger.error(
+                    f"Parameters must be a dictionary, got {type(_parms)}"
+                )
+                return parm_identifiers
+            
+            # Check if dictionary is empty
+            if len(_parms) == 0:
+                logger.debug("Empty parameters dictionary, returning empty list")
+                return parm_identifiers
+            
+            # Iterate through parameters
+            for key, value in _parms.items():
+                # Validate that value is a dictionary
+                if not isinstance(value, dict):
+                    logger.error(
+                        f"Parameter '{key}' value must be a dictionary, "
+                        f"got {type(value)}"
+                    )
+                    continue
+                
+                # Extract required attributes
+                name = value.get('name')
+                symbol = value.get('symbol')
+                # Prefer 'conversion' field over 'unit' for the unit value
+                # If conversion exists, use it; otherwise use unit
+                unit = value.get('conversion') if value.get('conversion') is not None else value.get('unit')
+                
+                # Check for missing attributes
+                missing_attrs = []
+                if name is None:
+                    missing_attrs.append('name')
+                if symbol is None:
+                    missing_attrs.append('symbol')
+                if unit is None:
+                    missing_attrs.append('unit')
+                
+                if missing_attrs:
+                    logger.error(
+                        f"Parameter '{key}' is missing required attributes: "
+                        f"{', '.join(missing_attrs)}"
+                    )
+                    continue
+                
+                # Create formatted identifier: 'name | symbol | unit'
+                parm_identifier = f"{name} | {symbol} | {unit}"
+                parm_identifiers.append(parm_identifier)
+                
+                logger.debug(
+                    f"Created parameter identifier for '{key}': {parm_identifier}"
+                )
+            
+            return parm_identifiers
+            
+        except Exception as e:
+            logger.error(f"Making parameter identifiers failed: {e}")
+            raise Exception("Making parameter identifiers failed!") from e
+
     def make_identifiers(
             self,
             param_id: Literal['arg', 'return'],
