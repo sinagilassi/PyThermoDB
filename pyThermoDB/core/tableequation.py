@@ -1290,7 +1290,7 @@ class TableEquation:
         --------
         >>> parm_ids = eq.make_parm_identifiers()
         >>> print(parm_ids)
-        ['a | a | None', 'b | b | 1E2', 'c | c | 1E5', 'd | d | 1E9']
+        ['a | a | 1', 'b | b | 1E2', 'c | c | 1E5', 'd | d | 1E9']
 
         Notes
         -----
@@ -1337,7 +1337,8 @@ class TableEquation:
                 symbol = value.get('symbol')
                 # Prefer 'conversion' field over 'unit' for the unit value
                 # If conversion exists, use it; otherwise use unit
-                unit = value.get('conversion') if value.get('conversion') is not None else value.get('unit')
+                conversion = value.get('conversion')
+                unit = conversion if conversion is not None else value.get('unit')
                 
                 # Check for missing attributes
                 missing_attrs = []
