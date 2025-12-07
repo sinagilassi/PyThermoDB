@@ -6,8 +6,8 @@ import json
 from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult, PropertyMatch, EquationRangeResult
-from ..utils import format_eq_data
-from ..utils import is_number
+from ..utils import format_eq_data, is_number
+from ..models.tables import TableEquationBlock
 from .table_util import TableUtil
 # ! deps
 from ..config.deps import get_config
@@ -1449,7 +1449,7 @@ class TableEquation:
     def normalized_fn_body(
             self,
             eq_id: int
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[TableEquationBlock]:
         '''
         Get normalized function body with appropriate parameter units.
 
@@ -1460,7 +1460,7 @@ class TableEquation:
 
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[TableEquationBlock]
             Normalized function body with parameter units, or None if table structure is not defined.
 
         Notes
@@ -1510,24 +1510,71 @@ class TableEquation:
             # normalized body
             # normalized_body = ';'.join(normalized_body_lines)
 
+            # set id (non-zero to zero)
+            eq_id -= eq_id
+
             # SECTION: construct equation data
             eq_summary = {
-                'id': eq_id-1,
+                'id': eq_id,
                 'body': normalized_body_lines,
                 'args': equations.get('args', {}),
                 'parms': equations.get('parms', {}),
-                'return': equations.get('return', {}),
+                'returns': equations.get('return', {}),
                 'body_integral': equations.get('body_integral', None),
-                'body_first_derivativeE': equations.get(
+                'body_first_derivative': equations.get(
                     'body_first_derivative', None
                 ),
                 'body_second_derivative': equations.get(
                     'body_second_derivative', None
                 ),
-                'custom_integralL': equations.get('custom_integral', None)
+                'custom_integral': equations.get('custom_integral', None)
             }
+
+            # NOTE: set TableEquationBlock
+            eq_summary = TableEquationBlock(**eq_summary)
 
             return eq_summary
         except Exception as e:
             logger.error(f'Normalizing function body error: {e}!')
+            return None
+
+    def normalized_fns(
+            self
+    ):
+        """
+        Get normalized function bodies for all equations in the table.
+
+        Returns
+        -------
+        Optional[List[TableEquationBlock]]
+            List of normalized function bodies with parameter units for all equations,
+            or None if table structure is not defined.
+        """
+        try:
+            # SECTION: retrieve equations
+            eqs_src = self.eqs_structure(res_format='dict')
+
+            # >> check
+            if not isinstance(eqs_src, dict):
+                return None
+
+            # SECTION: normalize each equation body
+            normalized_equations: List[TableEquationBlock] = []
+
+            for eq_id_str, eq_data in eqs_src.items():
+                # convert eq_id to int
+                eq_id = int(eq_id_str)
+                # non-zero conversion
+                eq_id += 1
+
+                # get normalized body
+                normalized_eq = self.normalized_fn_body(eq_id)
+
+                if normalized_eq is not None:
+                    # set
+                    normalized_equations.append(normalized_eq)
+
+            return normalized_equations
+        except Exception as e:
+            logger.error(f'Normalizing all function bodies error: {e}!')
             return None
