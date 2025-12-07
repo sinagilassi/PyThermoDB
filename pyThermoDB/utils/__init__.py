@@ -1,5 +1,5 @@
 from .logger import log2Col
-from .utility import isNumber, uppercaseStringList
+from .utility import isNumber, uppercaseStringList, is_number
 from .result_generator import format_eq_data
 from .convertor import Convertor, is_str_number
 from .component_utils import (
@@ -50,4 +50,5 @@ __all__ = [
     "create_mixture_from_components",
     "EquationParser",
     "filter_yaml_for_component",
+    "is_number",
 ]
