@@ -1,12 +1,18 @@
 # import libs
+import os
+from typing import List
+from pyThermoDB.references import (
+    check_custom_reference,
+    load_custom_reference,
+    load_reference_from_str
+)
 from pyThermoDB.references import check_custom_reference, ReferenceChecker
+from pyThermoDB.models import EquationDefinition
 from rich import print
 from pyThermoDB.manager import parse_equation_body, parse_equation_body_with_table_structure
-# locals
-from private.thermo_data_1 import REFERENCE_CONTENT
 
 # SECTION: reference content
-REFERENCE_CONTENT_0 = """
+REFERENCE_CONTENT = """
 REFERENCES:
     CUSTOM-REF-1:
       DATABOOK-ID: 1
@@ -175,128 +181,12 @@ REFERENCES:
             - [16,'ethane','C2H6','g',30.069,305.32,4.872,0.1455,0.279,0.0995,-83.8,-31.9]
 """
 
-# SECTION: check custom reference
-check_ = check_custom_reference(REFERENCE_CONTENT)
-print(check_)
-
+# SECTION: dir configuration
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
 
 # SECTION: create ReferenceChecker instance
 ReferenceChecker_ = ReferenceChecker(REFERENCE_CONTENT)
-
-# SECTION: get databook names
-databook_names_ = ReferenceChecker_.get_databook_names()
-print(f"Databook Names: {databook_names_}")
-
-# SECTION: get databooks
-databooks_ = ReferenceChecker_.get_databook('CUSTOM-REF-1')
-print(f"Databooks: {databooks_}")
-
-# SECTION: get databook tables
-databook_tables_ = ReferenceChecker_.get_databook_tables('CUSTOM-REF-1')
-print(f"Databook Tables: {databook_tables_}")
-
-# SECTION: get databook table names
-databook_table_names_ = ReferenceChecker_.get_databook_table_names(
-    'CUSTOM-REF-1'
-)
-print(f"Databook Table Names: {databook_table_names_}")
-
-# SECTION: get databook table
-databook_table_ = ReferenceChecker_.get_databook_table(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Databook Table: {databook_table_}")
-
-# SECTION: get databook table values
-databook_table_values_ = ReferenceChecker_.get_table_values(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Databook Table Values:")
-print(databook_table_values_)
-
-# SECTION: get table description
-table_description_ = ReferenceChecker_.get_table_description(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Description: {table_description_}")
-
-# SECTION: get table components
-table_components_ = ReferenceChecker_.get_table_components(
-    'CUSTOM-REF-1',
-    'general-data',
-    key_names=['name', 'formula', 'state']
-)
-print("Table Components:")
-print(table_components_)
-
-# NOTE: get all table components
-all_table_components_ = ReferenceChecker_.get_all_table_components(
-    databook_name='CUSTOM-REF-1',
-    key_names=['name', 'formula', 'state']
-)
-print("All Table Components:")
-print(all_table_components_)
-
-all_table_components_ = ReferenceChecker_.get_all_table_components()
-print("All Table Components:")
-print(all_table_components_)
-
-# SECTION: get table data
-table_data_ = ReferenceChecker_.get_table_data(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print("Table Data:")
-print(table_data_)
-
-# ! vapor-pressure table example
-table_data_ = ReferenceChecker_.get_table_data(
-    'CUSTOM-REF-1',
-    'vapor-pressure'
-)
-print("Vapor Pressure Table Data:")
-print(table_data_)
-
-# NOTE: get table data details (property name and symbols)
-table_data_details_ = ReferenceChecker_.get_table_data_details(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Data Details: {table_data_details_}")
-
-# NOTE: get table data structure
-table_data_structure_ = ReferenceChecker_.get_table_structure(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print("Table Data Structure: ")
-print(table_data_structure_)
-
-# NOTE: get full table data
-# ! ignore columns example
-ignore_columns = None
-ignore_columns = ['No.', 'Name', 'Formula', 'State']
-full_table_data_ = ReferenceChecker_.get_full_table_data(
-    'CUSTOM-REF-1',
-    'general-data',
-    component_key='Name-Formula-State',
-    ignore_columns=ignore_columns
-)
-print("Full Table Data: ")
-print(full_table_data_)
-
-# ! vapor-pressure table example
-full_table_data_ = ReferenceChecker_.get_full_table_data(
-    'CUSTOM-REF-1',
-    'vapor-pressure',
-    component_key='Name-Formula-State',
-    ignore_columns=ignore_columns
-)
-print("Full Table Data: ")
-print(full_table_data_)
 
 # SECTION: get table equations
 table_equations_ = ReferenceChecker_.get_table_equations(
@@ -331,159 +221,3 @@ parsed_equation_with_structure_ = parse_equation_body_with_table_structure(
     table_structure=table_structure_ if table_structure_ is not None else {}
 )
 print(parsed_equation_with_structure_)
-
-# NOTE: get table equation details
-table_equation_details_ = ReferenceChecker_.get_table_equation_details(
-    'CUSTOM-REF-1',
-    'vapor-pressure'
-)
-print(f"Table Equation Details: {table_equation_details_}")
-# >> check
-if table_equation_details_ is None:
-    raise ValueError("No equation details found.")
-
-# SECTION: get components data
-components_data_ = ReferenceChecker_.get_components_data(
-    'CUSTOM-REF-1',
-    'general-data',
-    component_key='Name-State'
-)
-print(f"Components Data:")
-print(components_data_)
-
-# ! vapor-pressure table example
-components_data_ = ReferenceChecker_.get_components_data(
-    'CUSTOM-REF-1',
-    'vapor-pressure',
-    component_key='Name-State'
-)
-print(f"Components Data:")
-print(components_data_)
-
-# SECTION: get table matrix symbols
-table_matrix_symbols_ = ReferenceChecker_.get_table_matrix_symbols(
-    'CUSTOM-REF-1',
-    'NRTL Non-randomness parameters-1'
-)
-print(f"Table Matrix Symbols: {table_matrix_symbols_}")
-
-# SECTION: get table types
-# NOTE: all table types
-all_table_types_ = ReferenceChecker_.get_all_tables_types()
-print(f"All Table Types: {all_table_types_}")
-
-# NOTE: databook table types
-table_types_ = ReferenceChecker_.get_table_type(
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(f"Table Types: {table_types_}")
-
-table_types_ = ReferenceChecker_.get_table_type(
-    'CUSTOM-REF-1',
-    'ideal-gas-heat-capacity'
-)
-print(f"Table Types: {table_types_}")
-
-table_types_ = ReferenceChecker_.get_table_type(
-    'CUSTOM-REF-1',
-    'vapor-pressure'
-)
-print(f"Table Types: {table_types_}")
-
-# SECTION: get databook tables types
-databook_tables_types_ = ReferenceChecker_.get_databook_tables_types(
-    'CUSTOM-REF-1'
-)
-print(f"Databook Tables Types: {databook_tables_types_}")
-
-# SECTION: generate property mapping
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# NOTE: generate property mapping for specific table
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-    table_name='general-data'
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# NOTE: generate property mapping for specific tables
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-    table_name='ideal-gas-heat-capacity'
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# NOTE: generate property mapping for specific tables
-property_mapping_ = ReferenceChecker_.generate_property_mapping(
-    databook_name='CUSTOM-REF-1',
-    table_name='vapor-pressure'
-)
-print(f"Property Mapping: {property_mapping_}")
-
-# SECTION: property mappings
-property_mappings_ = ReferenceChecker_.get_property_mappings(
-    databook_name='CUSTOM-REF-1',
-)
-print(f"Property Mappings: {property_mappings_}")
-
-# SECTION: check properties availability
-# prop
-props = [
-    'VaPr',
-    'Cp_IG',
-    'MW',
-    'Tc',
-    'Pc',
-    'Vc',
-    'Zc',
-    'AcFa',
-    'EnFo',
-    'GiEnFo',
-    'Tm',
-    'Tb'
-]
-props_availability_ = ReferenceChecker_.prop_available_in_databook(
-    props,
-    databook_name='CUSTOM-REF-1',
-)
-print(f"Properties Availability: {props_availability_}")
-
-# SECTION: get component data
-# NOTE: component data by name and state
-component_name = 'carbon dioxide'
-component_formula = 'CO2'
-component_state = 'g'
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    table_name='general-data',
-    component_key='Name-State'
-)
-print(f"Components Data: {components_data_}")
-
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-2',
-    table_name='general-data-2',
-    component_key='Name-State'
-)
-print(f"Components Data: {components_data_}")
-
-# ! vapor pressure table example
-components_data_ = ReferenceChecker_.get_component_data(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    databook_name='CUSTOM-REF-1',
-    table_name='vapor-pressure',
-    component_key='Name-State'
-)
-print(f"Components Data: {components_data_}")
