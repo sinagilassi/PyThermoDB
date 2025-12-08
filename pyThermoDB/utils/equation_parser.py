@@ -437,3 +437,34 @@ class EquationParser:
             raise FileNotFoundError(f"File not found: {equation_src}")
         except Exception as e:
             raise Exception(f"equation format checker error! {e}")
+
+    def _parms_extractor(
+            self
+    ) -> Dict[str, Any]:
+        '''
+        Extract parameters from equation
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        dict
+            A dictionary of parameters.
+        '''
+        try:
+            # init
+            parms_dict = {}
+
+            # get parms
+            parms = self.equation_holder.get('PARMS', {})
+
+            # loop through parms
+            for key, val in parms.items():
+                parms_dict[key] = val
+
+            # res
+            return parms_dict
+        except Exception as e:
+            raise Exception(f"parms_extractor error! {e}")
