@@ -652,6 +652,44 @@ class ReferenceChecker:
             logging.error(f"Error extracting symbols from structure: {e}")
             return []
 
+    def get_units_from_structure(self, structure: Dict[str, Any]) -> List[str]:
+        """
+        Extract units from the table structure.
+
+        Parameters
+        ----------
+        structure : Dict[str, Any]
+            The structure dictionary containing table metadata.
+
+        Returns
+        -------
+        List[str]
+            A list of units.
+        """
+        try:
+            # check if structure is a dictionary
+            if not isinstance(structure, dict):
+                logging.error("Structure must be a dictionary.")
+                return []
+
+            # check if 'UNIT' key exists in structure
+            if 'UNIT' not in structure:
+                logging.error("'UNIT' key is missing in structure.")
+                return []
+
+            # get units
+            units: List[str] = structure['UNIT']
+
+            # check if units is a list
+            if not isinstance(units, list):
+                logging.error("'UNIT' must be a list.")
+                return []
+
+            return units
+        except Exception as e:
+            logging.error(f"Error extracting units from structure: {e}")
+            return []
+
     def get_matrix_table_symbols(self, databook_name: str, table_name: str):
         '''
 
@@ -1365,7 +1403,7 @@ class ReferenceChecker:
         table_name: str
     ):
         """
-        Get the equation details of a specific table in a databook from the STRUCTURE.
+        Get the equation return symbol of a specific table in a databook from the STRUCTURE.
 
         Parameters
         ----------
