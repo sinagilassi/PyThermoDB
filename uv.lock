@@ -394,7 +394,7 @@ wheels = [
 
 [[package]]
 name = "pythermodb"
-version = "1.11.55"
+version = "1.11.60"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
