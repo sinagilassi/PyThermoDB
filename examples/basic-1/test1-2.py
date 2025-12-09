@@ -304,6 +304,8 @@ CO2_cp_IG = tdb.build_equation(
     "Perry's Chemical Engineers' Handbook",
     'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
 )
+# records
+print(CO2_cp_IG.get_records())
 # parms
 print(CO2_cp_IG.eq_id)
 print(CO2_cp_IG.args)
