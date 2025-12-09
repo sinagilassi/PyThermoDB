@@ -406,6 +406,44 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
+    def get_records(self) -> Optional[Dict[str, Any]]:
+        '''
+        Get record from trans data.
+        '''
+        try:
+            # NOTE: columns and symbols
+            columns = [k for k in self.trans_data.keys()]
+
+            # >> check
+            if not columns:
+                logger.error('No columns found in table structure!')
+                return None
+
+            # init record
+            records = {}
+
+            # iterate through table values
+            for col in columns:
+                # retrieve data
+                col_data = self.trans_data.get(col, None)
+
+                # >> check
+                if (
+                    col_data is None or
+                    not isinstance(col_data, dict)
+                ):
+                    logger.warning(f'No data found for column: {col}!')
+                    continue
+
+                # >> check has value key
+                if 'value' in col_data.keys():
+                    records[col] = col_data['value']
+
+            return records
+        except Exception as e:
+            logger.error(f'Loading error {e}!')
+            return None
+
     def eq_info(self):
         '''Get equation information.'''
         try:
