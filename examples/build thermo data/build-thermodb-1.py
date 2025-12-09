@@ -127,6 +127,10 @@ print(Cp_eq.normalized_fn_body(1))
 # ! normalized all equations
 print(Cp_eq.normalized_fns())
 
+# ! get records
+print("Cp_eq Records:")
+print(Cp_eq.get_records())
+
 # NOTE: calculate Cp at T=300 K
 T = 300  # temperature in K
 Cp_value = Cp_eq.cal(T=T)
