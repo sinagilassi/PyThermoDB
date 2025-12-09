@@ -319,6 +319,11 @@ print('CO2 heat capacity (IG)', CO2_cp_IG.cal(T=300))
 # summary
 print(CO2_cp_IG.summary)
 
+# NOTE: normalization
+print(CO2_cp_IG.normalized_fn_body(1))
+print('Normalized functions:')
+print(CO2_cp_IG.normalized_fns())
+
 # args
 CO2_cp_IG_args = {
     'T': 300
