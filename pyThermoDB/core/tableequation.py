@@ -1561,9 +1561,9 @@ class TableEquation:
             # SECTION: normalize each equation body
             normalized_equations: List[TableEquationBlock] = []
 
-            for eq_id_str, eq_data in eqs_src.items():
+            for i, (eq_id_str, eq_data) in enumerate(eqs_src.items()):
                 # convert eq_id to int
-                eq_id = int(eq_id_str)
+                eq_id = int(i)
                 # non-zero conversion
                 eq_id += 1
 
