@@ -50,7 +50,7 @@ print(type(res_))
 # TABLE IN THE BROWSER
 # ===============================
 # open table in the browser
-tdb.table_view(1, 2)
+# tdb.table_view(1, 2)
 
 # open all tables in the browser
-tdb.tables_view()
+# tdb.tables_view()
