@@ -200,7 +200,12 @@ class YAMLExtractor:
 
         return results
 
-    def _looks_like_yaml_start(self, line: str, lines: List[str] = None, line_idx: int = -1) -> bool:
+    def _looks_like_yaml_start(
+            self,
+            line: str,
+            lines: Optional[List[str]] = None,
+            line_idx: int = -1
+    ) -> bool:
         """Check if a line looks like it could start a YAML document."""
         stripped = line.strip()
 
@@ -225,7 +230,13 @@ class YAMLExtractor:
 
         return False
 
-    def _looks_like_yaml_key_value(self, stripped: str, full_line: str, lines: List[str] = None, line_idx: int = -1) -> bool:
+    def _looks_like_yaml_key_value(
+            self,
+            stripped: str,
+            full_line: str,
+            lines: Optional[List[str]] = None,
+            line_idx: int = -1
+    ) -> bool:
         """Enhanced key-value pair detection with context awareness."""
         # Basic key-value pattern
         key_value_match = re.match(
