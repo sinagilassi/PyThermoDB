@@ -40,11 +40,7 @@ print(tb_lists)
 tb_select = tdb.select_table(1, 2)
 print(tb_select)
 
-tb_select = tdb.select_table(
-    1,
-    'TABLE 2-179 Enthalpies and Gibbs Energies of Formation, '
-    'Entropies, and Net Enthalpies of Combustion'
-)
+tb_select = tdb.select_table(1, 3)
 print(tb_select)
 
 # display a table
@@ -60,19 +56,10 @@ print(res_)
 print(type(res_))
 
 # ===============================
-# TABLE IN THE BROWSER
-# ===============================
-# open table in the browser
-# tdb.table_view(1, 2)
-
-# open all tables in the browser
-# tdb.tables_view()
-
-# ===============================
 # LOAD TABLES
 # ===============================
 # load equation to check
-vapor_pressure_tb = tdb.equation_load(1, 4)
+vapor_pressure_tb = tdb.equation_load(1, 3)
 
 print(vapor_pressure_tb.eq_structure(1))
 # load data to check
@@ -92,9 +79,7 @@ comp1 = "carbon Dioxide"
 
 # check component
 CO2_check_availability = tdb.check_component(
-    comp1,
-    "Perry's Chemical Engineers' Handbook",
-    'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
+    comp1, 1, 1
 )
 print(CO2_check_availability)
 
@@ -140,9 +125,7 @@ print(CO2_data.get_property('molecular-weight'))
 # BUILD EQUATION
 # ====================================
 # build an equation
-eq = tdb.build_equation(comp1, 1, 4)
+eq = tdb.build_equation(comp1, 1, 3)
 print(eq.args)
 res = eq.cal(T=298.15)
 print(res)
-
-# check
