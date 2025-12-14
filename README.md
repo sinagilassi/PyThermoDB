@@ -29,16 +29,16 @@ Built with LangGraph for creating sophisticated multi-agent workflows, PyThermoA
 
 Try PyThermoDB directly in your browser without any installation using Binder. You can find examples regarding the following contents:
 
-  - **Import Libraries**: Import the necessary libraries including pyThermoDB and rich.
-  - **Check Versions**: Print the version of pyThermoDB.
-  - **App Initialization**: Initialize the pyThermoDB application.
-  - **Databook List**: List all available databooks.
-  - **Table List**: List all tables in a specific databook.
-  - **Table Info**: Get information about a specific table.
-  - **Load Tables**: Load and display data and equations from tables.
-  - **Check Component Availability**: Check if a component is available in a specific table.
-  - **Build Data**: Build data for a specific component from a table.
-  - **Build Equation**: Build an equation for a specific component from a table.
+- **Import Libraries**: Import the necessary libraries including pyThermoDB and rich.
+- **Check Versions**: Print the version of pyThermoDB.
+- **App Initialization**: Initialize the pyThermoDB application.
+- **Databook List**: List all available databooks.
+- **Table List**: List all tables in a specific databook.
+- **Table Info**: Get information about a specific table.
+- **Load Tables**: Load and display data and equations from tables.
+- **Check Component Availability**: Check if a component is available in a specific table.
+- **Build Data**: Build data for a specific component from a table.
+- **Build Equation**: Build an equation for a specific component from a table.
 
 Click on any of the following links to launch interactive Jupyter notebooks:
 
@@ -388,6 +388,8 @@ thermo_db.save('thermodb_nrtl_0', file_path='notebooks')
 ## 📝 License
 
 This project is licensed under the MIT License. You are free to use, modify, and distribute this software in your own applications or projects. However, if you choose to use this app in another app or software, please ensure that my name, Sina Gilassi, remains credited as the original author. This includes retaining any references to the original repository or documentation where applicable. By doing so, you help acknowledge the effort and time invested in creating this project.
+
+The MIT License applies solely to the source code contained in this repository. This project does NOT distribute, sublicense, or grant any rights to third-party thermodynamic data. Any thermodynamic data used with this software must be obtained independently by the user from its original source and used in accordance with the applicable license or terms of use.
 
 ## ❓ FAQ
 
