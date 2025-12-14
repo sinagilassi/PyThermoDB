@@ -144,3 +144,5 @@ eq = tdb.build_equation(comp1, 1, 4)
 print(eq.args)
 res = eq.cal(T=298.15)
 print(res)
+
+# check
