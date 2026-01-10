@@ -101,7 +101,7 @@ print(VaPr)
 print("[bold magenta]Alternative method (without databook name)[/bold magenta]")
 vapor_pressure_eq = thermo_db.build_equation(
     comp1,
-    8,
+    2,
     3
 )
 
