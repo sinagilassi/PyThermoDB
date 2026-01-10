@@ -45,7 +45,7 @@ ref: Dict[str, Any] = {'reference': [yml_path]}
 # ====================================
 # INITIALIZATION OWN THERMO DB
 # ====================================
-thermo_db = ptdb.init(custom_reference=ref)
+thermo_db = ptdb.init(custom_reference=ref, mode="log")
 
 # ====================================
 # GET DATABOOK LIST

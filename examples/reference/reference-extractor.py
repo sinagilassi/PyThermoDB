@@ -190,7 +190,7 @@ This file is a yaml format. Then AI can produce this as it is!
 extractor = YAMLExtractor()
 
 # Extract and validate YAML sections
-result = extractor.extract_and_validate(content_1)
+result = extractor.extract_and_validate(content_1, mode="log")
 
 print("Extraction Results:")
 print("Result Dictionary Keys:", result.keys())

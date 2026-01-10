@@ -3,6 +3,7 @@ import logging
 import yaml
 import re
 from typing import Optional, List, Dict, Any, Tuple
+from pythermodb_settings.utils import measure_time
 # local
 
 # NOTE: logger
@@ -448,12 +449,18 @@ class YAMLExtractor:
         except yaml.YAMLError as e:
             return False, str(e)
 
-    def extract_and_validate(self, text: str) -> Dict[str, Any]:
+    @measure_time
+    def extract_and_validate(
+        self,
+        text: str,
+        **kwargs,
+    ) -> Dict[str, Any]:
         """
         Extract YAML sections and provide validation results.
 
         Args:
             text: String potentially containing YAML
+            kwargs: mode, Literal['silent', 'log', 'attach'], optional
 
         Returns:
             Dictionary with extraction results and validation status

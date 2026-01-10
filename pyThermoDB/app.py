@@ -6,6 +6,7 @@ from typing import (
     Dict,
     List,
 )
+from pythermodb_settings.utils import measure_time
 # local
 from .docs import (
     ThermoDB,
@@ -20,10 +21,12 @@ from .models import CustomReference
 logger = logging.getLogger(__name__)
 
 
+@measure_time
 def init(
     custom_reference: Optional[
         CustomReference | str
-    ] = None
+    ] = None,
+    **kwargs,
 ) -> ThermoDB:
     '''
     Initialize thermodb app to check and build thermodynamic data and equations.
@@ -32,6 +35,10 @@ def init(
     ----------
     custom_reference : Optional[CustomReference | str], optional
         set-up external reference (custom reference) dict for databook and tables (check examples)
+    **kwargs
+        Additional keyword arguments.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -157,9 +164,11 @@ def ref(
         raise Exception(f'Building reference failed! {e}')
 
 
+@measure_time
 def build_thermodb(
     thermodb_name: Optional[str] = None,
-    message: Optional[str] = None
+    message: Optional[str] = None,
+    **kwargs,
 ) -> CompBuilder:
     '''
     Build thermodb object to check and build thermodynamic data and equations
@@ -187,7 +196,11 @@ def build_thermodb(
         raise Exception("Building thermodb failed!, ", e)
 
 
-def load_thermodb(thermodb_file: str) -> CompBuilder:
+@measure_time
+def load_thermodb(
+    thermodb_file: str,
+    **kwargs,
+) -> CompBuilder:
     '''
     Load thermodb object to read thermodynamic data and equations
 
@@ -195,6 +208,10 @@ def load_thermodb(thermodb_file: str) -> CompBuilder:
     ----------
     thermodb_file : str
         thermodb filename path
+    **kwargs
+        Additional keyword arguments.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
