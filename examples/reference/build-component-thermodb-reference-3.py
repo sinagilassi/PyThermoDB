@@ -5,7 +5,7 @@ from rich import print
 import pyThermoDB as ptdb
 from pyThermoDB.core import TableData, TableEquation, TableMatrixData
 from pyThermoDB.references import ReferenceConfig
-from pyThermoDB import check_and_build_component_thermodb
+from pyThermoDB.thermodbX import check_and_build_component_thermodb, CustomReferenceSource, CustomReference
 from pythermodb_settings.models import Component
 
 # get versions
@@ -38,96 +38,11 @@ file_contents = """
 # md ref
 # ref = {'reference': [md_path]}
 # yml ref
-ref: Dict[str, Any] = {'reference': [yml_path]}
+ref: CustomReference = {'reference': [yml_path]}
 
-
-# SECTION: load custom reference
-# ====================================
-# INITIALIZATION OWN THERMO DB
-# ====================================
-thermo_db = ptdb.init(custom_reference=ref, mode="log")
-
-# ====================================
-# GET DATABOOK LIST
-# ====================================
-db_list = thermo_db.list_databooks()
-print(db_list)
-
-# ====================================
-# SELECT A DATABOOK
-# ====================================
-# table list
-tb_list = thermo_db.list_tables('CUSTOM-REF-1')
-print(tb_list)
-
-
-# NOTE: select a component
-comp1 = "Carbon Dioxide"
-
-# ====================================
-# BUILD DATA
-# ====================================
-# build data
-comp1_data = thermo_db.build_data(
-    comp1,
-    'CUSTOM-REF-1',
-    'general-data'
-)
-print(comp1_data.data_structure())
-
-print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
-# by symbol
-print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
-
-# ====================================
-# BUILD EQUATION
-# ====================================
-# build equation
-# ! by table id
-print("[bold magenta]Build equation by table name[/bold magenta]")
-vapor_pressure_eq = thermo_db.build_equation(
-    comp1,
-    'CUSTOM-REF-1',
-    3
-)
-
-print(vapor_pressure_eq.equation_args())
-print(vapor_pressure_eq.equation_return())
-VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
-VaPr = vapor_pressure_eq.cal(T=304.21)
-print(VaPr)
-
-# ! by databook id and table id
-print("[bold magenta]Alternative method (without databook name)[/bold magenta]")
-vapor_pressure_eq = thermo_db.build_equation(
-    comp1,
-    2,
-    3
-)
-
-print(vapor_pressure_eq.equation_args())
-print(vapor_pressure_eq.equation_return())
-VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
-VaPr = vapor_pressure_eq.cal(T=304.21)
-print(VaPr)
-
-# ! by databook name and table name
-print("[bold magenta]Alternative method (by table name)[/bold magenta]")
-vapor_pressure_eq = thermo_db.build_equation(
-    comp1,
-    'CUSTOM-REF-1',
-    'vapor-pressure'
-)
-print(vapor_pressure_eq.equation_args())
-print(vapor_pressure_eq.equation_return())
-VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
-VaPr = vapor_pressure_eq.cal(T=304.21)
-print(VaPr)
-
-# SECTION: build component thermodb for each component
-# ====================================
-# BUILD COMPONENT THERMODB
-# ====================================
+# ?===========================================================
+# SECTION: BUILD COMPONENT THERMODB
+# ?===========================================================
 # property
 reference_config = {
     'heat-capacity': {
@@ -274,67 +189,70 @@ CO2_component = Component(
 # ?===========================================================
 # SECTION: Using check_and_build_component_thermodb
 # ?===========================================================
+# NOTE: create CustomReferenceSource
+custom_reference_source = CustomReferenceSource(
+    reference=ref,
+    config=reference_config
+)
+
+
 # ! (by component and Formula-State)
 print("[bold magenta]By Component and Formula-State with no ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
+thermodb_component_ = check_and_build_component_thermodb(
     component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
+    reference_source=custom_reference_source,
     component_key='Formula-State'
 )
 # >> check
 if thermodb_component_:
     #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
+    print(f"check: {thermodb_component_.thermodb.check()}")
+    print(f"message: {thermodb_component_.thermodb.message}")
 
 # ! (by component and Name-State)
 print("[bold magenta]By Component and Name-State with no ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
+thermodb_component_ = check_and_build_component_thermodb(
     component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
+    reference_source=custom_reference_source,
     component_key='Name-State'
 )
 # >> check
 if thermodb_component_:
     #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
+    print(f"check: {thermodb_component_.thermodb.check()}")
+    print(f"message: {thermodb_component_.thermodb.message}")
 
 # ! (by component and Name)
 print("[bold magenta]By Component and Name with ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
+thermodb_component_ = check_and_build_component_thermodb(
     component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
+    reference_source=custom_reference_source,
     component_key='Name-State',
     ignore_state_props=['VaPr'],
 )
 # >> check
 if thermodb_component_:
     #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
+    print(f"check: {thermodb_component_.thermodb.check()}")
+    print(f"message: {thermodb_component_.thermodb.message}")
 
 # ! (by component and Formula)
 print("[bold magenta]By Component and Formula with ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
+thermodb_component_ = check_and_build_component_thermodb(
     component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
+    reference_source=custom_reference_source,
     component_key='Formula-State',
     ignore_state_props=['VaPr'],
 )
 # >> check
 if thermodb_component_:
     #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
+    print(f"check: {thermodb_component_.thermodb.check()}")
+    print(f"message: {thermodb_component_.thermodb.message}")
 
 # ! vapor pressure state enforced to check
 # print("[bold magenta]By Component and Formula without ignore[/bold magenta]")
-# thermodb_component_ = ptdb.check_and_build_component_thermodb(
+# thermodb_component_ = check_and_build_component_thermodb(
 #     component=CO2_component,
 #     reference_config=reference_config,
 #     custom_reference=ref,
@@ -350,6 +268,9 @@ if thermodb_component_:
 # ! >> check
 if not thermodb_component_:
     raise ValueError("thermodb_component_ is None")
+
+# NOTE: get CompBuilder
+thermodb_component_ = thermodb_component_.thermodb
 
 # select a property
 prop1_ = thermodb_component_.select('general')
