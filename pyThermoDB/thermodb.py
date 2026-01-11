@@ -445,12 +445,12 @@ def check_and_build_component_thermodb(
         Component object to build thermodynamic databook for Which includes name, formula, and state.
     reference_config : Dict[str, Dict[str, Any]] | str | Dict[str, ComponentConfig]
         Dictionary containing properties of the component to be included in the thermodynamic databook.
-    thermodb_name : Optional[str], optional
-        Name of the thermodynamic databook to be built, by default None
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     component_key : Literal['Name-State', 'Formula-State'], optional
         Key to identify the component in the reference content, by default 'Formula-State'
+    thermodb_name : Optional[str], optional
+        Name of the thermodynamic databook to be built, by default None
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
