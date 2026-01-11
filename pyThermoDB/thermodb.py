@@ -21,6 +21,7 @@ from pythermodb_settings.models import (
     ComponentConfig,
     CustomReference
 )
+from pythermodb_settings.utils import measure_time
 # local
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
@@ -108,6 +109,7 @@ class MixtureThermoDB(BaseModel):
     )
 
 
+@measure_time
 def build_component_thermodb(
     component_name: str,
     reference_config: Union[
@@ -124,6 +126,7 @@ def build_component_thermodb(
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
     include_data: bool = True,
+    **kwargs
 ) -> CompBuilder:
     '''
     Build component thermodynamic databook (thermodb) including data and equations.
@@ -152,6 +155,10 @@ def build_component_thermodb(
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     include_data : bool
         Whether to include data tables in the built thermodb, by default True
+    **kwargs
+        Additional keyword arguments.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -406,6 +413,7 @@ def build_component_thermodb(
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
 
+@measure_time
 def check_and_build_component_thermodb(
     component: Component,
     reference_config: Union[
@@ -463,6 +471,8 @@ def check_and_build_component_thermodb(
             List of property names to ignore state during the build. By default, None.
         - ignore_state_all_props: Optional[bool]
             Whether to ignore state for all properties during the build. By default, False.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -897,6 +907,7 @@ def check_and_build_component_thermodb(
         raise Exception(f"Building {component_id} thermodb failed! {e}")
 
 
+@measure_time
 def build_components_thermodb(
     component_names: List[str],
     reference_config: Union[
@@ -940,6 +951,8 @@ def build_components_thermodb(
         Path to save the built thermodb file, by default None. If None, it will save to the current directory with the name `{thermodb_name}.pkl`.
     **kwargs
         Additional keyword arguments.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -1182,6 +1195,7 @@ def build_components_thermodb(
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
+@measure_time
 def check_and_build_components_thermodb(
     components: List[Component],
     reference_config: Union[
@@ -1243,6 +1257,8 @@ def check_and_build_components_thermodb(
             List of property names to ignore state during the build. By default, None.
         - ignore_state_all_props: Optional[bool]
             Whether to ignore state for all properties during the build. By default, False.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -1628,6 +1644,7 @@ def check_and_build_components_thermodb(
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
+@measure_time
 def check_and_build_mixture_thermodb(
     components: List[Component],
     reference_config: Union[
@@ -1693,6 +1710,8 @@ def check_and_build_mixture_thermodb(
             List of property names to ignore state during the build. By default, None.
         - ignore_state_all_props: Optional[bool]
             Whether to ignore state for all properties during the build. By default, False.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -2221,6 +2240,7 @@ def check_and_build_mixture_thermodb(
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
 
+@measure_time
 def build_component_thermodb_from_reference(
     component_name: str,
     component_formula: str,
@@ -2274,6 +2294,8 @@ def build_component_thermodb_from_reference(
         Additional keyword arguments.
         - ignore_state_props: Optional[List[str]]
             List of property names to ignore state during the build. By default, None.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
@@ -2650,6 +2672,7 @@ def build_component_thermodb_from_reference(
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
 
+@measure_time
 def build_mixture_thermodb_from_reference(
     components: List[Component],
     reference_content: str,
@@ -2714,6 +2737,8 @@ def build_mixture_thermodb_from_reference(
             Key to identify the mixture property in the reference content, by default 'Name'
         - ignore_state_props: Optional[List[str]]
             List of property names to ignore state during the build. By default, None.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
