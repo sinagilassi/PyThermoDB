@@ -1,6 +1,8 @@
 # import libs
 import os
-from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
+from pythermodb_settings.models import Component
+from pyThermoDB import ComponentThermoDB
+from pyThermoDB.thermodbX import ReferenceSource, build_component_thermodb_from_reference_source
 from rich import print
 
 # SECTION: reference content
@@ -165,18 +167,26 @@ REFERENCES:
 parent_path = os.path.dirname(os.path.abspath(__file__))
 print(parent_path)
 
+# SECTION: reference source
+REFERENCE_SOURCE = ReferenceSource(
+    reference_content=REFERENCE_CONTENT,
+)
+
 # SECTION: check component availability
 component_name = 'carbon dioxide'
 component_formula = 'CO2'
 component_state = 'g'
 
+CO2_comp = Component(
+    name=component_name,
+    formula=component_formula,
+    state=component_state,
+)
+
 # SECTION: build component thermodb
-thermodb_component_: ComponentThermoDB | None = build_component_thermodb_from_reference(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    reference_content=REFERENCE_CONTENT,
-    mode="log"
+thermodb_component_: ComponentThermoDB | None = build_component_thermodb_from_reference_source(
+    component=CO2_comp,
+    reference_source=REFERENCE_SOURCE,
 )
 # print(f"thermodb_component_: {thermodb_component_}")
 
@@ -188,11 +198,10 @@ if thermodb_component_ is not None:
     print(f"thermodb checks: {thermodb_.check()}")
 
 # NOTE: build and save
-thermodb_component_save_: ComponentThermoDB | None = build_component_thermodb_from_reference(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    reference_content=REFERENCE_CONTENT,
+thermodb_component_save_: ComponentThermoDB | None = build_component_thermodb_from_reference_source(
+    component=CO2_comp,
+    reference_source=REFERENCE_SOURCE,
+    check_component=False,
     thermodb_save=True,
     thermodb_save_path=parent_path,
     thermodb_name="CO2_thermodb",
@@ -207,11 +216,10 @@ if thermodb_component_save_ is not None:
 # SECTION: build component thermodb with ignore state
 # NOTE: ignore state for specific properties
 ignore_state_props = ['Cp_IG']
-thermodb_component_ignore_state_: ComponentThermoDB | None = build_component_thermodb_from_reference(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    reference_content=REFERENCE_CONTENT,
+thermodb_component_ignore_state_: ComponentThermoDB | None = build_component_thermodb_from_reference_source(
+    component=CO2_comp,
+    reference_source=REFERENCE_SOURCE,
+    check_component=False,
     ignore_state_props=ignore_state_props,
     mode="log"
 )
@@ -225,11 +233,10 @@ if thermodb_component_ignore_state_ is not None:
     print(f"thermodb_ignore_state_ checks: {thermodb_ignore_state_.check()}")
 
 # NOTE: build and save
-thermodb_component_ignore_state_save_: ComponentThermoDB | None = build_component_thermodb_from_reference(
-    component_name=component_name,
-    component_formula=component_formula,
-    component_state=component_state,
-    reference_content=REFERENCE_CONTENT,
+thermodb_component_ignore_state_save_: ComponentThermoDB | None = build_component_thermodb_from_reference_source(
+    component=CO2_comp,
+    reference_source=REFERENCE_SOURCE,
+    check_component=False,
     ignore_state_props=ignore_state_props,
     thermodb_save=True,
     thermodb_save_path=parent_path,
