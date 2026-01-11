@@ -20,7 +20,6 @@ from pythermodb_settings.utils import measure_time
 from .app import init, build_thermodb
 from .references import ReferenceConfig, ReferenceChecker
 from .utils import (
-    set_component_id,
     ignore_state_in_prop,
     look_up_component_reference_config,
     is_table_available,

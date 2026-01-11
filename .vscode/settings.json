@@ -15,6 +15,7 @@
         "tablematrixdata",
         "tablematrixequation",
         "tableref",
-        "thermodb"
+        "thermodb",
+        "thermodbs"
     ]
 }
