@@ -13,6 +13,15 @@ SYMBOLS:
   liquid_density: rho_LIQ
   gas_density: rho_GAS
   vapor_pressure: VaPr
+  enthalpy: En
+  gibbs_free_energy: GiFrEn
+  entropy: Ent
+  ideal_gas_enthalpy: En_IG
+  ideal_gas_gibbs_free_energy: GiFrEn_IG
+  liquid_enthalpy: En_LIQ
+  liquid_gibbs_free_energy: GiFrEn_LIQ
+  solid_enthalpy: En_SOL
+  solid_gibbs_free_energy: GiFrEn_SOL
   enthalpy_of_formation: EnFo
   Gibbs_energy_of_formation: GiEnFo
   liquid_enthalpy_of_formation: EnFo_LIQ
@@ -20,7 +29,6 @@ SYMBOLS:
   liquid_entropy: Ent_LIQ
   ideal_gas_enthalpy_of_formation: EnFo_IG
   ideal_gas_Gibbs_energy_of_formation: GiEnFo_IG
-  ideal_gas_entropy: Ent_IG
   standard_entropy: Ent_STD
   ideal_gas_heat_capacity_at_constant_pressure: Cp_IG
   liquid_heat_capacity_at_constant_pressure: Cp_LIQ

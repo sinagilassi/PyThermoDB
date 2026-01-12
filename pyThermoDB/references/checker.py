@@ -3149,7 +3149,7 @@ class ReferenceChecker:
 
             # NOTE: standardize component inputs
             component_name_ = component_name.strip()
-            component_formula = component_formula.strip()
+            component_formula_ = component_formula.strip()
             component_state = component_state.strip()
 
             # SECTION: get tables
@@ -3213,11 +3213,22 @@ class ReferenceChecker:
                         f"Components not found for table '{table_name}' in databook '{databook_name}'.")
                     continue
 
+                # SECTION: get component data
                 # ! component records
-                component_records = components.get(
-                    component_name_,
-                    None
-                )
+                if component_key == 'Name-State':
+                    component_records = components.get(
+                        component_name_,
+                        None
+                    )
+                elif component_key == 'Formula-State':
+                    component_records = components.get(
+                        component_formula_,
+                        None
+                    )
+                else:
+                    logging.error(
+                        f"Invalid component_key: {component_key}. Must be 'Name-State' or 'Formula-State'.")
+                    continue
 
                 if component_records is None:
                     logging.warning(
