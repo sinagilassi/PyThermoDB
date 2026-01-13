@@ -2,7 +2,7 @@
 import os
 from pythermodb_settings.models import Component
 from pyThermoDB import ComponentThermoDB
-from pyThermoDB.thermodbX import ReferenceSource, build_component_thermodb_from_reference_source
+from pyThermoDB.thermodbX import ReferenceContentSource, build_component_thermodb_from_reference_source
 from rich import print
 
 # SECTION: reference content
@@ -168,8 +168,8 @@ parent_path = os.path.dirname(os.path.abspath(__file__))
 print(parent_path)
 
 # SECTION: reference source
-REFERENCE_SOURCE = ReferenceSource(
-    reference_content=REFERENCE_CONTENT,
+REFERENCE_SOURCE = ReferenceContentSource(
+    content=REFERENCE_CONTENT,
 )
 
 # SECTION: check component availability

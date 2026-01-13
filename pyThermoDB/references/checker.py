@@ -3215,6 +3215,7 @@ class ReferenceChecker:
 
                 # SECTION: get component data
                 # ! component records
+                # ! for all cases component-id is unique defined by component name
                 if component_key == 'Name-State':
                     component_records = components.get(
                         component_name_,
@@ -3222,7 +3223,7 @@ class ReferenceChecker:
                     )
                 elif component_key == 'Formula-State':
                     component_records = components.get(
-                        component_formula_,
+                        component_name_,
                         None
                     )
                 else:
