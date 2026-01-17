@@ -2,7 +2,7 @@
 import logging
 import pandas as pd
 import json
-
+from pythermodb_settings.models import ComponentKey
 # Ensure there is no local DataFrame definition that could shadow pandas.DataFrame
 from typing import (
     Union,
@@ -807,7 +807,10 @@ class ReferenceChecker:
         databook_name: str,
         table_name: str,
         column_names: List[str] = ['Name', 'Formula', 'State'],
-        key_names: List[str] = ['Name', 'Formula', 'State']
+        key_names: List[str] = ['Name', 'Formula', 'State'],
+        component_key: Optional[Literal[
+            'Name', 'Formula'
+        ]] = None,
     ) -> Optional[Dict[str, Dict[str, Any]]]:
         """
         Get the components registered in a specific table in a databook.
@@ -822,6 +825,8 @@ class ReferenceChecker:
             The names of the columns to extract from the table, by default ['Name', 'Formula', 'State'].
         key_names : List[str], optional
             The names of the keys to use in the returned dictionary, by default ['Name', 'Formula', 'State'].
+        component_key : Literal['Name', 'Formula'], optional
+            The key to use for component identification, by default 'Name'.
 
         Returns
         -------
@@ -931,8 +936,22 @@ class ReferenceChecker:
                 ] if len(
                     column_indices) > 2 else None
 
-                # add component to components dictionary
-                components[component_name] = {
+                # ! component id
+                if component_key is not None:
+                    if component_key == 'Name':
+                        component_id = component_name
+                    elif component_key == 'Formula':
+                        component_id = component_formula
+                    else:
+                        logging.error(
+                            f"Invalid component_key: {component_key}. Must be 'Name' or 'Formula'.")
+                        return None
+                else:
+                    # default component id is Name
+                    component_id = component_name
+
+                # ! add component to components dictionary
+                components[component_id] = {
                     key_names[0].strip(): component_name,
                     key_names[1].strip(): component_formula,
                     key_names[2].strip(): component_state
@@ -3203,9 +3222,13 @@ class ReferenceChecker:
 
                 # NOTE: get table components
                 # ! all components in the table
+                # table component key
+                table_component_key = "Name" if component_key == 'Name-State' else "Formula"
+                # get components
                 components = self.get_table_components(
                     databook_name,
-                    table_name
+                    table_name,
+                    component_key=table_component_key
                 )
 
                 if components is None:
@@ -3223,7 +3246,7 @@ class ReferenceChecker:
                     )
                 elif component_key == 'Formula-State':
                     component_records = components.get(
-                        component_name_,
+                        component_formula_,
                         None
                     )
                 else:
