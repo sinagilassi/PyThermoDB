@@ -362,7 +362,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "pythermodb-settings", specifier = ">=0.2.0" },
+    { name = "pythermodb-settings", specifier = ">=0.2.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "rich", marker = "extra == 'dev'", specifier = ">=14.2.0" },
@@ -374,16 +374,16 @@ dev = [{ name = "rich", specifier = ">=14.2.0" }]
 
 [[package]]
 name = "pythermodb-settings"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/96/d8cd58389fe9b6ff7c86c12335b5b88938879b09c726c785a94c30fd60c8/pythermodb_settings-0.2.0.tar.gz", hash = "sha256:31dc4e5db6c40198e97ee5a54acf019acf9e32efe8a4c55fd5f75749330a46cf", size = 20792, upload-time = "2026-01-11T01:19:46.075Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/5b/faff48a27d6deae45eebe14ec08ad33710d1f47a15bbe50e6e869471b103/pythermodb_settings-0.2.1.tar.gz", hash = "sha256:2db71445066880c27930d5e1a1fd599c1dbd3be156ec88ff59660d071405281e", size = 21321, upload-time = "2026-01-17T04:45:16.366Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/54/4a/ca83ebb2b8ee2a5d04791604765b3cbe998f1cce049700a50e36afe3c957/pythermodb_settings-0.2.0-py3-none-any.whl", hash = "sha256:68271c9704697ec9b76ca78756b13f8d4736faa65c49ba9285d23fcdf71fec92", size = 24277, upload-time = "2026-01-11T01:19:44.65Z" },
+    { url = "https://files.pythonhosted.org/packages/02/25/422b77fe2a40fea6d3e31ba22a0baca08d150a66cdd09123cd761b3833fe/pythermodb_settings-0.2.1-py3-none-any.whl", hash = "sha256:ad27bb8ce7dc40a40de266b8af4502f23403e9e5b284b1b3a2df2334b1e48cf2", size = 25002, upload-time = "2026-01-17T04:45:14.888Z" },
 ]
 
 [[package]]
