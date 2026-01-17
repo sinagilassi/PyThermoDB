@@ -12,7 +12,7 @@ REFERENCES:
           EQUATIONS:
             EQ-1:
               BODY:
-                - res['nasa9-1 | nasa9_200_1000_K | 1'] = parms['a1 | a1 | 1'] + parms['a2 | a2 | 1'] + parms['a3 | a3 | 1'] + parms['a4 | a4 | 1'] + parms['a5 | a5 | 1'] + parms['a6 | a6 | 1'] + parms['a7 | a7 | 1'] + parms['b1 | b1 | 1'] + parms['b2 | b2 | 1'] + args['temperature | T | K']
+                - res['nasa9-1 | nasa9_200_1000_K | 1'] = parms['a1 | a1 | 1'] + parms['a2 | a2 | 1'] + parms['a3 | a3 | 1'] + parms['a4 | a4 | 1'] + parms['a5 | a5 | 1'] + parms['a6 | a6 | 1'] + parms['a7 | a7 | 1'] + parms['b1 | b1 | 1'] + parms['b2 | b2 | 1'] + args['temperature | T | K'] + parms['Molecular-Weight | MW | 1']
               BODY-INTEGRAL:
                 None
               BODY-FIRST-DERIVATIVE:
@@ -918,7 +918,7 @@ REFERENCES:
           EQUATIONS:
             EQ-1:
               BODY:
-                - res['nasa9-2 | nasa9_1000_6000_K | 1'] = parms['a1 | a1 | 1'] + parms['a2 | a2 | 1'] + parms['a3 | a3 | 1'] + parms['a4 | a4 | 1'] + parms['a5 | a5 | 1'] + parms['a6 | a6 | 1'] + parms['a7 | a7 | 1'] + parms['b1 | b1 | 1'] + parms['b2 | b2 | 1'] + args['temperature | T | K']
+                - res['nasa9-2 | nasa9_1000_6000_K | 1'] = parms['a1 | a1 | 1'] + parms['a2 | a2 | 1'] + parms['a3 | a3 | 1'] + parms['a4 | a4 | 1'] + parms['a5 | a5 | 1'] + parms['a6 | a6 | 1'] + parms['a7 | a7 | 1'] + parms['b1 | b1 | 1'] + parms['b2 | b2 | 1'] + args['temperature | T | K'] + parms['Molecular-Weight | MW | 1']
               BODY-INTEGRAL:
                 None
               BODY-FIRST-DERIVATIVE:
@@ -1824,7 +1824,7 @@ REFERENCES:
           EQUATIONS:
             EQ-1:
               BODY:
-                - res['nasa9-3 | nasa9_6000_20000_K | 1'] = parms['a1 | a1 | 1'] + parms['a2 | a2 | 1'] + parms['a3 | a3 | 1'] + parms['a4 | a4 | 1'] + parms['a5 | a5 | 1'] + parms['a6 | a6 | 1'] + parms['a7 | a7 | 1'] + parms['b1 | b1 | 1'] + parms['b2 | b2 | 1'] + args['temperature | T | K']
+                - res['nasa9-3 | nasa9_6000_20000_K | 1'] = parms['a1 | a1 | 1'] + parms['a2 | a2 | 1'] + parms['a3 | a3 | 1'] + parms['a4 | a4 | 1'] + parms['a5 | a5 | 1'] + parms['a6 | a6 | 1'] + parms['a7 | a7 | 1'] + parms['b1 | b1 | 1'] + parms['b2 | b2 | 1'] + args['temperature | T | K'] + parms['Molecular-Weight | MW | 1']
               BODY-INTEGRAL:
                 None
               BODY-FIRST-DERIVATIVE:
