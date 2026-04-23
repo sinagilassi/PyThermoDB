@@ -1,7 +1,7 @@
 # import packages/modules
 import logging
 import pandas as pd
-from typing import Optional, List, Dict, Any, Literal
+from typing import Optional, List, Dict, Any, Literal, cast
 # local imports
 from ..models import DataResult, PropertyMatch
 from .table_util import TableUtil
@@ -323,7 +323,7 @@ class TableData:
             raise ValueError(f"loading error! {property} is not a valid type!")
 
         # convert to dict
-        data_dict = DataResult(**sr.to_dict())
+        data_dict = self._build_data_result(sr)
         # print(data_dict, type(data_dict))
 
         # property name
@@ -402,7 +402,7 @@ class TableData:
             raise ValueError(f"loading error! {property} is not a valid type!")
 
         # convert to dict
-        data_dict = DataResult(**sr.to_dict())
+        data_dict = self._build_data_result(sr)
         # print(data_dict, type(data_dict))
 
         # property name
@@ -572,3 +572,18 @@ class TableData:
                 availability=False,
                 search_mode=search_mode,
             )
+
+    def _build_data_result(self, sr: pd.Series) -> DataResult:
+        """
+        Build a typed DataResult payload from a pandas Series.
+        """
+        sr_dict = cast(Dict[str, Any], sr.to_dict())
+        return DataResult(
+            property_name=cast(Optional[str], sr_dict.get('property_name')),
+            symbol=cast(Optional[str], sr_dict.get('symbol')),
+            unit=cast(Optional[str], sr_dict.get('unit')),
+            value=cast(Optional[str | float], sr_dict.get('value')),
+            message=cast(Optional[str], sr_dict.get('message')),
+            databook_name=cast(Optional[str | int], sr_dict.get('databook_name')),
+            table_name=cast(Optional[str | int], sr_dict.get('table_name')),
+        )

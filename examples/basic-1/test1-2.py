@@ -276,13 +276,13 @@ print(CO2_data.get_property('GiEnFo_IG'))
 print(CO2_data.get_property('EnFo_IG'))
 
 # CO2 Tc [K]
-CO2_Tc = float(CO2_data.get_property('Tc')['value'])
+CO2_Tc = CO2_data.get_property('Tc')['value']
 print(CO2_Tc)
 # CO2 Pc [bar]
-CO2_Pc = float(CO2_data.get_property('Pc')['value'])
+CO2_Pc = CO2_data.get_property('Pc')['value']
 print(CO2_Pc)
 # CO2 MW [g/mol]
-CO2_MW = float(CO2_data.get_property('MW')['value'])
+CO2_MW = CO2_data.get_property('MW')['value']
 print(CO2_MW)
 
 # ====================================
@@ -330,7 +330,11 @@ print(CO2_cp_IG.normalized_fns())
 CO2_cp_IG_args = {
     'T': 300
 }
-print('CO2 heat capacity (IG)', CO2_cp_IG.cal(**CO2_cp_IG_args))
+print('CO2 heat capacity (IG)', CO2_cp_IG.cal(
+    message='Calculating CO2 ideal-gas heat capacity with args dict',
+    **CO2_cp_IG_args
+)
+)
 
 a = 1
 
@@ -409,8 +413,3 @@ print(Cp_ig_eq.return_symbols)
 print('ideal-gas heat capacity', Cp_ig_eq.cal(T=298.15))
 # # summary
 # print(Cp_ig_eq.summary)
-<<<<<<< HEAD
-
-# check
-=======
->>>>>>> 4449da16cc542e2fcf6f22086d28d5e3dc22b4b1
