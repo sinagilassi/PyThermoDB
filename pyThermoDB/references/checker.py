@@ -453,6 +453,65 @@ class ReferenceChecker:
             logging.error(f"Error getting databook table types: {e}")
             return None
 
+    # SECTION: update reference
+    # NOTE: update table values
+    def update_table_values(
+        self,
+        databook_name: str,
+        table_name: str,
+        new_values: List[List[str | float | int]]
+    ) -> bool:
+        """
+        Update the values of a specific table in a databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+        new_values : List[List[str| float| int]]
+            A list of new values to update the table with.
+
+        Returns
+        -------
+        bool
+            True if the values are updated successfully, otherwise False.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return False
+
+            # check if table has 'VALUES' key
+            if not isinstance(table, dict) or 'VALUES' not in table:
+                logging.error(
+                    f"Table '{table_name}' does not contain 'VALUES' key.")
+                return False
+
+            # update the values
+            table['VALUES'] = new_values
+
+            # NOTE: update reference
+            # >> check
+            if self._reference is None:
+                logging.error("Reference is not loaded.")
+                return False
+
+            # set
+            self._reference[databook_name]['TABLES'][table_name] = table
+
+            return True
+        except Exception as e:
+            logging.error(f"Error updating table values: {e}")
+            return False
+
+    # SECTION: get table values
+
     def get_table_values(
         self,
         databook_name: str,
