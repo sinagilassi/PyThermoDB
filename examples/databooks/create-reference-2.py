@@ -3,7 +3,7 @@ import os
 from rich import print
 # locals
 from pyThermoDB.references import load_reference_from_str
-from pyThermoDB.references.reference_maker import ReferenceMaker
+from pyThermoDB.references.reference_maker import ReferenceMaker, insert_data_to_reference_tables
 
 # ! reference
 from examples.databooks.reference import REFERENCE_CONTENT
@@ -79,62 +79,16 @@ tables_data = {
     'general-data': general_data,
     'vapor-pressure': vapor_pressure_data,
     'liquid-heat-capacity': liquid_heat_capacity_data,
-    'enthalpy-of-vaporization': enthalpy_of_vaporization_data
+    # 'enthalpy-of-vaporization': enthalpy_of_vaporization_data
 }
 
-# NOTE: create reference maker
-reference_maker = ReferenceMaker(REFERENCE_CONTENT)
-
-# reference content
-print("[bold green]Reference content:[/bold green]")
-print(reference_maker.reference)
-
-
-# NOTE: update values
-# ! method 1: update one table values
-# res_ = reference_maker.update_table_values(
-#     databook_name='CUSTOM-REF-1',
-#     table_name='ideal-gas-heat-capacity',
-#     new_values=[CO2_dt_1, CO_dt_1]
-# )
-# print("[bold green]Updated reference content:[/bold green]")
-# print(res_)
-
-# res_ = reference_maker.update_table_values(
-#     databook_name='CUSTOM-REF-1',
-#     table_name='general-data',
-#     new_values=[CO2_dt_2, CO_dt_2]
-# )
-# print("[bold green]Updated reference content:[/bold green]")
-# print(res_)
-
-# ! method 2: update multiple tables values
-res_ = reference_maker.update_tables_values(
+# SECTION: insert data to reference tables
+# NOTE: insert data to reference tables
+res = insert_data_to_reference_tables(
+    reference=REFERENCE_CONTENT,
     databook_name='CUSTOM-REF-1',
-    tables_data=tables_data
+    tables_data=tables_data,
+    mode='log'
 )
-print("[bold green]Updated reference content:[/bold green]")
-print(res_)
-
-# ! check reference
-reference_updated = reference_maker.reference
-print("[bold green]Updated reference content:[/bold green]")
-print(reference_updated)
-
-# NOTE: build yaml reference
-yaml_reference = reference_maker.build_yaml_reference()
-print("[bold green]YAML reference content:[/bold green]")
-print(yaml_reference)
-
-# ! load reference from yaml string
-res_ = load_reference_from_str(yaml_reference)
-print("[bold green]Loaded reference content from YAML string:[/bold green]")
-print(res_)
-
-# NOTE: save yaml reference to file
-# path
-# current folder
-current_dir = os.path.dirname(os.path.abspath(__file__))
-# yaml file path
-yaml_file_path = os.path.join(current_dir, 'custom_reference.yaml')
-reference_maker.save_yaml_reference(yaml_file_path)
+print("Data insertion results:")
+print(res)
