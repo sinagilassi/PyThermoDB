@@ -150,7 +150,7 @@ print(comp1_data.data_structure())
 
 print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 # by symbol
-print(float(comp1_data.get_property('gibbs-energy-of-formation')['value']))
+print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
 
 # ====================================
 # BUILD EQUATION
