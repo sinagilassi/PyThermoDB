@@ -304,7 +304,7 @@ wheels = [
 
 [[package]]
 name = "pythermodb"
-version = "1.13.0"
+version = "1.13.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },
@@ -322,23 +322,23 @@ requires-dist = [
     { name = "pandas" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pydantic-settings", specifier = ">=2.10.1" },
-    { name = "pythermodb-settings", specifier = ">=0.2.10" },
-    { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "requests", specifier = ">=2.32.5" },
+    { name = "pythermodb-settings", specifier = ">=0.2.11" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
+    { name = "requests", specifier = ">=2.32.4" },
 ]
 
 [[package]]
 name = "pythermodb-settings"
-version = "0.2.10"
+version = "0.2.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/35/df/a6d3d05be411d0734350c3ca8f5ba6faa884f6dbfa21ab7d3755eda3eb32/pythermodb_settings-0.2.10.tar.gz", hash = "sha256:f3c58d091dfa21977569d7ca248300efc6782b82515a0ce0455f17c6b828d9d4", size = 24584, upload-time = "2026-03-26T17:38:38.491Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d6/e2/5e8804b547c4f43e4dd25c7e49cba293f6d6fe65e1b4ac44989c251c7691/pythermodb_settings-0.2.11.tar.gz", hash = "sha256:9ffd435c4ce4605aaac9c1e2960cb9f54204d25854aff0693e1a94797c4991df", size = 24594, upload-time = "2026-04-24T00:33:01.17Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/63/39/e1570814697544ead41d5d9fffb21c49bdcb26390a6ad32d75b2c37903aa/pythermodb_settings-0.2.10-py3-none-any.whl", hash = "sha256:6281add1f8ab5447f32a440eb40ea028e297566b50bbfdd397e03f2afeb2c3d6", size = 28600, upload-time = "2026-03-26T17:38:37.346Z" },
+    { url = "https://files.pythonhosted.org/packages/ac/e7/76c98706a8d8e0eed478c10b347eb27b78deed40bbedfb792f34955a719a/pythermodb_settings-0.2.11-py3-none-any.whl", hash = "sha256:8202c81263b7fb4884d787eb366ab9251199296f7136eb61a035c1ca865a3f54", size = 28597, upload-time = "2026-04-24T00:32:59.933Z" },
 ]
 
 [[package]]
