@@ -147,8 +147,10 @@ class TableMatrixEquation:
             _return = self.returns
 
             # check length
-            if len(_return) == 1:
+            if len(_return) == 1 and isinstance(_return, dict):
                 return list(_return.values())[0]
+            elif len(_return) == 1 and isinstance(_return, list):
+                return _return[0]
             else:
                 raise Exception("Every equation has only one return")
         except Exception as e:
