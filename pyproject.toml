@@ -29,8 +29,8 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "numpy>=2.3.2",
-    "pandas>=2.3.2",
+    "numpy",
+    "pandas",
     "pydantic>=2.11.7",
     "pydantic-settings>=2.10.1",
     "requests>=2.32.5",
@@ -43,16 +43,6 @@ Homepage = "https://github.com/sinagilassi/PyThermoDB"
 Documentation = "https://pythermodb.readthedocs.io/en/latest/"
 Source = "https://github.com/sinagilassi/PyThermoDB"
 Tracker = "https://github.com/sinagilassi/PyThermoDB/issues"
-
-[project.optional-dependencies]
-dev = [
-    "rich>=14.2.0",
-]
-
-[tool.uv]
-dev-dependencies = [
-    "rich>=14.2.0",
-]
 
 [tool.setuptools]
 include-package-data = true
