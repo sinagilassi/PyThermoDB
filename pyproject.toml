@@ -31,11 +31,9 @@ classifiers = [
 dependencies = [
     "numpy",
     "pandas",
-    "pydantic>=2.11.7",
-    "pydantic-settings>=2.10.1",
-    "requests>=2.32.4",
-    "pyyaml>=6.0.2",
-    "pythermodb-settings>=0.2.11",
+    "pydantic",
+    "pyyaml",
+    "pythermodb-settings",
 ]
 
 [project.urls]
