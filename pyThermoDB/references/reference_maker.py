@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Literal
 from pythermodb_settings.utils import measure_time
 import yaml
 # locals
@@ -194,8 +194,9 @@ def insert_data_to_reference_tables(
     reference: str,
     databook_name: str,
     tables_data: Dict[str, List[List[str | float | int]]],
+    res_format: Literal['string', 'yaml'] = 'string',
     **kwargs
-):
+) -> str | dict[str, Any]:
     """
     Insert data to reference tables.
 
@@ -214,8 +215,8 @@ def insert_data_to_reference_tables(
 
     Returns
     -------
-    str:
-        The updated reference content as a string.
+    str | dict[str, Any]
+        The updated reference content in the specified format.
     """
     try:
         # NOTE: create ReferenceMaker instance
@@ -228,7 +229,15 @@ def insert_data_to_reference_tables(
         )
 
         # NOTE: retrieve updated reference content
-        updated_reference = reference_maker.reference
+        # >> check result format
+        if res_format == 'yaml':
+            updated_reference = reference_maker.build_yaml_reference()
+        else:
+            updated_reference = reference_maker.reference
+
+        # > check if None
+        if updated_reference is None:
+            raise ValueError("Updated reference content is None.")
 
         return updated_reference
     except Exception as e:
