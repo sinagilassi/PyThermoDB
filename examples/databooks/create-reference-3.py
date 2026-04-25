@@ -7,7 +7,6 @@ from typing import Dict, Any, List
 from pyThermoDB.references import load_reference_from_str
 from pyThermoDB.references.reference_maker import ReferenceMaker, insert_data_to_reference_tables
 from pythermodb_settings.models import Component
-from rich import print
 import pyThermoDB as ptdb
 from pyThermoDB.core import TableData, TableEquation
 from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
