@@ -1,0 +1,138 @@
+REFERENCES:
+  CUSTOM-REF-1:
+    DATABOOK-ID: 1
+    TABLES:
+      ideal-gas-heat-capacity:
+        TABLE-ID: 1
+        DESCRIPTION: This table provides the ideal gas heat capacity (Cp_IG) in J/mol.K as a function of temperature (T) in
+          K. Two correlation forms are used depending on the compound. Equation A.1 (dimensionless form Cp/R), Equation A.2
+          (absolute Cp form)
+        EQUATIONS:
+          EQ-1:
+            BODY:
+            - y = args['temperature | T | K'] / (parms['A | A | 1'] + args['temperature | T | K'])
+            - cp_r = parms['B | B | 1'] + (parms['C | C | 1'] - parms['B | B | 1']) * math.pow(y,2) * ( 1 + (y - 1) * ( parms['D
+              | D | 1'] + parms['E | E | 1'] * y + parms['F | F | 1'] * math.pow(y,2) + parms['G | G | 1'] * math.pow(y,3)
+              ) )
+            - res['ideal-gas-heat-capacity | Cp_IG | J/mol.K'] = parms['universal-gas-constant | R | J/mol.K'] * cp_r
+            BODY-INTEGRAL: None
+            BODY-FIRST-DERIVATIVE: None
+            BODY-SECOND-DERIVATIVE: None
+          EQ-2:
+            BODY:
+            - term1 = parms['C | C | 1'] / args['temperature | T | K']
+            - term2 = parms['E | E | 1'] / args['temperature | T | K']
+            - res['ideal-gas-heat-capacity | Cp_IG | J/mol.K'] = ( parms['A | A | 1'] + parms['B | B | 1'] * math.pow(term1
+              / math.sinh(term1), 2) + parms['D | D | 1'] * math.pow(term2 / math.cosh(term2), 2) ) / 1000.0
+            BODY-INTEGRAL: None
+            BODY-FIRST-DERIVATIVE: None
+            BODY-SECOND-DERIVATIVE: None
+        STRUCTURE:
+          COLUMNS: [No., Name, Formula, State, A, B, C, D, E, F, G, universal-gas-constant, Eq]
+          SYMBOL: [None, None, None, None, A, B, C, D, E, F, G, R, Cp_IG]
+          UNIT: [None, None, None, None, 1, 1, 1, 1, 1, 1, 1, J/mol.K, J/mol.K]
+        VALUES:
+        - [10, carbon dioxide, CO2, g, 188.27392, 3.50426, 8.29771, 4.71883, -11.75109, 13.94035, -6.73002, 8.314, 2]
+      general-data:
+        TABLE-ID: 2
+        DESCRIPTION: This table provides general thermodynamic and physical data for selected compounds. Data includes critical
+          properties, acentric factor, phase-change temperatures, and standard formation properties.
+        DATA: []
+        STRUCTURE:
+          COLUMNS: [No., Name, Formula, State, critical-temperature, critical-pressure, critical-molar-volume, molecular-weight,
+            acentric-factor, boiling-temperature, melting-temperature, enthalpy-of-fusion, enthalpy-of-formation, gibbs-energy-of-formation]
+          SYMBOL: [None, None, None, None, Tc, Pc, Vc, MW, AcFa, Tb, Tm, EnFus, EnFo_IG, GiEnFo_IG]
+          UNIT: [None, None, None, None, K, bar, cm3/mol, g/mol, None, K, K, J/g, J/mol, J/mol]
+          CONVERSION: [None, None, None, None, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        VALUES:
+        - [10, carbon dioxide, CO2, g, 304.128, 73.773, 94.117, 44.009, 0.2236, 0, 216.55, 204.9, -393500, -394380]
+      vapor-pressure:
+        TABLE-ID: 3
+        DESCRIPTION: This table provides the vapor pressure (P) in bar as a function of temperature (T) in K. The correlation
+          follows Table A.2. Critical pressure (Pc) is taken from Table A.1. Since Pc is stored in bar, the correlation first
+          computes vapor pressure in bar, then converts to Pa.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+            - Tr = args['temperature | T | K'] / parms['critical-temperature | Tc | K']
+            - tau = 1 - Tr
+            - expo = (1 / Tr) * ( parms['A | A | 1'] * tau + parms['B | B | 1'] * math.pow(tau, 1.5) + parms['C | C | 1']
+              * math.pow(tau, 2.5) + parms['D | D | 1'] * math.pow(tau, 5) )
+            - ps_bar = parms['critical-pressure | Pc | bar'] * math.exp(expo)
+            - res['vapor-pressure | VaPr | bar'] = ps_bar
+            BODY-INTEGRAL: None
+            BODY-FIRST-DERIVATIVE: None
+            BODY-SECOND-DERIVATIVE: None
+        STRUCTURE:
+          COLUMNS: [No., Name, Formula, State, A, B, C, D, critical-temperature, critical-pressure, Eq]
+          SYMBOL: [None, None, None, None, A, B, C, D, Tc, Pc, VaPr]
+          UNIT: [None, None, None, None, 1, 1, 1, 1, K, bar, bar]
+        VALUES:
+        - [10, carbon dioxide, CO2, g, -7.026565, 1.527245, -2.246311, -2.63003, 304.128, 73.773, 1]
+      liquid-heat-capacity:
+        TABLE-ID: 4
+        DESCRIPTION: This table provides the liquid heat capacity at constant pressure (Cp_LIQ) in J/mol.K as a function of
+          temperature (T) in K. The correlation follows Table A.5. Critical temperature (Tc) and molecular weight (MW) are
+          taken from Table A.1. The source verification values in the book are reported in J/(g.K), while this implementation
+          returns J/mol.K.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+            - tau = 1 - args['temperature | T | K'] / parms['critical-temperature | Tc | K']
+            - res['liquid-heat-capacity | Cp_LIQ | J/mol.K'] = parms['universal-gas-constant | R | J/mol.K'] * ( parms['A
+              | A | 1'] / tau + parms['B | B | 1'] + parms['C | C | 1'] * tau + parms['D | D | 1'] * math.pow(tau, 2) + parms['E
+              | E | 1'] * math.pow(tau, 3) + parms['F | F | 1'] * math.pow(tau, 4) )
+            BODY-INTEGRAL: None
+            BODY-FIRST-DERIVATIVE: None
+            BODY-SECOND-DERIVATIVE: None
+        STRUCTURE:
+          COLUMNS: [No., Name, Formula, State, A, B, C, D, E, F, critical-temperature, molecular-weight, universal-gas-constant,
+            Eq]
+          SYMBOL: [None, None, None, None, A, B, C, D, E, F, Tc, MW, R, Cp_LIQ]
+          UNIT: [None, None, None, None, 1, 1, 1, 1, 1, 1, K, g/mol, J/mol.K, J/mol.K]
+        VALUES: None
+      enthalpy-of-vaporization:
+        TABLE-ID: 5
+        DESCRIPTION: This table provides the enthalpy of vaporization (EnVap) in J/mol as a function of temperature (T) in
+          K.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+            - t = 1 - args['temperature | T | K']/parms['critical-temperature | Tc | K']
+            - parms['A | A | 1'] = parms['A | A | 1'] * math.pow(t, 1/3)
+            - parms['B | B | 1'] = parms['B | B | 1'] * math.pow(t, 2/3)
+            - parms['C | C | 1'] = parms['C | C | 1'] * math.pow(t, 1)
+            - parms['D | D | 1'] = parms['D | D | 1'] * math.pow(t, 2)
+            - parms['E | E | 1'] = parms['E | E | 1'] * math.pow(t, 6)
+            - parms['F | F | 1'] = parms['universal-gas-constant | R | J/mol.K'] * parms['critical-temperature | Tc | K']
+            - res['enthalpy-of-vaporization | EnVap | J/mol'] = parms['F | F | 1'] * (parms['A | A | 1'] + parms['B | B |
+              1'] + parms['C | C | 1'] + parms['D | D | 1'] + parms['E | E | 1'])
+            BODY-INTEGRAL: None
+            BODY-FIRST-DERIVATIVE: None
+            BODY-SECOND-DERIVATIVE: None
+        STRUCTURE:
+          COLUMNS: [No., Name, Formula, State, A, B, C, D, E, critical-temperature, universal-gas-constant, Eq]
+          SYMBOL: [None, None, None, None, A, B, C, D, E, Tc, R, EnVap]
+          UNIT: [None, None, None, None, 1, 1, 1, 1, 1, K, J/mol.K, J/mol]
+        VALUES:
+        - [10, carbon dioxide, CO2, g, 6.285898, 5.640077, -1.240625, -2.040365, 26.542058, 304.128, 8.314, 1]
+      liquid-density:
+        TABLE-ID: 6
+        DESCRIPTION: This table provides liquid density (rho_LIQ) in kg/m3 as a function of temperature (T) in K. Most compounds
+          use the Table A.3 coefficient form. Water is treated separately because Table A.3 refers to Eq. 3.52 instead of
+          A, B, C, D coefficients. Critical temperature (Tc) is taken from Table A.1.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+            - tau = 1 - args['temperature | T | K'] / parms['critical-temperature | Tc | K']
+            - res['liquid-density | rho_LIQ | kg/m3'] = parms['critical-density | Dc | kg/m3'] + ( parms['A | A | 1'] * math.pow(tau,
+              0.35) + parms['B | B | 1'] * math.pow(tau, 2/3) + parms['C | C | 1'] * math.pow(tau, 1.0) + parms['D | D | 1']
+              * math.pow(tau, 4/3) )
+            BODY-INTEGRAL: None
+            BODY-FIRST-DERIVATIVE: None
+            BODY-SECOND-DERIVATIVE: None
+        STRUCTURE:
+          COLUMNS: [No., Name, Formula, State, A, B, C, D, critical-temperature, critical-density, Eq]
+          SYMBOL: [None, None, None, None, A, B, C, D, Tc, Dc, rho_LIQ]
+          UNIT: [None, None, None, None, 1, 1, 1, 1, K, kg/m3, kg/m3]
+        VALUES: None

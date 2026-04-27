@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # current folder
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # yaml file path
-yaml_file_path = os.path.join(current_dir, 'custom_reference.yaml')
+yaml_file_path = os.path.join(current_dir, 'custom_reference_2.yaml')
 
 # NOTE: load reference from yaml file
 with open(yaml_file_path, 'r') as f:
@@ -98,7 +98,7 @@ ignore_state_props = ['MW', 'VaPr', 'Cp_IG']
 
 # SECTION: build component thermodb from reference
 for comp in components:
-    comp_id = f"{comp.name}-{comp.state}-nasa"
+    comp_id = f"{comp.name}-{comp.state}-custom"
     logger.info(f"Building thermodb for component: {comp_id}")
 
     thermodb_component: ComponentThermoDB | None = build_component_thermodb_from_reference(
