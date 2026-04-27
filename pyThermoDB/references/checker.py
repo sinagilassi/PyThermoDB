@@ -919,7 +919,7 @@ class ReferenceChecker:
 
             # NOTE: check if table values is a list
             if not isinstance(table_values, list):
-                logging.error(
+                logging.warning(
                     f"Table '{table_name}' values are not a list.")
                 return None
 
@@ -3291,7 +3291,7 @@ class ReferenceChecker:
                 )
 
                 if components is None:
-                    logging.error(
+                    logging.warning(
                         f"Components not found for table '{table_name}' in databook '{databook_name}'.")
                     continue
 
