@@ -36,7 +36,7 @@ thermo_db = ptdb.init(custom_reference=custom_reference)
 # ====================================
 # GET DATABOOK LIST
 # ====================================
-db_list = thermo_db.list_databooks()
+db_list = thermo_db.list_databooks(res_format='list')
 print(db_list)
 
 # ====================================
@@ -46,8 +46,13 @@ print(db_list)
 databook_ = 'CUSTOM-REF-1'
 
 # table list
-tb_list = thermo_db.list_tables('CUSTOM-REF-1')
+tb_list = thermo_db.list_tables(databook_, res_format='list')
 print(tb_list)
+
+
+# table names
+tb_names = thermo_db.list_table_names(databook_)
+print(tb_names)
 
 # CREATE COMPONENT
 comp1 = "carbon dioxide"
@@ -57,7 +62,7 @@ comp1 = "carbon dioxide"
 # ====================================
 # build data
 data_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'general-data')
+    [comp1], databook_, 'general-data')
 print(type(data_1))
 
 # retrieve data
@@ -69,7 +74,7 @@ if isinstance(data_1, TableData):
 # BUILD EQUATION
 # ====================================
 comp1_eq_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'ideal-gas-heat-capacity')
+    [comp1], databook_, 'ideal-gas-heat-capacity')
 
 # equation details
 if isinstance(comp1_eq_1, TableEquation):
