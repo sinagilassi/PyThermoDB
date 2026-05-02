@@ -237,7 +237,7 @@ class ThermoDB(ManageData):
             res_format: Literal[
                 'list', 'dataframe', 'json'
             ] = 'dataframe'
-    ):
+    ) -> list[str] | pd.DataFrame | str:
         '''
         List all databooks
 
@@ -309,6 +309,38 @@ class ThermoDB(ManageData):
                 raise ValueError('Invalid res_format')
         except Exception as e:
             raise Exception("Table loading error!,", e)
+
+    def list_table_names(
+        self,
+        databook: int | str
+    ) -> list[str]:
+        '''
+        List all table names in the selected databook
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+
+        Returns
+        -------
+        table names : list[str]
+            list of table names
+        '''
+        try:
+            # get tables
+            tables = self.list_tables(databook, res_format='list')
+            # check
+            if isinstance(tables, list):
+                # extract table names
+                table_names = [
+                    item[0] for item in tables if isinstance(item, list)
+                ]
+                return table_names
+            else:
+                raise ValueError("Invalid tables format!")
+        except Exception as e:
+            raise Exception(f"Table loading error!, {e}")
 
     def select_table(
         self,
