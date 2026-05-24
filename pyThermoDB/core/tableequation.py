@@ -445,6 +445,56 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
+    def get_return_items(self) -> Optional[List[Dict[str, str]]]:
+        '''Get return items.'''
+        try:
+            # get return symbols
+            _returns = self.returns
+
+            # >> check
+            if isinstance(_returns, dict):
+                if all(isinstance(v, dict) for v in _returns.values()):
+                    # check all have unit, symbol, name
+                    if all(
+                        all(k in v.keys() for k in ['unit', 'symbol', 'name'])
+                        for v in _returns.values()
+                    ):
+                        return list(_returns.values())
+                else:
+                    logger.warning('Returns dict values are not all dicts!')
+                    return None
+            else:
+                logger.warning('Returns is not a dict!')
+                return None
+
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    def get_arg_items(self) -> Optional[List[Dict[str, str]]]:
+        """Get argument items."""
+        try:
+            # get arguments
+            _args = self.args
+
+            # >> check
+            if isinstance(_args, dict):
+                if all(isinstance(v, dict) for v in _args.values()):
+                    # check all have unit, symbol, name
+                    if all(
+                        all(k in v.keys() for k in ['unit', 'symbol', 'name'])
+                        for v in _args.values()
+                    ):
+                        return list(_args.values())
+                else:
+                    logger.warning('Arguments dict values are not all dicts!')
+                    return None
+            else:
+                logger.warning('Arguments is not a dict!')
+                return None
+
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
     def get_records(self) -> Optional[Dict[str, Any]]:
         '''
         Get record from trans data.
