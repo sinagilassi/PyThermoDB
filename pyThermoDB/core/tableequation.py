@@ -1124,7 +1124,7 @@ class TableEquation:
         else:
             return self.parms
 
-    def eq_parms(self) -> Dict[str, str]:
+    def eq_parms(self) -> Dict[str, Dict[str, str]]:
         '''
         Display equation parms as dict
 
@@ -1136,6 +1136,25 @@ class TableEquation:
         -------
         parms : dict
             equation parms
+
+        Notes
+        -----
+        - The returned dict is structured as follows:
+        ```python
+        {
+            'symbol1': {
+                'name': 'Parameter Name 1',
+                'symbol': 'symbol1',
+                'unit': 'Unit 1'
+            },
+            'symbol2': {
+                'name': 'Parameter Name 2',
+                'symbol': 'symbol2',
+                'unit': 'Unit 2'
+            },
+            ...
+        }
+        ```
         '''
         # res
         res = {}
@@ -1224,7 +1243,7 @@ class TableEquation:
         else:
             return self.args
 
-    def eq_args(self) -> Dict[str, str]:
+    def eq_args(self) -> Dict[str, Dict[str, str]]:
         '''
         Display equation args as dict
 
@@ -1236,6 +1255,25 @@ class TableEquation:
         -------
         args : dict
             equation args
+
+        Notes
+        -----
+        - The returned dict is structured as follows:
+        ```python
+        {
+            'symbol1': {
+                'name': 'Parameter Name 1',
+                'symbol': 'symbol1',
+                'unit': 'Unit 1'
+            },
+            'symbol2': {
+                'name': 'Parameter Name 2',
+                'symbol': 'symbol2',
+                'unit': 'Unit 2'
+            },
+            ...
+        }
+        ```
         '''
         # res
         res = {}
@@ -1286,7 +1324,7 @@ class TableEquation:
         else:
             return self.returns
 
-    def eq_return(self) -> Dict[str, str]:
+    def eq_return(self) -> Dict[str, Dict[str, str]]:
         '''
         Display equation return as dict
 
@@ -1298,6 +1336,25 @@ class TableEquation:
         -------
         returns : dict
             equation return
+
+        Notes
+        -----
+        - The returned dict is structured as follows:
+        ```python
+        {
+            'symbol1': {
+                'name': 'Parameter Name 1',
+                'symbol': 'symbol1',
+                'unit': 'Unit 1'
+            },
+            'symbol2': {
+                'name': 'Parameter Name 2',
+                'symbol': 'symbol2',
+                'unit': 'Unit 2'
+            },
+            ...
+        }
+        ```
         '''
         # res
         res = {}
