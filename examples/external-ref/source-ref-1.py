@@ -175,6 +175,10 @@ print(comp1_eq_1.get_arg_symbols())
 print(comp1_eq_1.get_parm_symbols())
 print(comp1_eq_1.get_return_symbols())
 
+#  items
+print(comp1_eq_1.get_return_items())
+print(comp1_eq_1.get_arg_items())
+
 # table details
 print(comp1_eq_1.table_columns)
 print(comp1_eq_1.table_symbols)
