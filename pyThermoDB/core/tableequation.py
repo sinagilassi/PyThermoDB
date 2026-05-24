@@ -1124,6 +1124,47 @@ class TableEquation:
         else:
             return self.parms
 
+    def eq_parms(self) -> Dict[str, str]:
+        '''
+        Display equation parms as dict
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        parms : dict
+            equation parms
+        '''
+        # res
+        res = {}
+
+        # >> check
+        if isinstance(self.parms, dict):
+            for k, v in self.parms.items():
+                _name = v.get('name', 'None')
+                _symbol = v.get('symbol', None)
+                _unit = v.get('unit', 'None')
+
+                # >> check symbol
+                if _symbol is None:
+                    logger.warning(f'No symbol found for parm: {k}!')
+                    continue
+
+                # store in res
+                res[_symbol] = {
+                    'name': _name,
+                    'symbol': _symbol,
+                    'unit': _unit
+                }
+
+            # res
+            return res
+        else:
+            logger.warning('Unexpected parms format!')
+            return {}
+
     def eq_parms_names(self):
         '''
         Display equation parms names
@@ -1183,6 +1224,47 @@ class TableEquation:
         else:
             return self.args
 
+    def eq_args(self) -> Dict[str, str]:
+        '''
+        Display equation args as dict
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        args : dict
+            equation args
+        '''
+        # res
+        res = {}
+
+        # check
+        if isinstance(self.args, dict):
+            for k, v in self.args.items():
+                _name = v.get('name', 'None')
+                _symbol = v.get('symbol', None)
+                _unit = v.get('unit', 'None')
+
+                # check symbol
+                if _symbol is None:
+                    logger.warning(f'No symbol found for arg: {k}!')
+                    continue
+
+                # store in res
+                res[_symbol] = {
+                    'name': _name,
+                    'symbol': _symbol,
+                    'unit': _unit
+                }
+
+            # res
+            return res
+        else:
+            logger.warning('Unexpected args format!')
+            return {}
+
     def equation_return(self, dataframe=False):
         '''
         Display equation return,
@@ -1203,6 +1285,47 @@ class TableEquation:
             return df
         else:
             return self.returns
+
+    def eq_return(self) -> Dict[str, str]:
+        '''
+        Display equation return as dict
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        returns : dict
+            equation return
+        '''
+        # res
+        res = {}
+
+        # >> check
+        if isinstance(self.returns, dict):
+            for k, v in self.returns.items():
+                _name = v.get('name', 'None')
+                _symbol = v.get('symbol', None)
+                _unit = v.get('unit', 'None')
+
+                # >> check symbol
+                if _symbol is None:
+                    logger.warning(f'No symbol found for return: {k}!')
+                    continue
+
+                # store in res
+                res[_symbol] = {
+                    'name': _name,
+                    'symbol': _symbol,
+                    'unit': _unit
+                }
+
+            # res
+            return res
+        else:
+            logger.warning('Unexpected return format!')
+            return {}
 
     def eqSet(self):
         '''
