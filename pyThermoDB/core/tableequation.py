@@ -1,6 +1,7 @@
 # import packages/modules
 import logging
 import pandas as pd
+import numpy as np
 import math
 import json
 from typing import Literal, Optional, List, Dict, Any
@@ -212,7 +213,10 @@ class TableEquation:
         except Exception as e:
             raise Exception(f'Loading error {e}!')
 
-    def eqs_structure(self, res_format: Literal['dict', 'json'] = 'dict'):
+    def eqs_structure(
+            self,
+            res_format: Literal['dict', 'json'] = 'dict'
+    ):
         '''
         Display all equations details
 
@@ -304,7 +308,7 @@ class TableEquation:
                 raise
 
             # res
-            columns = table_structure.get(column_name, None)
+            columns: List[str] | None = table_structure.get(column_name, None)
             # check columns
             if columns is None:
                 logger.error(f'Column {column_name} not found!')
@@ -341,7 +345,7 @@ class TableEquation:
                 raise Exception('Table structure not defined!')
 
             # res
-            units = table_structure.get(unit_name, None)
+            units: List[str] | None = table_structure.get(unit_name, None)
             # check units
             if units is None:
                 raise Exception(f'Unit {unit_name} not found!')
@@ -377,7 +381,7 @@ class TableEquation:
                 raise Exception('Table structure not defined!')
 
             # res
-            symbols = table_structure.get(symbol_name, None)
+            symbols: List[str] | None = table_structure.get(symbol_name, None)
             # check symbols
             if symbols is None:
                 raise Exception(f'Symbol {symbol_name} not found!')
@@ -396,10 +400,45 @@ class TableEquation:
             _arg_symbols = self.arg_symbols
 
             # extract symbols
-            symbols = []
+            symbols: List[str] = []
 
             # iterate through arg_symbols
             for key, value in _arg_symbols.items():
+                symbols.append(value['symbol'])
+
+            return symbols
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    def get_parm_symbols(self):
+        '''Get parameter symbols.'''
+        try:
+            # get parm symbols
+            _parm_symbols = self.parms
+
+            # extract symbols
+            symbols: List[str] = []
+
+            # iterate through parm_symbols
+            if isinstance(_parm_symbols, dict):
+                for key, value in _parm_symbols.items():
+                    symbols.append(value['symbol'])
+
+            return symbols
+        except Exception as e:
+            raise Exception(f'Loading error {e}!')
+
+    def get_return_symbols(self):
+        '''Get return symbols.'''
+        try:
+            # get return symbols
+            _return_symbols: Dict[str, Any] = self.return_symbols
+
+            # extract symbols
+            symbols: List[str] = []
+
+            # iterate through return_symbols
+            for key, value in _return_symbols.items():
                 symbols.append(value['symbol'])
 
             return symbols
@@ -633,6 +672,39 @@ class TableEquation:
         except Exception as e:
             logger.error(f'Calculation error {e}!')
             raise Exception(f'Calculation error {e}!')
+
+    def cal_result_type(self, result: EquationResult) -> str:
+        '''
+        Get the type of the calculation result.
+
+        Parameters
+        ----------
+        result : EquationResult
+            The calculation result for which to determine the type.
+
+        Returns
+        -------
+        str
+            The type of the calculation result (e.g., 'float', 'int', 'str', 'dict', 'ndarray').
+        '''
+        value = result.get('value', None)
+
+        if isinstance(value, float):
+            return 'float'
+        elif isinstance(value, int):
+            return 'int'
+        elif isinstance(value, str):
+            return 'str'
+        elif isinstance(value, dict):
+            return 'dict'
+        elif isinstance(value, list):
+            return 'list'
+        elif isinstance(value, pd.DataFrame):
+            return 'DataFrame'
+        elif isinstance(value, np.ndarray):
+            return 'ndarray'
+        else:
+            return type(value).__name__
 
     def cal_range(
         self,
@@ -981,14 +1053,14 @@ class TableEquation:
         '''
         return self.body
 
-    def equation_parms(self, dataframe=True):
+    def equation_parms(self, dataframe=False):
         '''
         Display equation parms
 
         Parameters
         ----------
-        value : bool, optional
-            DESCRIPTION. The default is True.
+        dataframe : bool, optional
+            whether to return as dataframe or dict (default is True)
 
         Returns
         -------
@@ -1002,14 +1074,52 @@ class TableEquation:
         else:
             return self.parms
 
-    def equation_args(self, dataframe=True):
+    def eq_parms_names(self):
+        '''
+        Display equation parms names
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        names : list
+            equation parms names
+        '''
+        # check parms
+        if self.parms is None:
+            return []
+
+        # extract names
+        names = []
+
+        # >> check if parms is list
+        if isinstance(self.parms, list):
+            return names
+
+        # >> check if parms is dict
+        if isinstance(self.parms, dict):
+            # iterate through parms
+            for key, value in self.parms.items():
+                names.append(value['name'])
+
+            # res
+            return names
+
+        # log
+        logger.warning('Unexpected parms format!')
+
+        return names
+
+    def equation_args(self, dataframe=False):
         '''
         Display equation args,
 
         Parameters
         ----------
-        value : bool, optional
-            DESCRIPTION. The default is True.
+        dataframe : bool, optional
+            whether to return as dataframe or dict (default is True)
 
         Returns
         -------
@@ -1023,15 +1133,14 @@ class TableEquation:
         else:
             return self.args
 
-    def equation_return(self, dataframe=True):
+    def equation_return(self, dataframe=False):
         '''
         Display equation return,
 
         Parameters
         ----------
-        value : bool, optional
-            DESCRIPTION. The default is True.
-
+        dataframe : bool, optional
+            whether to return as dataframe or dict (default is True)
 
         Returns
         -------
