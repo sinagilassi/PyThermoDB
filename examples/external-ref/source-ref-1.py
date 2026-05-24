@@ -59,14 +59,14 @@ print(tb_info)
 # LOAD TABLE
 # ====================================
 # table-data
-dt_ = thermo_db.data_load(
-    1,
-    'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
-print(dt_.data_structure())
-print(dt_.table_columns)
-print(dt_.table_symbols)
-print(dt_.table_units)
-print(dt_.table_values)
+# dt_ = thermo_db.data_load(
+#     1,
+#     'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
+# print(dt_.data_structure())
+# print(dt_.table_columns)
+# print(dt_.table_symbols)
+# print(dt_.table_units)
+# print(dt_.table_values)
 
 # table-data
 dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
@@ -79,13 +79,19 @@ print(dt_.table_values)
 # table-equation
 tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
 # equation structure
-tb_eq_structure = tb_eq.eq_structure()
+tb_eq_structure: Dict[str, Any] = tb_eq.eq_structure()
 print(tb_eq_structure)
 print(tb_eq.eqs_structure())
 print(tb_eq.table_columns)
 print(tb_eq.table_symbols)
 print(tb_eq.table_units)
 print(tb_eq.table_values)
+# equation details
+print(tb_eq.equation_parms())
+print(tb_eq.equation_args())
+print(tb_eq.equation_body())
+print(tb_eq.equation_return())
+
 
 # ===============================
 # TABLE LOAD
@@ -162,6 +168,12 @@ print(comp1_eq_1.equation_parms())
 print(comp1_eq_1.equation_args())
 print(comp1_eq_1.equation_body())
 print(comp1_eq_1.equation_return())
+print(comp1_eq_1.eq_parms_names())
+
+# equation symbols
+print(comp1_eq_1.get_arg_symbols())
+print(comp1_eq_1.get_parm_symbols())
+print(comp1_eq_1.get_return_symbols())
 
 # table details
 print(comp1_eq_1.table_columns)
@@ -170,6 +182,8 @@ print(comp1_eq_1.table_symbols)
 # cal
 res_ = comp1_eq_1.cal(T=90.69)
 print(res_)
+# ! result type
+print(comp1_eq_1.cal_result_type(res_))
 res_ = comp1_eq_1.cal(T=190.56)
 print(res_)
 
