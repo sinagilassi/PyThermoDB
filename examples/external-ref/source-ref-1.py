@@ -175,6 +175,10 @@ print(comp1_eq_1.get_arg_symbols())
 print(comp1_eq_1.get_parm_symbols())
 print(comp1_eq_1.get_return_symbols())
 
+print(comp1_eq_1.eq_args())
+print(comp1_eq_1.eq_parms())
+print(comp1_eq_1.eq_return())
+
 #  items
 print(comp1_eq_1.get_return_items())
 print(comp1_eq_1.get_arg_items())
