@@ -118,3 +118,14 @@ REFERENCES:
             - [15,'nitrogen','N2','g',58.282,-1084.1,-8.3144,4.41E-02,1,63.15,1.25E+04,126.2,3.39E+06,1]
             - [16,'ethane','C2H6','g',51.857,-2598.7,-5.1283,1.49E-05,2,90.35,1.13E+00,305.32,4.85E+06,1]
             - [17,'toluene','C7H8','l',76.945,-6729.8,-8.179,5.30E-06,2,178.18,4.75E-02,591.75,4.08E+06,1]
+        Custom-Constants:
+          TABLE-ID: 4
+          DESCRIPTION:
+            This table provides the custom constants that can be used in the equations of the other tables. The table includes the constant name, symbol, value, and unit.
+          CONSTANTS: []
+          STRUCTURE:
+            COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+          VALUES:
+            - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','The universal gas constant is a physical constant that appears in many fundamental equations in the physical sciences.']
+            - [2,'Constant1','C1','g',None,None,'This is a constant used in the vapor pressure equation.']
+            - [3, 'total heat capacity of ideal gas', 'Cp_IG', 'g', None, 'J/mol.K', 'This is the total heat capacity at constant pressure of ideal gas.']
