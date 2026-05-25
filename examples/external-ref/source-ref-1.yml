@@ -121,7 +121,7 @@ REFERENCES:
         Custom-Constants:
           TABLE-ID: 4
           DESCRIPTION:
-            This table provides the custom constants that can be used in the equations of the other tables. The table includes the constant name, symbol, value, and unit.
+            This table provides the custom constants that can be used in the equations or other calculations.
           CONSTANTS: []
           STRUCTURE:
             COLUMNS: [No.,Source,Source-Name,Constant-Name,Symbol,State,Value,Unit,Description]
