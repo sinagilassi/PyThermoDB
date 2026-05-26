@@ -108,6 +108,8 @@ class ManageData():
         self.__tables = []
         self.__tables = value
 
+    # SECTION: load data
+
     def load_reference(
             self,
             custom_ref: CustomRef | None
@@ -158,6 +160,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"reference loading error! {e}")
 
+    # NOTE: load custom reference
     @staticmethod
     def load_custom_reference(
         custom_ref: CustomRef,
@@ -254,6 +257,7 @@ class ManageData():
             logging.error(f"Error loading custom reference: {e}")
             return {}
 
+    # NOTE: select reference
     def select_reference(self, reference: str) -> dict:
         '''
         Select a reference from the loaded references
@@ -277,6 +281,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"select reference error! {e}")
 
+    # NOTE: load symbols
     def load_symbols(self, custom_ref: CustomRef | None) -> dict:
         '''
         Load symbols used in the databooks
@@ -320,6 +325,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"symbol loading error! {e}")
 
+    # NOTE: load descriptions
     def load_descriptions(self):
         """
         Load reference descriptions for databooks
@@ -363,6 +369,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"load_descriptions error! {e}")
 
+    # NOTE: get symbols
     def get_symbols(
             self
     ) -> tuple[dict, list, str, pd.DataFrame]:
@@ -394,6 +401,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"symbol loading error! {e}")
 
+    # NOTE: get descriptions
     def get_descriptions(
             self
     ) -> tuple[dict, list, str, pd.DataFrame]:
@@ -415,6 +423,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"description loading error! {e}")
 
+    # NOTE: get descriptions by databook
     def get_descriptions_by_databook(
             self,
             databook: str
@@ -445,6 +454,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"description loading error! {e}")
 
+    # NOTE: get descriptions by table
     def get_databook_bulk(self) -> dict[str, list[DataBookTableTypes]]:
         '''
         Get databook bulk
@@ -476,7 +486,16 @@ class ManageData():
                 for table, table_data in databook_data.get('TABLES', {}).items():
                     # log
                     # <class 'str' > <class 'dict' >
-                    # print(type(table), type(table_data))
+                    # ! table_data is a dict containing table information such as description, equations, data, etc.
+                    # >> check table_data
+                    if not isinstance(table_data, dict):
+                        logger.warning(
+                            f"Table data for table {table} in databook {databook} is not a dictionary! Skipping this table."
+                        )
+                        continue
+
+                    # NOTE: table data keys
+                    table_data_keys: List[str] = list(table_data.keys())
 
                     # NOTE: description
                     description = table_data.get('DESCRIPTION', None)
@@ -492,7 +511,9 @@ class ManageData():
 
                     # NOTE: table reference
                     external_references = table_data.get(
-                        'EXTERNAL-REFERENCES', None)
+                        'EXTERNAL-REFERENCES',
+                        None
+                    )
 
                     # SECTION: reference indicators
                     # ? DATA,
@@ -500,10 +521,10 @@ class ManageData():
                     # ? MATRIX-DATA OR MATRIX-SYMBOL,
                     # ? MATRIX-EQUATIONS
                     # ! check EQUATIONS exists
-                    if 'EQUATIONS' in table_data:
+                    if 'EQUATIONS' in table_data_keys:
                         # eq
                         _eq = []
-                        for eq, eq_data in table_data['EQUATIONS'].items():
+                        for _, eq_data in table_data['EQUATIONS'].items():
                             # save
                             _eq.append(eq_data)
 
@@ -527,10 +548,10 @@ class ManageData():
                         # reset
                         _eq = []
                     # ! check MATRIX-EQUATION
-                    elif 'MATRIX-EQUATIONS' in table_data:
+                    elif 'MATRIX-EQUATIONS' in table_data_keys:
                         # eq
                         _eq = []
-                        for eq, eq_data in table_data['MATRIX-EQUATIONS'].items():
+                        for _, eq_data in table_data['MATRIX-EQUATIONS'].items():
                             # save
                             _eq.append(eq_data)
 
@@ -551,7 +572,7 @@ class ManageData():
                         # reset
                         _eq = []
                     # ! check DATA
-                    elif 'DATA' in table_data:
+                    elif 'DATA' in table_data_keys:
                         # data
                         data = table_data.get('DATA', [])
 
@@ -578,7 +599,10 @@ class ManageData():
                             'external_references': external_references
                         })
                     # ! check MATRIX-DATA
-                    elif ('MATRIX-DATA' in table_data) or ('MATRIX-SYMBOL' in table_data):
+                    elif (
+                        ('MATRIX-DATA' in table_data_keys) or
+                        ('MATRIX-SYMBOL' in table_data_keys)
+                    ):
                         # matrix-data (data)
                         # NOTE: matrix-data
                         # including COLUMNS, SYMBOL, UNIT, CONVERSION, MATRIX-SYMBOL
@@ -620,8 +644,35 @@ class ManageData():
                             'table_items': table_items,
                             'external_references': external_references
                         })
+                    elif 'CONSTANTS' in table_data_keys:
+                        # constants
+                        constants = table_data.get('CONSTANTS', [])
 
-                # save
+                        # REVIEW: generate table structure
+                        table_structure = constants if table_structure is None else table_structure
+                        # set
+                        if isinstance(constants, list):
+                            # check data
+                            if len(constants) == 0:
+                                constants = table_structure
+
+                        # save
+                        tables.append({
+                            'table_id': table_id,
+                            'table': table,
+                            'description': description,
+                            'equations': None,
+                            'data': None,
+                            'matrix_equations': None,
+                            'matrix_data': None,
+                            'constants': constants,
+                            'table_type': TableTypes.CONSTANTS.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure,
+                            'external_references': external_references
+                        })
+
+                # NOTE: save tables to databook list
                 databook_list[databook] = tables
 
             # return
@@ -629,6 +680,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
+    # NOTE: get databooks
     def get_databooks(self) -> tuple[list[str], pd.DataFrame, str]:
         '''
         Get a list of databook
@@ -673,6 +725,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook loading error! {e}")
 
+    # NOTE: get databook id
     def get_databook_id(
         self,
         databook: str,
@@ -729,6 +782,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook id loading error! {e}")
 
+    # NOTE: get tables
     def get_tables(
             self,
             databook
@@ -794,6 +848,10 @@ class ManageData():
                 elif tb['matrix_equations'] is not None:
                     tables.append(
                         [tb['table'], "matrix-equation", f"[{i+1}]"])
+                # ! constants
+                elif tb.get('constants', None) is not None:
+                    tables.append(
+                        [tb['table'], "constants", f"[{i+1}]"])
                 else:
                     raise Exception("data type unknown!")
 
@@ -818,6 +876,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
+    # NOTE: get table type
     def get_table_type(
             self,
             databook: int,
@@ -865,6 +924,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table info loading err! {e}")
 
+    # NOTE: get table
     def get_table(
         self,
         databook: str | int | list[DataBookTableTypes],
@@ -963,6 +1023,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table loading err! {e}")
 
+    # NOTE: get table id
     def get_table_id(
         self,
         databook: str | int,
@@ -1031,6 +1092,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table id loading err! {e}")
 
+    # NOTE: get table values
     def get_table_values(
             self,
             databook: str | int,
@@ -1066,6 +1128,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"table values loading err! {e}")
 
+    # NOTE: find databook
     def find_databook(
         self,
         databook: str | int
@@ -1130,6 +1193,7 @@ class ManageData():
         except Exception as e:
             raise Exception(f"databook finding err! {e}")
 
+    # NOTE: find table
     def find_table(
             self,
             databook: str | int,
@@ -1199,6 +1263,7 @@ class ManageData():
         except Exception as e:
             raise Exception('Finding table id failed!, ', e)
 
+    # NOTE: find table source
     def find_table_source(
             self,
             table: str | int
