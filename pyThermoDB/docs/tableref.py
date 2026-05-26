@@ -52,6 +52,7 @@ class TableReference(ManageData):
         path_external = custom_ref.csv_paths
         return path_external
 
+    # NOTE: list databooks
     def list_databooks(self):
         '''
         list databooks
@@ -59,6 +60,7 @@ class TableReference(ManageData):
         _, df, _ = self.get_databooks()
         return df
 
+    # NOTE: list tables
     def list_tables(
         self,
         databook: int | str,
@@ -100,6 +102,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception("Table loading error!,", e)
 
+    # NOTE: load table
     def load_table(
         self,
         databook_id: int,
@@ -219,6 +222,22 @@ class TableReference(ManageData):
                         file_data.append(unit)
                         file_data.extend(values)
 
+                    elif tb_type == TableTypes.CONSTANTS.value:
+                        # ! constants
+
+                        # check
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}.")
+
+                        # NOTE: add to file data
+                        file_data = []
+                        # ! add to dataframe header
+                        # file_data.append(columns)
+                        # file_data.append(symbol)
+                        # file_data.append(unit)
+                        file_data.extend(values)
+
                     elif tb_type == TableTypes.MATRIX_DATA.value:
                         # ! matrix data
 
@@ -334,6 +353,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: search tables
     def search_tables(
             self,
             databook_id: int,
@@ -374,6 +394,8 @@ class TableReference(ManageData):
             # dataframe
             df = None
 
+            # TODO: check TableTypes.CONSTANTS.value
+
             # check tb_type
             if (
                 tb_type == TableTypes.DATA.value or
@@ -399,6 +421,15 @@ class TableReference(ManageData):
                     lookup=lookup,
                     query=query
                 )
+            elif tb_type == TableTypes.CONSTANTS.value:
+                # ! search constants table
+                df = self.search_constants_table(
+                    databook_id=databook_id,
+                    table_id=table_id,
+                    column_name=column_name,
+                    lookup=lookup,
+                    query=query
+                )
             else:
                 raise Exception(f"Table type {tb_type} is not supported.")
 
@@ -406,6 +437,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table searching error {e}")
 
+    # NOTE: search tables
     def search_table(
         self,
         databook_id: int,
@@ -512,6 +544,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Searching table error {e}")
 
+    # NOTE: search matrix tables
     def search_matrix_table(
         self,
         databook_id: int,
@@ -648,16 +681,6 @@ class TableReference(ManageData):
             # NOTE: combine dfs
             result = pd.concat([df_info, df_filter])
 
-            # log
-            # print("====================================")
-            # print(f"Records found: {records_number}")
-            # print(df_info)
-            # print("====================================")
-            # print(df_filter)
-            # print("====================================")
-            # print(result)
-            # print("====================================")
-
             # NOTE: check
             if not df_filter.empty:
                 return result
@@ -667,6 +690,21 @@ class TableReference(ManageData):
             raise Exception(
                 f"Table data is not a pandas dataframe for {databook_id} and {table_id}.")
 
+    # NOTE: search constants table
+    def search_constants_table(
+        self,
+        databook_id: int,
+        table_id: int,
+        column_name: str | list[str],
+        lookup: str | list[str],
+        query: bool = False
+    ):
+        # TODO: implement search constants table
+        df = pd.DataFrame()
+
+        return df
+
+    # NOTE: make payload
     def make_payload(
         self,
         databook_id: int,
@@ -674,7 +712,8 @@ class TableReference(ManageData):
         column_name: str | list[str],
         lookup: str | list[str],
         query: bool = False,
-        matrix_tb: bool = False
+        matrix_tb: bool = False,
+        constants_tb: bool = False
     ) -> PayLoadType | None:
         '''
         Make standard data
@@ -689,6 +728,12 @@ class TableReference(ManageData):
             column name
         lookup : str
             value to look up for
+        query : bool, optional
+            if True, then use query method, by default False
+        matrix_tb : bool, optional
+            if True, then search matrix table, by default False
+        constants_tb : bool, optional
+            if True, then search constants table, by default False
 
         Returns
         -------
@@ -720,6 +765,15 @@ class TableReference(ManageData):
                     lookup=lookup,
                     query=query
                 )
+            elif constants_tb:
+                # NOTE: search constants table
+                df = self.search_constants_table(
+                    databook_id,
+                    table_id,
+                    column_name,
+                    lookup=lookup,
+                    query=query
+                )
             else:
                 # NOTE: search table
                 df = self.search_table(
@@ -730,19 +784,34 @@ class TableReference(ManageData):
                     query=query
                 )
 
-            # SECTION: check
+            # SECTION: check dataframe
             if len(df) > 0:
                 # payload
+                # NOTE: header
+                header = df.columns.to_list()
+
+                # check based on table type
                 if matrix_tb:
+                    # ! matrix table type
+                    symbol = df.iloc[0, :].to_list()
+                    unit = df.iloc[1, :].to_list()
                     records_clean = df.iloc[4, :].fillna(0).to_list()
+                elif constants_tb:
+                    # ! constants table type
+                    symbol = []
+                    unit = []
+                    records_clean = df.iloc[1, :].fillna(0).to_list()
                 else:
+                    # ! data or equations table type
+                    symbol = df.iloc[0, :].to_list()
+                    unit = df.iloc[1, :].to_list()
                     records_clean = df.iloc[2, :].fillna(0).to_list()
 
                 # payload
                 payload: PayLoadType = {
-                    "header": df.columns.to_list(),
-                    "symbol": df.iloc[0, :].to_list(),
-                    "unit": df.iloc[1, :].to_list(),
+                    "header": header,
+                    "symbol": symbol,
+                    "unit": unit,
                     "records": records_clean,
                 }
 
@@ -754,6 +823,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Making payload error {e}")
 
+    # NOTE: search component
     def search_component(
         self,
         search_terms: list[str],
@@ -812,7 +882,8 @@ class TableReference(ManageData):
                                 lambda x: x.str.contains(search_terms[0])).any(axis=1)]
                         elif search_mode == 'exact':
                             matching_rows = df[df[existing_columns].eq(
-                                search_terms[0]).any(axis=1)]
+                                search_terms[0]
+                            ).any(axis=1)]
                         else:
                             raise ValueError(
                                 f"Invalid search mode: {search_mode}")
@@ -822,8 +893,10 @@ class TableReference(ManageData):
                             # print(f"Only one matching column found in {file}.")
                             # check search mode
                             if search_mode == 'similar':
-                                matching_rows = df[df[existing_columns[0]
-                                                      ].str.contains(search_terms[0])]
+                                matching_rows = df[
+                                    df[existing_columns[0]].str.contains(
+                                        search_terms[0])
+                                ]
                             elif search_mode == 'exact':
                                 matching_rows = df[df[existing_columns[0]].eq(
                                     search_terms[0])]
@@ -891,6 +964,7 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f'Searching component error {e}')
 
+    # NOTE: list all components
     def list_all_components(
         self,
         column_name: str = 'Name'
@@ -965,10 +1039,19 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f'Listing all components error {e}')
 
+    # NOTE: search constants
+    def search_constant(
+            self
+    ):
+        # TODO: implement search constant
+        pass
+
+    # NOTE: retrieve data
     def retrieve_data(
             self,
             table_data: DataBookTableTypes,
-            table_type: str):
+            table_type: str
+    ):
         '''
         Retrieve data from table data based on table type
 
@@ -982,6 +1065,7 @@ class TableReference(ManageData):
                 - equations
                 - matrix-data
                 - matrix-equations
+                - constants
 
         Returns
         -------
@@ -1002,6 +1086,9 @@ class TableReference(ManageData):
             elif table_type == TableTypes.MATRIX_EQUATIONS.value:
                 # data
                 data = table_data['matrix_equations']
+            elif table_type == TableTypes.CONSTANTS.value:
+                # data
+                data = table_data['constants']
             else:
                 raise Exception(f"Table type {table_type} is not supported.")
 
