@@ -32,7 +32,8 @@ from ..core import (
     TableEquation,
     TableMatrixEquation,
     TableData,
-    TableMatrixData
+    TableMatrixData,
+    TableConstants
 )
 from ..data import TableTypes
 from ..models import DataBookTableTypes, PayLoadType
