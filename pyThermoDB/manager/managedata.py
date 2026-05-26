@@ -922,6 +922,8 @@ class ManageData():
                     return TableTypes.MATRIX_DATA.value
                 elif 'matrix_equations' in tb and tb['matrix_equations'] is not None:
                     return TableTypes.MATRIX_EQUATIONS.value
+                elif 'constants' in tb and tb['constants'] is not None:
+                    return TableTypes.CONSTANTS.value
                 else:
                     raise Exception("table type unknown!")
 
@@ -1051,10 +1053,10 @@ class ManageData():
         '''
         try:
             # NOTE: find databook
-            db, db_name, db_id = self.find_databook(databook)
+            _, db_name, _ = self.find_databook(databook)
 
             # NOTE: find table
-            tb_id, tb_name = self.find_table(db_name, table)
+            _, tb_name = self.find_table(db_name, table)
 
             # NOTE: get table
             tb = self.get_table(db_name, tb_name)
