@@ -913,7 +913,64 @@ class ThermoDB(ManageData):
                     table_values=table_values,
                     table_structure=table_structure
                 )
-            elif tb_type == 'constants':
+            else:
+                raise Exception('Table loading error!')
+
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
+
+    def constants_load(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableConstants:
+        '''
+        Display table header columns and other info
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : str
+            table name
+
+        Returns
+        -------
+        object : TableData
+            table object with data loaded
+        '''
+        try:
+            # table type
+            tb_type = ''
+            # table name
+            table_name = ''
+            # table data
+            table_data = []
+            # databook id | name
+            db, db_name, db_id = self.find_databook(databook)
+            # get the tb
+            tb = self.select_table(databook, table)
+            # >> table type
+            tb_type = tb['table_type']
+
+            # SECTION: configure general table info
+            # ! table name
+            table_name = tb['table']
+
+            # NOTE: check table values
+            if tb['table_values'] is not None and tb['table_values'] != 'None':
+                table_values = tb['table_values']
+            else:
+                table_values = None
+
+            # NOTE: check table structure
+            if tb['table_structure'] is not None and tb['table_structure'] != 'None':
+                table_structure = tb['table_structure']
+            else:
+                table_structure = None
+
+            # check data
+            if tb_type == 'constants':
                 # ! constants table type
                 # # TODO:
 
@@ -943,7 +1000,7 @@ class ThermoDB(ManageData):
                     raise ValueError("Table data is empty!")
 
                 # data no
-                return TableData(
+                return TableConstants(
                     db_name,
                     table_name,
                     table_data,
