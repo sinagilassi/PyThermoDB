@@ -124,9 +124,9 @@ REFERENCES:
             This table provides the custom constants that can be used in the equations or other calculations.
           CONSTANTS: []
           STRUCTURE:
-            COLUMNS: [No.,Source,Source-Name,Constant-Name,Symbol,State,Value,Unit,Description]
+            COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
           VALUES:
-            - [1,'None','None','Universal Gas Constant','R','g',8.314,'J/mol.K','The universal gas constant is a physical constant that appears in many fundamental equations in the physical sciences.']
-            - [2,'None','None','Constant1','C1','g',12,None,'This is a constant used in the vapor pressure equation.']
-            - [3,'None','None','total heat capacity of ideal gas', 'Cp_IG', 'g', 25.35, 'J/mol.K', 'This is the total heat capacity at constant pressure of ideal gas.']
-            - [4,'Reaction CO2-Hydrogenation','R1','enthalpy of formation of ideal gas','EnFo_IG','g',-100,'kJ/mol','This is the enthalpy of formation of ideal gas.']
+            - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','The universal gas constant is a physical constant that appears in many fundamental equations in the physical sciences.']
+            - [2,'Constant1','C1','g',12,None,'This is a constant used in the vapor pressure equation.']
+            - [3,'total heat capacity of ideal gas', 'Cp_IG', 'g', 25.35, 'J/mol.K', 'This is the total heat capacity at constant pressure of ideal gas.']
+            - [4,'enthalpy of formation of ideal gas','EnFo_IG','g',-100,'kJ/mol','This is the enthalpy of formation of ideal gas.']
