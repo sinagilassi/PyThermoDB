@@ -10,6 +10,7 @@
         "NRTL",
         "ptdb",
         "representer",
+        "tableconstants",
         "tabledata",
         "tableequation",
         "tablematrixdata",
