@@ -55,6 +55,9 @@ print(tb_info)
 tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 print(tb_info)
 
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Custom-Constants')
+print(tb_info)
+
 # ====================================
 # LOAD TABLE
 # ====================================
@@ -91,6 +94,13 @@ print(tb_eq.equation_parms())
 print(tb_eq.equation_args())
 print(tb_eq.equation_body())
 print(tb_eq.equation_return())
+
+# custom constants
+tb_const = thermo_db.data_load('CUSTOM-REF-1', 'Custom-Constants')
+print(tb_const.table_columns)
+print(tb_const.table_symbols)
+print(tb_const.table_units)
+print(tb_const.table_values)
 
 
 # ===============================
