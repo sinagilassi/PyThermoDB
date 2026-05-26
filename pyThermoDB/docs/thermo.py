@@ -742,6 +742,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
+    # NOTE: load equation table
     def equation_load(
         self,
         databook: int | str,
@@ -823,6 +824,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: load data table
     def data_load(
         self,
         databook: int | str,
@@ -854,64 +856,106 @@ class ThermoDB(ManageData):
             db, db_name, db_id = self.find_databook(databook)
             # get the tb
             tb = self.select_table(databook, table)
+            # >> table type
+            tb_type = tb['table_type']
 
-            # check
-            if tb:
-                # NOTE: table name
-                table_name = tb['table']
+            # SECTION: configure general table info
+            # ! table name
+            table_name = tb['table']
 
-                # NOTE: check data/equations
-                if tb['data'] is None or tb['data'] == 'None':
+            # NOTE: check table values
+            if tb['table_values'] is not None and tb['table_values'] != 'None':
+                table_values = tb['table_values']
+            else:
+                table_values = None
+
+            # NOTE: check table structure
+            if tb['table_structure'] is not None and tb['table_structure'] != 'None':
+                table_structure = tb['table_structure']
+            else:
+                table_structure = None
+
+            # check data
+            if tb_type == 'data':
+                # ! data table type
+
+                # NOTE: check data
+                if (
+                    tb['data'] is None or
+                    tb['data'] == 'None'
+                ):
                     raise Exception(
                         'This method not compatible with the selected table!')
 
-                tb_type = TableTypes.DATA.value
+                # data (structure)
+                table_data = tb['data']
 
-                # NOTE: check table values
-                if tb['table_values'] is not None and tb['table_values'] != 'None':
-                    table_values = tb['table_values']
-                else:
-                    table_values = None
+                # check
+                if not isinstance(table_data, dict):
+                    raise ValueError("Table data is not a dictionary!")
 
-                # NOTE: check table structure
-                if tb['table_structure'] is not None and tb['table_structure'] != 'None':
-                    table_structure = tb['table_structure']
-                else:
-                    table_structure = None
+                # extract table data
+                COLUMNS = table_data.get('COLUMNS')
+                SYMBOL = table_data.get('SYMBOL')
+                UNIT = table_data.get('UNIT')
+                CONVERSION = table_data.get('CONVERSION')
 
-                # check data
-                if tb_type == 'data':
-                    table_data = tb['data']
+                # NOTE: check if the table data is empty
+                if not COLUMNS or not SYMBOL or not UNIT or not CONVERSION:
+                    raise ValueError("Table data is empty!")
 
-                    # check
-                    if not isinstance(table_data, dict):
-                        raise ValueError("Table data is not a dictionary!")
+                # data no
+                return TableData(
+                    db_name,
+                    table_name,
+                    table_data,
+                    table_values=table_values,
+                    table_structure=table_structure
+                )
+            elif tb_type == 'constants':
+                # ! constants table type
+                # # TODO:
 
-                    # extract table data
-                    COLUMNS = table_data.get('COLUMNS')
-                    SYMBOL = table_data.get('SYMBOL')
-                    UNIT = table_data.get('UNIT')
-                    CONVERSION = table_data.get('CONVERSION')
+                # NOTE: check constants
+                if (
+                    tb['constants'] is None or
+                    tb['constants'] == 'None'
+                ):
+                    raise Exception(
+                        'This method not compatible with the selected table!')
 
-                    # NOTE: check if the table data is empty
-                    if not COLUMNS or not SYMBOL or not UNIT or not CONVERSION:
-                        raise ValueError("Table data is empty!")
+                # data (structure)
+                table_data = tb['constants']
 
-                    # data no
-                    return TableData(
-                        db_name,
-                        table_name,
-                        table_data,
-                        table_values=table_values,
-                        table_structure=table_structure
-                    )
-                else:
-                    raise Exception('Table loading error!')
+                # check
+                if not isinstance(table_data, dict):
+                    raise ValueError("Table data is not a dictionary!")
+
+                # extract table data
+                COLUMNS = table_data.get('COLUMNS')
+                # SYMBOL = table_data.get('SYMBOL', [])
+                # UNIT = table_data.get('UNIT', [])
+                # CONVERSION = table_data.get('CONVERSION', [])
+
+                # NOTE: check if the table data is empty
+                if not COLUMNS:
+                    raise ValueError("Table data is empty!")
+
+                # data no
+                return TableData(
+                    db_name,
+                    table_name,
+                    table_data,
+                    table_values=table_values,
+                    table_structure=table_structure
+                )
             else:
                 raise Exception('Table loading error!')
+
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: load matrix-equation table
     def matrix_equation_load(
         self,
         databook: int | str,
@@ -973,6 +1017,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: load matrix-data table
     def matrix_data_load(
         self,
         databook: int | str,
@@ -1033,6 +1078,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: check component availability
     def check_component(
         self,
         component_name: str | list[str],
@@ -1152,6 +1198,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
+    # NOTE: check multiple components availability
     def check_components(
             self,
             component_names: List[str],
@@ -1256,6 +1303,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Components check error! {e}")
 
+    # NOTE: check component availability with component object
     def is_component_available(
         self,
         component: Component,
@@ -1396,6 +1444,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking component availability: {e}")
 
+    # NOTE: check binary mixture availability with component objects
     def is_binary_mixture_available(
         self,
         components: List[Component],
@@ -1671,6 +1720,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
 
+    # NOTE: check mixtures availability with component objects
     def check_mixtures_availability(
         self,
         components: List[Component],
@@ -1801,6 +1851,28 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixtures availability: {e}")
 
+    # NOTE: check constant
+    def check_constant(
+            self,
+    ):
+        # TODO: implement check_constant method
+        pass
+
+    # NOTE: check constants
+    def check_constants(
+            self,
+    ):
+        # TODO: implement check_constants method
+        pass
+
+    # NOTE: constant availability
+    def is_constant_available(
+            self,
+    ):
+        # TODO: implement is_constant_available method
+        pass
+
+    # NOTE: check component availability with API
     def check_component_api(
             self,
             component_name: str | list,
@@ -1962,7 +2034,7 @@ class ThermoDB(ManageData):
         component_state: Optional[str] = None
     ):
         '''
-        Get component data from database (api|local csvs)
+        Get component data from database (api|local)
 
         Parameters
         ----------
@@ -2068,6 +2140,7 @@ class ThermoDB(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
+    # SECTION: local data
     def get_component_data_local(
         self,
         component_name: str,
@@ -2080,7 +2153,7 @@ class ThermoDB(ManageData):
         matrix_tb: bool = False
     ) -> Union[pd.DataFrame, PayLoadType, None]:
         '''
-        Get component data from database (local csv files)
+        Get component data from database (local files)
 
         Parameters
         ----------
