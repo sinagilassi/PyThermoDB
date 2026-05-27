@@ -111,6 +111,18 @@ pp(CO2_data.data_structure())
 pp(CO2_data.get_property(4))
 ```
 
+* **BUILD TABLE-WIDE CONSTANTS OBJECT**:
+
+Constants tables are not component-specific and use their own loader.
+
+```python
+constants = tdb.constants_load('CUSTOM-REF-1', 'Custom-Constants')
+pp(constants.data_structure())
+pp(constants.get_constant('R'))
+
+constants = tdb.build_constants('CUSTOM-REF-1', 'Custom-Constants')
+```
+
 * **📐 BUILD EQUATION OBJECT**:
 
 ```python
