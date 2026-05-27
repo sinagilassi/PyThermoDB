@@ -134,7 +134,7 @@ class TableReference(ManageData):
 
             # NOTE:
             # table
-            tb = self.get_table(databook_id-1, table_id-1)
+            tb: DataBookTableTypes = self.get_table(databook_id-1, table_id-1)
             # table type
             tb_type = tb['table_type']
 
@@ -253,15 +253,26 @@ class TableReference(ManageData):
                                 f"Table data is None for {file_name}.")
 
                         # matrix symbol
-                        matrix_symbol = matrix_data.get('MATRIX-SYMBOL', None)
+                        # >> check types
+                        if isinstance(matrix_data, dict):
+                            matrix_symbol = matrix_data.get(
+                                'MATRIX-SYMBOL',
+                                None
+                            )
+                        elif isinstance(matrix_data, list):
+                            # set
+                            matrix_symbol = [item for item in matrix_data]
+                        else:
+                            logger.warning(
+                                f"Matrix data format is not recognized for {file_name}.")
+                            raise Exception(
+                                f"Table data is None for {file_name}."
+                            )
 
                         # check
                         if matrix_symbol is None:
                             raise Exception(
                                 f"Table data is None for {file_name}.")
-
-                        # size of matrix symbols
-                        matrix_symbol_len = len(matrix_symbol)
 
                         # SECTION: values
                         if values and isinstance(values, list):
@@ -914,9 +925,10 @@ class TableReference(ManageData):
                             matching_rows = df[df[existing_columns].apply(
                                 lambda x: x.str.contains(search_terms[0])).any(axis=1)]
                         elif search_mode == 'exact':
-                            matching_rows = df[df[existing_columns].eq(
-                                search_terms[0]
-                            ).any(axis=1)]
+                            matching_rows = df[
+                                (df[existing_columns] ==
+                                 search_terms[0]).any(axis=1)
+                            ]
                         else:
                             raise ValueError(
                                 f"Invalid search mode: {search_mode}")
@@ -931,8 +943,9 @@ class TableReference(ManageData):
                                         search_terms[0])
                                 ]
                             elif search_mode == 'exact':
-                                matching_rows = df[df[existing_columns[0]].eq(
-                                    search_terms[0])]
+                                matching_rows = df[
+                                    df[existing_columns[0]] == search_terms[0]
+                                ]
                             else:
                                 raise ValueError(
                                     f"Invalid search mode: {search_mode}")
@@ -946,8 +959,8 @@ class TableReference(ManageData):
                                 ]
                             elif search_mode == 'exact':
                                 matching_rows = df[
-                                    (df[existing_columns[0]].eq(search_terms[0])) &
-                                    (df[existing_columns[1]].eq(search_terms[1]))
+                                    (df[existing_columns[0]] == search_terms[0]) &
+                                    (df[existing_columns[1]] == search_terms[1])
                                 ]
 
                             else:
