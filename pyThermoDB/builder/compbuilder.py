@@ -7,7 +7,6 @@ import datetime
 import sys
 import functools
 from typing import Optional, Union, Literal, ClassVar
-
 # local
 from .compexporter import CompExporter
 from .comp_tools import CompTools
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class CompBuilder(CompExporter):
     """
-    Used to build thermodb library, including thermodynamic data and functions.
+    Used to build thermodb library, including thermodynamic data, functions, and constants.
     """
 
     # NOTE: # shared CompTools instance (lazy-created). Safe if CompTools is stateless.
@@ -119,6 +118,7 @@ class CompBuilder(CompExporter):
         # ! reset data
         self.__data = {}
 
+    # SECTION: properties/functions accessors
     @property
     def thermodb_name(self) -> str | None:
         '''
@@ -176,11 +176,16 @@ class CompBuilder(CompExporter):
         '''
         return self._build_type
 
+    # NOTE: add data
     def add_data(
         self,
         name: str,
         value: Union[
-            TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation,
+            TableData,
+            TableEquation,
+            dict,
+            TableMatrixData,
+            TableMatrixEquation,
             TableConstants
         ]
     ):
@@ -191,7 +196,7 @@ class CompBuilder(CompExporter):
         ----------
         name : str
             data name
-        value : TableData | TableEquation | dict
+        value : TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation | TableConstants
             value of the property/function
 
         Returns
@@ -208,7 +213,7 @@ class CompBuilder(CompExporter):
             if name is None:
                 raise Exception('Name is required')
 
-            # check TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation
+            # check TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation | TableConstants
             allowed_types = (
                 TableData,
                 TableEquation,
@@ -229,6 +234,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Adding data failed!, {e}')
             return False
 
+    # NOTE: delete data
     def delete_data(self, name: str) -> bool:
         '''
         Delete data by name
@@ -255,6 +261,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Deleting data failed!, {e}')
             return False
 
+    # NOTE: rename data
     def rename_data(
             self,
             name: str,
@@ -286,6 +293,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Renaming data failed!, {e}')
             return False
 
+    # NOTE: list data
     def list_data(self):
         '''
         List the thermo data added `before saving`
@@ -312,6 +320,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Listing data failed!, {e}')
             return {}
 
+    # SECTION: build thermodb
     def build(self):
         '''
         Build thermodb
@@ -331,7 +340,11 @@ class CompBuilder(CompExporter):
             logger.error(f'Building library failed!, {e}')
             return False
 
-    def export_yml(self, component_name: str):
+    # NOTE: export yml
+    def export_yml(
+            self,
+            component_name: str
+    ) -> bool:
         '''
         Export thermodb
 
@@ -343,7 +356,7 @@ class CompBuilder(CompExporter):
         Returns
         -------
         res : bool
-            True if success
+            It returns True if the export is successful, and False otherwise.
         '''
         try:
             # data
@@ -406,6 +419,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Exporting yml failed!, {e}')
             return False
 
+    # NOTE: export data structure
     def export_data_structure(
             self,
             component_name: str
@@ -433,6 +447,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Exporting data structure failed!, {e}')
             return False
 
+    # NOTE: check library
     def check(self) -> dict:
         '''
         Check library
@@ -452,6 +467,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Checking library failed!, {e}')
             return {}
 
+    # NOTE: check properties
     def check_properties(self) -> dict[str, TableData | TableMatrixData | TableConstants]:
         '''
         Check properties
@@ -467,6 +483,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
+    # NOTE: check property availability by name
     def is_property_available(
         self,
         thermo_name: str
@@ -490,6 +507,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking property availability failed!, ', e)
 
+    # NOTE: check property by name
     def check_property(
         self,
         thermo_name: str
@@ -513,6 +531,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
+    # NOTE: select property (case-sensitive)
     def select_property(
         self,
         thermo_name: str
@@ -553,6 +572,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a property failed!, ', e)
 
+    # NOTE: check functions
     def check_functions(self) -> dict[str, TableEquation | TableMatrixEquation]:
         '''
         Check all functions
@@ -568,6 +588,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
+    # NOTE: check function availability by name
     def is_function_available(
         self,
         function_name: str
@@ -591,6 +612,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking function availability failed!, ', e)
 
+    # NOTE: check function by name
     def check_function(
         self,
         name: str
