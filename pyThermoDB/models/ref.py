@@ -55,6 +55,19 @@ class DataResult(TypedDict):
     table_name: Optional[Union[str, int]]
 
 
+class ConstantResult(TypedDict):
+    """Result returned when selecting a table-wide constant."""
+    constant_name: Optional[str]
+    symbol: Optional[str]
+    state: Optional[str]
+    value: Any
+    unit: Optional[str]
+    description: Optional[str]
+    message: Optional[str]
+    databook_name: Optional[Union[str, int]]
+    table_name: Optional[Union[str, int]]
+
+
 class EquationResult(TypedDict):
     """Equation Result Type Definition"""
     equation_name: Optional[str]

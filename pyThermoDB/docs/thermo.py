@@ -524,6 +524,7 @@ class ThermoDB(ManageData):
             # data no
             data_no = 0
             matrix_data_no = 0
+            constants_no = 0
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -546,6 +547,8 @@ class ThermoDB(ManageData):
                     tb_type = 'Matrix-Equation'
                 if tb['matrix_data'] is not None:
                     tb_type = 'Matrix-Data'
+                if tb.get('constants') is not None:
+                    tb_type = 'Constants'
 
                 # ! check equations
                 if tb_type == 'Equation' and tb['equations'] is not None:
@@ -578,6 +581,9 @@ class ThermoDB(ManageData):
                     # data no
                     matrix_data_no = 1
 
+                if tb_type == 'Constants' and tb.get('constants') is not None:
+                    constants_no = 1
+
                 # data
                 tb_summary: Dict[str, str | int] = {
                     "Table Name": table_name,
@@ -585,7 +591,8 @@ class ThermoDB(ManageData):
                     "Equations": equation_no,
                     "Data": data_no,
                     "Matrix-Equations": matrix_equation_no,
-                    "Matrix-Data": matrix_data_no
+                    "Matrix-Data": matrix_data_no,
+                    "Constants": constants_no
                 }
 
                 # json
@@ -602,7 +609,8 @@ class ThermoDB(ManageData):
                     'Equations',
                     'Data',
                     'Matrix-Equations',
-                    'Matrix-Data'
+                    'Matrix-Data',
+                    'Constants'
                 ]
                 # dataframe
                 df = pd.DataFrame([tb_summary], columns=column_names)
@@ -843,7 +851,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        object : TableData
+        object : TableConstants
             table object with data loaded
         '''
         try:
@@ -972,8 +980,6 @@ class ThermoDB(ManageData):
             # check data
             if tb_type == 'constants':
                 # ! constants table type
-                # # TODO:
-
                 # NOTE: check constants
                 if (
                     tb['constants'] is None or
@@ -998,6 +1004,12 @@ class ThermoDB(ManageData):
                 # NOTE: check if the table data is empty
                 if not COLUMNS:
                     raise ValueError("Table data is empty!")
+
+                # External CSV-backed constants do not provide inline VALUES.
+                if table_values is None:
+                    table_values = self.table_data(
+                        databook, table, res_format='list'
+                    )
 
                 # data no
                 return TableConstants(
@@ -1911,24 +1923,75 @@ class ThermoDB(ManageData):
 
     # NOTE: check constant
     def check_constant(
-            self,
+        self,
+        constant: str,
+        databook: int | str,
+        table: int | str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
+        res_format: Literal['dict', 'json', 'str'] = 'dict'
     ):
-        # TODO: implement check_constant method
-        pass
+        """Check whether a table-wide constant exists in a constants table."""
+        constants = self.constants_load(databook, table)
+        availability = constants.is_constant_available(
+            constant, search_mode=search_mode
+        ).availability
+        result = {
+            'databook_name': constants.databook_name,
+            'table_name': constants.table_name,
+            'constant': constant,
+            'availability': availability,
+            'search_mode': search_mode,
+        }
+        if res_format == 'dict':
+            return result
+        if res_format in ('json', 'str'):
+            return json.dumps(result, indent=4)
+        raise ValueError('Invalid res_format')
 
     # NOTE: check constants
     def check_constants(
-            self,
+        self,
+        constants: list[str],
+        databook: int | str,
+        table: int | str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
+        res_format: Literal['dict', 'json', 'str'] = 'dict'
     ):
-        # TODO: implement check_constants method
-        pass
+        """Check several table-wide constants in one constants table."""
+        if not constants:
+            raise ValueError('constants must be a non-empty list.')
+        results = [
+            self.check_constant(
+                constant, databook, table, search_mode, res_format='dict'
+            )
+            for constant in constants
+        ]
+        result = {
+            'databook_name': results[0]['databook_name'],
+            'table_name': results[0]['table_name'],
+            'constants': results,
+            'availability': all(item['availability'] for item in results),
+        }
+        if res_format == 'dict':
+            return result
+        if res_format in ('json', 'str'):
+            return json.dumps(result, indent=4)
+        raise ValueError('Invalid res_format')
 
     # NOTE: constant availability
     def is_constant_available(
-            self,
-    ):
-        # TODO: implement is_constant_available method
-        pass
+        self,
+        constant: str,
+        databook: int | str,
+        table: int | str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> bool:
+        """Return whether a constant exists in a selected constants table."""
+        return self.constants_load(
+            databook, table
+        ).is_constant_available(
+            constant, search_mode=search_mode
+        ).availability
 
     # NOTE: check component availability with API
     def check_component_api(
@@ -2772,9 +2835,16 @@ class ThermoDB(ManageData):
 
     # NOTE: get constants
     def get_constants_data(
-            self,
-    ):
-        pass
+        self,
+        databook: int | str,
+        table: int | str,
+        res_format: Literal['dataframe', 'list', 'json'] = 'dataframe'
+    ) -> pd.DataFrame | list[dict] | str:
+        """Return all records in a constants table."""
+        selected = self.select_table(databook, table)
+        if selected['table_type'] != TableTypes.CONSTANTS.value:
+            raise ValueError("The selected table is not a constants table.")
+        return self.table_data(databook, table, res_format=res_format)
 
     # SECTION: build thermo property for a component including data, equation, matrix-data and matrix-equation
 
@@ -3882,18 +3952,24 @@ class ThermoDB(ManageData):
     # SECTION: constants property
     def build_constants_property(
         self,
-        component_names: list[str],
+        constant: str | int,
         databook: int | str,
         table: int | str,
-        **kwargs
+        message: Optional[str] = None
     ):
-        pass
+        """Build a constants table and select one constant from it."""
+        return self.build_constants(databook, table).get_constant(
+            constant, message=message
+        )
 
     # NOTE: build constants
     def build_constants(
-            self,
-    ):
-        pass
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableConstants:
+        """Build a full table-wide constants source."""
+        return self.constants_load(databook, table)
 
     # NOTE: search databook
 
@@ -4109,6 +4185,57 @@ class ThermoDB(ManageData):
 
     # NOTE: list constants
     def list_constants(
-            self,
+        self,
+        res_format: Literal['list', 'dataframe', 'json'] = 'dataframe'
     ):
-        pass
+        """List constant records from all constants tables."""
+        records = self.search_constants(
+            search_terms=[],
+            res_format='list',
+            search_mode='exact'
+        )
+        if res_format == 'list':
+            return records
+        if res_format == 'dataframe':
+            return pd.DataFrame(records)
+        if res_format == 'json':
+            return json.dumps(records, indent=4)
+        raise ValueError("Invalid res_format")
+
+    def search_constants(
+        self,
+        search_terms: list[str],
+        column_names: list[str] = ['Name', 'Symbol'],
+        res_format: Literal['list', 'dataframe', 'json', 'dict'] = 'dict',
+        search_mode: Literal['exact', 'similar'] = 'exact'
+    ):
+        """Search constants independently from component lookup."""
+        table_ref = TableReference(custom_ref=self.custom_ref)
+        if search_terms:
+            records = table_ref.search_constant(
+                search_terms=search_terms,
+                search_mode=search_mode,
+                column_names=column_names
+            )
+        else:
+            records = []
+            for db_index, (_, tables) in enumerate(table_ref.databook_bulk.items()):
+                for table_index, table in enumerate(tables):
+                    if table.get('table_type') == TableTypes.CONSTANTS.value:
+                        df = table_ref.load_table(db_index + 1, table_index + 1)
+                        for row in df.to_dict(orient='records'):
+                            records.append({
+                                'databook-name': list(table_ref.databook_bulk.keys())[db_index],
+                                'table-name': table['table'],
+                                'table-type': TableTypes.CONSTANTS.value,
+                                **row
+                            })
+        if res_format == 'list':
+            return records
+        if res_format == 'dataframe':
+            return pd.DataFrame(records)
+        if res_format == 'json':
+            return json.dumps(records, indent=4)
+        if res_format == 'dict':
+            return {f'record-{i + 1}': row for i, row in enumerate(records)}
+        raise ValueError("Invalid res_format")

@@ -194,11 +194,6 @@ class TableReference(ManageData):
                     symbol = table_structure.get('SYMBOL', None)
                     unit = table_structure.get('UNIT', None)
 
-                    # check
-                    if columns is None or symbol is None or unit is None:
-                        raise Exception(
-                            f"Table data is None for {file_name}.")
-
                     # SECTION: used by matrix data
                     # NOTE: table_values
                     values = tb.get('table_values', None)
@@ -284,7 +279,15 @@ class TableReference(ManageData):
                             # # updated values
                             # values_ = [header_, *values]
                             # NOTE: check columns contains Mixture
-                            # check
+                            # >> check columns
+                            if not columns:
+                                logger.warning(
+                                    f"Columns are not defined for {file_name}.")
+                                raise Exception(
+                                    f"Table data is None for {file_name}."
+                                )
+
+                            # check if any column is mixture
                             if any(col.lower() == 'mixture' for col in columns):
                                 # loop through values
                                 for i in range(len(values)):
@@ -393,8 +396,6 @@ class TableReference(ManageData):
 
             # dataframe
             df = None
-
-            # TODO: check TableTypes.CONSTANTS.value
 
             # check tb_type
             if (
@@ -698,11 +699,43 @@ class TableReference(ManageData):
         column_name: str | list[str],
         lookup: str | list[str],
         query: bool = False
-    ):
-        # TODO: implement search constants table
-        df = pd.DataFrame()
+    ) -> pd.DataFrame:
+        """Search table-wide constants without component header rows."""
+        try:
+            df = self.load_table(databook_id, table_id)
+            if not isinstance(df, pd.DataFrame):
+                raise ValueError("Constants data is not a dataframe.")
 
-        return df
+            if query:
+                if not isinstance(column_name, str):
+                    raise ValueError("A query expression must be a string.")
+                return df.query(column_name, engine='python')
+
+            if isinstance(column_name, str) and isinstance(lookup, str):
+                if column_name not in df.columns:
+                    return pd.DataFrame(columns=df.columns)
+                return df[
+                    df[column_name].astype(str).str.strip().str.lower() ==
+                    lookup.strip().lower()
+                ]
+
+            if isinstance(column_name, list) and isinstance(lookup, list):
+                if len(column_name) != len(lookup):
+                    raise ValueError(
+                        "Column names and lookup values must have the same length.")
+                filtered = df
+                for column, value in zip(column_name, lookup):
+                    if column not in filtered.columns:
+                        return pd.DataFrame(columns=df.columns)
+                    filtered = filtered[
+                        filtered[column].astype(str).str.strip().str.lower() ==
+                        str(value).strip().lower()
+                    ]
+                return filtered
+
+            raise ValueError("Invalid constants search inputs.")
+        except Exception as e:
+            raise Exception(f"Searching constants table error {e}")
 
     # NOTE: make payload
     def make_payload(
@@ -800,7 +833,7 @@ class TableReference(ManageData):
                     # ! constants table type
                     symbol = []
                     unit = []
-                    records_clean = df.iloc[1, :].fillna(0).to_list()
+                    records_clean = df.iloc[0, :].to_list()
                 else:
                     # ! data or equations table type
                     symbol = df.iloc[0, :].to_list()
@@ -1041,10 +1074,44 @@ class TableReference(ManageData):
 
     # NOTE: search constants
     def search_constant(
-            self
-    ):
-        # TODO: implement search constant
-        pass
+        self,
+        search_terms: list[str],
+        search_mode: Literal['exact', 'similar'] = 'exact',
+        column_names: list[str] = ['Name', 'Symbol']
+    ) -> list[dict]:
+        """Search constants tables, including tables embedded in references."""
+        if search_mode not in ('exact', 'similar'):
+            raise ValueError("Invalid search mode.")
+        lookups = [str(term).strip().lower() for term in search_terms]
+        results: list[dict] = []
+
+        for db_index, (databook_name, tables) in enumerate(self.databook_bulk.items()):
+            for table_index, table in enumerate(tables):
+                if table.get('table_type') != TableTypes.CONSTANTS.value:
+                    continue
+                data = self.load_table(db_index + 1, table_index + 1)
+                existing_columns = [
+                    column for column in column_names if column in data.columns
+                ]
+                if not existing_columns:
+                    continue
+                match = pd.Series(False, index=data.index)
+                for column in existing_columns:
+                    values = data[column].astype(str).str.strip().str.lower()
+                    for lookup in lookups:
+                        if search_mode == 'exact':
+                            match = match | (values == lookup)
+                        else:
+                            match = match | values.str.contains(
+                                lookup, regex=False)
+                for row in data[match].to_dict(orient='records'):
+                    results.append({
+                        'databook-name': databook_name,
+                        'table-name': table['table'],
+                        'table-type': TableTypes.CONSTANTS.value,
+                        **row,
+                    })
+        return results
 
     # NOTE: retrieve data
     def retrieve_data(

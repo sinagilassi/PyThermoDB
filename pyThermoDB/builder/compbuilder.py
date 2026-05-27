@@ -15,7 +15,8 @@ from ..core import (
     TableEquation,
     TableMatrixEquation,
     TableData,
-    TableMatrixData
+    TableMatrixData,
+    TableConstants
 )
 from ..config import __version__
 # ! deps
@@ -179,7 +180,8 @@ class CompBuilder(CompExporter):
         self,
         name: str,
         value: Union[
-            TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation
+            TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation,
+            TableConstants
         ]
     ):
         '''
@@ -212,7 +214,8 @@ class CompBuilder(CompExporter):
                 TableEquation,
                 dict,
                 TableMatrixData,
-                TableMatrixEquation
+                TableMatrixEquation,
+                TableConstants
             )
 
             # check allowed types
@@ -350,7 +353,8 @@ class CompBuilder(CompExporter):
                 'DATA': {},
                 'EQUATIONS': {},
                 'MATRIX-DATA': {},
-                'MATRIX-EQUATIONS': {}
+                'MATRIX-EQUATIONS': {},
+                'CONSTANTS': {}
             }
             # get TableData
             for i, (name, value) in enumerate(self.properties.items()):
@@ -365,6 +369,11 @@ class CompBuilder(CompExporter):
                     _yml = value.to_dict()
                     # add chunk
                     _data_yml['MATRIX-DATA'][str(name)] = _yml
+
+            # get TableConstants
+            for i, (name, value) in enumerate(self.properties.items()):
+                if isinstance(value, TableConstants):
+                    _data_yml['CONSTANTS'][str(name)] = value.to_dict()
 
             # get TableEquation
             for i, (name, value) in enumerate(self.functions.items()):
@@ -777,6 +786,14 @@ class CompBuilder(CompExporter):
                 )
                 # return
                 return prop
+            elif isinstance(prop_src, TableConstants):
+                if source_num != 2:
+                    raise ValueError(
+                        f"Invalid source format! {property_source}")
+                return prop_src.get_constant(
+                    source[1].strip(),
+                    message=message
+                )
             elif isinstance(prop_src, TableMatrixData):
                 # NOTE: check string format
                 if source_num == 2:

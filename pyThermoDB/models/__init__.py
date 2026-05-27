@@ -4,6 +4,7 @@ from .ref import (
     DataResultType,
     MatrixDataType,
     DataResult,
+    ConstantResult,
     EquationResult,
     EquationRangeResult
 )
@@ -28,6 +29,7 @@ __all__ = [
     'DataResultType',
     'MatrixDataType',
     'DataResult',
+    'ConstantResult',
     'EquationResult',
     'Component',
     'PropertyMatch',

@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict
 from rich import print
 import pyThermoDB as ptdb
-from pyThermoDB.core import TableData, TableEquation
+from pyThermoDB.core import TableConstants, TableData, TableEquation
 
 # get versions
 # print(pt.get_version())
@@ -96,11 +96,12 @@ print(tb_eq.equation_body())
 print(tb_eq.equation_return())
 
 # custom constants
-tb_const = thermo_db.data_load('CUSTOM-REF-1', 'Custom-Constants')
+tb_const = thermo_db.constants_load('CUSTOM-REF-1', 'Custom-Constants')
+if not isinstance(tb_const, TableConstants):
+    raise TypeError("tb_const is not a TableConstants instance")
 print(tb_const.table_columns)
-print(tb_const.table_symbols)
-print(tb_const.table_units)
 print(tb_const.table_values)
+print(tb_const.get_constant('R'))
 
 
 # ===============================
@@ -244,6 +245,8 @@ thermo_db.add_data('general', data_1)
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq_2)
+# add table-wide constants
+thermo_db.add_data('custom-constants', tb_const)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
@@ -285,6 +288,7 @@ print(prop1_.get_property('MW'))
 # ! new format
 _src = 'general | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
+print(thermo_db_loaded.retrieve('custom-constants | R', message="gas constant"))
 
 # ====================================
 # SELECT A FUNCTION

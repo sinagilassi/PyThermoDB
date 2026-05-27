@@ -1,24 +1,137 @@
-# import libs
 import logging
-from typing import Any, Dict, List, Optional, Union
-# locals
+from typing import Any, Dict, List, Literal, Optional
 
-# NOTE: logger setup
+import pandas as pd
+
+from ..models import ConstantResult, PropertyMatch
+
+
 logger = logging.getLogger(__name__)
 
 
 class TableConstants:
+    """Table-wide constants that are not associated with a component."""
+
     def __init__(
         self,
-        databook_name,
-        table_name,
-        table_data,
+        databook_name: str | int,
+        table_name: str | int,
+        table_data: Dict[str, Any],
         table_values: Optional[List | Dict] = None,
         table_structure: Optional[Dict[str, Any]] = None
     ):
-        # NOTE: set
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data
-        self.table_values = table_values
-        self.table_structure = table_structure
+        self.table_values = table_values if table_values is not None else []
+        self.table_structure = table_structure if table_structure is not None else table_data
+
+    @property
+    def table_columns(self) -> List[str]:
+        try:
+            return self.table_data['COLUMNS']
+        except KeyError as exc:
+            raise KeyError(
+                "Table columns not found in the constants table structure!"
+            ) from exc
+
+    def data_structure(self) -> pd.DataFrame:
+        """Return the constants records using their declared columns."""
+        return pd.DataFrame(self.table_values, columns=self.table_columns)
+
+    def get_constant(
+        self,
+        constant: str | int,
+        message: Optional[str] = None
+    ) -> ConstantResult:
+        """Retrieve a constant by name, symbol, or its ``No.`` identifier."""
+        data = self.data_structure()
+        row = None
+
+        if isinstance(constant, str):
+            lookup = constant.strip().lower()
+            for column in ('Name', 'Symbol'):
+                if column in data.columns:
+                    matches = data[
+                        data[column].astype(str).str.strip().str.lower() == lookup
+                    ]
+                    if not matches.empty:
+                        row = matches.iloc[0]
+                        break
+        elif isinstance(constant, int):
+            if 'No.' not in data.columns:
+                raise ValueError("Constant identifier column 'No.' not found!")
+            matches = data[data['No.'] == constant]
+            if not matches.empty:
+                row = matches.iloc[0]
+        else:
+            raise ValueError(f"{constant} is not a valid constant identifier!")
+
+        if row is None:
+            raise ValueError(f"Constant '{constant}' not found!")
+
+        return ConstantResult(
+            constant_name=row.get('Name'),
+            symbol=row.get('Symbol'),
+            state=row.get('State'),
+            value=row.get('Value'),
+            unit=row.get('Unit'),
+            description=row.get('Description'),
+            message=str(message) if message else 'No message',
+            databook_name=self.databook_name,
+            table_name=self.table_name,
+        )
+
+    def _is_value_available(
+        self,
+        value: str,
+        column: Literal['Name', 'Symbol'],
+        search_mode: str
+    ) -> PropertyMatch:
+        if not isinstance(value, str):
+            return PropertyMatch(
+                prop_id=str(value), availability=False, search_mode=search_mode
+            )
+        data = self.data_structure()
+        if column not in data.columns:
+            return PropertyMatch(
+                prop_id=value, availability=False, search_mode=search_mode
+            )
+        lookup = value.strip().lower()
+        available = bool(
+            (data[column].astype(str).str.strip().str.lower() == lookup).any()
+        )
+        return PropertyMatch(
+            prop_id=value, availability=available, search_mode=search_mode
+        )
+
+    def is_name_available(self, name: str) -> PropertyMatch:
+        return self._is_value_available(name, 'Name', 'NAME')
+
+    def is_symbol_available(self, symbol: str) -> PropertyMatch:
+        return self._is_value_available(symbol, 'Symbol', 'SYMBOL')
+
+    def is_constant_available(
+        self,
+        constant: str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> PropertyMatch:
+        if search_mode == 'NAME':
+            return self.is_name_available(constant)
+        if search_mode == 'SYMBOL':
+            return self.is_symbol_available(constant)
+        if search_mode != 'BOTH':
+            raise ValueError("Invalid search mode! Must be 'NAME', 'SYMBOL', or 'BOTH'.")
+        available = (
+            self.is_name_available(constant).availability or
+            self.is_symbol_available(constant).availability
+        )
+        return PropertyMatch(
+            prop_id=constant, availability=available, search_mode='BOTH'
+        )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'COLUMNS': list(self.table_columns),
+            'VALUES': self.table_values,
+        }
