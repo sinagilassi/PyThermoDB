@@ -7,7 +7,8 @@ from typing import (
     Optional,
     Literal,
     Union,
-    Hashable
+    Hashable,
+    Any
 )
 import json
 from pythermodb_settings.models import Component
@@ -694,7 +695,7 @@ class ThermoDB(ManageData):
             'dataframe', 'list', 'json'
         ] = 'dataframe'
     ) -> pd.DataFrame | List[
-        Dict[Hashable, Optional[float | int | str]]
+        Dict[Hashable, Any]
     ] | str | Dict[str, pd.DataFrame]:
         '''
         Get all table elements (display a table)
@@ -733,7 +734,9 @@ class ThermoDB(ManageData):
             if isinstance(tb_data, pd.DataFrame):
                 # ! dataframe
                 # convert to list of dicts
-                tb_list_dict = tb_data.to_dict(orient='records')
+                tb_list_dict:  list[
+                    dict[Hashable, Any]
+                ] = tb_data.to_dict(orient='records')
                 # to json
                 tb_json = tb_data.to_json(orient='records')
 
@@ -1008,7 +1011,9 @@ class ThermoDB(ManageData):
                 # External CSV-backed constants do not provide inline VALUES.
                 if table_values is None:
                     table_values = self.table_data(
-                        databook, table, res_format='list'
+                        databook,
+                        table,
+                        res_format='list'
                     )
 
                 # data no
@@ -1629,6 +1634,7 @@ class ThermoDB(ManageData):
                 return delimiter.join(sorted(parts))
 
             # NOTE: check table type
+            # ! dataframe type
             table_data = self.table_data(
                 databook=databook_id,
                 table=table_id,
@@ -2481,6 +2487,7 @@ class ThermoDB(ManageData):
                 return delimiter.join(sorted(parts))
 
             # NOTE: check table type
+            # ! dataframe type
             table_data = self.table_data(
                 databook=databook_id,
                 table=table_id,
@@ -2839,11 +2846,27 @@ class ThermoDB(ManageData):
         databook: int | str,
         table: int | str,
         res_format: Literal['dataframe', 'list', 'json'] = 'dataframe'
-    ) -> pd.DataFrame | list[dict] | str:
-        """Return all records in a constants table."""
+    ) -> pd.DataFrame | list[dict] | str | Dict[str, pd.DataFrame]:
+        """
+        Return all records in a constants table.
+
+        Parameters
+        ----------
+        databook : int | str
+            The databook id or name.
+        table : int | str
+            The table id or name.
+        res_format : Literal['dataframe', 'list', 'json'], optional
+            The format of the returned result, by default 'dataframe'.
+            - 'dataframe': returns a pandas DataFrame.
+            - 'list': returns a list of dictionaries, where each dictionary represents a record.
+            - 'json': returns a JSON string representation of the data.
+        """
         selected = self.select_table(databook, table)
         if selected['table_type'] != TableTypes.CONSTANTS.value:
             raise ValueError("The selected table is not a constants table.")
+
+        # res
         return self.table_data(databook, table, res_format=res_format)
 
     # SECTION: build thermo property for a component including data, equation, matrix-data and matrix-equation
@@ -3559,8 +3582,10 @@ class ThermoDB(ManageData):
                     # ! build equation
                     # ! reading yml reference
                     # check eq exists
-                    eqs = self.matrix_equation_load(
-                        databook_id, table_id)
+                    eqs: TableMatrixEquation = self.matrix_equation_load(
+                        databook=databook_id,
+                        table=table_id
+                    )
 
                     # NOTE: update trans_data
                     eqs.trans_data_pack = transform_api_data
@@ -4222,7 +4247,8 @@ class ThermoDB(ManageData):
             for db_index, (_, tables) in enumerate(table_ref.databook_bulk.items()):
                 for table_index, table in enumerate(tables):
                     if table.get('table_type') == TableTypes.CONSTANTS.value:
-                        df = table_ref.load_table(db_index + 1, table_index + 1)
+                        df = table_ref.load_table(
+                            db_index + 1, table_index + 1)
                         for row in df.to_dict(orient='records'):
                             records.append({
                                 'databook-name': list(table_ref.databook_bulk.keys())[db_index],
