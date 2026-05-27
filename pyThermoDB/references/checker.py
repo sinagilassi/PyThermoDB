@@ -1,8 +1,6 @@
 # import libs
 import logging
 import pandas as pd
-import json
-from pythermodb_settings.models import ComponentKey
 # Ensure there is no local DataFrame definition that could shadow pandas.DataFrame
 from typing import (
     Union,
@@ -262,7 +260,8 @@ class ReferenceChecker:
 
         Notes
         -----
-        The table type can be 'DATA' or 'EQUATIONS'. For Matrix tables, the type is 'DATA'.
+        - The table type can be 'DATA' or 'EQUATIONS'. For Matrix tables, the type is 'DATA'.
+        - The 'CONSTANTS' table is considered a 'DATA' table.
         """
         try:
             # get table
@@ -282,8 +281,14 @@ class ReferenceChecker:
             if 'MATRIX-SYMBOL' in table:
                 return 'DATA'
 
+            # NOTE: based on CONSTANTS
+            if 'CONSTANTS' in table:
+                return 'DATA'
+
+            # NOTE: default type is DATA
             if 'DATA' in table:
                 return 'DATA'
+
         except Exception as e:
             logging.error(f"Error getting table type: {e}")
             return None
@@ -325,6 +330,45 @@ class ReferenceChecker:
             return True
         except Exception as e:
             logging.error(f"Error checking if table is matrix: {e}")
+            return False
+
+    def is_constants_table(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> bool:
+        """
+        Check if the table is a constants table.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        bool
+            True if the table is a constants table, otherwise False.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return False
+
+            # check if table has 'CONSTANTS' key
+            if not isinstance(table, dict) or 'CONSTANTS' not in table:
+                return False
+
+            # if 'CONSTANTS' key exists, return True
+            return True
+        except Exception as e:
+            logging.error(f"Error checking if table is constants: {e}")
             return False
 
     def get_all_tables_types(
@@ -831,6 +875,50 @@ class ReferenceChecker:
             logging.error(f"Error getting matrix table names: {e}")
             return []
 
+    def get_constants_tables(
+            self,
+            databook_name: str
+    ) -> List[Dict[str, str]]:
+        """
+        Get the names of all `constants tables` in a specific databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+
+        Returns
+        -------
+        List[dict]
+            A list of constants table names in the databook as:
+            - databook name
+            - table name
+        """
+        try:
+            # init res
+            constants_table_names: List[Dict[str, str]] = []
+
+            # get databook tables
+            tables = self.get_databook_tables(databook_name)
+
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return constants_table_names
+
+            # SECTION: get constants table names
+
+            for table_name in tables.keys():
+                if self.is_constants_table(databook_name, table_name):
+                    constants_table_names.append({
+                        'Databook': databook_name,
+                        'Table': table_name
+                    })
+
+            return constants_table_names
+        except Exception as e:
+            logging.error(f"Error getting constants table names: {e}")
+            return constants_table_names
+
     def get_all_matrix_tables(self):
         """
         Get the names of all `matrix tables` in all databooks.
@@ -861,6 +949,37 @@ class ReferenceChecker:
             logging.error(f"Error getting all matrix table names: {e}")
             return []
 
+    def get_all_constants_tables(self):
+        """
+        Get the names of all `constants tables` in all databooks.
+
+        Returns
+        -------
+        List[dict]
+            A list of constants table names in all databooks as:
+            - databook name
+            - table name
+        """
+        try:
+            # get databook names
+            databook_names = self.get_databook_names()
+
+            if not databook_names:
+                logging.error("No databooks found in the reference.")
+                return []
+
+            # SECTION: get constants table names
+            all_constants_table_names = []
+            for databook_name in databook_names:
+                constants_tables = self.get_constants_tables(databook_name)
+                all_constants_table_names.extend(constants_tables)
+
+            return all_constants_table_names
+        except Exception as e:
+            logging.error(f"Error getting all constants table names: {e}")
+            return []
+
+    # NOTE: get table components
     def get_table_components(
         self,
         databook_name: str,
@@ -1634,11 +1753,11 @@ class ReferenceChecker:
 
         ```yaml
         TABLE_NAME:
-          MATRIX-SYMBOL:
-            - Description1: Symbol1
-            - Description2: Symbol2
-            - Symbol3
-            - Symbol4
+            MATRIX-SYMBOL:
+                - Description1: Symbol1
+                - Description2: Symbol2
+                - Symbol3
+                - Symbol4
         ```
 
         Then they are converted to a dictionary as:
@@ -1694,7 +1813,8 @@ class ReferenceChecker:
 
         Returns
         -------
-
+        Optional[Dict[str, Dict[str, Any]]]
+            A dictionary containing the components data if it exists, otherwise None.
         """
         try:
             # SECTION: get table data
