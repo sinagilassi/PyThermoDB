@@ -694,9 +694,13 @@ class ThermoDB(ManageData):
         res_format: Literal[
             'dataframe', 'list', 'json'
         ] = 'dataframe'
-    ) -> pd.DataFrame | List[
-        Dict[Hashable, Any]
-    ] | str | Dict[str, pd.DataFrame]:
+    ) -> Union[
+        pd.DataFrame, List[
+            Dict[Hashable, Any]
+        ],
+        str,
+        Dict[str, pd.DataFrame]
+    ]:
         '''
         Get all table elements (display a table)
 
@@ -711,7 +715,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        tb_data : Pandas.DataFrame | list | str
+        tb_data : Union[pandas.DataFrame, list[dict], str, dict[str, pandas.DataFrame]]
             table data in the specified format.
         '''
         try:
@@ -854,7 +858,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        object : TableConstants
+        object : TableData
             table object with data loaded
         '''
         try:
@@ -1015,6 +1019,10 @@ class ThermoDB(ManageData):
                         table,
                         res_format='list'
                     )
+
+                    # >> check
+                    if not isinstance(table_values, list):
+                        raise ValueError("Table values is not a list!")
 
                 # data no
                 return TableConstants(
@@ -1936,7 +1944,31 @@ class ThermoDB(ManageData):
         search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
         res_format: Literal['dict', 'json', 'str'] = 'dict'
     ):
-        """Check whether a table-wide constant exists in a constants table."""
+        """
+        Check whether a table-wide constant exists in a constants table.
+
+        Parameters
+        ----------
+        constant : str
+            Name or symbol of the constant to check.
+        databook : int | str
+            Databook id or name.
+        table : int | str
+            Table id or name.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Whether to search by constant name, symbol, or both, by default 'BOTH'.
+        res_format : Literal['dict', 'json', 'str'], optional
+            Format of the returned result, by default 'dict'.
+
+        Returns
+        -------
+        str | dict[str, str]
+            Summary of the constant availability as a string or dictionary in the specified format.
+
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'constant': name or symbol of the constant,
+        """
         constants = self.constants_load(databook, table)
         availability = constants.is_constant_available(
             constant, search_mode=search_mode
@@ -1963,15 +1995,38 @@ class ThermoDB(ManageData):
         search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
         res_format: Literal['dict', 'json', 'str'] = 'dict'
     ):
-        """Check several table-wide constants in one constants table."""
+        """
+        Check several table-wide constants in one constants table.
+
+        Parameters
+        ----------
+        constants : list[str]
+            List of constant names or symbols to check.
+        databook : int | str
+            Databook id or name.
+        table : int | str
+            Table id or name.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Whether to search by constant name, symbol, or both, by default 'BOTH'.
+        res_format : Literal['dict', 'json', 'str'], optional
+            Format of the returned result, by default 'dict'.
+
+        """
         if not constants:
             raise ValueError('constants must be a non-empty list.')
-        results = [
-            self.check_constant(
+
+        # Build results through a narrowed variable because check_constant can
+        # also return serialized output for its public formatting options.
+        results: list[dict[str, Any]] = []
+        for constant in constants:
+            item = self.check_constant(
                 constant, databook, table, search_mode, res_format='dict'
             )
-            for constant in constants
-        ]
+            if not isinstance(item, dict):
+                raise ValueError('Each result must be a dictionary.')
+            results.append(item)
+
+        # overall availability
         result = {
             'databook_name': results[0]['databook_name'],
             'table_name': results[0]['table_name'],
@@ -1992,7 +2047,25 @@ class ThermoDB(ManageData):
         table: int | str,
         search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
     ) -> bool:
-        """Return whether a constant exists in a selected constants table."""
+        """
+        Return whether a constant exists in a selected constants table.
+
+        Parameters
+        ----------
+        constant : str
+            Name or symbol of the constant to check.
+        databook : int | str
+            Databook id or name.
+        table : int | str
+            Table id or name.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Whether to search by constant name, symbol, or both, by default 'BOTH'.
+
+        Returns
+        -------
+        bool
+            True if the constant is available, False otherwise.
+        """
         return self.constants_load(
             databook, table
         ).is_constant_available(
@@ -2004,7 +2077,8 @@ class ThermoDB(ManageData):
             self,
             component_name: str | list,
             databook_id: int,
-            table_id: int):
+            table_id: int
+    ) -> None:
         '''
         Check component availability in the selected databook and table
 
@@ -2021,54 +2095,12 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        comp_info : str
+        object : None
             component information
         '''
         try:
-            # check databook_id and table_id are number or not
-            if isNumber(databook_id) and isNumber(table_id):
-                # set api
-                ManageC = Manage(API_URL, databook_id, table_id)
-                # search
-                compList = ManageC.component_list()
-                # check availability
-                # uppercase list
-                compListUpper = uppercaseStringList(compList)
-                if len(compList) > 0:
-                    # get databook
-                    databook_name = self.list_databooks(res_format='list')[
-                        databook_id-1]
-                    # get table
-                    # table_name = self.list_tables(databook=databook_id, res_format='list')[
-                    #     table_id-1][0]
-
-                    list_tables_ = self.list_tables(
-                        databook=databook_id,
-                        res_format='list'
-                    )
-
-                    # set
-                    table_id_ = table_id - 1
-
-                    # check
-                    if len(list_tables_) > 0:
-                        # get table name
-
-                        table_name = "Obsolete Table"
-
-                    # check
-                    # if component_name.upper() in compListUpper:
-                    #     print(
-                    #         f"[{component_name}] available in [{table_name}] | [{databook_name}]")
-                    # else:
-                    #     print(f"{component_name} is not available.")
-                else:
-                    print("API error. Please try again later.")
-
-                return None
-            else:
-                raise Exception(
-                    "Invalid input. Please check the input type (databook_id and table_id).")
+            # obsolete
+            return None
         except Exception as e:
             raise Exception(f'Checking data error {e}')
 
