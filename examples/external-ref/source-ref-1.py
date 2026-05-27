@@ -246,6 +246,15 @@ print(tb_const.get_constant('R', message="gas constant"))
 print(tb_const.get_constant('dH_rxn', message="enthalpy of reaction"))
 print(tb_const.get_constant('X', message="custom constants"))
 
+
+# Custom-Constants-2
+tb_const2: TableConstants = thermo_db.build_constants(
+    'CUSTOM-REF-1',
+    'Custom-Constants-2'
+)
+print(tb_const2.table_columns)
+print(tb_const2.table_values)
+
 # ====================================
 # BUILD THERMODB
 # ====================================
@@ -261,6 +270,8 @@ thermo_db.add_data('vapor-pressure', comp1_eq_1)
 thermo_db.add_data('heat-capacity', comp1_eq_2)
 # add table-wide constants
 thermo_db.add_data('custom-constants', tb_const)
+# add table-wide constants
+thermo_db.add_data('custom-constants-2', tb_const2)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
@@ -308,6 +319,9 @@ print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 print(thermo_db_loaded.retrieve('custom-constants | R', message="gas constant"))
 print(thermo_db_loaded.retrieve(
     'custom-constants | dH_rxn', message="enthalpy of reaction"))
+
+print(thermo_db_loaded.retrieve(
+    'custom-constants-2 | dG_rxn', message="Gibbs free energy  of reaction"))
 
 # ====================================
 # SELECT A FUNCTION
