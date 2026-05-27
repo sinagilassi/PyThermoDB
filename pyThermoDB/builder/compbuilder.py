@@ -614,6 +614,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
+    # NOTE: select function (case-sensitive)
     def select_function(
         self,
         function_name: str
@@ -658,6 +659,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a function failed!, ', e)
 
+    # SECTION: select property/function (case-sensitive)
     def select(
         self,
         thermo_name: str
@@ -728,6 +730,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a thermodynamic property failed!, ', e)
 
+    # NOTE: retrieve property/function by source string
     def retrieve(
         self,
         property_source: str,
@@ -845,6 +848,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Retrieving failed!, ", e)
 
+    # SECTION: save/load using pickle
     def save(
         self,
         filename: str,
@@ -896,6 +900,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Saving CompBuilder instance failed!, {e}')
             return False
 
+    # NOTE: load using pickle
     @classmethod
     def load(cls, filename: str):
         """
@@ -917,6 +922,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Loading CompBuilder instance failed!", e)
 
+    # NOTE: clean all data including properties/functions/constants
     def clean(self) -> bool:
         '''
         Clean all data including properties/functions
@@ -939,6 +945,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Cleaning properties/functions failed!, {e}')
             return False
 
+    # NOTE: get all functions' structures
     def all_function_details(self):
         '''
         Retrieve all functions' structures in the thermodb.
@@ -977,6 +984,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting equations structure failed!, {e}')
             return None
 
+    # NOTE: get all functions' identifiers
     def all_function_identifiers(self):
         '''
         Retrieve all functions' identifiers in the thermodb.
@@ -1015,6 +1023,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting equations identifiers failed!, {e}')
             return None
 
+    # NOTE: get all data structures
     def all_data_details(self):
         '''
         Retrieve all data's structures in the thermodb.
@@ -1053,6 +1062,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting data structure failed!, {e}')
             return None
 
+    # NOTE: get all data identifiers
     def all_data_identifiers(self):
         '''
         Retrieve all data's identifiers in the thermodb.
@@ -1091,6 +1101,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting data identifiers failed!, {e}')
             return None
 
+    # NOTE: get all data symbol labels
     def all_data_id_labels(self):
         '''
         Retrieve all data's symbol labels in the thermodb.
