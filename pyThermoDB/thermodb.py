@@ -46,6 +46,8 @@ logger = logging.getLogger(__name__)
 
 # SECTION: define types
 
+# NOTE: define model for component
+
 
 class ComponentThermoDB(BaseModel):
     """
@@ -77,6 +79,8 @@ class ComponentThermoDB(BaseModel):
         extra='allow'
     )
 
+# NOTE: define model for mixture
+
 
 class MixtureThermoDB(BaseModel):
     """
@@ -107,6 +111,30 @@ class MixtureThermoDB(BaseModel):
         arbitrary_types_allowed=True,
         extra='allow'
     )
+
+# NOTE: define model for constants
+
+
+class ConstantsThermoDB(BaseModel):
+    """
+    Model for constants thermodynamic database (ThermoDB).
+
+    Attributes
+    ----------
+    thermodb: CompBuilder
+        The thermodynamic database builder instance.
+    """
+    thermodb: CompBuilder = Field(
+        ...,
+        description="The thermodynamic database builder instance."
+    )
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        extra='allow'
+    )
+
+# SECTION: build thermodb for single component
 
 
 @measure_time
@@ -2239,6 +2267,8 @@ def check_and_build_mixture_thermodb(
     except Exception as e:
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
+# SECTION: build component thermodb from reference
+
 
 @measure_time
 def build_component_thermodb_from_reference(
@@ -2671,6 +2701,8 @@ def build_component_thermodb_from_reference(
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
+
+# SECTION: build mixture thermodb from reference
 
 @measure_time
 def build_mixture_thermodb_from_reference(
@@ -3288,3 +3320,9 @@ def build_mixture_thermodb_from_reference(
     except Exception as e:
         raise Exception(
             f"Building mixture:::{mixture_ids} thermodb failed! {e}")
+
+# SECTION: build constants thermodb from reference
+
+
+def build_constants_thermodb_from_reference():
+    pass
