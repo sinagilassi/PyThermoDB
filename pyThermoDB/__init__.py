@@ -24,8 +24,10 @@ from .thermodb import (
     check_and_build_components_thermodb,
     build_mixture_thermodb_from_reference,
     check_and_build_mixture_thermodb,
+    build_constants_thermodb_from_reference,
     ComponentThermoDB,
-    MixtureThermoDB
+    MixtureThermoDB,
+    ConstantsThermoDB
 )
 
 __all__ = [
@@ -52,6 +54,8 @@ __all__ = [
     'check_and_build_components_thermodb',
     'build_mixture_thermodb_from_reference',
     'check_and_build_mixture_thermodb',
+    'build_constants_thermodb_from_reference',
     'ComponentThermoDB',
-    'MixtureThermoDB'
+    'MixtureThermoDB',
+    'ConstantsThermoDB'
 ]

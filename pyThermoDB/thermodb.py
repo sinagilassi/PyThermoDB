@@ -8,6 +8,7 @@ from typing import (
     List,
     Union,
     Literal,
+    Any,
     cast
 )
 from pydantic import (
@@ -24,6 +25,14 @@ from pythermodb_settings.models import (
 from pythermodb_settings.utils import measure_time
 # local
 from .app import init, build_thermodb
+from .docs.thermo import ThermoProperty
+from .core import (
+    TableConstants,
+    TableData,
+    TableEquation,
+    TableMatrixData,
+    TableMatrixEquation
+)
 from .references import ReferenceConfig, ReferenceChecker
 from .utils import (
     set_component_id,
@@ -127,6 +136,9 @@ class ConstantsThermoDB(BaseModel):
     thermodb: CompBuilder = Field(
         ...,
         description="The thermodynamic database builder instance."
+    )
+    reference_thermodb: Optional[ReferenceThermoDB] = Field(
+        None, description="Reference thermodynamic database."
     )
 
     model_config = ConfigDict(
@@ -817,7 +829,7 @@ def check_and_build_component_thermodb(
                     )
                 else:
                     # ! build_thermo_property with component object
-                    item_ = thermodb.build_components_thermo_property(
+                    item_: ThermoProperty = thermodb.build_components_thermo_property(
                         components=[component],
                         databook=databook_,
                         table=table_,
@@ -1590,7 +1602,7 @@ def check_and_build_components_thermodb(
             # ! create Tables [TableMatrixData]
             # >> build thermo based on Component object (consider state)
             try:
-                item_ = thermodb.build_components_thermo_property(
+                item_: ThermoProperty = thermodb.build_components_thermo_property(
                     components=components,
                     databook=databook_,
                     table=table_,
@@ -2138,7 +2150,7 @@ def check_and_build_mixture_thermodb(
             # ! create Tables [TableMatrixData]
             # >> build thermo based on Component object (consider state)
             try:
-                item_ = thermodb.build_components_thermo_property(
+                item_: ThermoProperty = thermodb.build_components_thermo_property(
                     components=components,
                     databook=databook_,
                     table=table_,
@@ -2555,7 +2567,7 @@ def build_component_thermodb_from_reference(
                     )
                 else:
                     # ! build_components_thermo_property
-                    item_ = thermodb.build_components_thermo_property(
+                    item_: ThermoProperty = thermodb.build_components_thermo_property(
                         components=[component_],
                         databook=databook_,
                         table=table_,
@@ -3172,7 +3184,7 @@ def build_mixture_thermodb_from_reference(
             # NOTE: ignore state during the build if specified
             try:
                 # ! build_components_thermo_property
-                item_ = thermodb.build_components_thermo_property(
+                item_: ThermoProperty = thermodb.build_components_thermo_property(
                     components=components,
                     databook=databook_,
                     table=table_,
@@ -3324,5 +3336,278 @@ def build_mixture_thermodb_from_reference(
 # SECTION: build constants thermodb from reference
 
 
-def build_constants_thermodb_from_reference():
-    pass
+@measure_time
+def build_constants_thermodb_from_reference(
+    reference_content: str,
+    constants: Optional[Union[str, List[str]]] = None,
+    databook_name: Optional[str] = None,
+    table_name: Optional[str] = None,
+    search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
+    thermodb_name: Optional[str] = None,
+    message: Optional[str] = None,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
+    verbose: Optional[bool] = False,
+    **kwargs
+) -> Optional[ConstantsThermoDB]:
+    """
+    Build a thermodb containing table-wide constants from reference content.
+
+    Parameters
+    ----------
+    reference_content : str
+        String content or path of the reference containing databook and tables.
+    constants : str | list[str], optional
+        Constant names or symbols to require. If omitted, all constants tables are
+        included.
+    databook_name : str, optional
+        Databook name to restrict the constants search.
+    table_name : str, optional
+        Constants table name to restrict the constants search.
+    search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+        Constant lookup mode when constants are provided, by default 'BOTH'.
+    thermodb_name : str, optional
+        Name of the thermodb to build.
+    message : str, optional
+        Thermodb description.
+    thermodb_save : bool, optional
+        Whether to save the built thermodb, by default False.
+    thermodb_save_path : str, optional
+        Path to save the thermodb when thermodb_save is True.
+    verbose : bool, optional
+        Whether to enable verbose logging, by default False.
+
+    Returns
+    -------
+    ConstantsThermoDB | None
+        ConstantsThermoDB object containing the built thermodb, or None when no
+        constants tables match.
+    """
+    try:
+        if verbose:
+            start_time = time.time()
+            logging.info("Building constants thermodb from reference...")
+
+        if not isinstance(reference_content, str):
+            raise TypeError("reference_content must be a string")
+
+        if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
+            raise ValueError(
+                "search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
+
+        if constants is None:
+            constants_ = []
+        elif isinstance(constants, str):
+            constants_ = [constants]
+        elif isinstance(constants, list) and all(isinstance(c, str) for c in constants):
+            constants_ = constants
+        else:
+            raise TypeError(
+                "constants must be a string, a list of strings, or None")
+
+        # SECTION: create ReferenceChecker instance
+        ReferenceChecker_ = ReferenceChecker(reference_content)
+
+        # NOTE: load databooks
+        if databook_name is not None:
+            databooks = [databook_name]
+        else:
+            databooks = ReferenceChecker_.get_databook_names()
+
+        if not isinstance(databooks, list) or not databooks:
+            raise ValueError("No databooks found in the reference content.")
+
+        # SECTION: find constants tables
+        constants_table_refs: List[Dict[str, str]] = []
+        for db_name in databooks:
+            if table_name is not None:
+                if ReferenceChecker_.is_constants_table(db_name, table_name):
+                    constants_table_refs.append({
+                        'Databook': db_name,
+                        'Table': table_name
+                    })
+                else:
+                    logging.warning(
+                        f"Table '{table_name}' in databook '{db_name}' is not a constants table.")
+                continue
+
+            constants_table_refs.extend(
+                ReferenceChecker_.get_constants_tables(db_name)
+            )
+
+        if not constants_table_refs:
+            logger.error("No constants tables found in the reference content.")
+            return None
+
+        # SECTION: filter constants tables by requested constants
+        selected_table_refs: List[Dict[str, str]] = []
+        for table_ref in constants_table_refs:
+            db_name = table_ref['Databook']
+            tb_name = table_ref['Table']
+
+            if not constants_:
+                selected_table_refs.append(table_ref)
+                continue
+
+            table_availability: Dict[str, Dict[str, Any]] = {}
+            for constant in constants_:
+                check_res = ReferenceChecker_.check_constant_availability(
+                    databook_name=db_name,
+                    table_name=tb_name,
+                    constant=constant,
+                    search_mode=search_mode
+                )
+                table_availability[constant] = check_res
+
+            if any(item.get('available', False) for item in table_availability.values()):
+                selected_table_refs.append(table_ref)
+
+        if not selected_table_refs:
+            logger.error(
+                f"No constants tables matched requested constants: {constants_}."
+            )
+            return None
+
+        # SECTION: build thermodb source objects
+        res: Dict[str, TableConstants] = {}
+        configs: Dict[str, ComponentConfig] = {}
+        rules: Dict[str, Dict[str, str]] = {'CONSTANTS': {}}
+        labels: List[str] = []
+
+        for table_ref in selected_table_refs:
+            db_name = table_ref['Databook']
+            tb_name = table_ref['Table']
+            table_structure = ReferenceChecker_.get_table_structure(
+                db_name,
+                tb_name
+            )
+            records = ReferenceChecker_.get_constants_table_data(
+                db_name,
+                tb_name
+            )
+
+            if table_structure is None or records is None:
+                logging.error(
+                    f"Constants table '{tb_name}' in databook '{db_name}' is invalid.")
+                continue
+
+            columns = table_structure.get('COLUMNS', [])
+            if not isinstance(columns, list):
+                logging.error(
+                    f"Constants table '{tb_name}' in databook '{db_name}' has invalid columns.")
+                continue
+
+            table_values = [
+                [record.get(column, None) for column in columns]
+                for record in records
+            ]
+
+            constants_item = TableConstants(
+                databook_name=db_name,
+                table_name=tb_name,
+                table_data=table_structure,
+                table_values=table_values,
+                table_structure=table_structure
+            )
+
+            source_name = tb_name
+            if source_name in res:
+                source_name = f"{db_name}::{tb_name}"
+
+            res[source_name] = constants_item
+
+            constants_mapping = ReferenceChecker_.get_constants_mapping(
+                db_name,
+                tb_name
+            )
+            rules['CONSTANTS'].update(constants_mapping)
+            labels.extend(list(constants_mapping.values()))
+            configs[source_name] = {
+                'databook': db_name,
+                'table': tb_name,
+                'mode': 'CONSTANTS',
+                'labels': constants_mapping
+            }
+
+        if not res:
+            logger.error("No valid constants tables were built.")
+            return None
+
+        # SECTION: build constants thermodb
+        if thermodb_name is None:
+            thermodb_name = 'constants'
+        if message is None:
+            source_names = ', '.join(list(res.keys()))
+            message = f"Thermodb including constants sources: {source_names}"
+
+        thermodb_comp = build_thermodb(
+            thermodb_name=thermodb_name,
+            message=message
+        )
+
+        for source_name, source_value in res.items():
+            add_data_res_ = thermodb_comp.add_data(
+                source_name,
+                source_value
+            )
+            if verbose:
+                if add_data_res_:
+                    logging.info(
+                        f"Constants source '{source_name}' added successfully to thermodb '{thermodb_name}'.")
+                else:
+                    logging.error(
+                        f"Adding constants source '{source_name}' to thermodb '{thermodb_name}' failed.")
+
+        if thermodb_save:
+            thermodb_save_path = check_file_path(
+                file_path=thermodb_save_path,
+                default_path=None,
+                create_dir=True
+            )
+            save_res_ = thermodb_comp.save(
+                filename=thermodb_name,
+                file_path=thermodb_save_path
+            )
+            if verbose:
+                if save_res_:
+                    logging.info(
+                        f"Constants thermodb '{thermodb_name}' saved successfully at '{thermodb_save_path}'.")
+                else:
+                    logging.error(
+                        f"Saving constants thermodb '{thermodb_name}' at '{thermodb_save_path}' failed.")
+        else:
+            build_res_ = thermodb_comp.build()
+            if verbose:
+                if build_res_:
+                    logging.info(
+                        f"Constants thermodb '{thermodb_name}' built successfully.")
+                else:
+                    logging.error(
+                        f"Building constants thermodb '{thermodb_name}' failed.")
+
+        reference: CustomReference = {'reference': [reference_content]}
+        reference_thermodb = ReferenceThermoDB(
+            reference=reference,
+            contents=[reference_content],
+            configs=configs,
+            rules=rules,
+            labels=list(set(labels)),
+            ignore_labels=[],
+            ignore_props=[]
+        )
+
+        constants_thermodb = ConstantsThermoDB(
+            thermodb=thermodb_comp,
+            reference_thermodb=reference_thermodb
+        )
+
+        if verbose:
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            logging.info(
+                f"Constants thermodb check and build completed in {elapsed_time:.2f} seconds."
+            )
+
+        return constants_thermodb
+    except Exception as e:
+        raise Exception(f"Building constants thermodb failed! {e}")
