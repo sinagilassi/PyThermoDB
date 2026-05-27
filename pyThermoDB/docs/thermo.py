@@ -4007,17 +4007,28 @@ class ThermoDB(ManageData):
             raise Exception(f'Building matrix data error {e}')
 
     # SECTION: constants property
+    # NOTE: build all constants
     def build_constants_property(
         self,
-        constant: str | int,
         databook: int | str,
         table: int | str,
-        message: Optional[str] = None
     ):
-        """Build a constants table and select one constant from it."""
-        return self.build_constants(databook, table).get_constant(
-            constant, message=message
-        )
+        """
+        Build a full table-wide constants source.
+
+        Parameters
+        ----------
+        databook : int | str
+            Databook id or name, id is non-zero-based
+        table : int | str
+            Table id or name, id is non-zero-based
+
+        Returns
+        -------
+        TableConstants
+            A constants table object containing all constants from the specified databook and table.
+        """
+        return self.build_constants(databook, table)
 
     # NOTE: build constants
     def build_constants(
@@ -4025,7 +4036,21 @@ class ThermoDB(ManageData):
         databook: int | str,
         table: int | str
     ) -> TableConstants:
-        """Build a full table-wide constants source."""
+        """
+        Build a full table-wide constants source.
+
+        Parameters
+        ----------
+        databook : int | str
+            Databook id or name, id is non-zero-based
+        table : int | str
+            Table id or name, id is non-zero-based
+
+        Returns
+        -------
+        TableConstants
+            A constants table object containing all constants from the specified databook and table.
+        """
         return self.constants_load(databook, table)
 
     # NOTE: search databook
