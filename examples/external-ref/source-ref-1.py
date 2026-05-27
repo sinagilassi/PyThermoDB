@@ -103,7 +103,6 @@ print(tb_const.table_columns)
 print(tb_const.table_values)
 print(tb_const.get_constant('R'))
 
-
 # ===============================
 # TABLE LOAD
 # ===============================
@@ -289,6 +288,8 @@ print(prop1_.get_property('MW'))
 _src = 'general | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 print(thermo_db_loaded.retrieve('custom-constants | R', message="gas constant"))
+print(thermo_db_loaded.retrieve(
+    'custom-constants | dH_rxn', message="enthalpy of reaction"))
 
 # ====================================
 # SELECT A FUNCTION

@@ -452,7 +452,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Checking library failed!, {e}')
             return {}
 
-    def check_properties(self) -> dict[str, TableData | TableMatrixData]:
+    def check_properties(self) -> dict[str, TableData | TableMatrixData | TableConstants]:
         '''
         Check properties
 
@@ -493,7 +493,7 @@ class CompBuilder(CompExporter):
     def check_property(
         self,
         thermo_name: str
-    ) -> TableData | TableMatrixData:
+    ) -> TableData | TableMatrixData | TableConstants:
         '''
         Check properties
 
@@ -504,7 +504,7 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData
+        TableMatrixData | TableData | TableConstants
             property registered
         '''
         try:
@@ -516,9 +516,9 @@ class CompBuilder(CompExporter):
     def select_property(
         self,
         thermo_name: str
-    ) -> TableData | TableMatrixData:
+    ) -> TableData | TableMatrixData | TableConstants:
         '''
-        Select a thermodynamic property (TableData or TableMatrixData) registered in the thermodb, case-sensitive.
+        Select a thermodynamic property registered in the thermodb, case-sensitive.
 
         Parameters
         ----------
@@ -527,7 +527,7 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData
+        TableMatrixData | TableData | TableConstants
             property registered in the thermodb
         '''
         try:
@@ -664,6 +664,7 @@ class CompBuilder(CompExporter):
     ) -> Union[
         TableData,
         TableMatrixData,
+        TableConstants,
         TableEquation,
         TableMatrixEquation
     ]:
@@ -677,7 +678,7 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData | TableEquation | TableMatrixEquation
+        TableMatrixData | TableData | TableConstants | TableEquation | TableMatrixEquation
             property defined in the thermodb
         '''
         try:
@@ -736,7 +737,7 @@ class CompBuilder(CompExporter):
         ] = 'alphabetic'
     ):
         '''
-        Retrieve a thermodynamic property from the thermodb for only TableData and TableMatrixData
+        Retrieve a thermodynamic property from TableData, TableConstants, or TableMatrixData.
 
         Parameters
         ----------
