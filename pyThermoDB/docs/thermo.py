@@ -2080,6 +2080,7 @@ class ThermoDB(ManageData):
             logger.error(f'Checking data error {e}')
             return False
 
+    # SECTION: get component data
     def get_component_data(
         self,
         component_name: str,
@@ -2149,6 +2150,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Loading data failed {e}")
 
+    # NOTE: get component data with API
     def get_component_data_api(
             self,
             component_name: str,
@@ -2198,7 +2200,7 @@ class ThermoDB(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
-    # SECTION: local data
+    # NOTE: get component data with local files
     def get_component_data_local(
         self,
         component_name: str,
@@ -2299,6 +2301,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
+    # NOTE: get binary mixture data with component objects
     def get_binary_mixture_data(
         self,
         components: List[Component],
@@ -2637,6 +2640,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
 
+    # NOTE: get mixtures data with component objects
     def get_mixtures_data(
         self,
         components: List[Component],
@@ -2766,6 +2770,14 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error creating mixtures: {e}")
 
+    # NOTE: get constants
+    def get_constants_data(
+            self,
+    ):
+        pass
+
+    # SECTION: build thermo property for a component including data, equation, matrix-data and matrix-equation
+
     def build_thermo_property(
         self,
         component_names: list[str],
@@ -2881,6 +2893,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
 
+    # NOTE: build thermo property for a component including data, equation, matrix-data and matrix-equation
     def build_components_thermo_property(
         self,
         components: List[Component],
@@ -3158,6 +3171,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
 
+    # NOTE: build equation for a component
     def build_equation(
         self,
         component_name: str,
@@ -3260,6 +3274,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building equation error {e}')
 
+    # NOTE: build data for a component
     def build_data(
         self,
         component_name: str,
@@ -3337,15 +3352,16 @@ class ThermoDB(ManageData):
                     # ! check data type
                     _data_type = TransDataC.data_type
                     if _data_type != 'data':
-                        logger.error("The selected table contains no data for building\
-                            data! check table id and try again.")
+                        logger.error(
+                            "The selected table contains no data for building data! check table id and try again."
+                        )
 
                         raise Exception('Building data failed!')
 
                     # ! build data
                     # * construct template
                     # check eq exists
-                    dts = self.data_load(
+                    dts: TableData = self.data_load(
                         databook_id,
                         table_id
                     )
@@ -3369,6 +3385,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building data error {e}')
 
+    # NOTE: build matrix-equation for components
     def build_matrix_equation(
         self,
         component_names: list[str],
@@ -3492,6 +3509,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix-equation error {e}')
 
+    # NOTE: build matrix-data for components
     def build_matrix_data(
         self,
         component_names: list[str],
@@ -3730,6 +3748,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
 
+    # NOTE: build matrices-data for components
     def build_matrices_data(
         self,
         component_names: list[str],
@@ -3859,6 +3878,24 @@ class ThermoDB(ManageData):
                 raise Exception('Building data failed!')
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
+
+    # SECTION: constants property
+    def build_constants_property(
+        self,
+        component_names: list[str],
+        databook: int | str,
+        table: int | str,
+        **kwargs
+    ):
+        pass
+
+    # NOTE: build constants
+    def build_constants(
+            self,
+    ):
+        pass
+
+    # NOTE: search databook
 
     def __search_databook(
         self,
@@ -4069,3 +4106,9 @@ class ThermoDB(ManageData):
 
         except Exception as e:
             raise Exception(f'Listing component info error {e}')
+
+    # NOTE: list constants
+    def list_constants(
+            self,
+    ):
+        pass
