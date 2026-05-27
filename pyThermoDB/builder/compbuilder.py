@@ -572,6 +572,100 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a property failed!, ', e)
 
+    # NOTE: check constants
+    def check_constants(self) -> dict[str, TableConstants]:
+        '''
+        Check all constants sources.
+
+        Returns
+        -------
+        dict
+            all TableConstants sources registered in the thermodb
+        '''
+        try:
+            return {
+                name: value for name, value in self.properties.items()
+                if isinstance(value, TableConstants)
+            }
+        except Exception as e:
+            raise Exception('Checking constants failed!, ', e)
+
+    # NOTE: check constants source availability by name
+    def is_constant_available(
+        self,
+        constant_name: str
+    ) -> bool:
+        '''
+        Check if a constants source is available in the thermodb.
+
+        Parameters
+        ----------
+        constant_name : str
+            name of the constants source
+
+        Returns
+        -------
+        bool
+            True if available
+        '''
+        try:
+            return constant_name in self.check_constants()
+        except Exception as e:
+            raise Exception('Checking constants availability failed!, ', e)
+
+    # NOTE: check constants source by name
+    def check_constant(
+        self,
+        constant_name: str
+    ) -> TableConstants:
+        '''
+        Check a constants source by name.
+
+        Parameters
+        ----------
+        constant_name : str
+            name of the constants source
+
+        Returns
+        -------
+        TableConstants
+            constants source registered in the thermodb
+        '''
+        try:
+            return self.check_constants()[constant_name]
+        except Exception as e:
+            raise Exception('Checking constants failed!, ', e)
+
+    # NOTE: select constants source (case-insensitive)
+    def select_constant(
+        self,
+        constant_name: str
+    ) -> TableConstants:
+        '''
+        Select a constants source registered in the thermodb, case-insensitive.
+
+        Parameters
+        ----------
+        constant_name : str
+            name of the constants source
+
+        Returns
+        -------
+        TableConstants
+            constants source registered in the thermodb
+        '''
+        try:
+            constant_name = constant_name.strip().lower()
+            constants = self.check_constants()
+
+            for name, value in constants.items():
+                if name.lower().strip() == constant_name:
+                    return value
+
+            raise Exception('Constants source not found in the thermodb!')
+        except Exception as e:
+            raise Exception('Selecting constants failed!, ', e)
+
     # NOTE: check functions
     def check_functions(self) -> dict[str, TableEquation | TableMatrixEquation]:
         '''
