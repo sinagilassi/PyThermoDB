@@ -17,7 +17,12 @@ from .reference_utils import (
     is_table_available,
     is_databook_available,
     look_up_binary_mixture_reference_config,
-    look_up_mixture_reference_config
+    look_up_mixture_reference_config,
+    _normalize_constant_reference_config,
+    _normalize_constants_filter,
+    _constant_config_labels,
+    _is_constants_table_type,
+    _build_constant_sources
 )
 from .core_utils import has_prop_nested
 from .extractor import YAMLExtractor
@@ -45,6 +50,11 @@ __all__ = [
     "create_binary_mixture_id",
     "look_up_binary_mixture_reference_config",
     "look_up_mixture_reference_config",
+    "_normalize_constant_reference_config",
+    "_normalize_constants_filter",
+    "_constant_config_labels",
+    "_is_constants_table_type",
+    "_build_constant_sources",
     "create_mixture_ids",
     "create_binary_mixtures",
     "create_mixture_from_components",
