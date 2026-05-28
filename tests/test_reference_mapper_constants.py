@@ -17,12 +17,12 @@ def test_constants_reference_mapper_builds_all_constants_rules():
 
     assert reference_thermodb is not None
     assert set(reference_thermodb.configs) == {
-        "Custom-Constants",
-        "Custom-Constants-2",
+        "CUSTOM-REF-1::Custom-Constants",
+        "CUSTOM-REF-1::Custom-Constants-2",
     }
-    assert reference_thermodb.configs["Custom-Constants"]["mode"] == "CONSTANTS"
-    assert reference_thermodb.configs["Custom-Constants"]["databook"] == "CUSTOM-REF-1"
-    assert reference_thermodb.configs["Custom-Constants"]["table"] == "Custom-Constants"
+    assert reference_thermodb.configs["CUSTOM-REF-1::Custom-Constants"]["mode"] == "CONSTANTS"
+    assert reference_thermodb.configs["CUSTOM-REF-1::Custom-Constants"]["databook"] == "CUSTOM-REF-1"
+    assert reference_thermodb.configs["CUSTOM-REF-1::Custom-Constants"]["table"] == "Custom-Constants"
     assert (
         reference_thermodb.rules["CONSTANTS"]["Universal Gas Constant"] == "R"
     )
@@ -39,7 +39,7 @@ def test_constants_reference_mapper_filters_by_constant_symbol():
     )
 
     assert reference_thermodb is not None
-    assert set(reference_thermodb.configs) == {"Custom-Constants-2"}
+    assert set(reference_thermodb.configs) == {"CUSTOM-REF-1::Custom-Constants-2"}
     assert reference_thermodb.rules["CONSTANTS"]["enthalpy of reaction"] == "dG_rxn"
 
 
