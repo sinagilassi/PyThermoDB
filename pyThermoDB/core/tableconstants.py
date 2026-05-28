@@ -58,9 +58,13 @@ class TableConstants:
     def get_constant(
         self,
         constant: str | int,
-        message: Optional[str] = None
-    ) -> ConstantResult:
-        """Retrieve a constant by name, symbol, or its ``No.`` identifier."""
+        message: Optional[str] = None,
+        strict: bool = True
+    ) -> Optional[ConstantResult]:
+        """Retrieve a constant by name, symbol, or its ``No.`` identifier.
+
+        When ``strict`` is ``False``, returns ``None`` if the constant is not found.
+        """
         data = self.data_structure()
         row = None
 
@@ -69,7 +73,8 @@ class TableConstants:
             for column in ('Name', 'Symbol'):
                 if column in data.columns:
                     matches = data[
-                        data[column].astype(str).str.strip().str.lower() == lookup
+                        data[column].astype(
+                            str).str.strip().str.lower() == lookup
                     ]
                     if not matches.empty:
                         row = matches.iloc[0]
@@ -94,6 +99,15 @@ class TableConstants:
             )
 
         if row is None:
+            logger.debug(
+                "Constant lookup miss for %r (databook=%r, table=%r, strict=%s)",
+                constant,
+                self.databook_name,
+                self.table_name,
+                strict,
+            )
+            if not strict:
+                return None
             raise TableLookupError(
                 f"Constant '{constant}' not found!",
                 databook_name=self.databook_name,
