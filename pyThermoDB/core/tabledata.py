@@ -645,6 +645,7 @@ class TableData:
             unit=cast(Optional[str], sr_dict.get('unit')),
             value=cast(Optional[str | float], sr_dict.get('value')),
             message=cast(Optional[str], sr_dict.get('message')),
-            databook_name=cast(Optional[str | int], sr_dict.get('databook_name')),
+            databook_name=cast(Optional[str | int],
+                               sr_dict.get('databook_name')),
             table_name=cast(Optional[str | int], sr_dict.get('table_name')),
         )
