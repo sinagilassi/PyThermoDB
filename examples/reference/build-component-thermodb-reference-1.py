@@ -98,18 +98,18 @@ VaPr = vapor_pressure_eq.cal(T=304.21)
 print(VaPr)
 
 # ! by databook id and table id
-print("[bold magenta]Alternative method (without databook name)[/bold magenta]")
-vapor_pressure_eq = thermo_db.build_equation(
-    comp1,
-    8,
-    3
-)
+# print("[bold magenta]Alternative method (without databook name)[/bold magenta]")
+# vapor_pressure_eq = thermo_db.build_equation(
+#     comp1,
+#     8,
+#     3
+# )
 
-print(vapor_pressure_eq.equation_args())
-print(vapor_pressure_eq.equation_return())
-VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
-VaPr = vapor_pressure_eq.cal(T=304.21)
-print(VaPr)
+# print(vapor_pressure_eq.equation_args())
+# print(vapor_pressure_eq.equation_return())
+# VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
+# VaPr = vapor_pressure_eq.cal(T=304.21)
+# print(VaPr)
 
 # ! by databook name and table name
 print("[bold magenta]Alternative method (by table name)[/bold magenta]")
