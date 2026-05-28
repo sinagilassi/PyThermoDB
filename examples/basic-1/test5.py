@@ -1,12 +1,23 @@
 # import packages/modules
 import os
-import pyThermoDB as ptdb
 from rich import print
+import pyThermoDB as ptdb
+from pyThermoDB import (
+    TableData,
+    TableMatrixData,
+    TableConstants,
+    TableEquation,
+    TableMatrixEquation
+)
 
 # ====================================
 # LOAD THERMODB
 # ====================================
+# NOTE: parent directory
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+
 # ref
+pkl_dir = os.path.join(parent_dir, '..', 'thermodb')
 thermodb_file = 'Acetaldehyde-3.pkl'
 thermodb_path = os.path.join(os.getcwd(), 'tests', thermodb_file)
 print(thermodb_path)
@@ -24,8 +35,18 @@ print(Acetaldehyde_thermodb.check_properties())
 # Acetaldehyde_general = Acetaldehyde_thermodb.check_property('general')
 
 # method 2
-Acetaldehyde_general = Acetaldehyde_thermodb.select('general')
+Acetaldehyde_general: (
+    TableData | TableMatrixData | TableConstants | TableEquation | TableMatrixEquation
+) = Acetaldehyde_thermodb.select(
+    'general')
 print(type(Acetaldehyde_general))
+
+# >> check type
+if not isinstance(Acetaldehyde_general, TableData):
+    raise TypeError(
+        f'Expected Acetaldehyde_general to be of type TableData, but got {type(Acetaldehyde_general)}')
+
+# access property
 print(Acetaldehyde_general.prop_data)
 print(Acetaldehyde_general.get_property('dHf_IG')['value'])
 
