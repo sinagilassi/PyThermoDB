@@ -2279,6 +2279,18 @@ def check_and_build_mixture_thermodb(
     except Exception as e:
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
+# SECTION: build constant thermodb
+
+
+def build_constant_thermodb():
+    pass
+
+# SECTION: check and build constant thermodb
+
+
+def check_and_build_constant_thermodb():
+    pass
+
 # SECTION: build component thermodb from reference
 
 
