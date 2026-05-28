@@ -1969,9 +1969,12 @@ class ThermoDB(ManageData):
             - 'constant': name or symbol of the constant,
         """
         constants = self.constants_load(databook, table)
-        availability = constants.is_constant_available(
-            constant, search_mode=search_mode
-        ).availability
+        availability = self.is_constant_available(
+            constant=constant,
+            databook=databook,
+            table=table,
+            search_mode=search_mode
+        )
         result = {
             'databook_name': constants.databook_name,
             'table_name': constants.table_name,
@@ -2065,11 +2068,15 @@ class ThermoDB(ManageData):
         bool
             True if the constant is available, False otherwise.
         """
-        return self.constants_load(
-            databook, table
-        ).is_constant_available(
-            constant, search_mode=search_mode
-        ).availability
+        constants = self.constants_load(databook, table)
+        checker = getattr(constants, 'is_constant_available', None)
+        if not callable(checker):
+            raise AttributeError(
+                "The constants table object does not expose "
+                "'is_constant_available'."
+            )
+        result = checker(constant, search_mode=search_mode)
+        return bool(getattr(result, 'availability', False))
 
     # NOTE: check component availability with API
     def check_component_api(
