@@ -3,6 +3,12 @@ from typing import Any, Dict, List, Literal, Optional
 
 import pandas as pd
 
+from ..handlers import (
+    TableColumnError,
+    TableConstantsError,
+    TableLookupError,
+    TableValidationError,
+)
 from ..models import ConstantResult, PropertyMatch
 
 
@@ -31,13 +37,23 @@ class TableConstants:
         try:
             return self.table_data['COLUMNS']
         except KeyError as exc:
-            raise KeyError(
-                "Table columns not found in the constants table structure!"
+            raise TableColumnError(
+                "Table columns not found in the constants table structure!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"column_name": "COLUMNS"},
             ) from exc
 
     def data_structure(self) -> pd.DataFrame:
         """Return the constants records using their declared columns."""
-        return pd.DataFrame(self.table_values, columns=self.table_columns)
+        try:
+            return pd.DataFrame(self.table_values, columns=self.table_columns)
+        except Exception as exc:
+            raise TableConstantsError(
+                "Failed to build constants data structure",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+            ) from exc
 
     def get_constant(
         self,
@@ -60,15 +76,30 @@ class TableConstants:
                         break
         elif isinstance(constant, int):
             if 'No.' not in data.columns:
-                raise ValueError("Constant identifier column 'No.' not found!")
+                raise TableColumnError(
+                    "Constant identifier column 'No.' not found!",
+                    databook_name=self.databook_name,
+                    table_name=self.table_name,
+                    context={"column_name": "No."},
+                )
             matches = data[data['No.'] == constant]
             if not matches.empty:
                 row = matches.iloc[0]
         else:
-            raise ValueError(f"{constant} is not a valid constant identifier!")
+            raise TableValidationError(
+                f"{constant} is not a valid constant identifier!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"constant": constant},
+            )
 
         if row is None:
-            raise ValueError(f"Constant '{constant}' not found!")
+            raise TableLookupError(
+                f"Constant '{constant}' not found!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"constant": constant},
+            )
 
         return ConstantResult(
             constant_name=row.get('Name'),
@@ -121,7 +152,12 @@ class TableConstants:
         if search_mode == 'SYMBOL':
             return self.is_symbol_available(constant)
         if search_mode != 'BOTH':
-            raise ValueError("Invalid search mode! Must be 'NAME', 'SYMBOL', or 'BOTH'.")
+            raise TableValidationError(
+                "Invalid search mode! Must be 'NAME', 'SYMBOL', or 'BOTH'.",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"search_mode": search_mode},
+            )
         available = (
             self.is_name_available(constant).availability or
             self.is_symbol_available(constant).availability
