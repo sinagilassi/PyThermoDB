@@ -35,10 +35,10 @@ ref = ptdb.ref(custom_ref)
 # list databooks
 print(ref.list_databooks())
 # list tables
-print(ref.list_tables(8))
+print(ref.list_tables(2))
 # load table
-print(ref.load_table(8, 2))
+print(ref.load_table(2, 2))
 # search table
-print(ref.search_table(8, 2, "Formula", "CO2"))
+print(ref.search_table(2, 2, "Formula", "CO2"))
 # search table (query)
-print(ref.search_table(8, 2, ["Formula", "State"], ["CO2", "g"]))
+print(ref.search_table(2, 2, ["Formula", "State"], ["CO2", "g"]))
