@@ -144,9 +144,7 @@ def constants_reference_mapper(
                     f"No constants mapping found for table '{tb_name}' in databook '{db_name}'.")
                 continue
 
-            source_name = tb_name
-            if source_name in configs:
-                source_name = f"{db_name}::{tb_name}"
+            source_name = f"{db_name}::{tb_name}"
 
             configs[source_name] = {
                 'databook': db_name,
