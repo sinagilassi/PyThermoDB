@@ -7,6 +7,18 @@ import json
 from typing import Literal, Optional, List, Dict, Any
 # local
 from ..models import EquationResult, PropertyMatch, EquationRangeResult
+from ..handlers import (
+    TableEquationBodyError,
+    TableEquationCalculationError,
+    TableEquationDefinitionError,
+    TableEquationDerivativeError,
+    TableEquationIntegralError,
+    TableEquationLookupError,
+    TableEquationParameterError,
+    TableEquationRangeError,
+    TableEquationStructureError,
+    TableEquationSymbolError,
+)
 from ..utils import format_eq_data, is_number
 from ..models.tables import TableEquationBlock
 from .table_util import TableUtil
@@ -93,6 +105,14 @@ class TableEquation:
                 f"Table data for '{self.table_name}' will not include property data."
             )
             self.__table_values = None
+
+    def _context(self, **context):
+        base_context = {
+            "databook_name": self.databook_name,
+            "table_name": self.table_name,
+        }
+        base_context.update(context)
+        return base_context
 
     @property
     def trans_data(self):
@@ -210,8 +230,11 @@ class TableEquation:
                 'custom_integral': _custom_integral
             }
             return eq_summary
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except (IndexError, KeyError, TypeError, ValueError) as e:
+            raise TableEquationDefinitionError(
+                "Loading equation structure failed",
+                context=self._context(equation_id=id),
+            ) from e
 
     def eqs_structure(
             self,
@@ -275,9 +298,18 @@ class TableEquation:
                 return eq_summary
             elif res_format == 'json':
                 return json.dumps(eq_summary, indent=4)
+            raise TableEquationDefinitionError(
+                "Unsupported equation structure result format",
+                context=self._context(res_format=res_format),
+            )
 
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except TableEquationDefinitionError:
+            raise
+        except (KeyError, TypeError, ValueError) as e:
+            raise TableEquationDefinitionError(
+                "Loading equations structure failed",
+                context=self._context(res_format=res_format),
+            ) from e
 
     @property
     def table_columns(
@@ -304,20 +336,24 @@ class TableEquation:
 
             # check table structure
             if table_structure is None:
-                logger.error('Table structure not defined!')
-                raise
+                raise TableEquationStructureError(
+                    "Table structure not defined",
+                    context=self._context(),
+                )
 
             # res
             columns: List[str] | None = table_structure.get(column_name, None)
             # check columns
             if columns is None:
-                logger.error(f'Column {column_name} not found!')
-                raise
+                raise TableEquationStructureError(
+                    f"Column {column_name} not found",
+                    context=self._context(column_name=column_name),
+                )
 
             # res
             return columns
 
-        except Exception as e:
+        except TableEquationStructureError as e:
             logger.error(f'Loading error {e}!')
             return []
 
@@ -342,18 +378,24 @@ class TableEquation:
 
             # check table structure
             if table_structure is None:
-                raise Exception('Table structure not defined!')
+                raise TableEquationStructureError(
+                    "Table structure not defined",
+                    context=self._context(),
+                )
 
             # res
             units: List[str] | None = table_structure.get(unit_name, None)
             # check units
             if units is None:
-                raise Exception(f'Unit {unit_name} not found!')
+                raise TableEquationStructureError(
+                    f"Unit {unit_name} not found",
+                    context=self._context(unit_name=unit_name),
+                )
 
             # res
             return units
 
-        except Exception as e:
+        except TableEquationStructureError as e:
             logger.error(f'Loading error {e}!')
             return []
 
@@ -378,18 +420,24 @@ class TableEquation:
 
             # check table structure
             if table_structure is None:
-                raise Exception('Table structure not defined!')
+                raise TableEquationStructureError(
+                    "Table structure not defined",
+                    context=self._context(),
+                )
 
             # res
             symbols: List[str] | None = table_structure.get(symbol_name, None)
             # check symbols
             if symbols is None:
-                raise Exception(f'Symbol {symbol_name} not found!')
+                raise TableEquationStructureError(
+                    f"Symbol {symbol_name} not found",
+                    context=self._context(symbol_name=symbol_name),
+                )
 
             # res
             return symbols
 
-        except Exception as e:
+        except TableEquationStructureError as e:
             logger.error(f'Loading error {e}!')
             return []
 
@@ -407,8 +455,11 @@ class TableEquation:
                 symbols.append(value['symbol'])
 
             return symbols
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except (KeyError, TypeError) as e:
+            raise TableEquationSymbolError(
+                "Loading argument symbols failed",
+                context=self._context(),
+            ) from e
 
     def get_parm_symbols(self):
         '''Get parameter symbols.'''
@@ -425,8 +476,11 @@ class TableEquation:
                     symbols.append(value['symbol'])
 
             return symbols
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except (KeyError, TypeError) as e:
+            raise TableEquationSymbolError(
+                "Loading parameter symbols failed",
+                context=self._context(),
+            ) from e
 
     def get_return_symbols(self):
         '''Get return symbols.'''
@@ -442,8 +496,11 @@ class TableEquation:
                 symbols.append(value['symbol'])
 
             return symbols
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except (KeyError, TypeError) as e:
+            raise TableEquationSymbolError(
+                "Loading return symbols failed",
+                context=self._context(),
+            ) from e
 
     def get_return_items(self) -> Optional[List[Dict[str, str]]]:
         '''Get return items.'''
@@ -467,8 +524,11 @@ class TableEquation:
                 logger.warning('Returns is not a dict!')
                 return None
 
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except (KeyError, TypeError) as e:
+            raise TableEquationDefinitionError(
+                "Loading return items failed",
+                context=self._context(),
+            ) from e
 
     def get_arg_items(self) -> Optional[List[Dict[str, str]]]:
         """Get argument items."""
@@ -492,8 +552,11 @@ class TableEquation:
                 logger.warning('Arguments is not a dict!')
                 return None
 
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except (KeyError, TypeError) as e:
+            raise TableEquationDefinitionError(
+                "Loading argument items failed",
+                context=self._context(),
+            ) from e
 
     def get_records(self) -> Optional[Dict[str, Any]]:
         '''
@@ -549,9 +612,17 @@ class TableEquation:
             # if len(_return) == 1:
             #     return list(_return.values())[0]
             else:
-                raise Exception("Every equation has only one return")
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+                raise TableEquationDefinitionError(
+                    "Every equation has only one return",
+                    context=self._context(),
+                )
+        except TableEquationDefinitionError:
+            raise
+        except (IndexError, TypeError) as e:
+            raise TableEquationDefinitionError(
+                "Loading equation info failed",
+                context=self._context(),
+            ) from e
 
     def get_variable_range_values(
             self,
@@ -594,7 +665,10 @@ class TableEquation:
 
             # check table structure
             if table_structure is None:
-                raise Exception('Table structure not defined!')
+                raise TableEquationStructureError(
+                    "Table structure not defined",
+                    context=self._context(),
+                )
 
             # SECTION: get range names in the table structure
             # NOTE: symbol
@@ -653,7 +727,7 @@ class TableEquation:
                     variable_ranges[var_name][key_id] = dt_
 
             return variable_ranges
-        except Exception as e:
+        except TableEquationStructureError as e:
             logger.error(f'Loading error {e}!')
             return {}
 
@@ -705,7 +779,10 @@ class TableEquation:
             # NOTE: execute equation
             # check body
             if self.body is None or self.body == 'None':
-                raise Exception('Equation body not defined!')
+                raise TableEquationBodyError(
+                    "Equation body not defined",
+                    context=self._context(eq_id=self.eq_id),
+                )
 
             res = self.eqExe(self.body, _parms, args=args)
 
@@ -719,9 +796,14 @@ class TableEquation:
 
             # res
             return eq_data
+        except TableEquationBodyError:
+            raise
         except Exception as e:
             logger.error(f'Calculation error {e}!')
-            raise Exception(f'Calculation error {e}!')
+            raise TableEquationCalculationError(
+                "Calculation error",
+                context=self._context(eq_id=self.eq_id, args=args),
+            ) from e
 
     def cal_result_type(self, result: EquationResult) -> str:
         '''
@@ -796,10 +878,19 @@ class TableEquation:
         try:
             # SECTION: validate inputs
             if not variable_id:
-                raise Exception('Variable name not defined!')
+                raise TableEquationRangeError(
+                    "Variable name not defined",
+                    context=self._context(variable_id=variable_id),
+                )
 
             if not variable_range_values or len(variable_range_values) < 2:
-                raise Exception('Variable range values not properly defined!')
+                raise TableEquationRangeError(
+                    "Variable range values not properly defined",
+                    context=self._context(
+                        variable_id=variable_id,
+                        variable_range_values=variable_range_values,
+                    ),
+                )
 
             # NOTE: check variable availability
             # variable symbol
@@ -819,7 +910,10 @@ class TableEquation:
 
             # >> check
             if variable_symbol is None:
-                raise Exception(f'Variable {variable_id} not found!')
+                raise TableEquationLookupError(
+                    f"Variable {variable_id} not found",
+                    context=self._context(variable_id=variable_id),
+                )
 
             # SECTION: calculation over range
             # init res
@@ -862,9 +956,14 @@ class TableEquation:
 
             # res
             return res
+        except (TableEquationLookupError, TableEquationRangeError):
+            raise
         except Exception as e:
             logger.error(f'Calculation over range error {e}!')
-            raise Exception(f'Calculation over range error {e}!')
+            raise TableEquationRangeError(
+                "Calculation over range error",
+                context=self._context(variable_id=variable_id),
+            ) from e
 
     def cal_integral(self, **args):
         '''
@@ -898,7 +997,10 @@ class TableEquation:
 
             return res
         except Exception as e:
-            raise Exception('Loading integral calculation failed!, ', e)
+            raise TableEquationIntegralError(
+                "Loading integral calculation failed",
+                context=self._context(eq_id=self.eq_id, args=args),
+            ) from e
 
     def cal_custom_integral(self, equation_name: str, **args):
         '''
@@ -924,11 +1026,17 @@ class TableEquation:
         try:
             # check
             if equation_name is None:
-                raise Exception('Equation name not defined!')
+                raise TableEquationIntegralError(
+                    "Equation name not defined",
+                    context=self._context(equation_name=equation_name),
+                )
 
             # check equation name exists
             if equation_name not in self._custom_integral:
-                raise Exception('Equation name not found!')
+                raise TableEquationLookupError(
+                    "Equation name not found",
+                    context=self._context(equation_name=equation_name),
+                )
 
             # build parms dict
             _parms = self.load_parms_v2()
@@ -944,8 +1052,13 @@ class TableEquation:
             # execute equation
             res = self.eqExe(_body, _parms, args=args)
             return res
+        except (TableEquationIntegralError, TableEquationLookupError):
+            raise
         except Exception as e:
-            raise Exception('Loading custom integral failed!, ', e)
+            raise TableEquationIntegralError(
+                "Loading custom integral failed",
+                context=self._context(equation_name=equation_name, args=args),
+            ) from e
 
     def cal_first_derivative(self, **args):
         '''
@@ -1021,7 +1134,10 @@ class TableEquation:
             res = self.eqExe(self.body_second_derivative, _parms, args=args)
             return res
         except Exception as e:
-            raise Exception('Derivation calculation failed!, ', e)
+            raise TableEquationDerivativeError(
+                "Derivative calculation failed",
+                context=self._context(eq_id=self.eq_id, args=args),
+            ) from e
 
     def load_parms(self):
         '''
@@ -1052,7 +1168,10 @@ class TableEquation:
                 _parms = {}
             return _parms
         except Exception as e:
-            raise Exception("Loading equation parameters failed!, ", e)
+            raise TableEquationParameterError(
+                "Loading equation parameters failed",
+                context=self._context(eq_id=self.eq_id),
+            ) from e
 
     def load_parms_v2(self):
         """
@@ -1086,7 +1205,10 @@ class TableEquation:
             return parms
 
         except Exception as e:
-            raise Exception("Loading equation parameters failed!") from e
+            raise TableEquationParameterError(
+                "Loading equation parameters failed",
+                context=self._context(eq_id=self.eq_id),
+            ) from e
 
     def equation_body(self):
         '''
@@ -1554,18 +1676,32 @@ class TableEquation:
         try:
             # check
             if self._custom_integral is None:
-                raise Exception('Custom integral not defined!')
+                raise TableEquationIntegralError(
+                    "Custom integral not defined",
+                    context=self._context(),
+                )
 
             if equation_name is None:
-                raise Exception('Equation name not defined!')
+                raise TableEquationIntegralError(
+                    "Equation name not defined",
+                    context=self._context(equation_name=equation_name),
+                )
 
             if equation_name not in self._custom_integral:
-                raise Exception('Equation name not found!')
+                raise TableEquationLookupError(
+                    "Equation name not found",
+                    context=self._context(equation_name=equation_name),
+                )
             # get equation body
             body = self._custom_integral.get(equation_name, 'None')
             return body
+        except (TableEquationIntegralError, TableEquationLookupError):
+            raise
         except Exception as e:
-            raise Exception("Loading custom integral body failed!, ", e)
+            raise TableEquationIntegralError(
+                "Loading custom integral body failed",
+                context=self._context(equation_name=equation_name),
+            ) from e
 
     def make_arg_symbols(self, args) -> dict:
         '''
@@ -1602,7 +1738,10 @@ class TableEquation:
 
             return {}
         except Exception as e:
-            raise Exception("Making argument symbols failed!, ", e)
+            raise TableEquationSymbolError(
+                "Making argument symbols failed",
+                context=self._context(),
+            ) from e
 
     def make_return_symbols(self, returns) -> dict:
         '''
@@ -1639,7 +1778,10 @@ class TableEquation:
 
             return {}
         except Exception as e:
-            raise Exception("Making return symbols failed!, ", e)
+            raise TableEquationSymbolError(
+                "Making return symbols failed",
+                context=self._context(),
+            ) from e
 
     def make_identifiers(
             self,
@@ -1692,11 +1834,19 @@ class TableEquation:
                 elif mode == 'name':
                     symbols.append(value['name'])
                 else:
-                    raise Exception("Invalid mode! Use 'name' or 'symbol'.")
+                    raise TableEquationDefinitionError(
+                        "Invalid mode! Use 'name' or 'symbol'.",
+                        context=self._context(mode=mode),
+                    )
 
             return symbols
-        except Exception as e:
-            raise Exception(f'Loading error {e}!')
+        except TableEquationDefinitionError:
+            raise
+        except (KeyError, TypeError) as e:
+            raise TableEquationSymbolError(
+                "Loading identifiers failed",
+                context=self._context(param_id=param_id, mode=mode),
+            ) from e
 
     def is_symbol_available(self, symbol: str):
         '''
