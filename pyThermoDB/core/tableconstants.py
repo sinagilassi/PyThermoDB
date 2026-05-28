@@ -1,3 +1,5 @@
+import ast
+import json
 import logging
 from typing import Any, Dict, List, Literal, Optional
 
@@ -119,13 +121,46 @@ class TableConstants:
             constant_name=row.get('Name'),
             symbol=row.get('Symbol'),
             state=row.get('State'),
-            value=row.get('Value'),
+            value=self._coerce_constant_value(row.get('Value')),
             unit=row.get('Unit'),
             description=row.get('Description'),
             message=str(message) if message else 'No message',
             databook_name=self.databook_name,
             table_name=self.table_name,
         )
+
+    # SECTION: convert/force constant values to native Python types
+    @staticmethod
+    def _coerce_constant_value(value: Any) -> Any:
+        """Convert stringified scalar/collection literals to native Python types.
+
+        YAML-native values stay unchanged; coercion is applied only to string
+        values (typically from CSV-backed constants tables).
+        """
+        if not isinstance(value, str):
+            return value
+
+        text = value.strip()
+        if text == '':
+            return value
+
+        lower_text = text.lower()
+        if lower_text in {'none', 'null', 'nan'}:
+            return None
+        if lower_text == 'true':
+            return True
+        if lower_text == 'false':
+            return False
+
+        try:
+            return json.loads(text)
+        except Exception:
+            pass
+
+        try:
+            return ast.literal_eval(text)
+        except Exception:
+            return value
 
     def _is_value_available(
         self,
