@@ -31,6 +31,18 @@ from .table_errors import (
     TableUtilError,
     TableValidationError,
 )
+from .table_equation_errors import (
+    TableEquationBodyError,
+    TableEquationCalculationError,
+    TableEquationDefinitionError,
+    TableEquationDerivativeError,
+    TableEquationIntegralError,
+    TableEquationLookupError,
+    TableEquationParameterError,
+    TableEquationRangeError,
+    TableEquationStructureError,
+    TableEquationSymbolError,
+)
 
 __all__ = [
     "PyThermoDBError",
@@ -62,4 +74,14 @@ __all__ = [
     "TableCalculationError",
     "TableParameterError",
     "TableConversionError",
+    "TableEquationStructureError",
+    "TableEquationDefinitionError",
+    "TableEquationLookupError",
+    "TableEquationBodyError",
+    "TableEquationSymbolError",
+    "TableEquationParameterError",
+    "TableEquationCalculationError",
+    "TableEquationRangeError",
+    "TableEquationIntegralError",
+    "TableEquationDerivativeError",
 ]
