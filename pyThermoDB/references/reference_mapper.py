@@ -1,9 +1,12 @@
 # import libs
 import logging
 from typing import (
+    Any,
+    Dict,
     Literal,
     List,
-    Optional
+    Optional,
+    Union
 )
 from pythermodb_settings.models import (
     Component,
@@ -17,6 +20,158 @@ from ..utils import ignore_state_in_prop, create_mixture_ids
 
 # NOTE: set logger
 logger = logging.getLogger(__name__)
+
+
+def constants_reference_mapper(
+    reference_content: str,
+    constants: Optional[Union[str, List[str]]] = None,
+    databook_name: Optional[str] = None,
+    table_name: Optional[str] = None,
+    search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+) -> Optional[ReferenceThermoDB]:
+    '''
+    Build reference metadata for table-wide constants.
+
+    Parameters
+    ----------
+    reference_content : str
+        String content or path of the reference containing databook and tables.
+    constants : str | list[str], optional
+        Constant names or symbols to require. If omitted, all constants tables are
+        included.
+    databook_name : str, optional
+        Databook name to restrict the constants search.
+    table_name : str, optional
+        Constants table name to restrict the constants search.
+    search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+        Constant lookup mode when constants are provided, by default 'BOTH'.
+
+    Returns
+    -------
+    ReferenceThermoDB | None
+        Reference metadata containing constants configs, rules, and labels, or
+        None when no constants tables match.
+    '''
+    try:
+        if not isinstance(reference_content, str) or not reference_content.strip():
+            raise ValueError("reference_content must be a non-empty string")
+
+        if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
+            raise ValueError(
+                "search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
+
+        if constants is None:
+            constants_ = []
+        elif isinstance(constants, str):
+            constants_ = [constants]
+        elif isinstance(constants, list) and all(isinstance(c, str) for c in constants):
+            constants_ = constants
+        else:
+            raise TypeError(
+                "constants must be a string, a list of strings, or None")
+
+        ReferenceChecker_ = ReferenceChecker(reference_content)
+
+        if databook_name is not None:
+            databooks = [databook_name]
+        else:
+            databooks = ReferenceChecker_.get_databook_names()
+
+        if not isinstance(databooks, list) or not databooks:
+            raise ValueError("No databooks found in the reference content.")
+
+        constants_table_refs: List[Dict[str, str]] = []
+        for db_name in databooks:
+            if table_name is not None:
+                if ReferenceChecker_.is_constants_table(db_name, table_name):
+                    constants_table_refs.append({
+                        'Databook': db_name,
+                        'Table': table_name
+                    })
+                else:
+                    logger.warning(
+                        f"Table '{table_name}' in databook '{db_name}' is not a constants table.")
+                continue
+
+            constants_table_refs.extend(
+                ReferenceChecker_.get_constants_tables(db_name)
+            )
+
+        if not constants_table_refs:
+            logger.error("No constants tables found in the reference content.")
+            return None
+
+        selected_table_refs: List[Dict[str, str]] = []
+        for table_ref in constants_table_refs:
+            db_name = table_ref['Databook']
+            tb_name = table_ref['Table']
+
+            if not constants_:
+                selected_table_refs.append(table_ref)
+                continue
+
+            for constant in constants_:
+                check_res = ReferenceChecker_.check_constant_availability(
+                    databook_name=db_name,
+                    table_name=tb_name,
+                    constant=constant,
+                    search_mode=search_mode
+                )
+                if check_res.get('available', False):
+                    selected_table_refs.append(table_ref)
+                    break
+
+        if not selected_table_refs:
+            logger.error(
+                f"No constants tables matched requested constants: {constants_}."
+            )
+            return None
+
+        configs: Dict[str, Any] = {}
+        rules: Dict[str, Dict[str, str]] = {'CONSTANTS': {}}
+        labels: List[str] = []
+
+        for table_ref in selected_table_refs:
+            db_name = table_ref['Databook']
+            tb_name = table_ref['Table']
+
+            constants_mapping = ReferenceChecker_.get_constants_mapping(
+                db_name,
+                tb_name
+            )
+            if not constants_mapping:
+                logger.warning(
+                    f"No constants mapping found for table '{tb_name}' in databook '{db_name}'.")
+                continue
+
+            source_name = tb_name
+            if source_name in configs:
+                source_name = f"{db_name}::{tb_name}"
+
+            configs[source_name] = {
+                'databook': db_name,
+                'table': tb_name,
+                'mode': 'CONSTANTS',
+                'labels': constants_mapping
+            }
+            rules['CONSTANTS'].update(constants_mapping)
+            labels.extend(list(constants_mapping.values()))
+
+        if not configs:
+            logger.error("No valid constants reference configs were built.")
+            return None
+
+        return ReferenceThermoDB(
+            reference={'reference': [reference_content]},
+            contents=[reference_content],
+            configs=configs,
+            rules=rules,
+            labels=list(set(labels)),
+            ignore_labels=[],
+            ignore_props=[]
+        )
+    except Exception as e:
+        raise Exception(f"Building constants reference mapper failed! {e}")
 
 
 def component_reference_mapper(
@@ -229,6 +384,7 @@ def component_reference_mapper(
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
 
+# SECTION: mixture reference mapper
 def mixture_reference_mapper(
     components: List[Component],
     reference_content: str,
