@@ -1255,3 +1255,325 @@ class CompBuilder(CompExporter):
         except Exception as e:
             logger.error(f'Getting data symbol labels failed!, {e}')
             return None
+
+    # NOTE: get all constants structures
+    def all_constants_details(self):
+        '''
+        Retrieve all constants' structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            constants' structure
+        '''
+        try:
+            all_data = self.check_properties()
+            constants = [
+                const for const in all_data.values()
+                if isinstance(const, TableConstants)
+            ]
+
+            if not constants:
+                logger.warning(
+                    'No TableConstants found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get constants structure')
+                return None
+
+            return tools.get_constants_structure(constants)
+        except Exception as e:
+            logger.error(f'Getting constants structure failed!, {e}')
+            return None
+
+    # NOTE: get all constants identifiers
+    def all_constants_identifiers(self):
+        '''
+        Retrieve all constants' identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            constants' identifiers
+        '''
+        try:
+            all_data = self.check_properties()
+            constants = [
+                const for const in all_data.values()
+                if isinstance(const, TableConstants)
+            ]
+
+            if not constants:
+                logger.warning(
+                    'No TableConstants found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get constants identifiers')
+                return None
+
+            return tools.get_constants_identifier(constants)
+        except Exception as e:
+            logger.error(f'Getting constants identifiers failed!, {e}')
+            return None
+
+    # NOTE: get all constants symbol labels
+    def all_constants_id_labels(self):
+        '''
+        Retrieve all constants' symbol labels in the thermodb.
+
+        Returns
+        -------
+        res : list
+            constants' symbol labels
+        '''
+        try:
+            all_data = self.check_properties()
+            constants = [
+                const for const in all_data.values()
+                if isinstance(const, TableConstants)
+            ]
+
+            if not constants:
+                logger.warning(
+                    'No TableConstants found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get constants symbol labels')
+                return None
+
+            return tools.get_constants_id_labels(constants)
+        except Exception as e:
+            logger.error(f'Getting constants symbol labels failed!, {e}')
+            return None
+
+    # NOTE: get all matrix data structures
+    def all_matrix_data_details(self):
+        '''
+        Retrieve all matrix data's structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            matrix data's structure
+        '''
+        try:
+            all_data = self.check_properties()
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableMatrixData)
+            ]
+
+            if not data:
+                logger.warning(
+                    'No TableMatrixData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix data structure')
+                return None
+
+            return tools.get_matrix_data_structure(data)
+        except Exception as e:
+            logger.error(f'Getting matrix data structure failed!, {e}')
+            return None
+
+    # NOTE: get all matrix data identifiers
+    def all_matrix_data_identifiers(self):
+        '''
+        Retrieve all matrix data's identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            matrix data's identifiers
+        '''
+        try:
+            all_data = self.check_properties()
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableMatrixData)
+            ]
+
+            if not data:
+                logger.warning(
+                    'No TableMatrixData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix data identifiers')
+                return None
+
+            return tools.get_matrix_data_identifier(data)
+        except Exception as e:
+            logger.error(f'Getting matrix data identifiers failed!, {e}')
+            return None
+
+    # NOTE: get all matrix data symbol labels
+    def all_matrix_data_id_labels(self):
+        '''
+        Retrieve all matrix data's symbol labels in the thermodb.
+
+        Returns
+        -------
+        res : list
+            matrix data's symbol labels
+        '''
+        try:
+            all_data = self.check_properties()
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableMatrixData)
+            ]
+
+            if not data:
+                logger.warning(
+                    'No TableMatrixData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix data symbol labels')
+                return None
+
+            return tools.get_matrix_data_id_labels(data)
+        except Exception as e:
+            logger.error(f'Getting matrix data symbol labels failed!, {e}')
+            return None
+
+    # NOTE: get all matrix functions' structures
+    def all_matrix_function_details(self):
+        '''
+        Retrieve all matrix functions' structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            matrix functions' structure
+        '''
+        try:
+            all_functions = self.check_functions()
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableMatrixEquation)
+            ]
+
+            if not functions:
+                logger.warning(
+                    'No TableMatrixEquation functions found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix function structure')
+                return None
+
+            return tools.get_matrix_fn_structure(functions)
+        except Exception as e:
+            logger.error(f'Getting matrix equations structure failed!, {e}')
+            return None
+
+    # NOTE: get all matrix functions' identifiers
+    def all_matrix_function_identifiers(self):
+        '''
+        Retrieve all matrix functions' identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            matrix functions' identifiers
+        '''
+        try:
+            all_functions = self.check_functions()
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableMatrixEquation)
+            ]
+
+            if not functions:
+                logger.warning(
+                    'No TableMatrixEquation functions found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix function identifiers')
+                return None
+
+            return tools.get_matrix_fn_identifier(functions)
+        except Exception as e:
+            logger.error(f'Getting matrix equations identifiers failed!, {e}')
+            return None
+
+    # NOTE: get build metadata
+    def build_details(self):
+        '''
+        Retrieve thermodb build metadata and registered object counts.
+
+        Returns
+        -------
+        res : dict
+            build metadata
+        '''
+        try:
+            properties = self.check_properties()
+            functions = self.check_functions()
+
+            constants_count = sum(
+                isinstance(value, TableConstants)
+                for value in properties.values()
+            )
+            data_count = sum(
+                isinstance(value, TableData)
+                for value in properties.values()
+            )
+            matrix_data_count = sum(
+                isinstance(value, TableMatrixData)
+                for value in properties.values()
+            )
+            equations_count = sum(
+                isinstance(value, TableEquation)
+                for value in functions.values()
+            )
+            matrix_equations_count = sum(
+                isinstance(value, TableMatrixEquation)
+                for value in functions.values()
+            )
+
+            return {
+                "thermodb_name": self.thermodb_name,
+                "message": self.message,
+                "build_version": self.build_version,
+                "build_date": self.build_date,
+                "build_timestamp": self.build_timestamp,
+                "build_python": self.build_python,
+                "build_type": self.build_type,
+                "component_name": self.component_name,
+                "component_formula": self.component_formula,
+                "component_state": self.component_state,
+                "properties_count": len(properties),
+                "functions_count": len(functions),
+                "constants_count": constants_count,
+                "data_count": data_count,
+                "matrix_data_count": matrix_data_count,
+                "equations_count": equations_count,
+                "matrix_equations_count": matrix_equations_count
+            }
+        except Exception as e:
+            logger.error(f'Getting build details failed!, {e}')
+            return None
