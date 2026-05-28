@@ -63,6 +63,7 @@ class CompBuilder(CompExporter):
     _component_formula: Optional[str] = None
     _component_state: Optional[str] = None
 
+    # ! cache component identifiers as properties
     @functools.cached_property
     def component_name(self) -> Optional[str]:
         return self._component_name
