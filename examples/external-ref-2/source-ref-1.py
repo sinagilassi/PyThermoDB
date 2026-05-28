@@ -91,15 +91,15 @@ print(tb_eq.table_symbols)
 print(tb_eq.table_units)
 print(tb_eq.table_values)
 
-#
-tb_eq = thermo_db.equation_load(
-    "Perry's Chemical Engineers' Handbook",
-    'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
-)
+# local data
+# tb_eq = thermo_db.equation_load(
+#     "Perry's Chemical Engineers' Handbook",
+#     'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
+# )
 # equation structure
-tb_eq_structure = tb_eq.eq_structure()
-print(tb_eq_structure)
-print(tb_eq.eqs_structure())
+# tb_eq_structure = tb_eq.eq_structure()
+# print(tb_eq_structure)
+# print(tb_eq.eqs_structure())
 # print(tb_eq.table_columns())
 # print(tb_eq.table_symbols())
 # print(tb_eq.table_units())
