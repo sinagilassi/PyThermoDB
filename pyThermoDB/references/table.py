@@ -223,6 +223,25 @@ class ThermoTable(TableBuilder):
         except Exception as e:
             raise RuntimeError(f"Failed to extract table data: {e}")
 
+    def extract_constants(self):
+        """
+        Extracts constants table data and set attributes.
+        """
+        try:
+            data_ = self.load_csv(self._data)
+            lines = self.extract_constants_csv_data(data_)
+
+            if not lines:
+                raise ValueError("No constants data extracted.")
+
+            self.columns = lines[0]
+            self.structure = {
+                "COLUMNS": self.columns
+            }
+            self.values = lines[1:]
+        except Exception as e:
+            raise RuntimeError(f"Failed to extract constants table data: {e}")
+
     def build_table(self):
         """
         Builds the table from the extracted data.
@@ -235,6 +254,8 @@ class ThermoTable(TableBuilder):
                 self._build_equation_table()
             elif self._types == "matrix-data":
                 self._build_data_table()
+            elif self._types == "constants":
+                self._build_constants_table()
             else:
                 raise ValueError(f"Unsupported table type: {self.types}")
         except ValueError as ve:
@@ -388,4 +409,42 @@ class ThermoTable(TableBuilder):
             logging.info(f"Equation table '{self.name}' built successfully.")
         except Exception as e:
             logging.error(f"Error building equation table '{self.name}': {e}")
+            raise
+
+    def _build_constants_table(self):
+        """
+        Builds the constants table from the extracted data.
+
+        Notes
+        -----
+        The table structure is as:
+        {
+            "TABLE-NAME": {
+                "TABLE-ID": int,
+                "DESCRIPTION": str,
+                "CONSTANTS": list,
+                "STRUCTURE": dict,
+                "VALUES": list
+            }
+        }
+        """
+        try:
+            self._table = {}
+            self.extract_constants()
+
+            TABLE = {}
+            TABLE_NAME = self.get_table_name
+            TABLE[TABLE_NAME] = {
+                'TABLE-ID': self.get_table_id,
+                'DESCRIPTION': self.description,
+                'CONSTANTS': [],
+                'STRUCTURE': self.structure,
+                'VALUES': self.values
+            }
+
+            self.table = TABLE
+            logging.info(f"Constants table '{self.name}' built successfully.")
+        except Exception as e:
+            logging.error(
+                f"Error building constants table '{self.name}': {e}")
             raise
