@@ -10,6 +10,7 @@ from .main import (
     load_default_symbols
 )
 from .reference_mapper import (
+    constants_reference_mapper,
     component_reference_mapper,
     mixture_reference_mapper
 )
@@ -28,5 +29,6 @@ __all__ = [
     "extract_reference_from_str",
     "load_default_symbols",
     "mixture_reference_mapper",
+    "constants_reference_mapper",
     "SymbolController"
 ]
