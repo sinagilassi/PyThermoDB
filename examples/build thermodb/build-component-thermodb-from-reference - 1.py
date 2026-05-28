@@ -8,7 +8,7 @@ from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoD
 from pyThermoDB.core import TableEquation, TableData
 from rich import print
 # local
-from reference_content import REFERENCE_CONTENT
+# from reference_content import REFERENCE_CONTENT
 
 # NOTE: logging
 logging.basicConfig(level=logging.INFO)
@@ -31,7 +31,7 @@ print(f"db_path: {db_path}")
 # SECTION: load reference content
 # ? =====================================================
 # NOTE: reference path
-reference_path = r"D:\Google Cloud\Python Source\pyThermoDB\data\upd\reference_content.yaml"
+reference_path = r"G:\My Drive\Python Source\pyThermoDB\data\upd\reference_content.yaml"
 
 # load reference content from yaml file and convert to string
 with open(reference_path, 'r') as file:
