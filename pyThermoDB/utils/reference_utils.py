@@ -1,12 +1,242 @@
 # import libs
 import logging
-from typing import Any, Dict, List, Optional, Literal
+from collections.abc import Mapping
+from typing import Any, Dict, List, Optional, Literal, Union, cast
 from pythermodb_settings.models import Component
 # locals
 from ..config import REFERENCE_CONFIG_KEYS
+from .convertor import Convertor
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
+
+
+def _normalize_constant_reference_config(
+    reference_config: Union[Mapping[str, Any], str]
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Normalize constants reference configs.
+    """
+    if isinstance(reference_config, str):
+        convertor = Convertor()
+        ref_format = convertor.which_format(reference_config)
+
+        if ref_format == "unknown":
+            logging.error(
+                "Unknown format. Please provide data in YAML or JSON format.")
+            reference_config = {}
+        elif ref_format.lower() in ["yaml", "json"]:
+            reference_config = convertor.str_to_dict(
+                reference_config,
+                format=ref_format.lower()
+            )
+        else:
+            raise ValueError(f"Unsupported format: {ref_format}")
+
+    if not isinstance(reference_config, Mapping):
+        raise TypeError("reference_config must be a dictionary")
+
+    for wrapper_key in ['CONSTANTS', 'constants', 'constant']:
+        wrapper_value = reference_config.get(wrapper_key, None)
+        if isinstance(wrapper_value, dict):
+            reference_config = wrapper_value
+            break
+
+    if not reference_config:
+        raise ValueError("reference_config must not be empty")
+
+    return {
+        str(source_name).strip(): cast(Dict[str, Any], source_config)
+        for source_name, source_config in reference_config.items()
+        if str(source_name).strip() and isinstance(source_config, dict)
+    }
+
+
+def _normalize_constants_filter(
+    constants: Optional[Union[str, List[str]]]
+) -> List[str]:
+    """
+    Normalize requested constants into a list.
+    """
+    if constants is None:
+        return []
+    if isinstance(constants, str):
+        return [constants]
+    if isinstance(constants, list) and all(isinstance(c, str) for c in constants):
+        return constants
+    raise TypeError("constants must be a string, a list of strings, or None")
+
+
+def _constant_config_labels(
+    source_config: Dict[str, Any]
+) -> List[str]:
+    """
+    Extract constants identifiers declared in config labels/symbols.
+    """
+    identifiers: List[str] = []
+
+    label_ = source_config.get('label', None) or source_config.get(
+        'symbol', None
+    )
+    if isinstance(label_, str):
+        identifiers.append(label_)
+
+    labels_ = source_config.get('labels', None) or source_config.get(
+        'symbols', None
+    )
+    if isinstance(labels_, dict):
+        for key, value in labels_.items():
+            if isinstance(key, str):
+                identifiers.append(key)
+            if isinstance(value, str):
+                identifiers.append(value)
+    elif isinstance(labels_, list):
+        identifiers.extend([item for item in labels_ if isinstance(item, str)])
+    elif isinstance(labels_, str):
+        identifiers.append(labels_)
+
+    return list(dict.fromkeys([item for item in identifiers if item.strip()]))
+
+
+def _is_constants_table_type(
+    thermodb: Any,
+    databook: str,
+    table: str
+) -> bool:
+    """
+    Check whether a table is registered as a constants table.
+    """
+    table_info_ = thermodb.table_info(
+        databook=databook,
+        table=table,
+        res_format='dict'
+    )
+    if not isinstance(table_info_, dict):
+        raise TypeError("Table info must be a dictionary")
+
+    return table_info_.get('Type', None) == 'Constants'
+
+
+def _build_constant_sources(
+    thermodb: Any,
+    reference_config: Dict[str, Dict[str, Any]],
+    constants: Optional[Union[str, List[str]]] = None,
+    search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
+    check_source: bool = False,
+    verbose: Optional[bool] = False
+) -> Dict[str, Any]:
+    """
+    Build constants sources from config and optionally validate constants.
+    """
+    if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
+        raise ValueError("search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
+
+    constants_ = _normalize_constants_filter(constants)
+    res: Dict[str, Any] = {}
+
+    databook_list = thermodb.list_databooks(res_format='list')
+    if not isinstance(databook_list, list):
+        raise TypeError("Databook list must be a list")
+
+    for source_name, source_config in reference_config.items():
+        databook_ = source_config.get('databook', None)
+        if databook_ is None:
+            logging.error(
+                f"Databook for constants source '{source_name}' is not specified."
+            )
+            continue
+
+        if is_databook_available(str(databook_), databook_list) is False:
+            logging.error(
+                f"Databook '{databook_}' for constants source '{source_name}' is not found in the databook list."
+            )
+            continue
+
+        table_dict_ = thermodb.list_tables(
+            databook=databook_,
+            res_format='dict'
+        )
+        if not isinstance(table_dict_, dict):
+            raise TypeError("Table list must be a dictionary")
+
+        table_list_ = list(table_dict_.values())
+        if not isinstance(table_list_, list) or not table_list_:
+            raise TypeError("Table list must be a list")
+
+        table_ = source_config.get('table', None)
+        if table_ is None:
+            logging.error(
+                f"Table for constants source '{source_name}' is not specified."
+            )
+            continue
+
+        if is_table_available(str(table_), table_list_) is False:
+            logging.error(
+                f"Table '{table_}' for constants source '{source_name}' is not found in the databook '{databook_}'."
+            )
+            continue
+
+        if check_source:
+            try:
+                if not _is_constants_table_type(
+                    thermodb=thermodb,
+                    databook=str(databook_),
+                    table=str(table_)
+                ):
+                    logging.error(
+                        f"Table '{table_}' for constants source '{source_name}' is not a constants table."
+                    )
+                    continue
+            except Exception as e:
+                logging.error(
+                    f"Checking constants table '{table_}' for source '{source_name}' failed! {e}"
+                )
+                continue
+
+        try:
+            item_ = thermodb.build_constants(
+                databook=databook_,
+                table=table_
+            )
+        except Exception as e:
+            logging.error(
+                f"Building constants source '{source_name}' from table '{table_}' failed! {e}"
+            )
+            continue
+
+        if constants_:
+            constant_availability = [
+                item_.is_constant_available(
+                    constant,
+                    search_mode=search_mode
+                ).availability
+                for constant in constants_
+            ]
+            if not any(constant_availability):
+                if verbose:
+                    logging.info(
+                        f"Constants source '{source_name}' skipped because requested constants were not found."
+                    )
+                continue
+
+        if check_source:
+            configured_labels = _constant_config_labels(source_config)
+            label_availability = [
+                item_.is_constant_available(
+                    label,
+                    search_mode='BOTH'
+                ).availability
+                for label in configured_labels
+            ]
+            if configured_labels and not all(label_availability):
+                logging.error(
+                    f"Constants source '{source_name}' skipped because configured labels/symbols were not found."
+                )
+                continue
+
+        res[source_name] = item_
+
+    return res
 
 
 def look_up_component_reference_config(
