@@ -43,6 +43,15 @@ from .table_equation_errors import (
     TableEquationStructureError,
     TableEquationSymbolError,
 )
+from .table_matrix_data_errors import (
+    TableMatrixDataConversionError,
+    TableMatrixDataDefinitionError,
+    TableMatrixDataFormatError,
+    TableMatrixDataFrameError,
+    TableMatrixDataGenerationError,
+    TableMatrixDataLookupError,
+    TableMatrixDataStructureError,
+)
 
 __all__ = [
     "PyThermoDBError",
@@ -84,4 +93,11 @@ __all__ = [
     "TableEquationRangeError",
     "TableEquationIntegralError",
     "TableEquationDerivativeError",
+    "TableMatrixDataStructureError",
+    "TableMatrixDataDefinitionError",
+    "TableMatrixDataLookupError",
+    "TableMatrixDataFormatError",
+    "TableMatrixDataFrameError",
+    "TableMatrixDataGenerationError",
+    "TableMatrixDataConversionError",
 ]
