@@ -336,8 +336,6 @@ print('CO2 heat capacity (IG)', CO2_cp_IG.cal(
 )
 )
 
-a = 1
-
 # build an equation
 # * vapor pressure
 # eq = tdb.build_equation(

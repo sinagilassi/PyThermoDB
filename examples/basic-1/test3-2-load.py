@@ -2,7 +2,13 @@
 import os
 from rich import print
 import pyThermoDB as ptdb
-from pyThermoDB import TableData
+from pyThermoDB import (
+    TableData,
+    TableEquation,
+    TableConstants,
+    TableMatrixEquation,
+    CompBuilder
+)
 
 # verify the version
 print(ptdb.__version__)
@@ -14,7 +20,8 @@ print(ptdb.__version__)
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 
 # files
-file_name = 'Methane-1'
+# file_name = 'Methane-1'
+file_name = "Methane-custom-constant-1"
 thermodb_file = f'{file_name}.pkl'
 thermodb_path = os.path.join(parent_dir, thermodb_file)
 print(thermodb_path)
@@ -23,7 +30,7 @@ print(thermodb_path)
 # LOAD THERMODB
 # ====================================
 # load thermodb
-data_thermodb = ptdb.load_thermodb(thermodb_path)
+data_thermodb: CompBuilder = ptdb.load_thermodb(thermodb_path)
 print(type(data_thermodb))
 
 # ====================================
@@ -56,7 +63,28 @@ print(data_thermodb.retrieve(dHf_IG_src, message="enthalpy of formation"))
 # ====================================
 print("[bold magenta]Select a function from the thermodb:[/bold magenta]")
 # select function
-func1_ = data_thermodb.select_function('heat-capacity')
+func1_: TableEquation | TableMatrixEquation = data_thermodb.select_function(
+    'heat-capacity')
 print(type(func1_))
 print(func1_.args)
 print(func1_.cal(T=295.15, message="heat capacity of methanol"))
+
+# ====================================
+# SELECT CONSTANTS
+# ====================================
+print("[bold magenta]Select constants from the thermodb:[/bold magenta]")
+# select constants
+const1_: TableConstants = data_thermodb.select_constant('custom-constants')
+print(type(const1_))
+# access constant
+# ! R (scalar)
+print(const1_.get_constant('R'))
+# ! dG_rxn (dictionary)
+print(const1_.get_constant('dG_rxn'))
+# ! Xb (string)
+print(const1_.get_constant('Xb'))
+# ! X (list)
+print(const1_.get_constant('X'))
+# ! non-existing constant (can raise error)
+print(const1_.get_constant('non_existing_constant', strict=False))
+# print(general_const.get_constant('non_existing_constant'))
