@@ -141,6 +141,84 @@ class TableBuilder:
             return []
 
     @staticmethod
+    def extract_constants_csv_data(
+        csv_data: str,
+        column_names: List[str] = [
+            "No.", "Name", "Symbol", "State", "Value", "Unit", "Description"
+        ]
+    ) -> List[List[Any]]:
+        """
+        Extract constants CSV data.
+
+        Constants tables do not use symbol/unit metadata rows. The first row is
+        the header and all following rows are constants records.
+        """
+        try:
+            if not csv_data.strip():
+                return []
+
+            reader = csv.reader(StringIO(csv_data.strip()))
+            lines = list(reader)
+
+            if len(lines) < 2:
+                logging.error(
+                    "Constants CSV data must contain a header and at least one data row.")
+                return []
+
+            header = lines[0]
+            if not header:
+                logging.error("Constants CSV data must contain a header line.")
+                return []
+
+            for col in column_names:
+                if col not in header:
+                    logging.error(
+                        f"Column '{col}' is missing in the constants CSV data.")
+                    return []
+
+            num_columns = len(header)
+            data_lines: List[List[Any]] = [header]
+
+            for i, split_line in enumerate(lines[1:], start=2):
+                if any(field.strip() for field in split_line):
+                    if len(split_line) != num_columns:
+                        logging.error(
+                            f"All lines in the constants CSV data must have the same number of columns, check line {i}."
+                        )
+                        return []
+                    data_lines.append([
+                        TableBuilder.parse_constants_value(field)
+                        for field in split_line
+                    ])
+
+            if len(data_lines) < 2:
+                logging.error(
+                    "Constants CSV data must contain at least one data row.")
+                return []
+
+            return data_lines
+        except Exception as e:
+            logging.error(f"Error validating constants CSV data: {e}")
+            return []
+
+    @staticmethod
+    def parse_constants_value(value: str) -> Any:
+        """
+        Parse constants CSV cell values into YAML-compatible Python values.
+        """
+        try:
+            value = value.strip()
+            if value == "":
+                return None
+            if value == "-":
+                return value
+
+            import yaml
+            return yaml.safe_load(value)
+        except Exception:
+            return value
+
+    @staticmethod
     def convert_function_equation_v2(
         equation: str,
         columns: List[str],
