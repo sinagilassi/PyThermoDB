@@ -76,8 +76,8 @@ print(tb_info)
 tb_info = thermo_db.table_info(databook, 2)
 print(tb_info)
 
-tb_info = thermo_db.table_info(databook, 3)
-print(tb_info)
+# tb_info = thermo_db.table_info(databook, 3)
+# print(tb_info)
 
 # ====================================
 # LOAD TABLE
@@ -93,7 +93,7 @@ print(tb_info)
 # ====================================
 # check component availability in the databook and table
 comp1 = "Carbon Dioxide"
-COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
+# COMP1_check_availability = thermo_db.check_component(comp1, 3, 2)
 
 # query
 # query = f"Name.str.lower() == '{comp1.lower()}' & State == 'g'"

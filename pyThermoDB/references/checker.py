@@ -1,8 +1,6 @@
 # import libs
 import logging
 import pandas as pd
-import json
-from pythermodb_settings.models import ComponentKey
 # Ensure there is no local DataFrame definition that could shadow pandas.DataFrame
 from typing import (
     Union,
@@ -262,7 +260,8 @@ class ReferenceChecker:
 
         Notes
         -----
-        The table type can be 'DATA' or 'EQUATIONS'. For Matrix tables, the type is 'DATA'.
+        - The table type can be 'DATA' or 'EQUATIONS'. For Matrix tables, the type is 'DATA'.
+        - The 'CONSTANTS' table is considered a 'DATA' table.
         """
         try:
             # get table
@@ -282,8 +281,14 @@ class ReferenceChecker:
             if 'MATRIX-SYMBOL' in table:
                 return 'DATA'
 
+            # NOTE: based on CONSTANTS
+            if 'CONSTANTS' in table:
+                return 'DATA'
+
+            # NOTE: default type is DATA
             if 'DATA' in table:
                 return 'DATA'
+
         except Exception as e:
             logging.error(f"Error getting table type: {e}")
             return None
@@ -325,6 +330,45 @@ class ReferenceChecker:
             return True
         except Exception as e:
             logging.error(f"Error checking if table is matrix: {e}")
+            return False
+
+    def is_constants_table(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> bool:
+        """
+        Check if the table is a constants table.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+
+        Returns
+        -------
+        bool
+            True if the table is a constants table, otherwise False.
+        """
+        try:
+            # get table
+            table = self.get_databook_table(databook_name, table_name)
+
+            if table is None:
+                logging.error(
+                    f"Table '{table_name}' not found in databook '{databook_name}'.")
+                return False
+
+            # check if table has 'CONSTANTS' key
+            if not isinstance(table, dict) or 'CONSTANTS' not in table:
+                return False
+
+            # if 'CONSTANTS' key exists, return True
+            return True
+        except Exception as e:
+            logging.error(f"Error checking if table is constants: {e}")
             return False
 
     def get_all_tables_types(
@@ -831,6 +875,50 @@ class ReferenceChecker:
             logging.error(f"Error getting matrix table names: {e}")
             return []
 
+    def get_constants_tables(
+            self,
+            databook_name: str
+    ) -> List[Dict[str, str]]:
+        """
+        Get the names of all `constants tables` in a specific databook.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+
+        Returns
+        -------
+        List[dict]
+            A list of constants table names in the databook as:
+            - databook name
+            - table name
+        """
+        try:
+            # init res
+            constants_table_names: List[Dict[str, str]] = []
+
+            # get databook tables
+            tables = self.get_databook_tables(databook_name)
+
+            if tables is None:
+                logging.error(f"No tables found for databook: {databook_name}")
+                return constants_table_names
+
+            # SECTION: get constants table names
+
+            for table_name in tables.keys():
+                if self.is_constants_table(databook_name, table_name):
+                    constants_table_names.append({
+                        'Databook': databook_name,
+                        'Table': table_name
+                    })
+
+            return constants_table_names
+        except Exception as e:
+            logging.error(f"Error getting constants table names: {e}")
+            return constants_table_names
+
     def get_all_matrix_tables(self):
         """
         Get the names of all `matrix tables` in all databooks.
@@ -861,6 +949,344 @@ class ReferenceChecker:
             logging.error(f"Error getting all matrix table names: {e}")
             return []
 
+    def get_all_constants_tables(self):
+        """
+        Get the names of all `constants tables` in all databooks.
+
+        Returns
+        -------
+        List[dict]
+            A list of constants table names in all databooks as:
+            - databook name
+            - table name
+        """
+        try:
+            # get databook names
+            databook_names = self.get_databook_names()
+
+            if not databook_names:
+                logging.error("No databooks found in the reference.")
+                return []
+
+            # SECTION: get constants table names
+            all_constants_table_names = []
+            for databook_name in databook_names:
+                constants_tables = self.get_constants_tables(databook_name)
+                all_constants_table_names.extend(constants_tables)
+
+            return all_constants_table_names
+        except Exception as e:
+            logging.error(f"Error getting all constants table names: {e}")
+            return []
+
+    def _validate_constants_table(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> Optional[tuple[List[str], List[List[Any]]]]:
+        """
+        Validate a constants table and return its columns and values.
+        """
+        try:
+            if not self.is_constants_table(databook_name, table_name):
+                logging.error(
+                    f"Table '{table_name}' is not a constants table.")
+                return None
+
+            table_structure = self.get_table_structure(
+                databook_name,
+                table_name
+            )
+            if table_structure is None:
+                logging.error(
+                    f"Constants table '{table_name}' does not contain 'STRUCTURE' key.")
+                return None
+
+            columns = table_structure.get('COLUMNS', None)
+            if not isinstance(columns, list):
+                logging.error(
+                    f"Constants table '{table_name}' structure 'COLUMNS' must be a list.")
+                return None
+
+            required_columns = ['Name', 'Symbol', 'State']
+            missing_columns = [
+                column for column in required_columns if column not in columns
+            ]
+            if missing_columns:
+                logging.error(
+                    f"Constants table '{table_name}' is missing required columns: {missing_columns}.")
+                return None
+
+            table_values = self.get_table_values(databook_name, table_name)
+            if not isinstance(table_values, list):
+                logging.error(
+                    f"Constants table '{table_name}' values must be a list.")
+                return None
+
+            for row in table_values:
+                if not isinstance(row, list):
+                    logging.error(
+                        f"Constants table '{table_name}' values must be a list of lists.")
+                    return None
+
+            return columns, table_values
+        except Exception as e:
+            logging.error(f"Error validating constants table: {e}")
+            return None
+
+    def get_constants_table_data(
+        self,
+        databook_name: str,
+        table_name: str
+    ) -> Optional[List[Dict[str, Any]]]:
+        """
+        Get constants table records as dictionaries keyed by declared columns.
+        """
+        try:
+            constants_table = self._validate_constants_table(
+                databook_name,
+                table_name
+            )
+            if constants_table is None:
+                return None
+
+            columns, table_values = constants_table
+            constants_data: List[Dict[str, Any]] = []
+            for row in table_values:
+                row_data = {
+                    column: self._normalize_constants_value(
+                        row[idx] if idx < len(row) else None
+                    )
+                    for idx, column in enumerate(columns)
+                }
+                for optional_column in ['Value', 'Unit', 'Description']:
+                    row_data.setdefault(optional_column, None)
+                constants_data.append(row_data)
+
+            return constants_data
+        except Exception as e:
+            logging.error(f"Error getting constants table data: {e}")
+            return None
+
+    def _normalize_constants_value(self, value: Any) -> Any:
+        """
+        Normalize custom-reference None sentinels without changing real values.
+        """
+        if isinstance(value, str) and value.strip() == 'None':
+            return None
+        return value
+
+    def get_constant_data(
+        self,
+        databook_name: str,
+        table_name: str,
+        constant: str | int,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Get one constant record by name, symbol, or ``No.`` identifier.
+        """
+        try:
+            constants_data = self.get_constants_table_data(
+                databook_name,
+                table_name
+            )
+            if constants_data is None:
+                return None
+
+            if isinstance(constant, int):
+                for record in constants_data:
+                    if record.get('No.') == constant:
+                        return record
+                return None
+
+            if not isinstance(constant, str):
+                logging.error("constant must be a string or integer.")
+                return None
+
+            if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
+                logging.error(
+                    "Invalid search_mode. Must be 'NAME', 'SYMBOL', or 'BOTH'.")
+                return None
+
+            lookup = constant.strip().lower()
+            columns = []
+            if search_mode in ['NAME', 'BOTH']:
+                columns.append('Name')
+            if search_mode in ['SYMBOL', 'BOTH']:
+                columns.append('Symbol')
+
+            for record in constants_data:
+                for column in columns:
+                    value = record.get(column, None)
+                    if (
+                        isinstance(value, str) and
+                        value.strip().lower() == lookup
+                    ):
+                        return record
+
+            return None
+        except Exception as e:
+            logging.error(f"Error getting constant data: {e}")
+            return None
+
+    def check_constant_availability(
+        self,
+        databook_name: str,
+        table_name: str,
+        constant: str | int,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> Dict[str, Any]:
+        """
+        Check whether a table-wide constant exists in a constants table.
+        """
+        try:
+            constant_data = self.get_constant_data(
+                databook_name,
+                table_name,
+                constant,
+                search_mode=search_mode
+            )
+            return {
+                'databook': databook_name,
+                'table': table_name,
+                'constant': constant,
+                'available': constant_data is not None,
+                'search_mode': search_mode,
+                'data': constant_data
+            }
+        except Exception as e:
+            logging.error(f"Error checking constant availability: {e}")
+            return {
+                'databook': databook_name,
+                'table': table_name,
+                'constant': constant,
+                'available': False,
+                'search_mode': search_mode,
+                'data': None
+            }
+
+    def search_constants(
+        self,
+        search_terms: List[str],
+        databook_name: Optional[str] = None,
+        table_name: Optional[str] = None,
+        column_names: List[str] = ['Name', 'Symbol'],
+        search_mode: Literal['exact', 'similar'] = 'exact'
+    ) -> List[Dict[str, Any]]:
+        """
+        Search table-wide constants across constants tables.
+        """
+        try:
+            if search_mode not in ['exact', 'similar']:
+                logging.error("search_mode must be 'exact' or 'similar'.")
+                return []
+
+            if not isinstance(column_names, list):
+                logging.error("column_names must be a list.")
+                return []
+
+            lookups = [
+                str(term).strip().lower()
+                for term in search_terms
+            ] if search_terms else []
+
+            if databook_name is not None:
+                databook_names = [databook_name]
+            else:
+                databook_names = self.get_databook_names()
+
+            results: List[Dict[str, Any]] = []
+            for db_name in databook_names:
+                if table_name is not None:
+                    constants_tables = [{
+                        'Databook': db_name,
+                        'Table': table_name
+                    }]
+                else:
+                    constants_tables = self.get_constants_tables(db_name)
+
+                for table_ref in constants_tables:
+                    tb_name = table_ref.get('Table')
+                    if tb_name is None:
+                        continue
+                    if not self.is_constants_table(db_name, tb_name):
+                        continue
+
+                    records = self.get_constants_table_data(db_name, tb_name)
+                    if records is None:
+                        continue
+
+                    for record in records:
+                        is_match = not lookups
+                        for column in column_names:
+                            if column not in record:
+                                continue
+                            value = str(record.get(column, '')).strip().lower()
+                            for lookup in lookups:
+                                if (
+                                    search_mode == 'exact' and value == lookup
+                                ) or (
+                                    search_mode == 'similar' and lookup in value
+                                ):
+                                    is_match = True
+                                    break
+                            if is_match:
+                                break
+
+                        if is_match:
+                            results.append({
+                                'databook': db_name,
+                                'table': tb_name,
+                                **record
+                            })
+
+            return results
+        except Exception as e:
+            logging.error(f"Error searching constants: {e}")
+            return []
+
+    def get_constants_mapping(
+        self,
+        databook_name: str,
+        table_name: Optional[str] = None
+    ) -> Dict[str, str]:
+        """
+        Get a constants mapping where constant names map to symbols.
+        """
+        try:
+            if table_name is not None:
+                constants_tables = [{
+                    'Databook': databook_name,
+                    'Table': table_name
+                }]
+            else:
+                constants_tables = self.get_constants_tables(databook_name)
+
+            constants_mapping: Dict[str, str] = {}
+            for table_ref in constants_tables:
+                tb_name = table_ref.get('Table')
+                if tb_name is None:
+                    continue
+                records = self.get_constants_table_data(databook_name, tb_name)
+                if records is None:
+                    continue
+                for record in records:
+                    name = record.get('Name', None)
+                    symbol = record.get('Symbol', None)
+                    if (
+                        name is not None and
+                        symbol is not None and
+                        str(symbol).strip() not in ['None', '']
+                    ):
+                        constants_mapping[str(name)] = str(symbol)
+
+            return constants_mapping
+        except Exception as e:
+            logging.error(f"Error getting constants mapping: {e}")
+            return {}
+
+    # NOTE: get table components
     def get_table_components(
         self,
         databook_name: str,
@@ -893,6 +1319,11 @@ class ReferenceChecker:
             A dictionary containing the components if they exist, otherwise None.
         """
         try:
+            if self.is_constants_table(databook_name, table_name):
+                logging.warning(
+                    f"Table '{table_name}' is a constants table and does not contain components.")
+                return None
+
             # NOTE: get table values
             table_values = self.get_table_values(
                 databook_name,
@@ -1067,6 +1498,9 @@ class ReferenceChecker:
                     continue
 
                 for table_name in tables.keys():
+                    if self.is_constants_table(databook_name, table_name):
+                        continue
+
                     components = self.get_table_components(
                         databook_name=databook_name,
                         table_name=table_name,
@@ -1634,11 +2068,11 @@ class ReferenceChecker:
 
         ```yaml
         TABLE_NAME:
-          MATRIX-SYMBOL:
-            - Description1: Symbol1
-            - Description2: Symbol2
-            - Symbol3
-            - Symbol4
+            MATRIX-SYMBOL:
+                - Description1: Symbol1
+                - Description2: Symbol2
+                - Symbol3
+                - Symbol4
         ```
 
         Then they are converted to a dictionary as:
@@ -1694,7 +2128,8 @@ class ReferenceChecker:
 
         Returns
         -------
-
+        Optional[Dict[str, Dict[str, Any]]]
+            A dictionary containing the components data if it exists, otherwise None.
         """
         try:
             # SECTION: get table data
@@ -2324,6 +2759,14 @@ class ReferenceChecker:
 
             # iterate through each table
             for table_name, table in tables.items():
+                if self.is_constants_table(databook_name, table_name):
+                    constants_mapping = self.get_constants_mapping(
+                        databook_name,
+                        table_name
+                    )
+                    property_mapping.update(constants_mapping)
+                    continue
+
                 # get table type
                 table_type = self.get_table_type(databook_name, table_name)
                 if table_type is None:
@@ -3254,6 +3697,9 @@ class ReferenceChecker:
 
             # SECTION: iterate through each table
             for table_name, table in tables.items():
+                if self.is_constants_table(databook_name, table_name):
+                    continue
+
                 # NOTE: iterate through each property mapping
                 if ignore_state_props and len(ignore_state_props) > 0:
 
@@ -4017,6 +4463,9 @@ class ReferenceChecker:
 
             # SECTION: iterate through each table in availability
             for table_name, availability_val in availability.items():
+                if self.is_constants_table(databook_name, table_name):
+                    continue
+
                 # NOTE: extract availability
                 is_available = availability_val.get('available', False)
 

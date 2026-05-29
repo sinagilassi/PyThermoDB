@@ -7,7 +7,6 @@ import datetime
 import sys
 import functools
 from typing import Optional, Union, Literal, ClassVar
-
 # local
 from .compexporter import CompExporter
 from .comp_tools import CompTools
@@ -15,7 +14,8 @@ from ..core import (
     TableEquation,
     TableMatrixEquation,
     TableData,
-    TableMatrixData
+    TableMatrixData,
+    TableConstants
 )
 from ..config import __version__
 # ! deps
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class CompBuilder(CompExporter):
     """
-    Used to build thermodb library, including thermodynamic data and functions.
+    Used to build thermodb library, including thermodynamic data, functions, and constants.
     """
 
     # NOTE: # shared CompTools instance (lazy-created). Safe if CompTools is stateless.
@@ -63,6 +63,7 @@ class CompBuilder(CompExporter):
     _component_formula: Optional[str] = None
     _component_state: Optional[str] = None
 
+    # ! cache component identifiers as properties
     @functools.cached_property
     def component_name(self) -> Optional[str]:
         return self._component_name
@@ -118,6 +119,7 @@ class CompBuilder(CompExporter):
         # ! reset data
         self.__data = {}
 
+    # SECTION: properties/functions accessors
     @property
     def thermodb_name(self) -> str | None:
         '''
@@ -175,11 +177,17 @@ class CompBuilder(CompExporter):
         '''
         return self._build_type
 
+    # NOTE: add data
     def add_data(
         self,
         name: str,
         value: Union[
-            TableData, TableEquation, dict, TableMatrixData, TableMatrixEquation
+            TableData,
+            TableEquation,
+            dict,
+            TableMatrixData,
+            TableMatrixEquation,
+            TableConstants
         ]
     ):
         '''
@@ -189,7 +197,7 @@ class CompBuilder(CompExporter):
         ----------
         name : str
             data name
-        value : TableData | TableEquation | dict
+        value : TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation | TableConstants
             value of the property/function
 
         Returns
@@ -206,13 +214,14 @@ class CompBuilder(CompExporter):
             if name is None:
                 raise Exception('Name is required')
 
-            # check TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation
+            # check TableData | TableEquation | dict | TableMatrixData | TableMatrixEquation | TableConstants
             allowed_types = (
                 TableData,
                 TableEquation,
                 dict,
                 TableMatrixData,
-                TableMatrixEquation
+                TableMatrixEquation,
+                TableConstants
             )
 
             # check allowed types
@@ -226,6 +235,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Adding data failed!, {e}')
             return False
 
+    # NOTE: delete data
     def delete_data(self, name: str) -> bool:
         '''
         Delete data by name
@@ -252,6 +262,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Deleting data failed!, {e}')
             return False
 
+    # NOTE: rename data
     def rename_data(
             self,
             name: str,
@@ -283,6 +294,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Renaming data failed!, {e}')
             return False
 
+    # NOTE: list data
     def list_data(self):
         '''
         List the thermo data added `before saving`
@@ -309,6 +321,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Listing data failed!, {e}')
             return {}
 
+    # SECTION: build thermodb
     def build(self):
         '''
         Build thermodb
@@ -328,7 +341,11 @@ class CompBuilder(CompExporter):
             logger.error(f'Building library failed!, {e}')
             return False
 
-    def export_yml(self, component_name: str):
+    # NOTE: export yml
+    def export_yml(
+            self,
+            component_name: str
+    ) -> bool:
         '''
         Export thermodb
 
@@ -340,7 +357,7 @@ class CompBuilder(CompExporter):
         Returns
         -------
         res : bool
-            True if success
+            It returns True if the export is successful, and False otherwise.
         '''
         try:
             # data
@@ -350,7 +367,8 @@ class CompBuilder(CompExporter):
                 'DATA': {},
                 'EQUATIONS': {},
                 'MATRIX-DATA': {},
-                'MATRIX-EQUATIONS': {}
+                'MATRIX-EQUATIONS': {},
+                'CONSTANTS': {}
             }
             # get TableData
             for i, (name, value) in enumerate(self.properties.items()):
@@ -365,6 +383,11 @@ class CompBuilder(CompExporter):
                     _yml = value.to_dict()
                     # add chunk
                     _data_yml['MATRIX-DATA'][str(name)] = _yml
+
+            # get TableConstants
+            for i, (name, value) in enumerate(self.properties.items()):
+                if isinstance(value, TableConstants):
+                    _data_yml['CONSTANTS'][str(name)] = value.to_dict()
 
             # get TableEquation
             for i, (name, value) in enumerate(self.functions.items()):
@@ -397,6 +420,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Exporting yml failed!, {e}')
             return False
 
+    # NOTE: export data structure
     def export_data_structure(
             self,
             component_name: str
@@ -424,6 +448,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Exporting data structure failed!, {e}')
             return False
 
+    # NOTE: check library
     def check(self) -> dict:
         '''
         Check library
@@ -443,7 +468,8 @@ class CompBuilder(CompExporter):
             logger.error(f'Checking library failed!, {e}')
             return {}
 
-    def check_properties(self) -> dict[str, TableData | TableMatrixData]:
+    # NOTE: check properties
+    def check_properties(self) -> dict[str, TableData | TableMatrixData | TableConstants]:
         '''
         Check properties
 
@@ -458,6 +484,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
+    # NOTE: check property availability by name
     def is_property_available(
         self,
         thermo_name: str
@@ -481,10 +508,11 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking property availability failed!, ', e)
 
+    # NOTE: check property by name
     def check_property(
         self,
         thermo_name: str
-    ) -> TableData | TableMatrixData:
+    ) -> TableData | TableMatrixData | TableConstants:
         '''
         Check properties
 
@@ -495,7 +523,7 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData
+        TableMatrixData | TableData | TableConstants
             property registered
         '''
         try:
@@ -504,12 +532,13 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking properties failed!, ', e)
 
+    # NOTE: select property (case-sensitive)
     def select_property(
         self,
         thermo_name: str
-    ) -> TableData | TableMatrixData:
+    ) -> TableData | TableMatrixData | TableConstants:
         '''
-        Select a thermodynamic property (TableData or TableMatrixData) registered in the thermodb, case-sensitive.
+        Select a thermodynamic property registered in the thermodb, case-sensitive.
 
         Parameters
         ----------
@@ -518,7 +547,7 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData
+        TableMatrixData | TableData | TableConstants
             property registered in the thermodb
         '''
         try:
@@ -544,6 +573,101 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a property failed!, ', e)
 
+    # NOTE: check constants
+    def check_constants(self) -> dict[str, TableConstants]:
+        '''
+        Check all constants sources.
+
+        Returns
+        -------
+        dict
+            all TableConstants sources registered in the thermodb
+        '''
+        try:
+            return {
+                name: value for name, value in self.properties.items()
+                if isinstance(value, TableConstants)
+            }
+        except Exception as e:
+            raise Exception('Checking constants failed!, ', e)
+
+    # NOTE: check constants source availability by name
+    def is_constant_available(
+        self,
+        constant_name: str
+    ) -> bool:
+        '''
+        Check if a constants source is available in the thermodb.
+
+        Parameters
+        ----------
+        constant_name : str
+            name of the constants source
+
+        Returns
+        -------
+        bool
+            True if available
+        '''
+        try:
+            return constant_name in self.check_constants()
+        except Exception as e:
+            raise Exception('Checking constants availability failed!, ', e)
+
+    # NOTE: check constants source by name
+    def check_constant(
+        self,
+        constant_name: str
+    ) -> TableConstants:
+        '''
+        Check a constants source by name.
+
+        Parameters
+        ----------
+        constant_name : str
+            name of the constants source
+
+        Returns
+        -------
+        TableConstants
+            constants source registered in the thermodb
+        '''
+        try:
+            return self.check_constants()[constant_name]
+        except Exception as e:
+            raise Exception('Checking constants failed!, ', e)
+
+    # NOTE: select constants source (case-insensitive)
+    def select_constant(
+        self,
+        constant_name: str
+    ) -> TableConstants:
+        '''
+        Select a constants source registered in the thermodb, case-insensitive.
+
+        Parameters
+        ----------
+        constant_name : str
+            name of the constants source
+
+        Returns
+        -------
+        TableConstants
+            constants source registered in the thermodb
+        '''
+        try:
+            constant_name = constant_name.strip().lower()
+            constants = self.check_constants()
+
+            for name, value in constants.items():
+                if name.lower().strip() == constant_name:
+                    return value
+
+            raise Exception('Constants source not found in the thermodb!')
+        except Exception as e:
+            raise Exception('Selecting constants failed!, ', e)
+
+    # NOTE: check functions
     def check_functions(self) -> dict[str, TableEquation | TableMatrixEquation]:
         '''
         Check all functions
@@ -559,6 +683,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
+    # NOTE: check function availability by name
     def is_function_available(
         self,
         function_name: str
@@ -582,6 +707,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking function availability failed!, ', e)
 
+    # NOTE: check function by name
     def check_function(
         self,
         name: str
@@ -605,6 +731,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Checking functions failed!, ', e)
 
+    # NOTE: select function (case-sensitive)
     def select_function(
         self,
         function_name: str
@@ -649,12 +776,14 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a function failed!, ', e)
 
+    # SECTION: select property/function (case-sensitive)
     def select(
         self,
         thermo_name: str
     ) -> Union[
         TableData,
         TableMatrixData,
+        TableConstants,
         TableEquation,
         TableMatrixEquation
     ]:
@@ -668,7 +797,7 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData | TableEquation | TableMatrixEquation
+        TableMatrixData | TableData | TableConstants | TableEquation | TableMatrixEquation
             property defined in the thermodb
         '''
         try:
@@ -718,6 +847,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting a thermodynamic property failed!, ', e)
 
+    # NOTE: retrieve property/function by source string
     def retrieve(
         self,
         property_source: str,
@@ -727,7 +857,7 @@ class CompBuilder(CompExporter):
         ] = 'alphabetic'
     ):
         '''
-        Retrieve a thermodynamic property from the thermodb for only TableData and TableMatrixData
+        Retrieve a thermodynamic property from TableData, TableConstants, or TableMatrixData.
 
         Parameters
         ----------
@@ -777,6 +907,14 @@ class CompBuilder(CompExporter):
                 )
                 # return
                 return prop
+            elif isinstance(prop_src, TableConstants):
+                if source_num != 2:
+                    raise ValueError(
+                        f"Invalid source format! {property_source}")
+                return prop_src.get_constant(
+                    source[1].strip(),
+                    message=message
+                )
             elif isinstance(prop_src, TableMatrixData):
                 # NOTE: check string format
                 if source_num == 2:
@@ -827,6 +965,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Retrieving failed!, ", e)
 
+    # SECTION: save/load using pickle
     def save(
         self,
         filename: str,
@@ -878,6 +1017,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Saving CompBuilder instance failed!, {e}')
             return False
 
+    # NOTE: load using pickle
     @classmethod
     def load(cls, filename: str):
         """
@@ -899,6 +1039,7 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception("Loading CompBuilder instance failed!", e)
 
+    # NOTE: clean all data including properties/functions/constants
     def clean(self) -> bool:
         '''
         Clean all data including properties/functions
@@ -921,6 +1062,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Cleaning properties/functions failed!, {e}')
             return False
 
+    # NOTE: get all functions' structures
     def all_function_details(self):
         '''
         Retrieve all functions' structures in the thermodb.
@@ -959,6 +1101,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting equations structure failed!, {e}')
             return None
 
+    # NOTE: get all functions' identifiers
     def all_function_identifiers(self):
         '''
         Retrieve all functions' identifiers in the thermodb.
@@ -997,6 +1140,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting equations identifiers failed!, {e}')
             return None
 
+    # NOTE: get all data structures
     def all_data_details(self):
         '''
         Retrieve all data's structures in the thermodb.
@@ -1035,6 +1179,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting data structure failed!, {e}')
             return None
 
+    # NOTE: get all data identifiers
     def all_data_identifiers(self):
         '''
         Retrieve all data's identifiers in the thermodb.
@@ -1073,6 +1218,7 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting data identifiers failed!, {e}')
             return None
 
+    # NOTE: get all data symbol labels
     def all_data_id_labels(self):
         '''
         Retrieve all data's symbol labels in the thermodb.
@@ -1109,4 +1255,326 @@ class CompBuilder(CompExporter):
             return tools.get_data_id_labels(data)
         except Exception as e:
             logger.error(f'Getting data symbol labels failed!, {e}')
+            return None
+
+    # NOTE: get all constants structures
+    def all_constants_details(self):
+        '''
+        Retrieve all constants' structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            constants' structure
+        '''
+        try:
+            all_data = self.check_properties()
+            constants = [
+                const for const in all_data.values()
+                if isinstance(const, TableConstants)
+            ]
+
+            if not constants:
+                logger.warning(
+                    'No TableConstants found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get constants structure')
+                return None
+
+            return tools.get_constants_structure(constants)
+        except Exception as e:
+            logger.error(f'Getting constants structure failed!, {e}')
+            return None
+
+    # NOTE: get all constants identifiers
+    def all_constants_identifiers(self):
+        '''
+        Retrieve all constants' identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            constants' identifiers
+        '''
+        try:
+            all_data = self.check_properties()
+            constants = [
+                const for const in all_data.values()
+                if isinstance(const, TableConstants)
+            ]
+
+            if not constants:
+                logger.warning(
+                    'No TableConstants found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get constants identifiers')
+                return None
+
+            return tools.get_constants_identifier(constants)
+        except Exception as e:
+            logger.error(f'Getting constants identifiers failed!, {e}')
+            return None
+
+    # NOTE: get all constants symbol labels
+    def all_constants_id_labels(self):
+        '''
+        Retrieve all constants' symbol labels in the thermodb.
+
+        Returns
+        -------
+        res : list
+            constants' symbol labels
+        '''
+        try:
+            all_data = self.check_properties()
+            constants = [
+                const for const in all_data.values()
+                if isinstance(const, TableConstants)
+            ]
+
+            if not constants:
+                logger.warning(
+                    'No TableConstants found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get constants symbol labels')
+                return None
+
+            return tools.get_constants_id_labels(constants)
+        except Exception as e:
+            logger.error(f'Getting constants symbol labels failed!, {e}')
+            return None
+
+    # NOTE: get all matrix data structures
+    def all_matrix_data_details(self):
+        '''
+        Retrieve all matrix data's structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            matrix data's structure
+        '''
+        try:
+            all_data = self.check_properties()
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableMatrixData)
+            ]
+
+            if not data:
+                logger.warning(
+                    'No TableMatrixData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix data structure')
+                return None
+
+            return tools.get_matrix_data_structure(data)
+        except Exception as e:
+            logger.error(f'Getting matrix data structure failed!, {e}')
+            return None
+
+    # NOTE: get all matrix data identifiers
+    def all_matrix_data_identifiers(self):
+        '''
+        Retrieve all matrix data's identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            matrix data's identifiers
+        '''
+        try:
+            all_data = self.check_properties()
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableMatrixData)
+            ]
+
+            if not data:
+                logger.warning(
+                    'No TableMatrixData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix data identifiers')
+                return None
+
+            return tools.get_matrix_data_identifier(data)
+        except Exception as e:
+            logger.error(f'Getting matrix data identifiers failed!, {e}')
+            return None
+
+    # NOTE: get all matrix data symbol labels
+    def all_matrix_data_id_labels(self):
+        '''
+        Retrieve all matrix data's symbol labels in the thermodb.
+
+        Returns
+        -------
+        res : list
+            matrix data's symbol labels
+        '''
+        try:
+            all_data = self.check_properties()
+            data = [
+                dt for dt in all_data.values()
+                if isinstance(dt, TableMatrixData)
+            ]
+
+            if not data:
+                logger.warning(
+                    'No TableMatrixData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix data symbol labels')
+                return None
+
+            return tools.get_matrix_data_id_labels(data)
+        except Exception as e:
+            logger.error(f'Getting matrix data symbol labels failed!, {e}')
+            return None
+
+    # NOTE: get all matrix functions' structures
+    def all_matrix_function_details(self):
+        '''
+        Retrieve all matrix functions' structures in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            matrix functions' structure
+        '''
+        try:
+            all_functions = self.check_functions()
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableMatrixEquation)
+            ]
+
+            if not functions:
+                logger.warning(
+                    'No TableMatrixEquation functions found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix function structure')
+                return None
+
+            return tools.get_matrix_fn_structure(functions)
+        except Exception as e:
+            logger.error(f'Getting matrix equations structure failed!, {e}')
+            return None
+
+    # NOTE: get all matrix functions' identifiers
+    def all_matrix_function_identifiers(self):
+        '''
+        Retrieve all matrix functions' identifiers in the thermodb.
+
+        Returns
+        -------
+        res : list
+            matrix functions' identifiers
+        '''
+        try:
+            all_functions = self.check_functions()
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableMatrixEquation)
+            ]
+
+            if not functions:
+                logger.warning(
+                    'No TableMatrixEquation functions found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get matrix function identifiers')
+                return None
+
+            return tools.get_matrix_fn_identifier(functions)
+        except Exception as e:
+            logger.error(f'Getting matrix equations identifiers failed!, {e}')
+            return None
+
+    # NOTE: get build metadata
+    def build_details(self):
+        '''
+        Retrieve thermodb build metadata and registered object counts.
+
+        Returns
+        -------
+        res : dict
+            build metadata
+        '''
+        try:
+            properties = self.check_properties()
+            functions = self.check_functions()
+
+            constants_count = sum(
+                isinstance(value, TableConstants)
+                for value in properties.values()
+            )
+            data_count = sum(
+                isinstance(value, TableData)
+                for value in properties.values()
+            )
+            matrix_data_count = sum(
+                isinstance(value, TableMatrixData)
+                for value in properties.values()
+            )
+            equations_count = sum(
+                isinstance(value, TableEquation)
+                for value in functions.values()
+            )
+            matrix_equations_count = sum(
+                isinstance(value, TableMatrixEquation)
+                for value in functions.values()
+            )
+
+            return {
+                "thermodb_name": self.thermodb_name,
+                "message": self.message,
+                "build_version": self.build_version,
+                "build_date": self.build_date,
+                "build_timestamp": self.build_timestamp,
+                "build_python": self.build_python,
+                "build_type": self.build_type,
+                "component_name": self.component_name,
+                "component_formula": self.component_formula,
+                "component_state": self.component_state,
+                "properties_count": len(properties),
+                "functions_count": len(functions),
+                "constants_count": constants_count,
+                "data_count": data_count,
+                "matrix_data_count": matrix_data_count,
+                "equations_count": equations_count,
+                "matrix_equations_count": matrix_equations_count
+            }
+        except Exception as e:
+            logger.error(f'Getting build details failed!, {e}')
             return None

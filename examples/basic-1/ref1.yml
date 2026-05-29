@@ -82,3 +82,13 @@ REFERENCES:
               - None
               - 1
               - 1
+        custom-constants:
+          CONSTANTS:
+            COLUMNS:
+              - No.
+              - Name
+              - Symbol
+              - State
+              - Value
+              - Unit
+              - Description

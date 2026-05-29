@@ -9,7 +9,7 @@ from ..utils import format_eq_data
 
 
 class TableMatrixEquation:
-    # vars
+    # NOTE: attributes
     body = ''
     parms = {}
     args = {}
@@ -35,6 +35,20 @@ class TableMatrixEquation:
         equations: list,
         matrix_table=None
     ):
+        """
+        Initialize the TableMatrixEquation object.
+
+        Parameters
+        ----------
+        databook_name : str
+            The name of the databook.
+        table_name : str
+            The name of the table.
+        equations : list
+            A list of equations, each equation is a dict containing 'BODY', 'PARMS', 'ARGS', 'RETURNS', and optionally 'BODY-INTEGRAL', 'BODY-FIRST-DERIVATIVE', 'BODY-SECOND-DERIVATIVE', 'CUSTOM-INTEGRAL'.
+        matrix_table : pd.DataFrame, optional
+            A pandas DataFrame containing the matrix table data (default is None).
+        """
         # set
         self.databook_name = databook_name  # databook name
         self.table_name = table_name  # table name
@@ -438,6 +452,7 @@ class TableMatrixEquation:
     def get_component_info(self, column_name: str = 'Name'):
         '''
         Get component info through retrieving data from the matrix table
+
         Parameters
         ----------
         column_name : str

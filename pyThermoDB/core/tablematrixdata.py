@@ -5,6 +5,16 @@ import numpy as np
 from typing import Optional, Any, Literal, Dict, List
 from warnings import warn
 # local
+from ..handlers import (
+    TableMatrixDataConversionError,
+    TableMatrixDataDefinitionError,
+    TableMatrixDataError,
+    TableMatrixDataFormatError,
+    TableMatrixDataFrameError,
+    TableMatrixDataGenerationError,
+    TableMatrixDataLookupError,
+    TableMatrixDataStructureError,
+)
 from ..models import DataResultType, DataResult
 
 
@@ -74,6 +84,14 @@ class TableMatrixData:
 
         # NOTE: table structure
         self._table_structure = self._generate_table_structure(self.table_data)
+
+    def _context(self, **context):
+        base_context = {
+            "databook_name": self.databook_name,
+            "table_name": self.table_name,
+        }
+        base_context.update(context)
+        return base_context
 
     @property
     def trans_data_pack(self):
@@ -165,8 +183,10 @@ class TableMatrixData:
                             key_split = key.split('|')
                             # check
                             if len(key_split) != 2:
-                                raise Exception(
-                                    "Matrix item key is not in the correct format!")
+                                raise TableMatrixDataFormatError(
+                                    "Matrix item key is not in the correct format",
+                                    context=self._context(matrix_item_key=key),
+                                )
 
                             # strip
                             key_split = [name.strip() for name in key_split]
@@ -230,7 +250,10 @@ class TableMatrixData:
             table_structure = self._table_structure
             # check
             if table_structure is None:
-                raise Exception("Table structure is None!")
+                raise TableMatrixDataStructureError(
+                    "Table structure is None",
+                    context=self._context(),
+                )
 
             # extract
             columns = table_structure.get('COLUMNS', None)
@@ -243,7 +266,10 @@ class TableMatrixData:
             matrix_symbol_num = len(matrix_symbol) if matrix_symbol else 0
             # check
             if matrix_symbol_num == 0:
-                raise Exception("Matrix symbol is None!")
+                raise TableMatrixDataStructureError(
+                    "Matrix symbol is None",
+                    context=self._context(),
+                )
 
             # NOTE: item tables
             # item_tables = {}
@@ -277,8 +303,10 @@ class TableMatrixData:
                     key_split = key.split('|')
                     # check
                     if len(key_split) != 2:
-                        raise Exception(
-                            "Matrix item key is not in the correct format!")
+                        raise TableMatrixDataFormatError(
+                            "Matrix item key is not in the correct format",
+                            context=self._context(matrix_item_key=key),
+                        )
 
                     # temp component names
                     temp_component_names_ = [
@@ -343,8 +371,13 @@ class TableMatrixData:
             else:
                 # res
                 return None
+        except (TableMatrixDataFormatError, TableMatrixDataStructureError):
+            raise
         except Exception as e:
-            raise Exception("Generating matrix items failed!, ", e)
+            raise TableMatrixDataGenerationError(
+                "Generating matrix items failed",
+                context=self._context(component_names=component_names),
+            ) from e
 
     def _generate_table_structure(self, table_data: dict[str, Any]):
         '''
@@ -366,12 +399,20 @@ class TableMatrixData:
 
             # check
             if table_structure is None:
-                raise Exception("Table structure is None!")
+                raise TableMatrixDataStructureError(
+                    "Table structure is None",
+                    context=self._context(),
+                )
 
             # res
             return table_structure
+        except TableMatrixDataStructureError:
+            raise
         except Exception as e:
-            raise Exception("Generating table structure failed!, ", e)
+            raise TableMatrixDataStructureError(
+                "Generating table structure failed",
+                context=self._context(),
+            ) from e
 
     def _find_component_prop_data(
             self,
@@ -432,7 +473,10 @@ class TableMatrixData:
                 return {}
 
         except Exception as e:
-            raise Exception("Finding component property failed!, ", e)
+            raise TableMatrixDataLookupError(
+                "Finding component property failed",
+                context=self._context(component_id=component_id),
+            ) from e
 
     def _fid_component_prop_data_from_mixture(
             self,
@@ -483,7 +527,10 @@ class TableMatrixData:
                 'UNIT': unit
             }
         except Exception as e:
-            raise Exception("Getting matrix data header failed!, ", e)
+            raise TableMatrixDataStructureError(
+                "Getting matrix data header failed",
+                context=self._context(),
+            ) from e
 
     def matrix_data_structure(self):
         '''
@@ -503,7 +550,10 @@ class TableMatrixData:
 
             return df
         except Exception as e:
-            raise Exception("Matrix data structure failed!, ", e)
+            raise TableMatrixDataStructureError(
+                "Matrix data structure failed",
+                context=self._context(),
+            ) from e
 
     def get_matrix_table(
         self,
@@ -529,7 +579,10 @@ class TableMatrixData:
             matrix_table = self.matrix_table
 
             if matrix_table is None:
-                raise Exception("Matrix table is None!")
+                raise TableMatrixDataLookupError(
+                    "Matrix table is None",
+                    context=self._context(mode=mode),
+                )
 
             # NOTE: check mode
             if mode == 'all':
@@ -546,7 +599,10 @@ class TableMatrixData:
 
                 # check
                 if Names_selected is None:
-                    raise Exception("Selected records are None!")
+                    raise TableMatrixDataLookupError(
+                        "Selected records are None",
+                        context=self._context(mode=mode),
+                    )
 
                 # reduced records
                 Names_ignored = [i for i in Names if i not in Names_selected]
@@ -567,9 +623,20 @@ class TableMatrixData:
                 # return filtered matrix table
                 return matrix_table_filtered
             else:
-                raise ValueError("Mode not recognized!")
+                raise TableMatrixDataDefinitionError(
+                    "Mode not recognized",
+                    context=self._context(mode=mode),
+                )
+        except (
+            TableMatrixDataDefinitionError,
+            TableMatrixDataLookupError,
+        ):
+            raise
         except Exception as e:
-            raise Exception("Getting matrix table failed!, ", e)
+            raise TableMatrixDataLookupError(
+                "Getting matrix table failed",
+                context=self._context(mode=mode),
+            ) from e
 
     def _get_component_data_from_mixture_table(
         self,
@@ -602,19 +669,27 @@ class TableMatrixData:
             if self.matrix_mode == 'ITEMS':
                 # SECTION: check matrix items
                 # matrix_table = self.__generate_table_items(component_names)
-                raise Exception(
-                    "Matrix items are not available! Please use the matrix table instead!")
+                raise TableMatrixDataDefinitionError(
+                    "Matrix items are not available! Please use the matrix table instead!",
+                    context=self._context(matrix_mode=self.matrix_mode),
+                )
 
             elif self.matrix_mode == 'VALUES':
                 # SECTION: matrix structure (all data)
                 # ! load matrix table
                 matrix_table = self.matrix_table
             else:
-                raise Exception("Matrix mode is not recognized!")
+                raise TableMatrixDataDefinitionError(
+                    "Matrix mode is not recognized",
+                    context=self._context(matrix_mode=self.matrix_mode),
+                )
 
             # ! check dataframe
             if not isinstance(matrix_table, pd.DataFrame):
-                raise Exception("Matrix data is not a dataframe!")
+                raise TableMatrixDataFrameError(
+                    "Matrix data is not a dataframe",
+                    context=self._context(matrix_mode=self.matrix_mode),
+                )
 
             # >> column name
             matrix_table_column_name = list(matrix_table.columns)
@@ -623,12 +698,16 @@ class TableMatrixData:
 
             # >> check column name exists
             if component_column_id not in matrix_table_column_name:
-                raise Exception(
-                    f"Column name '{component_column_id}' not found in matrix table as {matrix_table_column_name_str}!")
+                raise TableMatrixDataStructureError(
+                    f"Column name '{component_column_id}' not found in matrix table as {matrix_table_column_name_str}!",
+                    context=self._context(column_name=component_column_id),
+                )
 
             if mixture_column_id not in matrix_table_column_name:
-                raise Exception(
-                    f"Column name '{mixture_column_id}' not found in matrix table as {matrix_table_column_name_str}!")
+                raise TableMatrixDataStructureError(
+                    f"Column name '{mixture_column_id}' not found in matrix table as {matrix_table_column_name_str}!",
+                    context=self._context(column_name=mixture_column_id),
+                )
 
             # SECTION: check columns names
             # Function to normalize mixtures
@@ -730,8 +809,9 @@ class TableMatrixData:
 
                 # check
                 if len(_data) == 0:
-                    raise Exception(
-                        "No data for component: " + component_name_filter
+                    raise TableMatrixDataLookupError(
+                        "No data for component: " + component_name_filter,
+                        context=self._context(component_id=component_name_filter),
                     )
 
                 # get component data
@@ -749,7 +829,10 @@ class TableMatrixData:
             matrix_data_info = self._get_matrix_data_info()
             # >> check
             if matrix_data_info is None:
-                raise Exception("Matrix data info is None!")
+                raise TableMatrixDataStructureError(
+                    "Matrix data info is None",
+                    context=self._context(),
+                )
 
             # >> extract
             matrix_data_columns = matrix_data_info.get('COLUMNS', [])
@@ -758,11 +841,20 @@ class TableMatrixData:
 
             # >> check
             if matrix_data_columns is None or len(matrix_data_columns) == 0:
-                raise Exception("Matrix data columns is None or empty!")
+                raise TableMatrixDataStructureError(
+                    "Matrix data columns is None or empty",
+                    context=self._context(field="COLUMNS"),
+                )
             if matrix_data_symbol is None or len(matrix_data_symbol) == 0:
-                raise Exception("Matrix data symbol is None or empty!")
+                raise TableMatrixDataStructureError(
+                    "Matrix data symbol is None or empty",
+                    context=self._context(field="SYMBOL"),
+                )
             if matrix_data_unit is None or len(matrix_data_unit) == 0:
-                raise Exception("Matrix data unit is None or empty!")
+                raise TableMatrixDataStructureError(
+                    "Matrix data unit is None or empty",
+                    context=self._context(field="UNIT"),
+                )
 
             # looping through matrix_table_comp_data
             for comp_name, comp_data in matrix_table_comp_data.items():
@@ -790,9 +882,21 @@ class TableMatrixData:
 
             # res
             return matrix_table_comp_data.get(component_id, {})
+        except (
+            TableMatrixDataDefinitionError,
+            TableMatrixDataFrameError,
+            TableMatrixDataLookupError,
+            TableMatrixDataStructureError,
+        ):
+            raise
         except Exception as e:
-            raise Exception(
-                "Getting component data from mixture table failed!, ", e)
+            raise TableMatrixDataLookupError(
+                "Getting component data from mixture table failed",
+                context=self._context(
+                    component_id=component_id,
+                    mixture_name=mixture_name,
+                ),
+            ) from e
 
     def get_property(
         self,
@@ -880,7 +984,10 @@ class TableMatrixData:
             return {}
         # >> check
         if not isinstance(prop_data, dict):
-            raise Exception("Component property data is not a dictionary!")
+            raise TableMatrixDataDefinitionError(
+                "Component property data is not a dictionary",
+                context=self._context(component_name=component_name),
+            )
 
         # NOTE: dataframe (selected component data)
         df = pd.DataFrame(prop_data)
@@ -957,8 +1064,9 @@ class TableMatrixData:
         try:
             # check property name
             if "_" not in property.strip():
-                raise Exception(
-                    "Invalid property name. Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                raise TableMatrixDataFormatError(
+                    "Invalid property name. Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol",
+                    context=self._context(property=property),
                 )
 
             # extract data
@@ -972,8 +1080,13 @@ class TableMatrixData:
                 prop_name, [comp1, comp2])
 
             return matrix_property
+        except TableMatrixDataError:
+            raise
         except Exception as e:
-            raise Exception("Getting matrix property failed!, ", e)
+            raise TableMatrixDataLookupError(
+                "Getting matrix property failed",
+                context=self._context(property=property),
+            ) from e
 
     def ij(
         self,
@@ -1008,7 +1121,10 @@ class TableMatrixData:
             # check property name
             # check not empty
             if property is None or property.strip() == "":
-                raise Exception("Property name is empty!")
+                raise TableMatrixDataFormatError(
+                    "Property name is empty",
+                    context=self._context(property=property),
+                )
 
             # extract data
             # NOTE: format 1: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
@@ -1030,13 +1146,17 @@ class TableMatrixData:
                     # remove _ij
                     prop_name = prop_name.replace('_ij', '')
                 else:
-                    raise Exception(
-                        "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                    raise TableMatrixDataFormatError(
+                        "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol",
+                        context=self._context(property=property),
                     )
 
             # NOTE: check all extracted
             if prop_name is None or comp1 is None or comp2 is None:
-                raise Exception("Property name is not in the correct format!")
+                raise TableMatrixDataFormatError(
+                    "Property name is not in the correct format",
+                    context=self._context(property=property),
+                )
 
             # trim
             prop_name = prop_name.strip()
@@ -1067,8 +1187,13 @@ class TableMatrixData:
             )
 
             return matrix_property
+        except TableMatrixDataError:
+            raise
         except Exception as e:
-            raise Exception("Getting matrix property failed!, ", e)
+            raise TableMatrixDataLookupError(
+                "Getting matrix property failed",
+                context=self._context(property=property),
+            ) from e
 
     def get_matrix_property(
         self,
@@ -1145,7 +1270,10 @@ class TableMatrixData:
 
         # NOTE: selected columns based on component_key
         if component_key not in ['Name']:
-            raise ValueError("component_key must be 'Name' or 'Formula'!")
+            raise TableMatrixDataDefinitionError(
+                "component_key must be 'Name'!",
+                context=self._context(component_key=component_key),
+            )
 
         # >> selected column
         selected_column = component_key
@@ -1154,19 +1282,27 @@ class TableMatrixData:
         if self.matrix_mode == 'ITEMS':
             # SECTION: check matrix items
             # matrix_table = self.__generate_table_items(component_names)
-            raise Exception(
-                "Matrix items are not available! Please use the matrix table instead!")
+            raise TableMatrixDataDefinitionError(
+                "Matrix items are not available! Please use the matrix table instead!",
+                context=self._context(matrix_mode=self.matrix_mode),
+            )
 
         elif self.matrix_mode == 'VALUES':
             # SECTION: matrix structure (all data)
             # ! load matrix table
             matrix_table = self.matrix_table
         else:
-            raise Exception("Matrix mode is not recognized!")
+            raise TableMatrixDataDefinitionError(
+                "Matrix mode is not recognized",
+                context=self._context(matrix_mode=self.matrix_mode),
+            )
 
         # ! check dataframe
         if not isinstance(matrix_table, pd.DataFrame):
-            raise Exception("Matrix data is not a dataframe!")
+            raise TableMatrixDataFrameError(
+                "Matrix data is not a dataframe",
+                context=self._context(matrix_mode=self.matrix_mode),
+            )
 
         # >> column name
         matrix_table_column_name = list(matrix_table.columns)
@@ -1268,8 +1404,9 @@ class TableMatrixData:
 
             # check
             if len(_data) == 0:
-                raise Exception(
-                    "No data for component: " + component_name_filter
+                raise TableMatrixDataLookupError(
+                    "No data for component: " + component_name_filter,
+                    context=self._context(component_name=component_name_filter),
                 )
 
             # get component data
@@ -1335,12 +1472,16 @@ class TableMatrixData:
 
             # >> check matrix columns
             if len(matrix_columns) != matrix_table_component_no:
-                raise Exception(
-                    "Matrix columns do not match the number of components!")
+                raise TableMatrixDataStructureError(
+                    "Matrix columns do not match the number of components",
+                    context=self._context(property=property),
+                )
             # >> check matrix column index
             if len(matrix_column_index) != matrix_table_component_no:
-                raise Exception(
-                    "Matrix column index does not match the number of components!")
+                raise TableMatrixDataStructureError(
+                    "Matrix column index does not match the number of components",
+                    context=self._context(property=property),
+                )
 
             # NOTE: property value
             comp1_index = matrix_table_component[component_names[0]] - 1
@@ -1391,8 +1532,10 @@ class TableMatrixData:
             elif symbol_format.lower() == 'numeric':
                 property_symbol = symbol_idx
             else:
-                raise ValueError(
-                    f"Symbol format {symbol_format} not recognized.")
+                raise TableMatrixDataFormatError(
+                    f"Symbol format {symbol_format} not recognized.",
+                    context=self._context(symbol_format=symbol_format),
+                )
 
             # NOTE: get property unit
             property_unit = matrix_table.iloc[1, property_column_index]
@@ -1411,7 +1554,10 @@ class TableMatrixData:
             # return
             return res
         else:
-            raise ValueError(f"Property format {property} not recognized.")
+            raise TableMatrixDataFormatError(
+                f"Property format {property} not recognized.",
+                context=self._context(property=property),
+            )
 
     def ijs(
         self,
@@ -1455,7 +1601,10 @@ class TableMatrixData:
                 property is None or
                 property.strip() == ""
             ):
-                raise Exception("Property name is empty!")
+                raise TableMatrixDataFormatError(
+                    "Property name is empty",
+                    context=self._context(property=property),
+                )
 
             # extract data
             # NOTE: format 1: Alpha_ij (i,j are component names) such as `Alpha_ethanol_methanol`
@@ -1477,17 +1626,24 @@ class TableMatrixData:
                     # remove _ij
                     prop_name = prop_name.replace('_ij', '')
                 else:
-                    raise Exception(
-                        "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol"
+                    raise TableMatrixDataFormatError(
+                        "Invalid property name. It should have three parts, Please use the following format: Alpha_ij (i,j are component names) such as Alpha_ethanol_methanol",
+                        context=self._context(property=property),
                     )
 
             # NOTE: check all extracted
             if prop_name is None or comp1 is None or comp2 is None:
-                raise Exception("Property name is not in the correct format!")
+                raise TableMatrixDataFormatError(
+                    "Property name is not in the correct format",
+                    context=self._context(property=property),
+                )
 
             # check
             if comp1 == comp2:
-                raise Exception("Component names are the same!")
+                raise TableMatrixDataFormatError(
+                    "Component names are the same",
+                    context=self._context(property=property),
+                )
 
             # set property name
             prop_name = prop_name.strip()
@@ -1506,7 +1662,10 @@ class TableMatrixData:
                 symbol_delimiter_set = " | "
             else:
                 logger.error("Symbol delimiter not recognized!")
-                raise Exception("Symbol delimiter not recognized!")
+                raise TableMatrixDataFormatError(
+                    "Symbol delimiter not recognized",
+                    context=self._context(symbol_delimiter=symbol_delimiter),
+                )
 
             # NOTE: define mixture
             # mixture name
@@ -1538,10 +1697,18 @@ class TableMatrixData:
                 # >> convert to numeric format
                 return res_array
             else:
-                raise Exception("Result format not recognized!")
+                raise TableMatrixDataFormatError(
+                    "Result format not recognized",
+                    context=self._context(res_format=res_format),
+                )
 
+        except TableMatrixDataError:
+            raise
         except Exception as e:
-            raise Exception("Generating dictionary failed!, ", e)
+            raise TableMatrixDataGenerationError(
+                "Generating dictionary failed",
+                context=self._context(property=property),
+            ) from e
 
     def mat(
         self,
@@ -1578,7 +1745,10 @@ class TableMatrixData:
             # NOTE: check property name
             # check not empty
             if property_name is None or property_name.strip() == "":
-                raise Exception("Property name is empty!")
+                raise TableMatrixDataFormatError(
+                    "Property name is empty",
+                    context=self._context(property_name=property_name),
+                )
             # set
             property_name = property_name.strip()
             # remove _i_j
@@ -1586,7 +1756,10 @@ class TableMatrixData:
 
             # NOTE: check component names
             if component_names is None or len(component_names) == 0:
-                raise Exception("Component names are empty!")
+                raise TableMatrixDataFormatError(
+                    "Component names are empty",
+                    context=self._context(component_names=component_names),
+                )
             # component num
             component_num = len(component_names)
 
@@ -1637,10 +1810,20 @@ class TableMatrixData:
             elif symbol_format == 'numeric':
                 return mat_ij
             else:
-                raise ValueError(
-                    f"Symbol format {symbol_format} not recognized.")
+                raise TableMatrixDataFormatError(
+                    f"Symbol format {symbol_format} not recognized.",
+                    context=self._context(symbol_format=symbol_format),
+                )
+        except TableMatrixDataError:
+            raise
         except Exception as e:
-            raise Exception("Getting matrix data failed!, ", e)
+            raise TableMatrixDataLookupError(
+                "Getting matrix data failed",
+                context=self._context(
+                    property_name=property_name,
+                    component_names=component_names,
+                ),
+            ) from e
 
     def to_dict(self):
         '''
@@ -1662,4 +1845,7 @@ class TableMatrixData:
 
             return res
         except Exception as e:
-            raise Exception("Conversion failed!, ", e)
+            raise TableMatrixDataConversionError(
+                "Conversion failed",
+                context=self._context(),
+            ) from e

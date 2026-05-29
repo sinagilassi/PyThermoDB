@@ -4,6 +4,15 @@ import pandas as pd
 from typing import Optional, List, Dict, Any, Literal, cast
 # local imports
 from ..models import DataResult, PropertyMatch
+from ..handlers import (
+    TableColumnError,
+    TableConversionError,
+    TableDataError,
+    TableLookupError,
+    TableSymbolError,
+    TableUnitError,
+    TableValidationError,
+)
 from .table_util import TableUtil
 # ! deps
 from ..config.deps import get_config
@@ -136,11 +145,19 @@ class TableData:
         '''
         try:
             return self.table_data[column_name]
-        except KeyError:
-            raise KeyError(
-                "Table columns not found in the data table structure!")
+        except KeyError as exc:
+            raise TableColumnError(
+                "Table columns not found in the data table structure!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"column_name": column_name},
+            ) from exc
         except Exception as e:
-            raise Exception(f"Error retrieving table columns: {e}")
+            raise TableDataError(
+                "Error retrieving table columns",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+            ) from e
 
     @property
     def table_symbols(self, symbol_name: str = 'SYMBOL') -> List[str]:
@@ -173,11 +190,19 @@ class TableData:
             symbols = [s for s in symbols if s not in seen and not seen.add(s)]
 
             return symbols
-        except KeyError:
-            raise KeyError(
-                "Table symbols not found in the data table structure!")
+        except KeyError as exc:
+            raise TableSymbolError(
+                "Table symbols not found in the data table structure!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"symbol_name": symbol_name},
+            ) from exc
         except Exception as e:
-            raise Exception(f"Error retrieving table symbols: {e}")
+            raise TableDataError(
+                "Error retrieving table symbols",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+            ) from e
 
     @property
     def table_units(
@@ -199,11 +224,19 @@ class TableData:
         '''
         try:
             return self.table_data[unit_name]
-        except KeyError:
-            raise KeyError(
-                "Table units not found in the data table structure!")
+        except KeyError as exc:
+            raise TableUnitError(
+                "Table units not found in the data table structure!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"unit_name": unit_name},
+            ) from exc
         except Exception as e:
-            raise Exception(f"Error retrieving table units: {e}")
+            raise TableDataError(
+                "Error retrieving table units",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+            ) from e
 
     @property
     def property_names(self) -> List[str]:
@@ -228,7 +261,11 @@ class TableData:
 
             return property_names
         except Exception as e:
-            raise Exception(f"Error retrieving property names: {e}")
+            raise TableDataError(
+                "Error retrieving property names",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+            ) from e
 
     def data_structure(self):
         '''
@@ -308,7 +345,12 @@ class TableData:
 
             # ! check if property found
             if get_data is None:
-                raise ValueError(f"Property '{property}' not found!")
+                raise TableLookupError(
+                    f"Property '{property}' not found!",
+                    databook_name=self.databook_name,
+                    table_name=self.table_name,
+                    context={"property": property},
+                )
             # series
             sr = pd.Series(get_data, dtype='str')
             # print(type(sr))
@@ -320,7 +362,12 @@ class TableData:
             # print(type(sr))
 
         else:
-            raise ValueError(f"loading error! {property} is not a valid type!")
+            raise TableValidationError(
+                f"loading error! {property} is not a valid type!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"property": property},
+            )
 
         # convert to dict
         data_dict = self._build_data_result(sr)
@@ -387,7 +434,12 @@ class TableData:
                         property = key
                         break
             if get_data is None:
-                raise ValueError(f"Property '{property}' not found!")
+                raise TableLookupError(
+                    f"Property '{property}' not found!",
+                    databook_name=self.databook_name,
+                    table_name=self.table_name,
+                    context={"property": property},
+                )
             # series
             sr = pd.Series(get_data, dtype='str')
             # print(type(sr))
@@ -399,7 +451,12 @@ class TableData:
             # print(type(sr))
 
         else:
-            raise ValueError(f"loading error! {property} is not a valid type!")
+            raise TableValidationError(
+                f"loading error! {property} is not a valid type!",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+                context={"property": property},
+            )
 
         # convert to dict
         data_dict = self._build_data_result(sr)
@@ -444,7 +501,11 @@ class TableData:
 
             return res
         except Exception as e:
-            raise Exception("Conversion failed!, ", e)
+            raise TableConversionError(
+                "Conversion failed",
+                databook_name=self.databook_name,
+                table_name=self.table_name,
+            ) from e
 
     def is_symbol_available(self, symbol: str):
         '''
@@ -584,6 +645,7 @@ class TableData:
             unit=cast(Optional[str], sr_dict.get('unit')),
             value=cast(Optional[str | float], sr_dict.get('value')),
             message=cast(Optional[str], sr_dict.get('message')),
-            databook_name=cast(Optional[str | int], sr_dict.get('databook_name')),
+            databook_name=cast(Optional[str | int],
+                               sr_dict.get('databook_name')),
             table_name=cast(Optional[str | int], sr_dict.get('table_name')),
         )

@@ -58,13 +58,13 @@ print(tb_info)
 # LOAD TABLE
 # ====================================
 # table-data
-dt_ = thermo_db.data_load(
-    1, 'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
-print(dt_.data_structure())
-print(dt_.table_columns)
-print(dt_.table_symbols)
-print(dt_.table_units)
-print(dt_.table_values)
+# dt_ = thermo_db.data_load(
+#     1, 'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
+# print(dt_.data_structure())
+# print(dt_.table_columns)
+# print(dt_.table_symbols)
+# print(dt_.table_units)
+# print(dt_.table_values)
 
 
 # table-data
@@ -94,7 +94,7 @@ res_ = thermo_db.table_data('CUSTOM-REF-1', 'Vapor-Pressure')
 print(type(res_))
 print(res_)
 
-res_ = thermo_db.table_view('CUSTOM-REF-1', 'Vapor-Pressure')
+# res_ = thermo_db.table_view('CUSTOM-REF-1', 'Vapor-Pressure')
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE

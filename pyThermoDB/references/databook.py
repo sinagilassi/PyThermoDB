@@ -210,6 +210,50 @@ class ThermoDatabook():
                 f"Error adding matrix data table '{table_name}': {e}")
             raise
 
+    def add_constants_table(
+        self,
+        table_name: str,
+        data: str,
+        description: Optional[str] = None
+    ):
+        """
+        Adds a constants table to the databook.
+
+        Parameters
+        ----------
+        table_name : str
+            The name of the table to be added.
+        data : str
+            The constants data (csv format) to be added to the table.
+        description : Optional[str], optional
+            The description of the table, by default None.
+        """
+        try:
+            if table_name in self._tables:
+                raise ValueError(
+                    f"Constants table '{table_name}' already exists.")
+
+            if not data:
+                raise ValueError("Data cannot be empty.")
+
+            new_table = ThermoTable(
+                name=table_name,
+                data=data,
+                id=self._table_id,
+                types="constants",
+                description=description
+            )
+
+            self._tables[table_name] = new_table
+            self._table_id += 1
+
+            logging.info(
+                f"Constants table '{table_name}' added successfully.")
+        except Exception as e:
+            logging.error(
+                f"Error adding constants table '{table_name}': {e}")
+            raise
+
     def add_equation_table(
         self,
         table_name: str,

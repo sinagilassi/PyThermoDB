@@ -7,7 +7,8 @@ from typing import (
     Optional,
     Literal,
     Union,
-    Hashable
+    Hashable,
+    Any
 )
 import json
 from pythermodb_settings.models import Component
@@ -24,15 +25,15 @@ from ..utils import (
 )
 from .tableref import TableReference
 # transformer
-from ..transformer import TransData
-from ..transformer import TransMatrixData
+from ..transformer import TransData, TransMatrixData
 from ..manager import ManageData
 # core
 from ..core import (
     TableEquation,
     TableMatrixEquation,
     TableData,
-    TableMatrixData
+    TableMatrixData,
+    TableConstants
 )
 from ..data import TableTypes
 from ..models import DataBookTableTypes, PayLoadType
@@ -523,6 +524,7 @@ class ThermoDB(ManageData):
             # data no
             data_no = 0
             matrix_data_no = 0
+            constants_no = 0
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -545,6 +547,8 @@ class ThermoDB(ManageData):
                     tb_type = 'Matrix-Equation'
                 if tb['matrix_data'] is not None:
                     tb_type = 'Matrix-Data'
+                if tb.get('constants') is not None:
+                    tb_type = 'Constants'
 
                 # ! check equations
                 if tb_type == 'Equation' and tb['equations'] is not None:
@@ -577,6 +581,9 @@ class ThermoDB(ManageData):
                     # data no
                     matrix_data_no = 1
 
+                if tb_type == 'Constants' and tb.get('constants') is not None:
+                    constants_no = 1
+
                 # data
                 tb_summary: Dict[str, str | int] = {
                     "Table Name": table_name,
@@ -584,7 +591,8 @@ class ThermoDB(ManageData):
                     "Equations": equation_no,
                     "Data": data_no,
                     "Matrix-Equations": matrix_equation_no,
-                    "Matrix-Data": matrix_data_no
+                    "Matrix-Data": matrix_data_no,
+                    "Constants": constants_no
                 }
 
                 # json
@@ -601,7 +609,8 @@ class ThermoDB(ManageData):
                     'Equations',
                     'Data',
                     'Matrix-Equations',
-                    'Matrix-Data'
+                    'Matrix-Data',
+                    'Constants'
                 ]
                 # dataframe
                 df = pd.DataFrame([tb_summary], columns=column_names)
@@ -684,9 +693,13 @@ class ThermoDB(ManageData):
         res_format: Literal[
             'dataframe', 'list', 'json'
         ] = 'dataframe'
-    ) -> pd.DataFrame | List[
-        Dict[Hashable, Optional[float | int | str]]
-    ] | str | Dict[str, pd.DataFrame]:
+    ) -> Union[
+        pd.DataFrame, List[
+            Dict[Hashable, Any]
+        ],
+        str,
+        Dict[str, pd.DataFrame]
+    ]:
         '''
         Get all table elements (display a table)
 
@@ -701,7 +714,7 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        tb_data : Pandas.DataFrame | list | str
+        tb_data : Union[pandas.DataFrame, list[dict], str, dict[str, pandas.DataFrame]]
             table data in the specified format.
         '''
         try:
@@ -724,7 +737,9 @@ class ThermoDB(ManageData):
             if isinstance(tb_data, pd.DataFrame):
                 # ! dataframe
                 # convert to list of dicts
-                tb_list_dict = tb_data.to_dict(orient='records')
+                tb_list_dict:  list[
+                    dict[Hashable, Any]
+                ] = tb_data.to_dict(orient='records')
                 # to json
                 tb_json = tb_data.to_json(orient='records')
 
@@ -742,6 +757,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Loading matrix data failed {e}")
 
+    # NOTE: load equation table
     def equation_load(
         self,
         databook: int | str,
@@ -823,6 +839,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: load data table
     def data_load(
         self,
         databook: int | str,
@@ -854,64 +871,173 @@ class ThermoDB(ManageData):
             db, db_name, db_id = self.find_databook(databook)
             # get the tb
             tb = self.select_table(databook, table)
+            # >> table type
+            tb_type = tb['table_type']
 
-            # check
-            if tb:
-                # NOTE: table name
-                table_name = tb['table']
+            # SECTION: configure general table info
+            # ! table name
+            table_name = tb['table']
 
-                # NOTE: check data/equations
-                if tb['data'] is None or tb['data'] == 'None':
+            # NOTE: check table values
+            if tb['table_values'] is not None and tb['table_values'] != 'None':
+                table_values = tb['table_values']
+            else:
+                table_values = None
+
+            # NOTE: check table structure
+            if tb['table_structure'] is not None and tb['table_structure'] != 'None':
+                table_structure = tb['table_structure']
+            else:
+                table_structure = None
+
+            # check data
+            if tb_type == 'data':
+                # ! data table type
+
+                # NOTE: check data
+                if (
+                    tb['data'] is None or
+                    tb['data'] == 'None'
+                ):
                     raise Exception(
                         'This method not compatible with the selected table!')
 
-                tb_type = TableTypes.DATA.value
+                # data (structure)
+                table_data = tb['data']
 
-                # NOTE: check table values
-                if tb['table_values'] is not None and tb['table_values'] != 'None':
-                    table_values = tb['table_values']
-                else:
-                    table_values = None
+                # check
+                if not isinstance(table_data, dict):
+                    raise ValueError("Table data is not a dictionary!")
 
-                # NOTE: check table structure
-                if tb['table_structure'] is not None and tb['table_structure'] != 'None':
-                    table_structure = tb['table_structure']
-                else:
-                    table_structure = None
+                # extract table data
+                COLUMNS = table_data.get('COLUMNS')
+                SYMBOL = table_data.get('SYMBOL')
+                UNIT = table_data.get('UNIT')
+                CONVERSION = table_data.get('CONVERSION')
 
-                # check data
-                if tb_type == 'data':
-                    table_data = tb['data']
+                # NOTE: check if the table data is empty
+                if not COLUMNS or not SYMBOL or not UNIT or not CONVERSION:
+                    raise ValueError("Table data is empty!")
 
-                    # check
-                    if not isinstance(table_data, dict):
-                        raise ValueError("Table data is not a dictionary!")
-
-                    # extract table data
-                    COLUMNS = table_data.get('COLUMNS')
-                    SYMBOL = table_data.get('SYMBOL')
-                    UNIT = table_data.get('UNIT')
-                    CONVERSION = table_data.get('CONVERSION')
-
-                    # NOTE: check if the table data is empty
-                    if not COLUMNS or not SYMBOL or not UNIT or not CONVERSION:
-                        raise ValueError("Table data is empty!")
-
-                    # data no
-                    return TableData(
-                        db_name,
-                        table_name,
-                        table_data,
-                        table_values=table_values,
-                        table_structure=table_structure
-                    )
-                else:
-                    raise Exception('Table loading error!')
+                # data no
+                return TableData(
+                    db_name,
+                    table_name,
+                    table_data,
+                    table_values=table_values,
+                    table_structure=table_structure
+                )
             else:
                 raise Exception('Table loading error!')
+
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    def constants_load(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableConstants:
+        '''
+        Display table header columns and other info
+
+        Parameters
+        ----------
+        databook : int | str
+            databook id or name
+        table : str
+            table name
+
+        Returns
+        -------
+        object : TableData
+            table object with data loaded
+        '''
+        try:
+            # table type
+            tb_type = ''
+            # table name
+            table_name = ''
+            # table data
+            table_data = []
+            # databook id | name
+            db, db_name, db_id = self.find_databook(databook)
+            # get the tb
+            tb = self.select_table(databook, table)
+            # >> table type
+            tb_type = tb['table_type']
+
+            # SECTION: configure general table info
+            # ! table name
+            table_name = tb['table']
+
+            # NOTE: check table values
+            if tb['table_values'] is not None and tb['table_values'] != 'None':
+                table_values = tb['table_values']
+            else:
+                table_values = None
+
+            # NOTE: check table structure
+            if tb['table_structure'] is not None and tb['table_structure'] != 'None':
+                table_structure = tb['table_structure']
+            else:
+                table_structure = None
+
+            # check data
+            if tb_type == 'constants':
+                # ! constants table type
+                # NOTE: check constants
+                if (
+                    tb['constants'] is None or
+                    tb['constants'] == 'None'
+                ):
+                    raise Exception(
+                        'This method not compatible with the selected table!')
+
+                # data (structure)
+                table_data = tb['constants']
+
+                # check
+                if not isinstance(table_data, dict):
+                    raise ValueError("Table data is not a dictionary!")
+
+                # extract table data
+                COLUMNS = table_data.get('COLUMNS')
+                # SYMBOL = table_data.get('SYMBOL', [])
+                # UNIT = table_data.get('UNIT', [])
+                # CONVERSION = table_data.get('CONVERSION', [])
+
+                # NOTE: check if the table data is empty
+                if not COLUMNS:
+                    raise ValueError("Table data is empty!")
+
+                # External CSV-backed constants do not provide inline VALUES.
+                if table_values is None:
+                    table_values = self.table_data(
+                        databook,
+                        table,
+                        res_format='list'
+                    )
+
+                    # >> check
+                    if not isinstance(table_values, list):
+                        raise ValueError("Table values is not a list!")
+
+                # data no
+                return TableConstants(
+                    db_name,
+                    table_name,
+                    table_data,
+                    table_values=table_values,
+                    table_structure=table_structure
+                )
+            else:
+                raise Exception('Table loading error!')
+
+        except Exception as e:
+            raise Exception(f"Table loading error {e}")
+
+    # NOTE: load matrix-equation table
     def matrix_equation_load(
         self,
         databook: int | str,
@@ -973,6 +1099,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: load matrix-data table
     def matrix_data_load(
         self,
         databook: int | str,
@@ -1033,6 +1160,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # NOTE: check component availability
     def check_component(
         self,
         component_name: str | list[str],
@@ -1152,6 +1280,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Component check error! {e}")
 
+    # NOTE: check multiple components availability
     def check_components(
             self,
             component_names: List[str],
@@ -1256,6 +1385,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Components check error! {e}")
 
+    # NOTE: check component availability with component object
     def is_component_available(
         self,
         component: Component,
@@ -1396,6 +1526,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking component availability: {e}")
 
+    # NOTE: check binary mixture availability with component objects
     def is_binary_mixture_available(
         self,
         components: List[Component],
@@ -1510,6 +1641,7 @@ class ThermoDB(ManageData):
                 return delimiter.join(sorted(parts))
 
             # NOTE: check table type
+            # ! dataframe type
             table_data = self.table_data(
                 databook=databook_id,
                 table=table_id,
@@ -1671,6 +1803,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
 
+    # NOTE: check mixtures availability with component objects
     def check_mixtures_availability(
         self,
         components: List[Component],
@@ -1801,11 +1934,157 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixtures availability: {e}")
 
+    # NOTE: check constant
+    def check_constant(
+        self,
+        constant: str,
+        databook: int | str,
+        table: int | str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
+        res_format: Literal['dict', 'json', 'str'] = 'dict'
+    ):
+        """
+        Check whether a table-wide constant exists in a constants table.
+
+        Parameters
+        ----------
+        constant : str
+            Name or symbol of the constant to check.
+        databook : int | str
+            Databook id or name.
+        table : int | str
+            Table id or name.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Whether to search by constant name, symbol, or both, by default 'BOTH'.
+        res_format : Literal['dict', 'json', 'str'], optional
+            Format of the returned result, by default 'dict'.
+
+        Returns
+        -------
+        str | dict[str, str]
+            Summary of the constant availability as a string or dictionary in the specified format.
+
+            - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
+            - 'table_name': 'Physical Properties of Pure Compounds',
+            - 'constant': name or symbol of the constant,
+        """
+        constants = self.constants_load(databook, table)
+        availability = self.is_constant_available(
+            constant=constant,
+            databook=databook,
+            table=table,
+            search_mode=search_mode
+        )
+        result = {
+            'databook_name': constants.databook_name,
+            'table_name': constants.table_name,
+            'constant': constant,
+            'availability': availability,
+            'search_mode': search_mode,
+        }
+        if res_format == 'dict':
+            return result
+        if res_format in ('json', 'str'):
+            return json.dumps(result, indent=4)
+        raise ValueError('Invalid res_format')
+
+    # NOTE: check constants
+    def check_constants(
+        self,
+        constants: list[str],
+        databook: int | str,
+        table: int | str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH',
+        res_format: Literal['dict', 'json', 'str'] = 'dict'
+    ):
+        """
+        Check several table-wide constants in one constants table.
+
+        Parameters
+        ----------
+        constants : list[str]
+            List of constant names or symbols to check.
+        databook : int | str
+            Databook id or name.
+        table : int | str
+            Table id or name.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Whether to search by constant name, symbol, or both, by default 'BOTH'.
+        res_format : Literal['dict', 'json', 'str'], optional
+            Format of the returned result, by default 'dict'.
+
+        """
+        if not constants:
+            raise ValueError('constants must be a non-empty list.')
+
+        # Build results through a narrowed variable because check_constant can
+        # also return serialized output for its public formatting options.
+        results: list[dict[str, Any]] = []
+        for constant in constants:
+            item = self.check_constant(
+                constant, databook, table, search_mode, res_format='dict'
+            )
+            if not isinstance(item, dict):
+                raise ValueError('Each result must be a dictionary.')
+            results.append(item)
+
+        # overall availability
+        result = {
+            'databook_name': results[0]['databook_name'],
+            'table_name': results[0]['table_name'],
+            'constants': results,
+            'availability': all(item['availability'] for item in results),
+        }
+        if res_format == 'dict':
+            return result
+        if res_format in ('json', 'str'):
+            return json.dumps(result, indent=4)
+        raise ValueError('Invalid res_format')
+
+    # NOTE: constant availability
+    def is_constant_available(
+        self,
+        constant: str,
+        databook: int | str,
+        table: int | str,
+        search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> bool:
+        """
+        Return whether a constant exists in a selected constants table.
+
+        Parameters
+        ----------
+        constant : str
+            Name or symbol of the constant to check.
+        databook : int | str
+            Databook id or name.
+        table : int | str
+            Table id or name.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Whether to search by constant name, symbol, or both, by default 'BOTH'.
+
+        Returns
+        -------
+        bool
+            True if the constant is available, False otherwise.
+        """
+        constants = self.constants_load(databook, table)
+        checker = getattr(constants, 'is_constant_available', None)
+        if not callable(checker):
+            raise AttributeError(
+                "The constants table object does not expose "
+                "'is_constant_available'."
+            )
+        result = checker(constant, search_mode=search_mode)
+        return bool(getattr(result, 'availability', False))
+
+    # NOTE: check component availability with API
     def check_component_api(
             self,
             component_name: str | list,
             databook_id: int,
-            table_id: int):
+            table_id: int
+    ) -> None:
         '''
         Check component availability in the selected databook and table
 
@@ -1822,54 +2101,12 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        comp_info : str
+        object : None
             component information
         '''
         try:
-            # check databook_id and table_id are number or not
-            if isNumber(databook_id) and isNumber(table_id):
-                # set api
-                ManageC = Manage(API_URL, databook_id, table_id)
-                # search
-                compList = ManageC.component_list()
-                # check availability
-                # uppercase list
-                compListUpper = uppercaseStringList(compList)
-                if len(compList) > 0:
-                    # get databook
-                    databook_name = self.list_databooks(res_format='list')[
-                        databook_id-1]
-                    # get table
-                    # table_name = self.list_tables(databook=databook_id, res_format='list')[
-                    #     table_id-1][0]
-
-                    list_tables_ = self.list_tables(
-                        databook=databook_id,
-                        res_format='list'
-                    )
-
-                    # set
-                    table_id_ = table_id - 1
-
-                    # check
-                    if len(list_tables_) > 0:
-                        # get table name
-
-                        table_name = "Obsolete Table"
-
-                    # check
-                    # if component_name.upper() in compListUpper:
-                    #     print(
-                    #         f"[{component_name}] available in [{table_name}] | [{databook_name}]")
-                    # else:
-                    #     print(f"{component_name} is not available.")
-                else:
-                    print("API error. Please try again later.")
-
-                return None
-            else:
-                raise Exception(
-                    "Invalid input. Please check the input type (databook_id and table_id).")
+            # obsolete
+            return None
         except Exception as e:
             raise Exception(f'Checking data error {e}')
 
@@ -1950,6 +2187,7 @@ class ThermoDB(ManageData):
             logger.error(f'Checking data error {e}')
             return False
 
+    # SECTION: get component data
     def get_component_data(
         self,
         component_name: str,
@@ -1962,7 +2200,7 @@ class ThermoDB(ManageData):
         component_state: Optional[str] = None
     ):
         '''
-        Get component data from database (api|local csvs)
+        Get component data from database (api|local)
 
         Parameters
         ----------
@@ -2019,6 +2257,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Loading data failed {e}")
 
+    # NOTE: get component data with API
     def get_component_data_api(
             self,
             component_name: str,
@@ -2068,6 +2307,7 @@ class ThermoDB(ManageData):
             print(f"Data for {component_name} not available!")
             return {}
 
+    # NOTE: get component data with local files
     def get_component_data_local(
         self,
         component_name: str,
@@ -2080,7 +2320,7 @@ class ThermoDB(ManageData):
         matrix_tb: bool = False
     ) -> Union[pd.DataFrame, PayLoadType, None]:
         '''
-        Get component data from database (local csv files)
+        Get component data from database (local files)
 
         Parameters
         ----------
@@ -2168,6 +2408,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Reading data error {e}')
 
+    # NOTE: get binary mixture data with component objects
     def get_binary_mixture_data(
         self,
         components: List[Component],
@@ -2284,6 +2525,7 @@ class ThermoDB(ManageData):
                 return delimiter.join(sorted(parts))
 
             # NOTE: check table type
+            # ! dataframe type
             table_data = self.table_data(
                 databook=databook_id,
                 table=table_id,
@@ -2506,6 +2748,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error checking mixture availability: {e}")
 
+    # NOTE: get mixtures data with component objects
     def get_mixtures_data(
         self,
         components: List[Component],
@@ -2635,6 +2878,37 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Error creating mixtures: {e}")
 
+    # NOTE: get constants
+    def get_constants_data(
+        self,
+        databook: int | str,
+        table: int | str,
+        res_format: Literal['dataframe', 'list', 'json'] = 'dataframe'
+    ) -> pd.DataFrame | list[dict] | str | Dict[str, pd.DataFrame]:
+        """
+        Return all records in a constants table.
+
+        Parameters
+        ----------
+        databook : int | str
+            The databook id or name.
+        table : int | str
+            The table id or name.
+        res_format : Literal['dataframe', 'list', 'json'], optional
+            The format of the returned result, by default 'dataframe'.
+            - 'dataframe': returns a pandas DataFrame.
+            - 'list': returns a list of dictionaries, where each dictionary represents a record.
+            - 'json': returns a JSON string representation of the data.
+        """
+        selected = self.select_table(databook, table)
+        if selected['table_type'] != TableTypes.CONSTANTS.value:
+            raise ValueError("The selected table is not a constants table.")
+
+        # res
+        return self.table_data(databook, table, res_format=res_format)
+
+    # SECTION: build thermo property for a component including data, equation, matrix-data and matrix-equation
+
     def build_thermo_property(
         self,
         component_names: list[str],
@@ -2750,6 +3024,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
 
+    # NOTE: build thermo property for a component including data, equation, matrix-data and matrix-equation
     def build_components_thermo_property(
         self,
         components: List[Component],
@@ -3027,6 +3302,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building thermo property error {e}')
 
+    # NOTE: build equation for a component
     def build_equation(
         self,
         component_name: str,
@@ -3129,6 +3405,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building equation error {e}')
 
+    # NOTE: build data for a component
     def build_data(
         self,
         component_name: str,
@@ -3206,15 +3483,16 @@ class ThermoDB(ManageData):
                     # ! check data type
                     _data_type = TransDataC.data_type
                     if _data_type != 'data':
-                        logger.error("The selected table contains no data for building\
-                            data! check table id and try again.")
+                        logger.error(
+                            "The selected table contains no data for building data! check table id and try again."
+                        )
 
                         raise Exception('Building data failed!')
 
                     # ! build data
                     # * construct template
                     # check eq exists
-                    dts = self.data_load(
+                    dts: TableData = self.data_load(
                         databook_id,
                         table_id
                     )
@@ -3238,6 +3516,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building data error {e}')
 
+    # NOTE: build matrix-equation for components
     def build_matrix_equation(
         self,
         component_names: list[str],
@@ -3341,8 +3620,10 @@ class ThermoDB(ManageData):
                     # ! build equation
                     # ! reading yml reference
                     # check eq exists
-                    eqs = self.matrix_equation_load(
-                        databook_id, table_id)
+                    eqs: TableMatrixEquation = self.matrix_equation_load(
+                        databook=databook_id,
+                        table=table_id
+                    )
 
                     # NOTE: update trans_data
                     eqs.trans_data_pack = transform_api_data
@@ -3361,6 +3642,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix-equation error {e}')
 
+    # NOTE: build matrix-data for components
     def build_matrix_data(
         self,
         component_names: list[str],
@@ -3599,6 +3881,7 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
 
+    # NOTE: build matrices-data for components
     def build_matrices_data(
         self,
         component_names: list[str],
@@ -3728,6 +4011,55 @@ class ThermoDB(ManageData):
                 raise Exception('Building data failed!')
         except Exception as e:
             raise Exception(f'Building matrix data error {e}')
+
+    # SECTION: constants property
+    # NOTE: build all constants
+    def build_constants_property(
+        self,
+        databook: int | str,
+        table: int | str,
+    ):
+        """
+        Build a full table-wide constants source.
+
+        Parameters
+        ----------
+        databook : int | str
+            Databook id or name, id is non-zero-based
+        table : int | str
+            Table id or name, id is non-zero-based
+
+        Returns
+        -------
+        TableConstants
+            A constants table object containing all constants from the specified databook and table.
+        """
+        return self.build_constants(databook, table)
+
+    # NOTE: build constants
+    def build_constants(
+        self,
+        databook: int | str,
+        table: int | str
+    ) -> TableConstants:
+        """
+        Build a full table-wide constants source.
+
+        Parameters
+        ----------
+        databook : int | str
+            Databook id or name, id is non-zero-based
+        table : int | str
+            Table id or name, id is non-zero-based
+
+        Returns
+        -------
+        TableConstants
+            A constants table object containing all constants from the specified databook and table.
+        """
+        return self.constants_load(databook, table)
+
+    # NOTE: search databook
 
     def __search_databook(
         self,
@@ -3938,3 +4270,61 @@ class ThermoDB(ManageData):
 
         except Exception as e:
             raise Exception(f'Listing component info error {e}')
+
+    # NOTE: list constants
+    def list_constants(
+        self,
+        res_format: Literal['list', 'dataframe', 'json'] = 'dataframe'
+    ):
+        """List constant records from all constants tables."""
+        records = self.search_constants(
+            search_terms=[],
+            res_format='list',
+            search_mode='exact'
+        )
+        if res_format == 'list':
+            return records
+        if res_format == 'dataframe':
+            return pd.DataFrame(records)
+        if res_format == 'json':
+            return json.dumps(records, indent=4)
+        raise ValueError("Invalid res_format")
+
+    def search_constants(
+        self,
+        search_terms: list[str],
+        column_names: list[str] = ['Name', 'Symbol'],
+        res_format: Literal['list', 'dataframe', 'json', 'dict'] = 'dict',
+        search_mode: Literal['exact', 'similar'] = 'exact'
+    ):
+        """Search constants independently from component lookup."""
+        table_ref = TableReference(custom_ref=self.custom_ref)
+        if search_terms:
+            records = table_ref.search_constant(
+                search_terms=search_terms,
+                search_mode=search_mode,
+                column_names=column_names
+            )
+        else:
+            records = []
+            for db_index, (_, tables) in enumerate(table_ref.databook_bulk.items()):
+                for table_index, table in enumerate(tables):
+                    if table.get('table_type') == TableTypes.CONSTANTS.value:
+                        df = table_ref.load_table(
+                            db_index + 1, table_index + 1)
+                        for row in df.to_dict(orient='records'):
+                            records.append({
+                                'databook-name': list(table_ref.databook_bulk.keys())[db_index],
+                                'table-name': table['table'],
+                                'table-type': TableTypes.CONSTANTS.value,
+                                **row
+                            })
+        if res_format == 'list':
+            return records
+        if res_format == 'dataframe':
+            return pd.DataFrame(records)
+        if res_format == 'json':
+            return json.dumps(records, indent=4)
+        if res_format == 'dict':
+            return {f'record-{i + 1}': row for i, row in enumerate(records)}
+        raise ValueError("Invalid res_format")

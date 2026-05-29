@@ -13,6 +13,7 @@ class DataBookTableTypes(TypedDict):
     data: Optional[List[str] | Dict[str, Any]]
     matrix_equations: Optional[List[str] | Dict[str, Any]]
     matrix_data: Optional[List[str] | Dict[str, Any]]
+    constants: Optional[List[str] | Dict[str, Any]]
     table_type: Optional[str]
     table_values: Optional[List[Any] | Dict[str, Any]]
     table_structure: Optional[Dict[str, Any]]
@@ -49,6 +50,19 @@ class DataResult(TypedDict):
     symbol: Optional[str]
     unit: Optional[str]
     value: Optional[Union[str, float]]
+    message: Optional[str]
+    databook_name: Optional[Union[str, int]]
+    table_name: Optional[Union[str, int]]
+
+
+class ConstantResult(TypedDict):
+    """Result returned when selecting a table-wide constant."""
+    constant_name: Optional[str]
+    symbol: Optional[str]
+    state: Optional[str]
+    value: Any
+    unit: Optional[str]
+    description: Optional[str]
     message: Optional[str]
     databook_name: Optional[Union[str, int]]
     table_name: Optional[Union[str, int]]

@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict
 from rich import print
 import pyThermoDB as ptdb
-from pyThermoDB.core import TableData, TableEquation
+from pyThermoDB.core import TableConstants, TableData, TableEquation
 
 # get versions
 # print(pt.get_version())
@@ -55,6 +55,9 @@ print(tb_info)
 tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
 print(tb_info)
 
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Custom-Constants')
+print(tb_info)
+
 # ====================================
 # LOAD TABLE
 # ====================================
@@ -68,16 +71,17 @@ print(tb_info)
 # print(dt_.table_units)
 # print(dt_.table_values)
 
-# table-data
-dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
+# ! table-data
+dt_: TableData = thermo_db.data_load('CUSTOM-REF-1', 'General-Data')
 print(dt_.data_structure())
 print(dt_.table_columns)
 print(dt_.table_symbols)
 print(dt_.table_units)
 print(dt_.table_values)
 
-# table-equation
-tb_eq = thermo_db.equation_load('CUSTOM-REF-1', 'Vapor-Pressure')
+# ! table-equation
+tb_eq: TableEquation = thermo_db.equation_load(
+    'CUSTOM-REF-1', 'Vapor-Pressure')
 # equation structure
 tb_eq_structure: Dict[str, Any] = tb_eq.eq_structure()
 print(tb_eq_structure)
@@ -92,6 +96,15 @@ print(tb_eq.equation_args())
 print(tb_eq.equation_body())
 print(tb_eq.equation_return())
 
+# ! custom constants
+tb_const: TableConstants = thermo_db.constants_load(
+    'CUSTOM-REF-1',
+    'Custom-Constants'
+)
+# attributes
+print(tb_const.table_columns)
+print(tb_const.table_values)
+print(tb_const.get_constant('R'))
 
 # ===============================
 # TABLE LOAD
@@ -118,7 +131,7 @@ comp1 = "methane"
 
 
 # ====================================
-# BUILD DATA
+# 🔵 BUILD DATA FOR A COMPONENT
 # ====================================
 # build data
 data_1 = thermo_db.build_thermo_property(
@@ -145,7 +158,7 @@ res_ = data_1.get_property("MW")
 print(res_)
 
 # ====================================
-# BUILD EQUATION
+# 🔵 BUILD EQUATION FOR A COMPONENT
 # ====================================
 # ! build equation
 comp1_eq_1 = thermo_db.build_thermo_property(
@@ -218,6 +231,31 @@ res_ = comp1_eq_2.cal(T=298)
 print(res_)
 
 # ====================================
+# 🔵 BUILD CONSTANTS FOR A COMPONENT
+# ====================================
+# ! build constants
+tb_const: TableConstants = thermo_db.build_constants(
+    'CUSTOM-REF-1',
+    'Custom-Constants'
+)
+# access constants
+print(tb_const.table_columns)
+print(tb_const.table_values)
+print(tb_const.get_constant('R'))
+print(tb_const.get_constant('R', message="gas constant"))
+print(tb_const.get_constant('dH_rxn', message="enthalpy of reaction"))
+print(tb_const.get_constant('X', message="custom constants"))
+
+
+# Custom-Constants-2
+tb_const2: TableConstants = thermo_db.build_constants(
+    'CUSTOM-REF-1',
+    'Custom-Constants-2'
+)
+print(tb_const2.table_columns)
+print(tb_const2.table_values)
+
+# ====================================
 # BUILD THERMODB
 # ====================================
 # build a thermodb
@@ -230,6 +268,10 @@ thermo_db.add_data('general', data_1)
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq_2)
+# add table-wide constants
+thermo_db.add_data('custom-constants', tb_const)
+# add table-wide constants
+thermo_db.add_data('custom-constants-2', tb_const2)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
@@ -238,7 +280,10 @@ thermo_db.add_data('heat-capacity', comp1_eq_2)
 thermodb_file = f'{comp1}-1.pkl'
 
 # save
-thermo_db.save(thermodb_file, file_path=parent_path)
+thermo_db.save(
+    filename=thermodb_file,
+    file_path=parent_path
+)
 
 # check
 print(thermo_db.check())
@@ -271,6 +316,12 @@ print(prop1_.get_property('MW'))
 # ! new format
 _src = 'general | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
+print(thermo_db_loaded.retrieve('custom-constants | R', message="gas constant"))
+print(thermo_db_loaded.retrieve(
+    'custom-constants | dH_rxn', message="enthalpy of reaction"))
+
+print(thermo_db_loaded.retrieve(
+    'custom-constants-2 | dG_rxn', message="Gibbs free energy  of reaction"))
 
 # ====================================
 # SELECT A FUNCTION

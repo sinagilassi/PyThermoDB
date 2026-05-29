@@ -105,7 +105,7 @@ print(comp1_data.data_structure())
 # get property
 print(comp1_data.get_property(6))
 # by symbol
-print(float(comp1_data.get_property('dHf_IG')['value']))
+print(comp1_data.get_property('dHf_IG')['value'])
 
 # ====================================
 # BUILD EQUATION

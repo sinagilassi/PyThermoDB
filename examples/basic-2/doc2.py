@@ -4,11 +4,10 @@ import os
 from rich import print
 import pyThermoDB as ptdb
 from pythermodb_settings.models import Component
-from pyThermoDB.core import TableData, TableEquation
+from pyThermoDB.core import TableData, TableEquation, TableConstants
 
 
 # get versions
-# print(pt.get_version())
 print(ptdb.__version__)
 
 # ====================================
@@ -58,11 +57,11 @@ print(tb_list)
 tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data')
 print(tb_info)
 
-# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
-# print(tb_info)
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
+print(tb_info)
 
-# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
-# print(tb_info)
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Ideal-Gas-Molar-Heat-Capacity')
+print(tb_info)
 
 # ====================================
 # LOAD TABLE
@@ -91,18 +90,18 @@ print(tb_eq.table_symbols)
 print(tb_eq.table_units)
 print(tb_eq.table_values)
 
-# local data
+# app local data
 # tb_eq = thermo_db.equation_load(
 #     "Perry's Chemical Engineers' Handbook",
 #     'TABLE 2-153 Heat Capacities of Inorganic and Organic Liquids'
 # )
-# equation structure
+# # equation structure
 # tb_eq_structure = tb_eq.eq_structure()
 # print(tb_eq_structure)
 # print(tb_eq.eqs_structure())
-# print(tb_eq.table_columns())
-# print(tb_eq.table_symbols())
-# print(tb_eq.table_units())
+# print(tb_eq.table_columns)
+# print(tb_eq.table_symbols)
+# print(tb_eq.table_units)
 
 # ====================================
 # CHECK COMPONENT AVAILABILITY IN A TABLE
@@ -145,13 +144,23 @@ print(COMP1_check_availability)
 CO2 = Component(
     name="Carbon dioxide",
     formula="CO2",
-    state="g"
+    state="g",
 )
+# by Formula-State
 is_available = thermo_db.is_component_available(
     CO2,
     'CUSTOM-REF-1',
     'General-Data',
     component_key='Formula-State',
+)
+print(is_available)
+
+# by Name-State
+is_available = thermo_db.is_component_available(
+    CO2,
+    'CUSTOM-REF-1',
+    'General-Data',
+    component_key='Name-State',
 )
 print(is_available)
 
@@ -165,11 +174,13 @@ data_1 = thermo_db.build_thermo_property(
     'CUSTOM-REF-1',
     'General-Data'
 )
+print(type(data_1))
+
 # check
 if not isinstance(data_1, TableData):
-    raise TypeError("data_1 is not a TableData instance")
-# type
-print(type(data_1))
+    raise TypeError(
+        f"Expected TableData, got {type(data_1)} instead."
+    )
 
 # retrieve data
 res_ = data_1.get_property("MW")
@@ -191,7 +202,9 @@ data_1 = thermo_db.build_components_thermo_property(
 )
 # check
 if not isinstance(data_1, TableData):
-    raise TypeError("data_1 is not a TableData instance")
+    raise TypeError(
+        f"Expected TableData, got {type(data_1)} instead."
+    )
 
 res_ = data_1.get_property("MW")
 print(res_)
@@ -205,9 +218,10 @@ data_1 = thermo_db.build_components_thermo_property(
 )
 # check
 if not isinstance(data_1, TableData):
-    raise TypeError("data_1 is not a TableData instance")
-# type
-print(type(data_1))
+    raise TypeError(
+        f"Expected TableData, got {type(data_1)} instead."
+    )
+
 res_ = data_1.get_property("MW")
 print(res_)
 
@@ -224,7 +238,9 @@ comp1_eq_1 = thermo_db.build_thermo_property(
 )
 # check
 if not isinstance(comp1_eq_1, TableEquation):
-    raise TypeError("comp1_eq_1 is not a TableEquation instance")
+    raise TypeError(
+        f"Expected TableEquation, got {type(comp1_eq_1)} instead."
+    )
 # equation details
 print(comp1_eq_1.equation_parms())
 print(comp1_eq_1.equation_args())
@@ -249,7 +265,10 @@ comp1_eq_1 = thermo_db.build_components_thermo_property(
 )
 # check
 if not isinstance(comp1_eq_1, TableEquation):
-    raise TypeError("comp1_eq_1 is not a TableEquation instance")
+    raise TypeError(
+        f"Expected TableEquation, got {type(comp1_eq_1)} instead."
+    )
+
 # cal
 res_ = comp1_eq_1.cal(T=290)
 print(res_)
@@ -263,7 +282,10 @@ comp1_eq_2 = thermo_db.build_thermo_property(
 )
 # check
 if not isinstance(comp1_eq_2, TableEquation):
-    raise TypeError("comp1_eq_2 is not a TableEquation instance")
+    raise TypeError(
+        f"Expected TableEquation, got {type(comp1_eq_2)} instead."
+    )
+
 # equation details
 print(comp1_eq_2.equation_parms())
 print(comp1_eq_2.equation_args())
@@ -283,10 +305,36 @@ comp1_eq_2 = thermo_db.build_components_thermo_property(
 )
 # check
 if not isinstance(comp1_eq_2, TableEquation):
-    raise TypeError("comp1_eq_2 is not a TableEquation instance")
+    raise TypeError(
+        f"Expected TableEquation, got {type(comp1_eq_2)} instead."
+    )
+
 # cal
 res_ = comp1_eq_2.cal(T=290)
 print(res_)
+
+# ====================================
+# BUILD CONSTANTS
+# ====================================
+# build constants
+general_const: TableConstants = thermo_db.build_constants(
+    databook='CUSTOM-REF-1',
+    table='custom-constants'
+)
+print(general_const.data_structure())
+
+# access constant
+# ! R (scalar)
+print(general_const.get_constant('R'))
+# ! dG_rxn (dictionary)
+print(general_const.get_constant('dG_rxn'))
+# ! Xb (string)
+print(general_const.get_constant('Xb'))
+# ! X (list)
+print(general_const.get_constant('X'))
+# ! non-existing constant (can raise error)
+print(general_const.get_constant('non_existing_constant', strict=False))
+# print(general_const.get_constant('non_existing_constant'))
 
 # ====================================
 # BUILD THERMODB
@@ -301,12 +349,14 @@ thermo_db.add_data('general-data', data_1)
 thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # add TableEquation
 thermo_db.add_data('heat-capacity', comp1_eq_2)
+# add constants
+thermo_db.add_data('custom-constants', general_const)
 # add string
 # thermo_db.add_data('dHf', {'dHf_IG': 152})
 # export
 # thermo_db.export_data_structure(comp1)
 
-thermodb_file = f'{comp1}-1.pkl'
+thermodb_file = f'{comp1}-custom-constants-1.pkl'
 
 # save
 thermo_db.save(thermodb_file, file_path=parent_dir)
@@ -329,17 +379,20 @@ print(thermo_db_loaded.check())
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermo_db_loaded.select('general-data')
+print(type(prop1_))
 # check
 if not isinstance(prop1_, TableData):
-    raise TypeError("prop1_ is not a TableData instance")
-# type
-print(type(prop1_))
+    raise TypeError(
+        f"Expected TableData, got {type(prop1_)} instead."
+    )
+
+# property data
 print(prop1_.prop_data)
 
-# ! old format
+# old format
 print(prop1_.get_property('MW'))
 
-# ! new format
+# new format
 _src = 'general-data | MW'
 print(thermo_db_loaded.retrieve(_src, message="molecular weight"))
 
@@ -351,3 +404,23 @@ func1_ = thermo_db_loaded.select_function('heat-capacity')
 print(type(func1_))
 print(func1_.args)
 print(func1_.cal(T=295.15, message="heat capacity result"))
+
+# ====================================
+# SELECT CONSTANTS
+# ====================================
+print("[bold magenta]Select constants from the thermodb:[/bold magenta]")
+# select constants
+const1_: TableConstants = thermo_db_loaded.select_constant('custom-constants')
+print(type(const1_))
+# access constant
+# ! R (scalar)
+print(const1_.get_constant('R'))
+# ! dG_rxn (dictionary)
+print(const1_.get_constant('dG_rxn'))
+# ! Xb (string)
+print(const1_.get_constant('Xb'))
+# ! X (list)
+print(const1_.get_constant('X'))
+# ! non-existing constant (can raise error)
+print(const1_.get_constant('non_existing_constant', strict=False))
+# print(general_const.get_constant('non_existing_constant'))

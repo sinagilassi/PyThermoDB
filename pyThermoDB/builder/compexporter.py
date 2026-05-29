@@ -5,6 +5,7 @@ from ..core import TableData
 from ..core import TableEquation
 from ..core import TableMatrixData
 from ..core import TableMatrixEquation
+from ..core import TableConstants
 
 # logger
 logger = logging.getLogger(__name__)
@@ -21,7 +22,9 @@ class CompExporter:
         self.__properties = {}
         # allowed types
         # allowed types for properties
-        self.allowed_types_properties = (TableData, dict, TableMatrixData)
+        self.allowed_types_properties = (
+            TableData, dict, TableMatrixData, TableConstants
+        )
 
         # allowed types for equations (functions)
         self.allowed_types_equations = (TableEquation, TableMatrixEquation)
@@ -37,7 +40,7 @@ class CompExporter:
     def _add(
         self,
         name: str,
-        value: TableData | TableEquation | TableMatrixData | TableMatrixEquation
+        value: TableData | TableEquation | TableMatrixData | TableMatrixEquation | TableConstants
     ):
         '''
         Add a new property/functions
@@ -111,7 +114,7 @@ class CompExporter:
     def _update(
             self,
             name: str,
-            value: TableData | TableEquation | TableMatrixData | TableMatrixEquation
+            value: TableData | TableEquation | TableMatrixData | TableMatrixEquation | TableConstants
     ):
         '''
         Update a property/functions
