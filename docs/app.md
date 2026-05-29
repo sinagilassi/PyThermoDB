@@ -1,51 +1,6 @@
-# Methods
+# Legacy Page
 
-## App
+The API content previously documented here has been consolidated.
 
-::: pyThermoDB.app
-
-## Docs
-
-### thermo
-
-::: pyThermoDB.docs.thermo
-
-### tableref
-
-::: pyThermoDB.docs.tableref
-
-### transdata
-
-::: pyThermoDB.transformer.transdata
-
-### tableequation
-
-::: pyThermoDB.core.tableequation
-
-### tabledata
-
-::: pyThermoDB.core.tabledata
-
-### tablematrixequation
-
-::: pyThermoDB.core.tablematrixequation
-
-### tablematrixdata
-
-::: pyThermoDB.core.tablematrixdata
-
-### managedata
-
-::: pyThermoDB.manager.managedata
-
-### customref
-
-::: pyThermoDB.loader.customref
-
-### compexporter
-
-::: pyThermoDB.builder.compexporter
-
-### compbuilder
-
-::: pyThermoDB.builder.compbuilder
+- Use [Core Workflows](core-workflows.md) for usage patterns.
+- Use [API Reference](api-reference.md) for full module/class reference.

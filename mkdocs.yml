@@ -1,4 +1,17 @@
 site_name: PyThermoDB
+nav:
+  - "🏠 Home": index.md
+  - "🚀 Quickstart": quickstart.md
+  - "📘 Comprehensive Walkthrough": comprehensive-walkthrough.md
+  - "⚙️ Core Workflows": core-workflows.md
+  - "🧠 Package Logic": package-logic.md
+  - "📝 README Highlights": readme-highlights.md
+  - "🧩 Custom References": custom-references.md
+  - "🧪 Matrix & Mixture Data": matrix-mixture.md
+  - "📐 Constants": constants.md
+  - "🏗️ ThermoDB Build APIs": thermodb-build-apis.md
+  - "📚 API Reference": api-reference.md
+  - "🗂️ Examples Map": examples.md
 theme:
   name: material
   features:
@@ -57,4 +70,4 @@ markdown_extensions:
 
 
 copyright: |
-  &copy; 2025 <a href="https://github.com/sinagilassi"  target="_blank" rel="noopener">Sina Gilassi</a>
+  &copy; 2026 <a href="https://github.com/sinagilassi"  target="_blank" rel="noopener">Sina Gilassi</a>
