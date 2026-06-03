@@ -2359,10 +2359,15 @@ def build_constant_thermodb(
         # Kept for API parity with other explicit-config builders.
         _ = reference_config_default_check
 
+        # NOTE: normalize config to dict of source configs
         reference_config_ = _normalize_constant_reference_config(
             reference_config
         )
+
+        # NOTE: initialize thermodb
         thermodb = init(custom_reference=custom_reference)
+
+        # NOTE: build constant sources and check availability
         res = _build_constant_sources(
             thermodb=thermodb,
             reference_config=reference_config_,
