@@ -117,6 +117,7 @@ def _is_constants_table_type(
     return table_info_.get('Type', None) == 'Constants'
 
 
+# SECTION: Build constants sources
 def _build_constant_sources(
     thermodb: Any,
     reference_config: Dict[str, Dict[str, Any]],
@@ -127,6 +128,26 @@ def _build_constant_sources(
 ) -> Dict[str, Any]:
     """
     Build constants sources from config and optionally validate constants.
+
+    Parameters
+    ----------
+    thermodb : Any
+        The thermodynamic database instance to use for building constants.
+    reference_config : Dict[str, Dict[str, Any]]
+        A dictionary containing reference configurations for constants sources.
+    constants : Optional[Union[str, List[str]]], optional
+        A constant name or a list of constant names to check for availability in the sources. If None, no availability check is performed, by default None.
+    search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+        The mode to search for constants in the sources: by 'NAME', by 'SYMBOL', or 'BOTH', by default 'BOTH'.
+    check_source : bool, optional
+        Whether to perform additional checks on the source tables (e.g., check if the table is a constants table and if configured labels/symbols are available), by default False.
+    verbose : Optional[bool], optional
+        Whether to log additional information during the process, by default False.
+
+    Returns
+    -------
+    Dict[str, Any]
+        A dictionary of built constants sources that passed the availability and optional checks, keyed by source name.
     """
     if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
         raise ValueError("search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
@@ -239,6 +260,7 @@ def _build_constant_sources(
     return res
 
 
+# SECTION: Look up reference configs
 def look_up_component_reference_config(
     component_id: str,
     reference_config: Dict[str, Any],
@@ -297,6 +319,7 @@ def look_up_component_reference_config(
     return component_reference_config
 
 
+# SECTION: Look up mixture reference configs
 def look_up_binary_mixture_reference_config(
         component_id_1: str,
         component_id_2: str,
