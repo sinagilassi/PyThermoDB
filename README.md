@@ -76,10 +76,6 @@ Try PyThermoDB directly in your browser with these interactive examples:
 - 🔰 **Basic Usage 1**
   [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1jWkaSJ280AZFn9t8X7_bqz_pYtY2QKbr?usp=sharing)
 
-## 🚀 Streamlit App
-
-Check out `PyThermoDB` live! [🔗 PyThermoDB on Streamlit](https://pythermodb.streamlit.app/)
-
 ## 📥 Installation
 
 Install PyThermoDB with pip:
@@ -95,23 +91,6 @@ print(ptdb.__version__)
 PyThermoDB allows you to search for a specific component by its name or formula within a databook and table. This feature helps you quickly locate the relevant data and makes it easier to build a ThermoDB for the component.
 
 ![Search](https://drive.google.com/uc?export=view&id=1YBOMbc9iO3ytGD3UGzmkT2BXhkPKDBHk)
-
-### **🔎 Search for a Component**
-
-Use the following method to search for a component:
-
-```python
-# Search for a component in a databook and table
-# open all tables in the browser
-tdb.tables_view()
-```
-
-### **📋 Search Results**
-
-The search results will include:
-
-- **📚 Databook Name and ID**: The databook where the component is found.
-- **📋 Table Name and ID**: The table containing the component's data.
 
 ## 🛠️ Usage Examples
 
