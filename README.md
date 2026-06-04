@@ -17,6 +17,108 @@ PyThermoDB is a lightweight and user-friendly Python package designed to provide
 - 🧩 **Minimal Dependencies**: Built with simplicity in mind, the package has minimal external dependencies, making it easy to integrate into your projects.
 - 🌐 **Open Source**: Feel free to explore, contribute, and customize the package according to your needs.
 
+## 🔄 PyThermoDB Functional Workflow
+
+PyThermoDB is organized around a simple workflow: initialize a reference, inspect databooks and tables, build typed thermodynamic objects, package them into a reusable ThermoDB, and reload the saved ThermoDB in applications.
+
+### 📝 1. Reference and table discovery
+
+```mermaid
+flowchart LR
+    A["Built-in references<br/>or custom YAML/CSV"] --> B["ptdb.init()"]
+    B --> C["list_databooks()"]
+    C --> D["list_tables()"]
+    D --> E["table_info()"]
+    E --> F["data_load() / equation_load() / constants_load()"]
+```
+
+This first layer helps users explore the available thermodynamic source data before building objects. It supports built-in references and custom project references.
+
+### 🧩 2. Core object builders
+
+```mermaid
+flowchart LR
+    A["Reference table"] --> B{"Table type"}
+    B --> C["DATA table"]
+    B --> D["EQUATION table"]
+    B --> E["MATRIX data table"]
+    B --> F["MATRIX equation table"]
+    B --> G["CONSTANTS table"]
+
+    C --> H["TableData"]
+    D --> I["TableEquation"]
+    E --> J["TableMatrixData"]
+    F --> K["TableMatrixEquation"]
+    G --> L["TableConstants"]
+```
+
+The `pyThermoDB/core` folder defines the typed objects used by the package:
+
+- 📊 `TableData`: component property records and `get_property()`.
+- 🧮 `TableEquation`: component equations with `cal()`, derivatives, integrals, and custom integrals.
+- 🧱 `TableMatrixData`: matrix-style data for mixtures and pairwise parameters.
+- 🔢 `TableMatrixEquation`: matrix equations for mixture calculations.
+- 🧪 `TableConstants`: table-wide constants and `get_constant()`.
+
+### 🏗️ 3. Build ThermoDB packages
+
+```mermaid
+flowchart LR
+    A["TableData"] --> F["CompBuilder"]
+    B["TableEquation"] --> F
+    C["TableMatrixData"] --> F
+    D["TableMatrixEquation"] --> F
+    E["TableConstants"] --> F
+    F --> G["add_data()"]
+    G --> H["build()"]
+    H --> I["save(.pkl)"]
+```
+
+`CompBuilder` packages selected properties, equations, matrix data, matrix equations, and constants into one reusable ThermoDB artifact.
+
+### 🚀 4. Load and use in applications
+
+```mermaid
+flowchart LR
+    A["Saved ThermoDB<br/>.pkl"] --> B["ptdb.load_thermodb()"]
+    B --> C["check()"]
+    B --> D["select()"]
+    B --> E["select_function()"]
+    B --> F["select_constant()"]
+    B --> G["retrieve('source | symbol')"]
+    D --> H["get_property()"]
+    E --> I["cal()"]
+    F --> J["get_constant()"]
+```
+
+After loading a ThermoDB, application code can retrieve component properties, evaluate equations, access constants, and use compact source strings such as `general | MW` or `custom-constants | R`.
+
+### 📚 5. Higher-level reference builders
+
+```mermaid
+flowchart LR
+    A["Reference config<br/>or reference YAML"] --> B{"Build target"}
+    B --> C["Single component"]
+    B --> D["Multiple components / mixtures"]
+    B --> E["Constants"]
+
+    C --> F["build_component_thermodb()"]
+    C --> G["check_and_build_component_thermodb()"]
+    D --> H["build_components_thermodb()"]
+    D --> I["build_mixture_thermodb_from_reference()"]
+    E --> J["build_constant_thermodb()"]
+    E --> K["build_constants_thermodb_from_reference()"]
+
+    F --> L["CompBuilder / saved ThermoDB"]
+    G --> L
+    H --> L
+    I --> L
+    J --> L
+    K --> L
+```
+
+These higher-level builders automate the same core workflow shown above. They are useful when users want to build complete ThermoDB files directly from reference configuration instead of manually loading each table.
+
 ## 🤖 PyThermoAI
 
 [PyThermoAI](https://github.com/sinagilassi/PyThermoAI) is an intelligent Python package that revolutionizes thermodynamic data acquisition and processing by leveraging advanced AI agents and web search capabilities.
