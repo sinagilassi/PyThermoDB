@@ -188,12 +188,6 @@ import pyThermoDB as ptdb
 print(ptdb.__version__)
 ```
 
-## 🔍 Search a Component Name or Formula
-
-PyThermoDB allows you to search for a specific component by its name or formula within a databook and table. This feature helps you quickly locate the relevant data and makes it easier to build a ThermoDB for the component.
-
-![Search](https://drive.google.com/uc?export=view&id=1YBOMbc9iO3ytGD3UGzmkT2BXhkPKDBHk)
-
 ## 🛠️ Usage Examples
 
 * **Databook reference initialization**:
