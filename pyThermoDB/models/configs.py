@@ -9,3 +9,14 @@ class ComponentConfig(TypedDict, total=False):
     mode: str
     label: str  # optional
     labels: dict[str, str]  # optional
+
+
+# SECTION: Constants Configuration
+# ! move to pythermodb_settings
+class ConstantsConfig(TypedDict, total=False):
+    """Constants configuration model"""
+    databook: str
+    table: str
+    mode: str
+    label: str  # optional
+    labels: dict[str, str]  # optional
