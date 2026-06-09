@@ -17,6 +17,7 @@ from pythermodb_settings.models import (
     Component
 )
 # locals
+#
 from ..loader import CustomRef
 from .builder import TableBuilder
 from .symbols_controller import SymbolController
@@ -26,6 +27,8 @@ from ..utils import (
     create_mixture_from_components,
     create_binary_mixtures
 )
+# REVIEW: move to pythermodb_settings
+from ..models.configs import ConstantsConfig
 
 # NOTE: logger
 logger = logging.getLogger(__name__)
@@ -4417,6 +4420,18 @@ class ReferenceChecker:
         -------
         Optional[Dict[str, ComponentConfig]]
             A dictionary containing the reference config if the component exists, otherwise None.
+
+        Notes
+        -----
+        - ComponentConfig consists of information about the databook, table, mode, and optional label for the component reference, and has the following structure:
+
+        ComponentConfig(
+            databook: str,
+            table: str,
+            mode: str,
+            label: Optional[str] = None,
+            labels: Optional[Dict[str, str]] = None
+        )
         """
         try:
             # SECTION: check inputs
@@ -5363,6 +5378,14 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting mixture references: {e}")
             return None
+
+    # NOTE: Constants reference configs
+    def get_constants_reference_config(
+            self,
+    ):
+        pass
+
+    # SECTION: Reference Rules
 
     def generate_reference_rules(
         self,
