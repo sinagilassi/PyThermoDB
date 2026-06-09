@@ -38,6 +38,7 @@ thermodb_constants_: ConstantsThermoDB | None = build_constants_thermodb_from_re
     reference_content=external_ref_path,
 )
 print(f"thermodb_constants_: {type(thermodb_constants_)}")
+print(f"thermodb_constants_: {thermodb_constants_}")
 
 # >> thermodb
 if thermodb_constants_ is not None:
