@@ -1,15 +1,26 @@
 # import libs
 import os
+from rich import print
 from pyThermoDB import (
     build_constants_thermodb_from_reference,
     ConstantsThermoDB
 )
 from pyThermoDB.core import TableConstants
-from rich import print
+# ! reference
+from examples.configs.reference_2 import REFERENCE_CONTENT
 
 # NOTE: current file path
 parent_path = os.path.dirname(os.path.abspath(__file__))
 print(parent_path)
+
+
+# SECTION: reference content
+# Use the reference content defined in the reference_2.py file.
+# NOTE: normal build, all constants tables
+thermodb_constants_: ConstantsThermoDB | None = build_constants_thermodb_from_reference(
+    reference_content=REFERENCE_CONTENT,
+)
+print(f"thermodb_constants_: {type(thermodb_constants_)}")
 
 # SECTION: reference content
 # Use the external reference YAML that contains Custom-Constants and
