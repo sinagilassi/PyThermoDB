@@ -73,6 +73,29 @@ class CompTools:
             logger.error(f"Error in getting functions' structure: {e}")
             return None
 
+    def get_fn_io(
+            self,
+            func: List[TableEquation]
+    ) -> Optional[List[Dict[str, Any]]]:
+        try:
+            res = [
+                {
+                    f"{fn.databook_name}::{fn.table_name}": {
+                        "returns": fn.returns,
+                        "return_symbols": fn.return_symbols,
+                        "args": fn.args,
+                        "arg_symbols": fn.arg_symbols
+                    }
+                }
+                for fn in func
+            ]
+
+            # res
+            return res
+        except Exception as e:
+            logger.error(f"Error in getting functions' I/O: {e}")
+            return None
+
     def get_fn_identifier(
             self,
             func: List[TableEquation]
@@ -361,5 +384,6 @@ class CompTools:
 
             return res
         except Exception as e:
-            logger.error(f"Error in getting matrix functions' identifiers: {e}")
+            logger.error(
+                f"Error in getting matrix functions' identifiers: {e}")
             return None
