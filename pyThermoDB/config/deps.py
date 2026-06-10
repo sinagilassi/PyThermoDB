@@ -1,6 +1,8 @@
 # import libs
 from typing import Literal, Optional
 from dataclasses import dataclass
+# locals
+from ..models.configs import BuildType
 
 
 @dataclass
@@ -9,7 +11,7 @@ class AppConfig:
     include_data: bool = True
 
     # ! build type
-    build_type: Optional[Literal['single', 'mixture']] = None
+    build_type: Optional[BuildType] = None
 
     # ! component identifiers
     component_name: Optional[str] = None
@@ -22,6 +24,7 @@ _current_config: AppConfig | None = None
 
 
 def set_config(cfg: AppConfig) -> None:
+    # ! set global config
     global _current_config
     _current_config = cfg
 
