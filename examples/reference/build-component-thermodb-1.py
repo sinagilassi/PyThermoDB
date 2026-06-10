@@ -249,6 +249,37 @@ print(thermodb_component_.check())
 print(f"message:")
 print(thermodb_component_.message)
 
+# check methods defined in CompBuilder
+# all_function_details
+print("All function details:")
+print(thermodb_component_.all_function_details())
+# all_function_identifiers
+print("All function identifiers:")
+print(thermodb_component_.all_function_identifiers())
+# all_function_io
+print("All function io:")
+print(thermodb_component_.all_function_io())
+
+# all_data_details
+print("All data details:")
+print(thermodb_component_.all_data_details())
+# all_data_identifiers
+print("All data identifiers:")
+print(thermodb_component_.all_data_identifiers())
+# all_data_id_labels
+print("All data id labels:")
+print(thermodb_component_.all_data_id_labels())
+
+# all_constants_details
+print("All constants details:")
+print(thermodb_component_.all_constants_details())
+# all_constants_identifiers
+print("All constants identifiers:")
+print(thermodb_component_.all_constants_identifiers())
+# all_constants_id_labels
+print("All constants id labels:")
+print(thermodb_component_.all_constants_id_labels())
+
 # ! (by formula)
 thermodb_component_ = ptdb.build_component_thermodb(
     component_name='CO2',
