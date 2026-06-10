@@ -476,6 +476,8 @@ def build_component_thermodb(
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
+# SECTION: check and build thermodb for single component
+
 
 @measure_time
 def check_and_build_component_thermodb(
@@ -587,6 +589,7 @@ def check_and_build_component_thermodb(
 
     - Table should contain columns including `Name`, `Formula`, and `State` to identify the component. Otherwise during the check, it will raise an error.
     - ignore_state_props: List of property names to ignore state during the build. For example, if you want to ignore state for a thermo property such as vapor pressure and use only component name and formula, set `ignore_state_props=['VaPr']`.
+    - ignore_state_all_props: Whether to ignore state for all properties during the build. If set to True, it will ignore state for all properties in the reference config and only use component name and formula for the check. Note that if `ignore_state_props` is provided, it will override `ignore_state_all_props` and only ignore state for the specified properties.
     '''
     try:
         # LINK: start time
@@ -636,11 +639,6 @@ def check_and_build_component_thermodb(
         # ! set config
         set_config(cfg)
 
-        # NOTE: reference_config check
-        if not isinstance(reference_config, (dict, str)):
-            raise TypeError(
-                "reference config must be a dictionary or a string")
-
         # SECTION: COMPONENT ID
         # set id based on key
         component_id = set_component_id(
@@ -648,7 +646,15 @@ def check_and_build_component_thermodb(
             component_key=component_key
         )
 
-        # SECTION: check if reference_config is a string
+        # SECTION: reference config processing
+        # NOTE: reference_config check
+        if not isinstance(reference_config, (dict, str)):
+            logger.error(
+                "reference config must be a dictionary or a string"
+            )
+            return None
+
+        # NOTE: check if reference_config is a string
         if isinstance(reference_config, str):
             # ! init ReferenceConfig
             ReferenceConfig_ = ReferenceConfig()
@@ -667,9 +673,13 @@ def check_and_build_component_thermodb(
 
         # NOTE: check if reference_config is a dict
         if not isinstance(reference_config, dict):
+            logger.error(
+                "reference config must be a dictionary after processing"
+            )
             raise TypeError("reference_config must be a dictionary")
 
-        # SECTION: build thermodb
+        # SECTION: thermodb configuration
+        # NOTE: init
         thermodb = init(
             custom_reference=custom_reference
         )
@@ -755,7 +765,8 @@ def check_and_build_component_thermodb(
             # ! label/labels
             # NOTE: >> check label
             label_ = prop_idx.get(
-                'label', None) or prop_idx.get('symbol', None)
+                'label', None
+            ) or prop_idx.get('symbol', None)
             # >> check
             if label_:
                 # append to labels
@@ -771,7 +782,8 @@ def check_and_build_component_thermodb(
 
             # NOTE: >> check labels
             labels_ = prop_idx.get(
-                'labels', None) or prop_idx.get('symbols', None)
+                'labels', None
+            ) or prop_idx.get('symbols', None)
             # check
             if labels_ and isinstance(labels_, dict):
                 # extract labels
@@ -816,7 +828,6 @@ def check_and_build_component_thermodb(
                     column_name=column_name_,
                     res_format='dict'
                 )
-
             else:
                 # ! check component
                 component_checker_ = thermodb.is_component_available(
@@ -844,7 +855,7 @@ def check_and_build_component_thermodb(
                     # ! already set above
 
                     # ! build_thermo_property with component name
-                    item_ = thermodb.build_thermo_property(
+                    item_: ThermoProperty = thermodb.build_thermo_property(
                         component_names=[component_name_],
                         databook=databook_,
                         table=table_,
@@ -871,6 +882,17 @@ def check_and_build_component_thermodb(
             # ! ignore state
             if len(ignore_state_props) > 0:
                 ignore_component_state = False
+
+        # ! check if res is empty
+        if len(res) == 0:
+            # log
+            if verbose:
+                logging.warning(
+                    f"No properties were built for component '{component_id}'. Thermodb will not be created."
+                )
+
+            # res
+            return None
 
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
