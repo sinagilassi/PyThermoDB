@@ -135,6 +135,8 @@ class ConstantsThermoDB(BaseModel):
     ----------
     thermodb: CompBuilder
         The thermodynamic database builder instance.
+    reference_thermodb : Optional[ReferenceThermoDB]
+        Reference thermodynamic database, default is None.
     """
     thermodb: CompBuilder = Field(
         ...,
@@ -2294,6 +2296,7 @@ def build_constant_thermodb(
     reference_config_default_check: Optional[bool] = True,
     thermodb_save: Optional[bool] = False,
     thermodb_save_path: Optional[str] = None,
+    include_data: bool = True,
     verbose: Optional[bool] = False,
     **kwargs
 ) -> Optional[CompBuilder]:
@@ -2320,6 +2323,9 @@ def build_constant_thermodb(
         Whether to save the built thermodb, by default False.
     thermodb_save_path : str, optional
         Directory where the thermodb is saved when ``thermodb_save`` is True.
+        By default, None, which saves to the current working directory.
+    include_data : bool, optional
+        Whether to include data when building the thermodb. Default is True.
     verbose : bool, optional
         Whether to enable verbose logging, by default False.
     **kwargs
@@ -2337,7 +2343,7 @@ def build_constant_thermodb(
 
     ```python
     reference_config = {
-        "CUSTOM-REF-1::Custom-Constants": {
+        "Custom-Constants": {
             "databook": "CUSTOM-REF-1",
             "table": "Custom-Constants",
             "mode": "CONSTANTS",
@@ -2352,20 +2358,37 @@ def build_constant_thermodb(
     of ``CONSTANTS``, ``constants``, or ``constant``.
     """
     try:
+        # LINK: set include_data in config
+        cfg = AppConfig(
+            include_data=include_data,
+            build_type='constants'
+        )
+        # ! set config
+        set_config(cfg)
+
         if verbose:
             start_time = time.time()
             logging.info("Building constants thermodb...")
 
         # Kept for API parity with other explicit-config builders.
-        _ = reference_config_default_check
+        # NOTE: reference_config check
+        if not isinstance(reference_config, (dict, str)):
+            raise TypeError("property must be a dictionary or a string")
+
+        # NOTE: reference_config default check
+        if reference_config_default_check is None:
+            reference_config_default_check = True
 
         # NOTE: normalize config to dict of source configs
         reference_config_ = _normalize_constant_reference_config(
             reference_config
         )
 
-        # NOTE: initialize thermodb
-        thermodb = init(custom_reference=custom_reference)
+        # SECTION: thermodb configuration
+        # NOTE: init
+        thermodb = init(
+            custom_reference=custom_reference
+        )
 
         # NOTE: build constant sources and check availability
         res = _build_constant_sources(
@@ -2387,16 +2410,22 @@ def build_constant_thermodb(
             source_names = ', '.join(list(res.keys()))
             message = f"Thermodb including constants sources: {source_names}"
 
+        # SECTION: thermodb configuration
+        # NOTE: init thermodb
         thermodb_comp = build_thermodb(
             thermodb_name=thermodb_name,
             message=message
         )
 
+        # SECTION: add data to thermodb
         for source_name, source_value in res.items():
+            # >> add data to thermodb
             add_data_res_ = thermodb_comp.add_data(
                 source_name,
                 source_value
             )
+
+            # >>> verbose
             if verbose:
                 if add_data_res_:
                     logging.info(
@@ -2407,6 +2436,7 @@ def build_constant_thermodb(
                         f"Adding constants source '{source_name}' to thermodb '{thermodb_name}' may have issues."
                     )
 
+        # SECTION: build and save thermodb
         if thermodb_save:
             thermodb_save_path = check_file_path(
                 file_path=thermodb_save_path,
@@ -2759,8 +2789,9 @@ def build_component_thermodb_from_reference(
         if not isinstance(databooks, list) or not databooks:
             raise ValueError("No databooks found in the reference content.")
 
-        # init component reference config
-        component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+        # SECTION: component reference config
+        # ! get component reference config
+        component_reference_configs: Dict[str, ComponentConfig] | None = ReferenceChecker_.get_component_reference_configs(
             component_name=component_name,
             component_formula=component_formula,
             component_state=component_state,
@@ -3699,7 +3730,7 @@ def build_constants_thermodb_from_reference(
     **kwargs
 ) -> Optional[ConstantsThermoDB]:
     """
-    Build a thermodb containing table-wide constants from reference content.
+    Build a thermodb containing table-wide constants from reference content. All constants tables in the reference content will be checked and included if they match the requested constants. The built thermodb will include all records in the matched constants tables.
 
     Parameters
     ----------
@@ -3724,52 +3755,76 @@ def build_constants_thermodb_from_reference(
         Path to save the thermodb when thermodb_save is True.
     verbose : bool, optional
         Whether to enable verbose logging, by default False.
+    **kwargs
+        Additional keyword arguments.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
 
     Returns
     -------
     ConstantsThermoDB | None
         ConstantsThermoDB object containing the built thermodb, or None when no
         constants tables match.
+
+    Notes
+    -----
+    - ConstantsThermoDB is a ComponentThermoDB with specific settings for constants tables, including:
+        - `thermodb`: CompBuilder object containing the constants tables as sources.
+        - `reference_thermodb`: ReferenceThermoDB object containing the reference content, configs, rules, labels, and ignore settings for the constants tables.
     """
     try:
+        # NOTE: check inputs
         if verbose:
             start_time = time.time()
             logging.info("Building constants thermodb from reference...")
 
+        # NOTE: check reference_content
         if not isinstance(reference_content, str):
             raise TypeError("reference_content must be a string")
 
+        # NOTE: check search_mode
         if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
             raise ValueError(
                 "search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
 
+        # NOTE: standardize constants to a list of strings
         if constants is None:
             constants_ = []
         elif isinstance(constants, str):
             constants_ = [constants]
-        elif isinstance(constants, list) and all(isinstance(c, str) for c in constants):
+        elif (
+            isinstance(constants, list) and
+            all(isinstance(c, str) for c in constants)
+        ):
             constants_ = constants
         else:
             raise TypeError(
-                "constants must be a string, a list of strings, or None")
+                "constants must be a string, a list of strings, or None"
+            )
 
         # SECTION: create ReferenceChecker instance
         ReferenceChecker_ = ReferenceChecker(reference_content)
 
         # NOTE: load databooks
         if databook_name is not None:
-            databooks = [databook_name]
+            databooks: List[str] = [databook_name]
         else:
-            databooks = ReferenceChecker_.get_databook_names()
+            databooks: List[str] = ReferenceChecker_.get_databook_names()
 
-        if not isinstance(databooks, list) or not databooks:
+        if (
+            not isinstance(databooks, list) or
+            not databooks
+        ):
             raise ValueError("No databooks found in the reference content.")
 
         # SECTION: find constants tables
         constants_table_refs: List[Dict[str, str]] = []
         for db_name in databooks:
             if table_name is not None:
+                # ! check if the specified table is a constants table
                 if ReferenceChecker_.is_constants_table(db_name, table_name):
+
+                    # >> store
                     constants_table_refs.append({
                         'Databook': db_name,
                         'Table': table_name
