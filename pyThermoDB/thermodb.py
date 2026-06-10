@@ -311,6 +311,8 @@ def build_component_thermodb(
                 reference_config_default_check=reference_config_default_check
             )
 
+        # NOTE: reference_config should be a dict after the above process
+
         # NOTE: check if reference_config is a dict
         if not isinstance(reference_config, dict):
             raise TypeError("reference_config must be a dictionary")
@@ -336,11 +338,14 @@ def build_component_thermodb(
             # ! databook
             databook_ = prop_idx.get('databook', None)
             if databook_ is None:
-                raise ValueError(
-                    f"Databook for property '{prop_name}' is not specified.")
+                logger.warning(
+                    f"Databook for property '{prop_name}' is not specified."
+                )
+                continue
+
             # >> check databook exists
             if is_databook_available(databook_, databook_list) is False:
-                logger.error(
+                logger.warning(
                     f"Databook '{databook_}' for property '{prop_name}' is not found in the databook list."
                 )
                 continue
@@ -356,18 +361,22 @@ def build_component_thermodb(
 
             # ! table list
             table_list_ = list(table_dict_.values())
+            # >> check
             if not isinstance(table_list_, list) or not table_list_:
                 raise TypeError("Table list must be a list")
 
             # ! table
             table_ = prop_idx.get('table', None)
+            # >> check
             if table_ is None:
-                raise ValueError(
-                    f"Table for property '{prop_name}' is not specified.")
+                logger.warning(
+                    f"Table for property '{prop_name}' is not specified."
+                )
+                continue
 
-            # check table
+            # >> check table
             if is_table_available(table_, table_list_) is False:
-                logging.error(
+                logging.warning(
                     f"Table '{table_}' for property '{prop_name}' is not found in the databook '{databook_}'."
                 )
                 # ? skip if table is not found
@@ -394,7 +403,7 @@ def build_component_thermodb(
 
             # NOTE: build thermodb items
             # ! create Tables [TableEquation | TableData | TableMatrixEquation | TableMatrixData]
-            item_ = thermodb.build_thermo_property(
+            item_: ThermoProperty = thermodb.build_thermo_property(
                 component_names=[component_name],
                 databook=databook_,
                 table=table_,
@@ -405,6 +414,16 @@ def build_component_thermodb(
             # save
             res[prop_name] = item_
 
+        # NOTE: check if res is empty
+        if len(res) == 0:
+            logger.error(
+                f"No properties were built for component '{component_name}'. Thermodb will not be created."
+            )
+            # raise
+            raise ValueError(
+                f"No properties were built for component '{component_name}'. Thermodb will not be created."
+            )
+
         # SECTION: build component thermodb
         # NOTE: check thermodb_name
         if thermodb_name is None:
@@ -414,13 +433,13 @@ def build_component_thermodb(
             prop_names_list = ', '.join(list(reference_config.keys()))
             message = f"Thermodb including {prop_names_list} for component: {component_name}"
 
-        # init thermodb
+        # ! init thermodb
         thermodb_comp = build_thermodb(
             thermodb_name=thermodb_name,
             message=message
         )
 
-        # add items to thermodb
+        # NOTE: add items to thermodb
         for prop_name, prop_value in res.items():
             # add item to thermodb
             thermodb_comp.add_data(
