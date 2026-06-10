@@ -1,7 +1,9 @@
 # import libs
 from typing_extensions import TypedDict
+from typing import Literal, Optional
 
 
+# SECTION: component configuration
 class ComponentConfig(TypedDict, total=False):
     """Component configuration model"""
     databook: str
@@ -20,3 +22,7 @@ class ConstantsConfig(TypedDict, total=False):
     mode: str
     label: str  # optional
     labels: dict[str, str]  # optional
+
+
+# SECTION: App config configuration
+BuildType = Literal['single', 'mixture', 'constants']
