@@ -4461,6 +4461,7 @@ class ReferenceChecker:
             )
 
             # SECTION: symbol settings
+            # ! check with default symbols
             # init symbols
             symbols = None
             if check_labels:
@@ -4611,6 +4612,9 @@ class ReferenceChecker:
             logging.error(f"Error getting component reference: {e}")
             return None
 
+    # NOTE: get component reference configs across all databooks
+    # ! build identification card
+
     def get_component_reference_configs(
         self,
         component_name: str,
@@ -4662,13 +4666,20 @@ class ReferenceChecker:
         try:
             # SECTION: check inputs
             # component name, formula, and state must be provided
-            if not component_name or not component_formula or not component_state:
+            if (
+                not component_name or
+                not component_formula or
+                not component_state
+            ):
                 logging.error(
                     "Component name, formula, and state must be provided.")
                 return None
 
             # ignore_state_props must be a list if provided
-            if ignore_state_props is not None and not isinstance(ignore_state_props, list):
+            if (
+                ignore_state_props is not None and
+                not isinstance(ignore_state_props, list)
+            ):
                 logging.error("ignore_state_props must be a list.")
                 ignore_state_props = None
 
@@ -4689,7 +4700,7 @@ class ReferenceChecker:
                     component_name=component_name,
                     component_formula=component_formula,
                     component_state=component_state,
-                    databook_name=databook_name,
+                    databook_name=databook_name,  # ! check each databook
                     add_label=add_label,
                     check_labels=check_labels,
                     component_key=component_key,
