@@ -233,37 +233,6 @@ CO:
 reference_config = reference_config_yml
 
 # ===========================================================
-# ! build_component_thermodb
-# ===========================================================
-# NOTE: build component thermodb
-# ! (by name)
-thermodb_component_: CompBuilder = ptdb.build_component_thermodb(
-    component_name='carbon dioxide',
-    reference_config=reference_config,
-    custom_reference=ref
-)
-
-#  check
-print(f"check:")
-print(thermodb_component_.check())
-print(f"message:")
-print(thermodb_component_.message)
-
-# ! (by formula)
-thermodb_component_ = ptdb.build_component_thermodb(
-    component_name='CO2',
-    reference_config=reference_config,
-    custom_reference=ref,
-    component_key='Formula'
-)
-
-#  check
-print(f"check:")
-print(thermodb_component_.check())
-print(f"message:")
-print(thermodb_component_.message)
-
-# ===========================================================
 # SECTION: Using check_and_build_component_thermodb
 # ===========================================================
 # NOTE: build component thermodb (by name) and check
@@ -282,10 +251,14 @@ thermodb_component_1: Optional[CompBuilder] = ptdb.check_and_build_component_the
     component_key='Formula-State'
 )
 # >> check
-if thermodb_component_1:
-    #  check
-    print(f"check: {thermodb_component_1.check()}")
-    print(f"message: {thermodb_component_1.message}")
+if not thermodb_component_1:
+    raise ValueError("ThermoDB component not built")
+
+# log
+print(f"check:")
+print(thermodb_component_1.check())
+print(f"message:")
+print(thermodb_component_1.message)
 
 # ! (by component and Name-State)
 print("[bold magenta]By Component and Name-State with no ignore[/bold magenta]")
@@ -296,10 +269,14 @@ thermodb_component_2 = ptdb.check_and_build_component_thermodb(
     component_key='Name-State'
 )
 # >> check
-if thermodb_component_2:
-    #  check
-    print(f"check: {thermodb_component_2.check()}")
-    print(f"message: {thermodb_component_2.message}")
+if not thermodb_component_2:
+    raise ValueError("ThermoDB component not built")
+
+# log
+print(f"check:")
+print(thermodb_component_2.check())
+print(f"message:")
+print(thermodb_component_2.message)
 
 # ! (by component and Name)
 print("[bold magenta]By Component and Name with ignore[/bold magenta]")
@@ -311,10 +288,14 @@ thermodb_component_3 = ptdb.check_and_build_component_thermodb(
     ignore_state_props=['VaPr'],
 )
 # >> check
-if thermodb_component_3:
-    #  check
-    print(f"check: {thermodb_component_3.check()}")
-    print(f"message: {thermodb_component_3.message}")
+if not thermodb_component_3:
+    raise ValueError("ThermoDB component not built")
+
+#  log
+print(f"check:")
+print(thermodb_component_3.check())
+print(f"message:")
+print(thermodb_component_3.message)
 
 # ! (by component and Formula)
 print("[bold magenta]By Component and Formula with ignore[/bold magenta]")
@@ -330,8 +311,10 @@ if not thermodb_component_4:
     raise ValueError("ThermoDB component not built")
 
 #  check
-print(f"check: {thermodb_component_4.check()}")
-print(f"message: {thermodb_component_4.message}")
+print(f"check:")
+print(thermodb_component_4.check())
+print(f"message:")
+print(thermodb_component_4.message)
 
 # ! vapor pressure state enforced to check
 # print("[bold magenta]By Component and Formula without ignore[/bold magenta]")
@@ -345,10 +328,14 @@ print(f"message: {thermodb_component_4.message}")
 # print(f"check: {thermodb_component_5.check()}")
 # print(f"message: {thermodb_component_5.message}")
 
+# ! check
+if not thermodb_component_1:
+    raise ValueError("ThermoDB component not built")
+
 # ====================================
-# SELECT PROPERTY
+# SECTION: SELECT PROPERTY
 # ====================================
-prop1_ = thermodb_component_.select('general')
+prop1_ = thermodb_component_1.select('general')
 # check
 if not isinstance(prop1_, TableData):
     raise TypeError("Not TableData")
@@ -361,28 +348,28 @@ print(prop1_.get_property('MW'))
 
 # new format
 _src = 'general | MW'
-print(thermodb_component_.retrieve(_src, message="molecular weight"))
+print(thermodb_component_1.retrieve(_src, message="molecular weight"))
 
 # ====================================
-# SELECT A FUNCTION
+# SECTION: SELECT A FUNCTION
 # ====================================
 # select function
-func1_ = thermodb_component_.select_function('heat-capacity')
+func1_ = thermodb_component_1.select_function('heat-capacity')
 print(type(func1_))
 print(func1_.args)
 print(func1_.cal(T=295.15, message="heat capacity result"))
 
 # select function
-func2_ = thermodb_component_.select_function('vapor-pressure')
+func2_ = thermodb_component_1.select_function('vapor-pressure')
 print(type(func2_))
 print(func2_.args)
 print(func2_.cal(T=295.15, message="vapor pressure result"))
 
 # ====================================
-# SAVE THERMODB
+# SECTION: SAVE THERMODB
 # ====================================
-thermodb_file = thermodb_component_.thermodb_name or 'thermodb_component'
+thermodb_file = thermodb_component_1.thermodb_name or 'thermodb_component'
 
 # save (pkl format)
-res_ = thermodb_component_.save(thermodb_file, file_path=parent_dir)
+res_ = thermodb_component_1.save(thermodb_file, file_path=parent_dir)
 print(f"ThermoDB saved: {res_}")
