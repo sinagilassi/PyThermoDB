@@ -1,37 +1,36 @@
 # import packages/modules
-from typing import Dict, List, Any
+from typing import Dict, Any, Optional
 import os
 from rich import print
+from pythermodb_settings.models import Component
+# from pyThermoDB
 import pyThermoDB as ptdb
 from pyThermoDB.core import TableData, TableEquation, TableMatrixData
+from pyThermoDB.builder import CompBuilder
 from pyThermoDB.references import ReferenceConfig
 from pyThermoDB import check_and_build_component_thermodb
-from pythermodb_settings.models import Component
 
-# get versions
-# print(pt.get_version())
+# check versions
 print(ptdb.__version__)
 
 # ====================================
-# CUSTOM REFERENCES
+# SECTION: CUSTOM REFERENCES
 # ====================================
 # parent directory
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 
 # files
-# SECTION:
+# ! yml file
 yml_file = 'reference-1.yml'
 yml_file = 'str-ref-1.yml'
 yml_path = os.path.join(parent_dir, yml_file)
 
-# SECTION:
+# ! md file
 md_file = 'reference-1.md'
 md_path = os.path.join(parent_dir, md_file)
 
-# SECTION: file contents
-file_contents = """
-
-"""
+# ! custom reference (string)
+file_contents = ""
 
 # NOTE: custom ref
 # ref: Dict[str, Any] = {'reference': [file_contents]}
@@ -40,32 +39,29 @@ file_contents = """
 # yml ref
 ref: Dict[str, Any] = {'reference': [yml_path]}
 
+# ====================================
+# SECTION: INITIALIZATION THERMO DB
+# ====================================
+thermo_db = ptdb.init(
+    custom_reference=ref
+)
 
-# SECTION: load custom reference
-# ====================================
-# INITIALIZATION OWN THERMO DB
-# ====================================
-thermo_db = ptdb.init(custom_reference=ref)
-
-# ====================================
-# GET DATABOOK LIST
+# ! GET DATABOOK LIST
 # ====================================
 db_list = thermo_db.list_databooks()
 print(db_list)
 
-# ====================================
-# SELECT A DATABOOK
+# ! SELECT A DATABOOK
 # ====================================
 # table list
 tb_list = thermo_db.list_tables('CUSTOM-REF-1')
 print(tb_list)
 
-
 # NOTE: select a component
 comp1 = "Carbon Dioxide"
 
 # ====================================
-# BUILD DATA
+# SECTION: BUILD DATA
 # ====================================
 # build data
 comp1_data = thermo_db.build_data(
@@ -80,7 +76,7 @@ print(comp1_data.get_property(6, message=f"{comp1} Enthalpy of formation"))
 print(comp1_data.get_property('gibbs-energy-of-formation')['value'])
 
 # ====================================
-# BUILD EQUATION
+# SECTION: BUILD EQUATION
 # ====================================
 # build equation
 # ! by table id
@@ -124,11 +120,10 @@ VaPr = vapor_pressure_eq.cal(message=f'{comp1} Vapor Pressure', T=304.21)
 VaPr = vapor_pressure_eq.cal(T=304.21)
 print(VaPr)
 
-# SECTION: build component thermodb for each component
 # ====================================
-# BUILD COMPONENT THERMODB
+# SECTION: BUILD COMPONENT THERMODB
 # ====================================
-# property
+# ! create reference config
 reference_config = {
     'heat-capacity': {
         'databook': 'CUSTOM-REF-1',
@@ -144,7 +139,7 @@ reference_config = {
     },
 }
 
-# string
+# ! string (YAML format)
 reference_config_yml = """
 ALL:
   heat-capacity:
@@ -237,20 +232,22 @@ CO:
 # no change
 reference_config = reference_config_yml
 
-# ?===========================================================
-# SECTION: Using build_component_thermodb
-# ?===========================================================
+# ===========================================================
+# ! build_component_thermodb
+# ===========================================================
 # NOTE: build component thermodb
 # ! (by name)
-thermodb_component_ = ptdb.build_component_thermodb(
+thermodb_component_: CompBuilder = ptdb.build_component_thermodb(
     component_name='carbon dioxide',
     reference_config=reference_config,
     custom_reference=ref
 )
 
 #  check
-print(f"check: {thermodb_component_.check()}")
-print(f"message: {thermodb_component_.message}")
+print(f"check:")
+print(thermodb_component_.check())
+print(f"message:")
+print(thermodb_component_.message)
 
 # ! (by formula)
 thermodb_component_ = ptdb.build_component_thermodb(
@@ -261,93 +258,13 @@ thermodb_component_ = ptdb.build_component_thermodb(
 )
 
 #  check
-print(f"check: {thermodb_component_.check()}")
-print(f"message: {thermodb_component_.message}")
-
-# NOTE: build component thermodb (by name) and check
-CO2_component = Component(
-    name='carbon dioxide',
-    formula='CO2',
-    state='g'
-)
-
-# ?===========================================================
-# SECTION: Using check_and_build_component_thermodb
-# ?===========================================================
-# ! (by component and Formula-State)
-print("[bold magenta]By Component and Formula-State with no ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
-    component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
-    component_key='Formula-State'
-)
-# >> check
-if thermodb_component_:
-    #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
-
-# ! (by component and Name-State)
-print("[bold magenta]By Component and Name-State with no ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
-    component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
-    component_key='Name-State'
-)
-# >> check
-if thermodb_component_:
-    #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
-
-# ! (by component and Name)
-print("[bold magenta]By Component and Name with ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
-    component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
-    component_key='Name-State',
-    ignore_state_props=['VaPr'],
-)
-# >> check
-if thermodb_component_:
-    #  check
-    print(f"check: {thermodb_component_.check()}")
-    print(f"message: {thermodb_component_.message}")
-
-# ! (by component and Formula)
-print("[bold magenta]By Component and Formula with ignore[/bold magenta]")
-thermodb_component_ = ptdb.check_and_build_component_thermodb(
-    component=CO2_component,
-    reference_config=reference_config,
-    custom_reference=ref,
-    component_key='Formula-State',
-    ignore_state_props=['VaPr'],
-)
-# >> check
-if not thermodb_component_:
-    raise ValueError("ThermoDB component not built")
-
-#  check
-print(f"check: {thermodb_component_.check()}")
-print(f"message: {thermodb_component_.message}")
-
-# ! vapor pressure state enforced to check
-# print("[bold magenta]By Component and Formula without ignore[/bold magenta]")
-# thermodb_component_ = ptdb.check_and_build_component_thermodb(
-#     component=CO2_component,
-#     reference_config=reference_config,
-#     custom_reference=ref,
-#     component_key='Formula-State',
-# )
-# #  check
-# print(f"check: {thermodb_component_.check()}")
-# print(f"message: {thermodb_component_.message}")
+print(f"check:")
+print(thermodb_component_.check())
+print(f"message:")
+print(thermodb_component_.message)
 
 # ====================================
-# SELECT PROPERTY
+# SECTION: SELECT PROPERTY
 # ====================================
 prop1_ = thermodb_component_.select('general')
 # check
@@ -365,7 +282,7 @@ _src = 'general | MW'
 print(thermodb_component_.retrieve(_src, message="molecular weight"))
 
 # ====================================
-# SELECT A FUNCTION
+# SECTION: SELECT A FUNCTION
 # ====================================
 # select function
 func1_ = thermodb_component_.select_function('heat-capacity')
@@ -380,7 +297,7 @@ print(func2_.args)
 print(func2_.cal(T=295.15, message="vapor pressure result"))
 
 # ====================================
-# SAVE THERMODB
+# SECTION: SAVE THERMODB
 # ====================================
 thermodb_file = thermodb_component_.thermodb_name or 'thermodb_component'
 
