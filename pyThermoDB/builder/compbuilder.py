@@ -1141,6 +1141,45 @@ class CompBuilder(CompExporter):
             logger.error(f'Getting equations identifiers failed!, {e}')
             return None
 
+    # NOTE: get all function input/output
+    def all_function_io(self):
+        '''
+        Retrieve all functions' input/output in the thermodb.
+
+        Returns
+        -------
+        res : dict
+            functions' input/output
+        '''
+        try:
+            # NOTE: get functions
+            all_functions = self.check_functions()
+
+            # NOTE: get TableEquation objects
+            functions = [
+                fn for fn in all_functions.values()
+                if isinstance(fn, TableEquation)
+            ]
+
+            # >> check
+            if not functions:
+                logger.warning(
+                    'No TableEquation functions found in the thermodb!')
+                return None
+
+            # NOTE: get structure (use the instance accessor)
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get function input/output')
+                return None
+
+            # NOTE: get input/output
+            return tools.get_fn_io(functions)
+        except Exception as e:
+            logger.error(f'Getting equations input/output failed!, {e}')
+            return None
+
     # NOTE: get all data structures
     def all_data_details(self):
         '''
