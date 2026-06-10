@@ -295,12 +295,14 @@ def look_up_component_reference_config(
     # Lowercase component_id for case-insensitive lookup
     component_id_lower = component_id.lower()
 
+    # NOTE: First try to find component-specific config using component_id
     # Extract component reference config
     component_reference_config = reference_config_lower.get(
         component_id_lower,
         {}
     )
 
+    # NOTE: If not found, try to find 'ALL' or 'DEFAULT' config
     # Check if reference_config is empty
     if not component_reference_config:
         # Check default
