@@ -252,7 +252,7 @@ def component_reference_mapper(
             raise ValueError("No databooks found in the reference content.")
 
         # NOTE: component reference config
-        component_reference_configs = ReferenceChecker_.get_component_reference_configs(
+        component_reference_configs: dict | None = ReferenceChecker_.get_component_reference_configs(
             component_name=component_name,
             component_formula=component_formula,
             component_state=component_state,
@@ -264,7 +264,10 @@ def component_reference_mapper(
         )
 
         # NOTE: check if reference_config is a dict
-        if not isinstance(component_reference_configs, dict) or not component_reference_configs:
+        if (
+            not isinstance(component_reference_configs, dict) or
+            not component_reference_configs
+        ):
             raise ValueError(
                 f"No reference config found for component '{component_name}' in the provided reference content."
             )
