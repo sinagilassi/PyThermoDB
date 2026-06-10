@@ -18,6 +18,7 @@ from ..core import (
     TableConstants
 )
 from ..config import __version__
+from ..models.configs import BuildType
 # ! deps
 from ..config.deps import get_config
 
@@ -43,7 +44,7 @@ class CompBuilder(CompExporter):
     build_version = __version__
 
     # ! thermodb type
-    _build_type: Optional[Literal['single', 'mixture']] = None
+    _build_type: Optional[BuildType] = None
 
     # NOTE: build date/time/python version
     @functools.cached_property
@@ -166,14 +167,14 @@ class CompBuilder(CompExporter):
         return CompBuilder.CompTools_
 
     @property
-    def build_type(self) -> Optional[Literal['single', 'mixture']]:
+    def build_type(self) -> Optional[BuildType]:
         '''
         Get build type
 
         Returns
         -------
-        str
-            build type
+        Optional[BuildType]
+            build type such as 'single', 'mixture', or 'constants'
         '''
         return self._build_type
 
