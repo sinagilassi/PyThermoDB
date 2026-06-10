@@ -829,6 +829,7 @@ def check_and_build_component_thermodb(
                     res_format='dict'
                 )
             else:
+                # ?? if not ignore state, use original component object for the check
                 # ! check component
                 component_checker_ = thermodb.is_component_available(
                     component=component,
