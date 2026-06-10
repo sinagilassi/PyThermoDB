@@ -5759,3 +5759,107 @@ class ReferenceChecker:
                 'DATA': {},
                 'EQUATIONS': {}
             }
+
+    def generate_constants_reference_rules(
+        self,
+        reference_configs: Dict[str, ConstantsConfig]
+    ):
+        """
+        Generate the reference rules for constants based on the provided reference configurations. It consists of one main part: CONSTANTS. This part contains thermodynamic properties and their corresponding symbols (labels).
+
+        Parameters
+        ----------
+        reference_configs : Dict[str, ConstantsConfig]
+            A dictionary containing the reference configurations for the constants.
+
+        Returns
+        -------
+        Dict[str, Dict[str, str]]
+            A dictionary containing the reference rules for the constants.
+
+        Notes
+        -----
+        The reference_configs dictionary should have the following structure:
+
+        ```python
+        {
+            'reference_key_1': {
+                'databook': 'Databook Name',
+                'table': 'Table Name',
+                'mode': 'CONSTANTS',
+                'labels': {
+                    'Property1': 'Symbol1',
+                    'Property2': 'Symbol2',
+                    ...
+                }
+            },
+            ...
+        }
+        ```
+
+        The `reference_key` can be any unique identifier for the reference configuration. It could be the name of property group such as custom-constant-1.
+
+        Then reference rule is formed as:
+
+        ```python
+        {
+            'CONSTANTS': {
+                'Property1': 'Symbol1',
+                'Property2': 'Symbol2',
+                ...
+            }
+        }
+        """
+        try:
+            # SECTION: init result
+            reference_rules: Dict[str, Dict[str, str]] = {
+                'CONSTANTS': {}
+            }
+
+            # SECTION: iterate through each reference config
+            for ref_key, ref_config in reference_configs.items():
+                # check if ref_config is a dictionary
+                if not isinstance(ref_config, dict):
+                    logging.error(
+                        f"Reference config for '{ref_key}' is not a dictionary.")
+                    continue
+
+                # get mode
+                mode = ref_config.get('mode', None)
+                if mode is None:
+                    logging.error(
+                        f"Mode not found in reference config for '{ref_key}'.")
+                    continue
+
+                # check mode
+                if mode == 'CONSTANTS':
+                    # iterate through each label
+                    labels = ref_config.get('labels', None)
+                    if not isinstance(labels, dict):
+                        logging.error(
+                            f"Labels not found or invalid in reference config for '{ref_key}'.")
+                        continue
+
+                    for prop, label in labels.items():
+                        # check if prop and label are valid
+                        if prop is None or label is None or label in ['None', '']:
+                            logging.error(
+                                f"Property or label not found or invalid in reference config for '{ref_key}'.")
+                            continue
+
+                        # add to reference rules
+                        if prop not in reference_rules['CONSTANTS']:
+                            reference_rules['CONSTANTS'][prop] = label
+
+                else:
+                    logging.error(
+                        f"Invalid mode '{mode}' in reference config for '{ref_key}'. Only 'CONSTANTS' mode is supported for constants.")
+                    continue
+
+            # return the reference rules
+            return reference_rules
+        except Exception as e:
+            logging.error(f"Error building reference rules: {e}")
+            return {
+                'CONSTANTS': {}
+            }
