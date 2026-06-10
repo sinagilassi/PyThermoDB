@@ -234,6 +234,13 @@ for i, comp in enumerate(components):
         thermodb_save=True,
         thermodb_save_path=THERMODB_PATH
     )
+
+    # >> check
+    if not component_thermodb:
+        print(
+            f"[bold red]Component ThermoDB Data:[/bold red] No data available for {comp['name']} ({comp['formula']}, {comp['state']})\n")
+        continue
+
     # print result
     print(
         f"[bold green]Component ThermoDB Data:[/bold green] {component_thermodb.check()}\n")
