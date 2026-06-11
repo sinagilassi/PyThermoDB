@@ -3955,11 +3955,7 @@ def build_constants_thermodb_from_reference(
                 table_structure=table_structure
             )
 
-            # REVIEW: check source name
-            source_name = tb_name
-            if source_name in res:
-                source_name = f"{db_name}::{tb_name}"
-
+            source_name = f"{db_name}::{tb_name}"
             res[source_name] = constants_item
 
             constants_mapping = ReferenceChecker_.get_constants_mapping(
