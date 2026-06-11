@@ -55,6 +55,10 @@ print(constants_ref_thermodb)
 # constant reference config
 if constants_ref_thermodb is None:
     raise
+
+# ----------------------------------------------------------------------------
+# NOTE: extract constants reference config from the mapped reference content
+# ----------------------------------------------------------------------------
 constants_reference_config: Dict[
     str,
     ComponentConfig
@@ -62,36 +66,73 @@ constants_reference_config: Dict[
 print("Constants Reference Config:")
 print(constants_reference_config)
 
-# ? ==============================================
+# --------------------------------
+# NOTE: custom reference config
+# --------------------------------
+custom_reference_config: Dict[str, ComponentConfig] = {
+    'custom-1': {
+        'databook': 'CUSTOM-REF-1',
+        'table': 'Custom-Constants',
+        'mode': 'CONSTANTS',
+        'labels': {
+            'Universal Gas Constant': 'R',
+            'Constant1': 'C1',
+            'total heat capacity of ideal gas': 'Cp_IG',
+            'enthalpy of reaction': 'dH_rxn',
+            'binary parameter': 'Xb',
+            'custom constants': 'X',
+            'gibbs energy of reaction': 'dG_rxn'
+        }
+    },
+    'custom-2': {
+        'databook': 'CUSTOM-REF-1',
+        'table': 'Custom-Constants-2',
+        'mode': 'CONSTANTS',
+        'labels': {
+            'Universal Gas Constant': 'R',
+            'Constant1': 'C1',
+            'total heat capacity of ideal gas': 'Cp_IG',
+            'enthalpy of reaction': 'dG_rxn'
+        }
+    }
+}
+
+# ! select reference config
+reference_config_selected = custom_reference_config
+
+# ==============================================
 # SECTION: Build Constants ThermoDB
-# ? ==============================================
-if constants_ref_thermodb is None:
-    print("[bold yellow]No constants tables found in reference content.[/bold yellow]")
-else:
-    constants_thermodb: CompBuilder | None = check_and_build_constants_thermodb(
-        reference_config=constants_reference_config,
-        custom_reference=custom_reference,
-        thermodb_name='constants',
-        thermodb_save=True,
-        thermodb_save_path=db_path,
-    )
+# ==============================================
+# NOTE: check and build constants thermodb
+constants_thermodb: Optional[CompBuilder] = check_and_build_constants_thermodb(
+    reference_config=reference_config_selected,
+    custom_reference=custom_reference,
+    thermodb_name='constants',
+    thermodb_save=True,
+    thermodb_save_path=db_path,
+)
 
-    print("[bold green]Constants ThermoDB:[/bold green]")
-    print(constants_thermodb)
-    print(type(constants_thermodb))
+print("[bold green]Constants ThermoDB:[/bold green]")
+print(constants_thermodb)
+print(type(constants_thermodb))
 
-    if constants_thermodb is None:
-        print("[bold red]Failed to build Constants ThermoDB.[/bold red]")
-        raise ValueError("Constants ThermoDB build failed.")
+# check if the constants thermodb was built successfully
+if constants_thermodb is None:
+    print("[bold red]Failed to build Constants ThermoDB.[/bold red]")
+    raise ValueError("Constants ThermoDB build failed.")
 
-    constants_sources = constants_thermodb.check_constants()
-    print("Constants Sources:")
-    print(constants_sources)
+# checks
+print(f"check:")
+print(constants_thermodb.check())
 
-    for source_name, source in constants_sources.items():
-        if not isinstance(source, TableConstants):
-            raise TypeError(
-                f"Constants source '{source_name}' is not an instance of TableConstants."
-            )
-        print(f"Constants source '{source_name}' data structure:")
-        print(source.data_structure())
+constants_sources = constants_thermodb.check_constants()
+print("Constants Sources:")
+print(constants_sources)
+
+for source_name, source in constants_sources.items():
+    if not isinstance(source, TableConstants):
+        raise TypeError(
+            f"Constants source '{source_name}' is not an instance of TableConstants."
+        )
+    print(f"Constants source '{source_name}' data structure:")
+    print(source.data_structure())
