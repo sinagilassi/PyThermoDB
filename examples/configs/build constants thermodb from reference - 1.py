@@ -37,32 +37,38 @@ print(external_ref_path)
 thermodb_constants_: ConstantsThermoDB | None = build_constants_thermodb_from_reference(
     reference_content=external_ref_path,
 )
-print(f"thermodb_constants_: {type(thermodb_constants_)}")
-print(f"thermodb_constants_: {thermodb_constants_}")
+print(f"thermodb_constants_:")
+print(type(thermodb_constants_))
+print(f"thermodb_constants_:")
+print(thermodb_constants_)
 
 # >> thermodb
-if thermodb_constants_ is not None:
-    # check
-    print(f"thermodb constants checks: {thermodb_constants_.thermodb.check()}")
+if thermodb_constants_ is None:
+    raise ValueError("Failed to build constants thermodb from reference.")
 
-    # constants sources
-    constants_sources = thermodb_constants_.thermodb.check_constants()
-    print(f"constants sources: {list(constants_sources.keys())}")
+# check
+print(f"thermodb constants checks: ")
+print(thermodb_constants_.thermodb.check())
 
-    # select constants table
-    custom_constants: TableConstants = thermodb_constants_.thermodb.select_constant(
-        'Custom-Constants'
-    )
-    print(custom_constants.table_columns)
-    print(custom_constants.table_values)
+# constants sources
+constants_sources = thermodb_constants_.thermodb.check_constants()
+print(f"constants sources: ")
+print(list(constants_sources.keys()))
 
-    # retrieve constants by symbol/name
-    print(custom_constants.get_constant('R', message='gas constant'))
-    print(custom_constants.get_constant(
-        'dH_rxn',
-        message='enthalpy of reaction'
-    ))
-    print(custom_constants.get_constant('X', message='custom list constant'))
+# select constants table
+custom_constants: TableConstants = thermodb_constants_.thermodb.select_constant(
+    'Custom-Constants'
+)
+print(custom_constants.table_columns)
+print(custom_constants.table_values)
+
+# retrieve constants by symbol/name
+print(custom_constants.get_constant('R', message='gas constant'))
+print(custom_constants.get_constant(
+    'dH_rxn',
+    message='enthalpy of reaction'
+))
+print(custom_constants.get_constant('X', message='custom list constant'))
 
 # NOTE: build and save
 thermodb_constants_save_: ConstantsThermoDB | None = build_constants_thermodb_from_reference(
