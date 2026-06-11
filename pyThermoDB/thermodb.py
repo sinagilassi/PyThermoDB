@@ -2525,7 +2525,7 @@ def build_constants_thermodb(
 
 
 @measure_time
-def check_and_build_constant_thermodb(
+def check_and_build_constants_thermodb(
     reference_config: Union[Mapping[str, Any], str],
     custom_reference: Optional[CustomReference] = None,
     constants: Optional[Union[str, List[str]]] = None,
