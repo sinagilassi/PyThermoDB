@@ -3847,81 +3847,35 @@ def build_constants_thermodb_from_reference(
         # SECTION: create ReferenceChecker instance
         ReferenceChecker_ = ReferenceChecker(reference_content)
 
-        # NOTE: load databooks
-        if databook_name is not None:
-            databooks: List[str] = [databook_name]
-        else:
-            databooks: List[str] = ReferenceChecker_.get_databook_names()
+        # SECTION: generate constants reference configs
+        configs = ReferenceChecker_.get_constants_reference_configs(
+            databook_name=databook_name,
+            table_name=table_name,
+            constants=constants_,
+            search_mode=search_mode
+        )
 
-        if (
-            not isinstance(databooks, list) or
-            not databooks
-        ):
-            raise ValueError("No databooks found in the reference content.")
-
-        # SECTION: find constants tables
-        constants_table_refs: List[Dict[str, str]] = []
-        for db_name in databooks:
-            if table_name is not None:
-                # ! check if the specified table is a constants table
-                if ReferenceChecker_.is_constants_table(db_name, table_name):
-
-                    # >> store
-                    constants_table_refs.append({
-                        'Databook': db_name,
-                        'Table': table_name
-                    })
-                else:
-                    logging.warning(
-                        f"Table '{table_name}' in databook '{db_name}' is not a constants table.")
-                continue
-
-            constants_table_refs.extend(
-                ReferenceChecker_.get_constants_tables(db_name)
-            )
-
-        if not constants_table_refs:
-            logger.error("No constants tables found in the reference content.")
-            return None
-
-        # SECTION: filter constants tables by requested constants
-        selected_table_refs: List[Dict[str, str]] = []
-        for table_ref in constants_table_refs:
-            db_name = table_ref['Databook']
-            tb_name = table_ref['Table']
-
-            if not constants_:
-                selected_table_refs.append(table_ref)
-                continue
-
-            table_availability: Dict[str, Dict[str, Any]] = {}
-            for constant in constants_:
-                check_res = ReferenceChecker_.check_constant_availability(
-                    databook_name=db_name,
-                    table_name=tb_name,
-                    constant=constant,
-                    search_mode=search_mode
+        if not configs:
+            if constants_:
+                logger.error(
+                    f"No constants tables matched requested constants: {constants_}."
                 )
-                table_availability[constant] = check_res
-
-            if any(item.get('available', False) for item in table_availability.values()):
-                selected_table_refs.append(table_ref)
-
-        if not selected_table_refs:
-            logger.error(
-                f"No constants tables matched requested constants: {constants_}."
-            )
+            else:
+                logger.error(
+                    "No constants tables found in the reference content.")
             return None
 
         # SECTION: build thermodb source objects
         res: Dict[str, TableConstants] = {}
-        configs: Dict[str, ComponentConfig] = {}
-        rules: Dict[str, Dict[str, str]] = {'CONSTANTS': {}}
-        labels: List[str] = []
 
-        for table_ref in selected_table_refs:
-            db_name = table_ref['Databook']
-            tb_name = table_ref['Table']
+        for source_name, source_config in configs.items():
+            db_name = source_config.get('databook', None)
+            tb_name = source_config.get('table', None)
+            if db_name is None or tb_name is None:
+                logging.error(
+                    f"Constants source '{source_name}' is missing databook or table config.")
+                continue
+
             table_structure = ReferenceChecker_.get_table_structure(
                 db_name,
                 tb_name
@@ -3955,25 +3909,18 @@ def build_constants_thermodb_from_reference(
                 table_structure=table_structure
             )
 
-            source_name = f"{db_name}::{tb_name}"
             res[source_name] = constants_item
-
-            constants_mapping = ReferenceChecker_.get_constants_mapping(
-                db_name,
-                tb_name
-            )
-            rules['CONSTANTS'].update(constants_mapping)
-            labels.extend(list(constants_mapping.values()))
-            configs[source_name] = {
-                'databook': db_name,
-                'table': tb_name,
-                'mode': 'CONSTANTS',
-                'labels': constants_mapping
-            }
 
         if not res:
             logger.error("No valid constants tables were built.")
             return None
+
+        rules = ReferenceChecker_.generate_constants_reference_rules(configs)
+        labels = [
+            label
+            for source_config in configs.values()
+            for label in source_config.get('labels', {}).values()
+        ]
 
         # SECTION: build constants thermodb
         if thermodb_name is None:
