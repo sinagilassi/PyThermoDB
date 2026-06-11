@@ -182,14 +182,18 @@ thermodb_component_: ComponentThermoDB | None = build_component_thermodb_from_re
     reference_content=REFERENCE_CONTENT,
     mode="log"
 )
-# print(f"thermodb_component_: {thermodb_component_}")
 
-if thermodb_component_ is not None:
-    # NOTE: thermodb
-    thermodb_ = thermodb_component_.thermodb
-    print(f"thermodb_: {thermodb_}")
-    # check
-    print(f"thermodb checks: {thermodb_.check()}")
+# >> check
+if thermodb_component_ is None:
+    raise ValueError("Failed to build component thermodb from reference.")
+
+# NOTE: thermodb
+thermodb_ = thermodb_component_.thermodb
+print(f"thermodb_:")
+print(thermodb_)
+# check
+print(f"thermodb checks:")
+print(thermodb_.check())
 
 # NOTE: build and save
 thermodb_component_save_: ComponentThermoDB | None = build_component_thermodb_from_reference(
