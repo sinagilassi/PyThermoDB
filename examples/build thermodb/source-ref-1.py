@@ -3,16 +3,19 @@ import os
 from rich import print
 import pyThermoDB as ptdb
 
-# get versions
-# print(pt.get_version())
+# check versions
 print(ptdb.__version__)
 
 # ====================================
 # CUSTOM REFERENCES
 # ====================================
+# NOTE: current file path
+parent_path = os.path.dirname(os.path.abspath(__file__))
+print(parent_path)
+
 # files
-yml_file = 'private\\source-ref-1.yml'
-yml_path = os.path.join(os.getcwd(), yml_file)
+yml_file = 'source-ref-1.yml'
+yml_path = os.path.join(parent_path, yml_file)
 print(yml_path)
 
 # custom ref
@@ -46,8 +49,8 @@ print(tb_info)
 tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data-LLM')
 print(tb_info)
 
-# tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data')
-# print(tb_info)
+tb_info = thermo_db.table_info('CUSTOM-REF-1', 'General-Data')
+print(tb_info)
 
 # tb_info = thermo_db.table_info('CUSTOM-REF-1', 'Vapor-Pressure')
 # print(tb_info)
@@ -59,13 +62,13 @@ print(tb_info)
 # LOAD TABLE
 # ====================================
 # table-data
-dt_ = thermo_db.data_load(
-    1, 'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
-print(dt_.data_structure())
-print(dt_.table_columns)
-print(dt_.table_symbols)
-print(dt_.table_units)
-print(dt_.table_values)
+# dt_ = thermo_db.data_load(
+#     1, 'TABLE 2-141 Critical Constants and Acentric Factors of Inorganic and Organic Compounds')
+# print(dt_.data_structure())
+# print(dt_.table_columns)
+# print(dt_.table_symbols)
+# print(dt_.table_units)
+# print(dt_.table_values)
 
 
 # table-data
@@ -76,12 +79,12 @@ print(dt_.table_symbols)
 print(dt_.table_units)
 print(dt_.table_values)
 
-dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data-LLM')
-print(dt_.data_structure())
-print(dt_.table_columns)
-print(dt_.table_symbols)
-print(dt_.table_units)
-print(dt_.table_values)
+# dt_ = thermo_db.data_load('CUSTOM-REF-1', 'General-Data-LLM')
+# print(dt_.data_structure())
+# print(dt_.table_columns)
+# print(dt_.table_symbols)
+# print(dt_.table_units)
+# print(dt_.table_values)
 
 
 # table-equation
@@ -147,20 +150,20 @@ if not isinstance(data_1, ptdb.TableData):
 res_ = data_1.get_property("MW")
 print(res_)
 
-# for llm
-# build data
-comp1 = "methane"
-data_1 = thermo_db.build_thermo_property(
-    [comp1], 'CUSTOM-REF-1', 'General-Data-LLM')
-print(type(data_1))
+# # for llm
+# # build data
+# comp1 = "methane"
+# data_1 = thermo_db.build_thermo_property(
+#     [comp1], 'CUSTOM-REF-1', 'General-Data-LLM')
+# print(type(data_1))
 
-# >> check
-if not isinstance(data_1, ptdb.TableData):
-    raise TypeError("data_1 is not an instance of TableData")
+# # >> check
+# if not isinstance(data_1, ptdb.TableData):
+#     raise TypeError("data_1 is not an instance of TableData")
 
-# retrieve data
-res_ = data_1.get_property("EnFo")
-print(res_)
+# # retrieve data
+# res_ = data_1.get_property("EnFo")
+# print(res_)
 # ====================================
 # BUILD EQUATION
 # ====================================
@@ -216,8 +219,7 @@ thermo_db.add_data('vapor-pressure', comp1_eq_1)
 # thermo_db.export_data_structure(comp1)
 
 thermodb_file = f'{comp1}-2.pkl'
-thermodb_path = os.path.join(
-    os.getcwd(), 'examples', 'external-ref', 'thermodb')
+thermodb_path = os.path.join(parent_path)
 
 # save
 thermo_db.save(thermodb_file, file_path=thermodb_path)
