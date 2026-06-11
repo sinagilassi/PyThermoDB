@@ -55,9 +55,9 @@ constants_sources = thermodb_constants_.thermodb.check_constants()
 print(f"constants sources: ")
 print(list(constants_sources.keys()))
 
-# select constants table
+# NOTE: select constants table
 custom_constants: TableConstants = thermodb_constants_.thermodb.select_constant(
-    'Custom-Constants'
+    'CUSTOM-REF-1::Custom-Constants'
 )
 print(custom_constants.table_columns)
 print(custom_constants.table_values)
@@ -80,10 +80,14 @@ thermodb_constants_save_: ConstantsThermoDB | None = build_constants_thermodb_fr
 print(f"thermodb_constants_save_: {type(thermodb_constants_save_)}")
 
 # >> thermodb
-if thermodb_constants_save_ is not None:
-    # check
-    print(
-        f"thermodb_constants_save_ checks: {thermodb_constants_save_.thermodb.check()}")
+if thermodb_constants_save_ is None:
+    raise ValueError(
+        "Failed to build and save constants thermodb from reference."
+    )
+
+# check
+print(f"thermodb_constants_save_ checks: ")
+print(thermodb_constants_save_.thermodb.check())
 
 # SECTION: build constants thermodb from a specific table
 # NOTE: table-specific build
@@ -95,18 +99,22 @@ thermodb_constants_table_: ConstantsThermoDB | None = build_constants_thermodb_f
 print(f"thermodb_constants_table_: {type(thermodb_constants_table_)}")
 
 # >> thermodb
-if thermodb_constants_table_ is not None:
-    # check
-    print(
-        f"thermodb_constants_table_ checks: {thermodb_constants_table_.thermodb.check()}")
-
-    custom_constants = thermodb_constants_table_.thermodb.select_constant(
-        'Custom-Constants'
+if thermodb_constants_table_ is None:
+    raise ValueError(
+        "Failed to build constants thermodb from reference by table."
     )
-    print(custom_constants.get_constant(
-        'Universal Gas Constant',
-        message='gas constant by name'
-    ))
+
+# check
+print(f"thermodb_constants_table_ checks: ")
+print(thermodb_constants_table_.thermodb.check())
+
+custom_constants = thermodb_constants_table_.thermodb.select_constant(
+    'CUSTOM-REF-1::Custom-Constants'
+)
+print(custom_constants.get_constant(
+    'Universal Gas Constant',
+    message='gas constant by name'
+))
 
 # SECTION: build constants thermodb by constant symbol
 # NOTE: this should select only Custom-Constants-2 because dG_rxn is in that table.
@@ -117,18 +125,21 @@ thermodb_constants_symbol_: ConstantsThermoDB | None = build_constants_thermodb_
 print(f"thermodb_constants_symbol_: {type(thermodb_constants_symbol_)}")
 
 # >> thermodb
-if thermodb_constants_symbol_ is not None:
-    # check
-    print(
-        f"thermodb_constants_symbol_ checks: {thermodb_constants_symbol_.thermodb.check()}")
+if thermodb_constants_symbol_ is None:
+    raise ValueError(
+        "Failed to build constants thermodb from reference by constant symbol.")
 
-    custom_constants_2 = thermodb_constants_symbol_.thermodb.select_constant(
-        'Custom-Constants-2'
-    )
-    print(custom_constants_2.get_constant(
-        'dG_rxn',
-        message='Gibbs free energy of reaction'
-    ))
+# check
+print(f"thermodb_constants_symbol_ checks: ")
+print(thermodb_constants_symbol_.thermodb.check())
+
+custom_constants_2 = thermodb_constants_symbol_.thermodb.select_constant(
+    'CUSTOM-REF-1::Custom-Constants-2'
+)
+print(custom_constants_2.get_constant(
+    'dG_rxn',
+    message='Gibbs free energy of reaction'
+))
 
 # SECTION: build constants thermodb by several constants
 # NOTE: matching tables are included when at least one requested constant is found.
@@ -141,11 +152,14 @@ thermodb_constants_multi_: ConstantsThermoDB | None = build_constants_thermodb_f
 print(f"thermodb_constants_multi_: {type(thermodb_constants_multi_)}")
 
 # >> thermodb
-if thermodb_constants_multi_ is not None:
-    # check
-    print(
-        f"thermodb_constants_multi_ checks: {thermodb_constants_multi_.thermodb.check()}")
+if thermodb_constants_multi_ is None:
+    raise ValueError(
+        "Failed to build constants thermodb from reference by several constants.")
 
-    # reference metadata
-    print(
-        f"reference rules: {thermodb_constants_multi_.reference_thermodb.rules if thermodb_constants_multi_.reference_thermodb else None}")
+# check
+print(f"thermodb_constants_multi_ checks: ")
+print(thermodb_constants_multi_.thermodb.check())
+
+# reference metadata
+print(
+    f"reference rules: {thermodb_constants_multi_.reference_thermodb.rules if thermodb_constants_multi_.reference_thermodb else None}")
