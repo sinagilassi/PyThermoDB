@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from pyThermoDB import (
-    build_constant_thermodb,
-    check_and_build_constant_thermodb,
+    build_constants_thermodb,
+    check_and_build_constants_thermodb,
 )
 from pyThermoDB.builder import CompBuilder
 from pyThermoDB.core import TableConstants
@@ -42,7 +42,7 @@ def _reference_config() -> dict[str, dict[str, object]]:
 
 
 def test_build_constant_thermodb_builds_explicit_sources():
-    result = build_constant_thermodb(
+    result = build_constants_thermodb(
         reference_config=_reference_config(),
         custom_reference=_custom_reference(),
     )
@@ -50,12 +50,13 @@ def test_build_constant_thermodb_builds_explicit_sources():
     assert isinstance(result, CompBuilder)
     constants = result.check_constants()
     assert set(constants) == {"Custom-Constants", "Custom-Constants-2"}
-    assert all(isinstance(value, TableConstants) for value in constants.values())
+    assert all(isinstance(value, TableConstants)
+               for value in constants.values())
     assert constants["Custom-Constants"].get_constant("R")["value"] == 8.314
 
 
 def test_check_and_build_constant_thermodb_filters_by_requested_constant():
-    result = check_and_build_constant_thermodb(
+    result = check_and_build_constants_thermodb(
         reference_config=_reference_config(),
         custom_reference=_custom_reference(),
         constants="dG_rxn",
@@ -72,7 +73,7 @@ def test_check_and_build_constant_thermodb_filters_by_requested_constant():
 
 
 def test_check_and_build_constant_thermodb_returns_none_for_missing_constant():
-    result = check_and_build_constant_thermodb(
+    result = check_and_build_constants_thermodb(
         reference_config=_reference_config(),
         custom_reference=_custom_reference(),
         constants="missing",
