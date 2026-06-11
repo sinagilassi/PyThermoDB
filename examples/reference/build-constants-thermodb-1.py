@@ -70,6 +70,9 @@ print(thermodb_constants_.message)
 print(f"constants sources:")
 print(list(thermodb_constants_.check_constants().keys()))
 
+print(f"constants check:")
+print(thermodb_constants_.check_constants())
+
 # check methods defined in CompBuilder
 # all_constants_details
 print("All constants details:")
