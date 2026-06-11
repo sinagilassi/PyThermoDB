@@ -64,7 +64,8 @@ print(data_thermodb.retrieve(dHf_IG_src, message="enthalpy of formation"))
 print("[bold magenta]Select a function from the thermodb:[/bold magenta]")
 # select function
 func1_: TableEquation | TableMatrixEquation = data_thermodb.select_function(
-    'heat-capacity')
+    'heat-capacity'
+)
 print(type(func1_))
 print(func1_.args)
 print(func1_.cal(T=295.15, message="heat capacity of methanol"))
@@ -73,6 +74,11 @@ print(func1_.cal(T=295.15, message="heat capacity of methanol"))
 # SELECT CONSTANTS
 # ====================================
 print("[bold magenta]Select constants from the thermodb:[/bold magenta]")
+
+# select (universal method)
+const0_ = data_thermodb.select('custom-constants')
+print(type(const0_))
+
 # select constants
 const1_: TableConstants = data_thermodb.select_constant('custom-constants')
 print(type(const1_))
