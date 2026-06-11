@@ -235,17 +235,17 @@ const1 = thermodb_loaded.select_constant('custom-1')
 R = const1.get_constant('R', message='loaded gas constant')
 ```
 
-## Difference From `check_and_build_constant_thermodb`
+## Difference From `check_and_build_constants_thermodb`
 
 `build_constants_thermodb` performs source-level checks for databook and table availability, then builds the constants table.
 
-`check_and_build_constant_thermodb` performs additional validation:
+`check_and_build_constants_thermodb` performs additional validation:
 
 - verifies that the table type is `Constants`,
 - checks requested constants when `constants` is provided,
 - checks configured labels/symbols when present.
 
-Use `build_constants_thermodb` when the config already points to known constants tables. Use `check_and_build_constant_thermodb` when the config needs stronger validation before building.
+Use `build_constants_thermodb` when the config already points to known constants tables. Use `check_and_build_constants_thermodb` when the config needs stronger validation before building.
 
 ## Important Notes
 
