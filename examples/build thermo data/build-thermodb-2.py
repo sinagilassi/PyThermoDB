@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List
 from pyThermoDB import (
     check_and_build_component_thermodb,
-    check_and_build_constant_thermodb,
+    check_and_build_constants_thermodb,
     CompBuilder
 )
 from pyThermoDB.references import component_reference_mapper, constants_reference_mapper
@@ -186,7 +186,7 @@ print(constants_reference_config)
 if constants_ref_thermodb is None:
     print("[bold yellow]No constants tables found in reference content.[/bold yellow]")
 else:
-    constants_thermodb: CompBuilder | None = check_and_build_constant_thermodb(
+    constants_thermodb: CompBuilder | None = check_and_build_constants_thermodb(
         reference_config=constants_reference_config,
         custom_reference=custom_reference,
         thermodb_name='constants',
