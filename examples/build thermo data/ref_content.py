@@ -169,4 +169,16 @@ REFERENCES:
             - [5,'binary parameter', 'Xb', '-', 'a', None, 'This is a binary parameter used in the equations.']
             - [6,'custom constants','X','-',[1,2,3],None,'This is a list of custom constants that can be used in the equations.']
             - [7,'gibbs energy of reaction','dG_rxn','g',{"R1": -42, "R2": -50, "R3": -62},'kJ/mol','This is the Gibbs energy of formation of ideal gas.']
+        Custom-Constants-2:
+          TABLE-ID: 5
+          DESCRIPTION:
+            This table provides the custom constants that can be used in the equations or other calculations.
+          CONSTANTS: []
+          STRUCTURE:
+            COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+          VALUES:
+            - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','The universal gas constant is a physical constant that appears in many fundamental equations in the physical sciences.']
+            - [2,'Constant1','C1','g',12,None,'This is a constant used in the vapor pressure equation.']
+            - [3,'total heat capacity of ideal gas', 'Cp_IG', 'g', 25.35, 'J/mol.K', 'This is the total heat capacity at constant pressure of ideal gas.']
+            - [4,'enthalpy of reaction','dG_rxn','g',{"R1": -420, "R2": -500, "R3": -602},'kJ/mol','This is the enthalpy of formation of ideal gas.']
 """
