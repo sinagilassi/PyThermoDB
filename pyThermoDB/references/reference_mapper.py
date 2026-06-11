@@ -21,6 +21,8 @@ from ..utils import ignore_state_in_prop, create_mixture_ids
 # NOTE: set logger
 logger = logging.getLogger(__name__)
 
+# SECTION: constants reference mapper
+
 
 def constants_reference_mapper(
     reference_content: str,
@@ -58,7 +60,8 @@ def constants_reference_mapper(
 
         if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
             raise ValueError(
-                "search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
+                "search_mode must be 'NAME', 'SYMBOL', or 'BOTH'."
+            )
 
         if constants is None:
             constants_ = []
@@ -172,6 +175,7 @@ def constants_reference_mapper(
         raise Exception(f"Building constants reference mapper failed! {e}")
 
 
+# SECTION: component reference mapper
 def component_reference_mapper(
     component: Component,
     reference_content: str,
