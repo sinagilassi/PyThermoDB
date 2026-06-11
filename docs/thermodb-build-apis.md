@@ -12,7 +12,7 @@ This page focuses on high-level builders in `pyThermoDB.thermodb`.
 - `build_mixture_thermodb_from_reference(...)`
 - `check_and_build_mixture_thermodb(...)`
 - `build_constant_thermodb(...)`
-- `check_and_build_constant_thermodb(...)`
+- `check_and_build_constants_thermodb(...)`
 - `build_constants_thermodb_from_reference(...)`
 
 ## 🧪 Typical Single-Component Build
