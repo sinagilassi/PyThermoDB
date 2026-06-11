@@ -105,3 +105,28 @@ def test_constants_mapping_is_available_for_property_mapping():
     assert constants_mapping["Universal Gas Constant"] == "R"
     assert constants_mapping["enthalpy of reaction"] == "dH_rxn"
     assert property_mapping == constants_mapping
+
+
+def test_constants_reference_configs_are_generated_from_tables():
+    checker = _checker()
+
+    configs = checker.get_constants_reference_configs()
+
+    assert set(configs) == {
+        "CUSTOM-REF-1::Custom-Constants",
+        "CUSTOM-REF-1::Custom-Constants-2",
+    }
+    config = configs["CUSTOM-REF-1::Custom-Constants"]
+    assert config["databook"] == "CUSTOM-REF-1"
+    assert config["table"] == "Custom-Constants"
+    assert config["mode"] == "CONSTANTS"
+    assert config["labels"]["Universal Gas Constant"] == "R"
+    assert config["labels"]["enthalpy of reaction"] == "dH_rxn"
+
+
+def test_constants_reference_configs_filter_by_requested_constant():
+    checker = _checker()
+
+    configs = checker.get_constants_reference_configs(constants="dG_rxn")
+
+    assert set(configs) == {"CUSTOM-REF-1::Custom-Constants-2"}
