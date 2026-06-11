@@ -5391,10 +5391,127 @@ class ReferenceChecker:
             return None
 
     # NOTE: Constants reference configs
+    def get_constants_reference_configs(
+            self,
+            databook_name: Optional[str] = None,
+            table_name: Optional[str] = None,
+            constants: Optional[Union[str, List[str]]] = None,
+            search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> Dict[str, ConstantsConfig]:
+        """
+        Generate reference configs for constants tables.
+
+        Parameters
+        ----------
+        databook_name : str, optional
+            Databook name to restrict the constants search.
+        table_name : str, optional
+            Constants table name to restrict the constants search.
+        constants : str | list[str], optional
+            Constant names or symbols to require. If omitted, all constants
+            tables are included.
+        search_mode : Literal['NAME', 'SYMBOL', 'BOTH'], optional
+            Constant lookup mode when constants are provided.
+
+        Returns
+        -------
+        Dict[str, ConstantsConfig]
+            Constants reference configs keyed by ``Databook::Table``.
+        """
+        try:
+            if search_mode not in ['NAME', 'SYMBOL', 'BOTH']:
+                logging.error(
+                    "search_mode must be 'NAME', 'SYMBOL', or 'BOTH'.")
+                return {}
+
+            if constants is None:
+                constants_ = []
+            elif isinstance(constants, str):
+                constants_ = [constants]
+            elif (
+                isinstance(constants, list) and
+                all(isinstance(c, str) for c in constants)
+            ):
+                constants_ = constants
+            else:
+                logging.error(
+                    "constants must be a string, a list of strings, or None")
+                return {}
+
+            if databook_name is not None:
+                databooks = [databook_name]
+            else:
+                databooks = self.get_databook_names()
+
+            if not isinstance(databooks, list) or not databooks:
+                logging.error("No databooks found in the reference content.")
+                return {}
+
+            reference_configs: Dict[str, ConstantsConfig] = {}
+            for db_name in databooks:
+                if table_name is not None:
+                    if self.is_constants_table(db_name, table_name):
+                        constants_table_refs = [{
+                            'Databook': db_name,
+                            'Table': table_name
+                        }]
+                    else:
+                        logging.warning(
+                            f"Table '{table_name}' in databook '{db_name}' is not a constants table.")
+                        constants_table_refs = []
+                else:
+                    constants_table_refs = self.get_constants_tables(db_name)
+
+                for table_ref in constants_table_refs:
+                    tb_name = table_ref.get('Table', None)
+                    if tb_name is None:
+                        continue
+
+                    if constants_:
+                        constant_availability = [
+                            self.check_constant_availability(
+                                databook_name=db_name,
+                                table_name=tb_name,
+                                constant=constant,
+                                search_mode=search_mode
+                            ).get('available', False)
+                            for constant in constants_
+                        ]
+                        if not any(constant_availability):
+                            continue
+
+                    source_name = f"{db_name}::{tb_name}"
+                    reference_configs[source_name] = {
+                        'databook': db_name,
+                        'table': tb_name,
+                        'mode': 'CONSTANTS',
+                        'labels': self.get_constants_mapping(
+                            db_name,
+                            tb_name
+                        )
+                    }
+
+            return reference_configs
+        except Exception as e:
+            logging.error(f"Error getting constants reference configs: {e}")
+            return {}
+
     def get_constants_reference_config(
             self,
-    ):
-        pass
+            databook_name: Optional[str] = None,
+            table_name: Optional[str] = None,
+            constants: Optional[Union[str, List[str]]] = None,
+            search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
+    ) -> Dict[str, ConstantsConfig]:
+        """
+        Backward-compatible alias for ``get_constants_reference_configs``.
+        """
+        return self.get_constants_reference_configs(
+            databook_name=databook_name,
+            table_name=table_name,
+            constants=constants,
+            search_mode=search_mode
+        )
 
     # SECTION: Reference Rules
 
