@@ -139,6 +139,10 @@ data_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'General-Data')
 print(type(data_1))
 
+# >> check
+if not isinstance(data_1, ptdb.TableData):
+    raise TypeError("data_1 is not an instance of TableData")
+
 # retrieve data
 res_ = data_1.get_property("MW")
 print(res_)
@@ -150,6 +154,10 @@ data_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'General-Data-LLM')
 print(type(data_1))
 
+# >> check
+if not isinstance(data_1, ptdb.TableData):
+    raise TypeError("data_1 is not an instance of TableData")
+
 # retrieve data
 res_ = data_1.get_property("EnFo")
 print(res_)
@@ -160,6 +168,10 @@ print(res_)
 comp1 = "methane"
 comp1_eq_1 = thermo_db.build_thermo_property(
     [comp1], 'CUSTOM-REF-1', 'Ideal-Gas-Heat-Capacity')
+
+# >> check
+if not isinstance(comp1_eq_1, ptdb.TableEquation):
+    raise TypeError("comp1_eq_1 is not an instance of TableEquation")
 
 # equation details
 print(comp1_eq_1.equation_parms())
@@ -228,6 +240,11 @@ print(thermo_db_loaded.check())
 # SELECT PROPERTY
 # ====================================
 prop1_ = thermo_db_loaded.select('general')
+
+# >> check
+if not isinstance(prop1_, ptdb.TableData):
+    raise TypeError("The selected object is not an instance of TableData")
+
 print(type(prop1_))
 print(prop1_.prop_data)
 
