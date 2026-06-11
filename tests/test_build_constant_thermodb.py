@@ -92,7 +92,7 @@ CONSTANTS:
       Universal Gas Constant: R
 """
 
-    result = build_constant_thermodb(
+    result = build_constants_thermodb(
         reference_config=reference_config,
         custom_reference=_custom_reference(),
     )

@@ -21,10 +21,13 @@ def test_build_constants_thermodb_from_reference_builds_all_tables():
 
     assert isinstance(result, ConstantsThermoDB)
     constants = result.thermodb.check_constants()
-    assert set(constants) == {"Custom-Constants", "Custom-Constants-2"}
+    assert set(constants) == {
+        "CUSTOM-REF-1::Custom-Constants",
+        "CUSTOM-REF-1::Custom-Constants-2",
+    }
     assert all(isinstance(value, TableConstants) for value in constants.values())
-    assert constants["Custom-Constants"].get_constant("R")["value"] == 8.314
-    assert constants["Custom-Constants"].get_constant("dH_rxn")["value"] == {
+    assert constants["CUSTOM-REF-1::Custom-Constants"].get_constant("R")["value"] == 8.314
+    assert constants["CUSTOM-REF-1::Custom-Constants"].get_constant("dH_rxn")["value"] == {
         "R1": -42,
         "R2": -50,
         "R3": -62,
@@ -41,8 +44,8 @@ def test_build_constants_thermodb_from_reference_filters_by_constant_symbol():
 
     assert isinstance(result, ConstantsThermoDB)
     constants = result.thermodb.check_constants()
-    assert set(constants) == {"Custom-Constants-2"}
-    assert constants["Custom-Constants-2"].get_constant("dG_rxn")["value"] == {
+    assert set(constants) == {"CUSTOM-REF-1::Custom-Constants-2"}
+    assert constants["CUSTOM-REF-1::Custom-Constants-2"].get_constant("dG_rxn")["value"] == {
         "R1": -420,
         "R2": -500,
         "R3": -602,
