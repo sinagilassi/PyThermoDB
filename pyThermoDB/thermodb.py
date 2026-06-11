@@ -2330,7 +2330,7 @@ def check_and_build_mixture_thermodb(
 
 
 @measure_time
-def build_constant_thermodb(
+def build_constants_thermodb(
     reference_config: Union[Mapping[str, Any], str],
     custom_reference: Optional[CustomReference] = None,
     thermodb_name: Optional[str] = None,
