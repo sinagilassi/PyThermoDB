@@ -136,6 +136,14 @@ thermodb_loaded: CompBuilder = ptdb.load_thermodb(thermodb_path)
 print(type(thermodb_loaded))
 print(f"loaded check: {thermodb_loaded.check()}")
 
+# ! access loaded constants using **select**
+const0_: Any = thermodb_loaded.select('custom-1')
+print(type(const0_))
+# >> check TableConstants
+if not isinstance(const0_, TableConstants):
+    raise TypeError("The selected object is not a TableConstants instance.")
+print(const0_.data_structure())
+
 # ! access loaded constants
 const1_: TableConstants = thermodb_loaded.select_constant('custom-1')
 print(const1_.get_constant('R', message='loaded gas constant'))
