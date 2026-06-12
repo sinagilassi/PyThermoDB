@@ -21,6 +21,13 @@ thermodb_constants_: ConstantsThermoDB | None = build_constants_thermodb_from_re
     reference_content=REFERENCE_CONTENT,
 )
 print(f"thermodb_constants_: {type(thermodb_constants_)}")
+if thermodb_constants_ is None:
+    raise ValueError("Failed to build constants thermodb from reference.")
+
+# check
+# ! rules
+print("rules:")
+print(thermodb_constants_.reference_thermodb.rules if thermodb_constants_.reference_thermodb else None)
 
 # SECTION: reference content
 # Use the external reference YAML that contains Custom-Constants and
