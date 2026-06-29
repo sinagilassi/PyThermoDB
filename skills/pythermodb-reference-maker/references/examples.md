@@ -84,7 +84,43 @@ ideal-gas-heat-capacity:
     - [1,'argon','Ar','g',2.500,0.000,0.000,0.000,0.000,8.314,1]
 ```
 
-## Example 4: Constants table
+## Example 4: Reference-style vapor pressure equation
+
+Use this pattern for correlations that depend on reduced temperature and critical pressure.
+
+```yaml
+vapor-pressure:
+  TABLE-ID: 3
+  DESCRIPTION:
+    Vapor pressure in bar as a function of temperature in K.
+  EQUATIONS:
+    EQ-1:
+      BODY:
+        - Tr = args['temperature | T | K'] / parms['critical-temperature | Tc | K']
+        - tau = 1 - Tr
+        - expo = (1 / Tr) * (
+            parms['A | A | 1'] * tau +
+            parms['B | B | 1'] * math.pow(tau, 1.5) +
+            parms['C | C | 1'] * math.pow(tau, 2.5) +
+            parms['D | D | 1'] * math.pow(tau, 5)
+          )
+        - ps_bar = parms['critical-pressure | Pc | bar'] * math.exp(expo)
+        - res['vapor-pressure | VaPr | bar'] = ps_bar
+      BODY-INTEGRAL:
+        None
+      BODY-FIRST-DERIVATIVE:
+        None
+      BODY-SECOND-DERIVATIVE:
+        None
+  STRUCTURE:
+    COLUMNS: [No.,Name,Formula,State,A,B,C,D,critical-temperature,critical-pressure,Eq]
+    SYMBOL: [None,None,None,None,A,B,C,D,Tc,Pc,VaPr]
+    UNIT: [None,None,None,None,1,1,1,1,K,bar,bar]
+  VALUES:
+    - [1,'water','H2O','g',-7.870154,1.906774,-2.310330,-2.063390,647.096,220.640,1]
+```
+
+## Example 5: Constants table
 
 ```yaml
 Custom-Constants:
@@ -99,7 +135,7 @@ Custom-Constants:
     - [2,'enthalpy of reaction','dH_rxn','g',{"R1": -42, "R2": -50},'kJ/mol','Reaction enthalpy by reaction id.']
 ```
 
-## Example 5: Matrix parameter table
+## Example 6: Matrix parameter table
 
 ```yaml
 NRTL Non-randomness parameters:
@@ -120,7 +156,7 @@ NRTL Non-randomness parameters:
     - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 ```
 
-## Example 6: Full reference wrapper with mixed tables
+## Example 7: Full reference wrapper with mixed tables
 
 Use this format when creating a loadable reference file or a `REFERENCE_CONTENT` block.
 
