@@ -23,8 +23,14 @@ REFERENCES:
             BODY:
               - Tr = args['temperature | T | K'] / parms['critical-temperature | Tc | K']
               - tau = 1 - Tr
-              - expo = parms['A | A | 1'] * tau + parms['B | B | 1'] * math.pow(tau, 1.5)
-              - res['vapor-pressure | VaPr | bar'] = parms['critical-pressure | Pc | bar'] * math.exp(expo)
+              - expo = (1 / Tr) * (
+                  parms['A | A | 1'] * tau +
+                  parms['B | B | 1'] * math.pow(tau, 1.5) +
+                  parms['C | C | 1'] * math.pow(tau, 2.5) +
+                  parms['D | D | 1'] * math.pow(tau, 5)
+                )
+              - ps_bar = parms['critical-pressure | Pc | bar'] * math.exp(expo)
+              - res['vapor-pressure | VaPr | bar'] = ps_bar
             BODY-INTEGRAL:
               None
             BODY-FIRST-DERIVATIVE:
@@ -32,11 +38,11 @@ REFERENCES:
             BODY-SECOND-DERIVATIVE:
               None
         STRUCTURE:
-          COLUMNS: [No.,Name,Formula,State,A,B,critical-temperature,critical-pressure,Eq]
-          SYMBOL: [None,None,None,None,A,B,Tc,Pc,VaPr]
-          UNIT: [None,None,None,None,1,1,K,bar,bar]
+          COLUMNS: [No.,Name,Formula,State,A,B,C,D,critical-temperature,critical-pressure,Eq]
+          SYMBOL: [None,None,None,None,A,B,C,D,Tc,Pc,VaPr]
+          UNIT: [None,None,None,None,1,1,1,1,K,bar,bar]
         VALUES:
-          - [1,'component','Formula','g',-7.0,1.5,500,40,1]
+          - [1,'component','Formula','g',-7.0,1.5,-2.0,-2.0,500,40,1]
       Custom-Constants:
         TABLE-ID: 3
         DESCRIPTION:
