@@ -1,0 +1,11 @@
+table-name:
+  TABLE-ID: 1
+  DESCRIPTION:
+    Constants table description.
+  CONSTANTS: []
+  STRUCTURE:
+    COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+  VALUES:
+    - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','Scalar constant.']
+    - [2,'reaction enthalpy','dH_rxn','g',{"R1": -42, "R2": -50},'kJ/mol','Mapping constant.']
+    - [3,'custom vector','X','-',[1,2,3],None,'List constant.']

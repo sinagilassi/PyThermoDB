@@ -1,20 +1,32 @@
-{
-  "name": "pythermodb",
-  "interface": {
-    "displayName": "pyThermoDB"
-  },
-  "plugins": [
-    {
-      "name": "build-thermodb-from-reference",
-      "source": {
-        "source": "local",
-        "path": "./plugins/build-thermodb-from-reference"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    }
-  ]
+﻿{
+    "name":  "pythermodb",
+    "interface":  {
+                      "displayName":  "pyThermoDB"
+                  },
+    "plugins":  [
+                    {
+                        "name":  "build-thermodb-from-reference",
+                        "source":  {
+                                       "source":  "local",
+                                       "path":  "./plugins/build-thermodb-from-reference"
+                                   },
+                        "policy":  {
+                                       "installation":  "AVAILABLE",
+                                       "authentication":  "ON_INSTALL"
+                                   },
+                        "category":  "Productivity"
+                    },
+                    {
+                        "name":  "pythermodb-reference-maker",
+                        "source":  {
+                                       "source":  "local",
+                                       "path":  "./plugins/pythermodb-reference-maker"
+                                   },
+                        "policy":  {
+                                       "installation":  "AVAILABLE",
+                                       "authentication":  "ON_INSTALL"
+                                   },
+                        "category":  "Productivity"
+                    }
+                ]
 }

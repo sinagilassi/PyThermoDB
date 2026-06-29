@@ -1,0 +1,14 @@
+table-name:
+  TABLE-ID: 1
+  DESCRIPTION:
+    Matrix parameter table description.
+  MATRIX-SYMBOL:
+    - a
+    - b
+  STRUCTURE:
+    COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2]
+    SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2]
+    UNIT: [None,None,None,None,None,1,1,1,1]
+  VALUES:
+    - [1,component-1|component-2,component-1,Formula1,l,0,0,0,0]
+    - [2,component-1|component-2,component-2,Formula2,l,0,0,0,0]
