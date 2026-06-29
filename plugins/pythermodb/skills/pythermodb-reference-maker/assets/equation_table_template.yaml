@@ -21,4 +21,5 @@ table-name:
     SYMBOL: [None,None,None,None,A,B,Tc,Prop]
     UNIT: [None,None,None,None,1,1,K,unit]
   VALUES:
+    # The final Eq value is a numeric selector: 1 -> EQ-1, 2 -> EQ-2, etc.
     - [1,'component','Formula','g',1,1,500,1]
