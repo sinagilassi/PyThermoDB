@@ -5,22 +5,10 @@
                   },
     "plugins":  [
                     {
-                        "name":  "build-thermodb-from-reference",
+                        "name":  "pythermodb",
                         "source":  {
                                        "source":  "local",
-                                       "path":  "./plugins/build-thermodb-from-reference"
-                                   },
-                        "policy":  {
-                                       "installation":  "AVAILABLE",
-                                       "authentication":  "ON_INSTALL"
-                                   },
-                        "category":  "Productivity"
-                    },
-                    {
-                        "name":  "pythermodb-reference-maker",
-                        "source":  {
-                                       "source":  "local",
-                                       "path":  "./plugins/pythermodb-reference-maker"
+                                       "path":  "./plugins/pythermodb"
                                    },
                         "policy":  {
                                        "installation":  "AVAILABLE",
