@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build ThermoDB From Reference"
+  short_description: "Build pyThermoDB objects from references"
+  default_prompt: "Use $build-thermodb-from-reference to build component, mixture, or constants ThermoDB objects from reference YAML."
