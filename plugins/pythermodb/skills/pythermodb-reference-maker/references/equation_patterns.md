@@ -84,3 +84,13 @@ If one compound uses a different equation from the rest of the table:
 - add another `EQ-n`
 - use an equation selector column according to project convention
 - do not infer equation choice from missing coefficients alone
+
+## Equation selector column
+
+When an equation table has an `Eq` column, every `VALUES` row must end with a numeric equation selector.
+
+Rules:
+
+- Use `1` for rows that use `EQ-1`.
+- Use `2` for rows that use `EQ-2`, and continue sequentially for additional equations.
+- The selector must always be a number starting from `1`; never use placeholders such as `X`, equation names, text labels, or empty values.
