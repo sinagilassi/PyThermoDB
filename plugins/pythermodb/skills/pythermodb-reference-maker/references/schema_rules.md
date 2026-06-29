@@ -79,6 +79,14 @@ Each equation block should include these keys, even when not available:
 
 Set unavailable integral or derivative blocks to `None`.
 
+Equation tables may also include variable range columns such as `Tmin` and `Tmax`.
+These columns belong in `STRUCTURE.COLUMNS`, `STRUCTURE.SYMBOL`, `STRUCTURE.UNIT`, and each
+`VALUES` row. They are not separate top-level blocks and do not require `CONVERSION`.
+
+Runtime range detection is symbol-based. For an equation argument symbol `T`, valid range symbols
+include `Tmin`, `Tmax`, `Tlow`, `Thigh`, `T(min)`, `T(max)`, `T[min]`, `T[max]`, `T{min}`, and
+`T{max}`. Prefer `Tmin` and `Tmax` when representing source temperature limits.
+
 ## Constants table
 
 Required fields:

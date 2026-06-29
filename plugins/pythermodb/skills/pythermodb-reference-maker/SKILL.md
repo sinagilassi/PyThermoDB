@@ -16,6 +16,7 @@ Support:
 - Equation tables such as Cp, vapor pressure, density, and enthalpy of vaporization.
 - Multi-equation systems.
 - Optional integral and derivative expressions.
+- Optional variable range columns such as `Tmin`, `Tmax`, `Pmin`, or `Pmax`.
 
 ## Step 0: Interpret the task
 
@@ -40,6 +41,7 @@ Before processing:
    - mixed table patterns
 5. Check for:
    - scaled coefficients
+   - variable range columns such as `Tmin`/`Tmax`
    - missing metadata columns
    - special-case rows
 
@@ -96,6 +98,10 @@ Do not include `DATA` or `CONVERSION` for equation tables.
 Equation bodies may contain multiple executable steps before assigning to `res[...]`, such as
 `Tr`, `tau`, `expo`, and a final converted result. Keep intermediate variables when the source
 formula is complex or when the project examples use that style.
+
+Equation tables may include variable range columns. Store them as normal columns in
+`STRUCTURE.COLUMNS`, `STRUCTURE.SYMBOL`, `STRUCTURE.UNIT`, and every `VALUES` row. Do not put
+range limits inside `EQUATIONS`.
 
 ### Constants table
 
@@ -194,6 +200,21 @@ Equation tables may include:
 
 If the source or project template includes integral or derivative forms, keep all of them.
 
+## Step 5a: Preserve equation variable ranges
+
+If a source gives valid ranges for an equation variable, preserve them in the equation table.
+The runtime detects ranges from `STRUCTURE.SYMBOL` by matching equation argument symbols.
+
+For an argument symbol such as `T`, valid range symbols include:
+- `Tmin`, `Tmax`, `Tlow`, `Thigh`
+- `T(min)`, `T(max)`, `T(low)`, `T(high)`
+- `T[min]`, `T[max]`, `T[low]`, `T[high]`
+- `T{min}`, `T{max}`, `T{low}`, `T{high}`
+
+Prefer `Tmin` and `Tmax` for temperature limits. Use the same unit as the variable, such as `K`
+for `Tmin`/`Tmax`. Related source columns such as `P(Tmin)` or `P(Tmax)` may be preserved as
+ordinary metadata columns, but they are not temperature range bounds.
+
 ## Step 6: Fixed schema rules
 
 - Every row must have exactly the same number of values as the number of columns.
@@ -264,6 +285,7 @@ Before finalizing:
 - row width matches column count
 - symbols, units, and values align exactly
 - scaling is handled correctly
+- variable range columns are preserved when present in the source
 - formulas are normalized to project style unless instructed otherwise
 - state values use `g`, `l`, `s`, or `aq` unless another format was explicitly requested
 - no guessed coefficients are presented as exact

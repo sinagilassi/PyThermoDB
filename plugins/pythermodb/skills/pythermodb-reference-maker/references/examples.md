@@ -40,11 +40,11 @@ vapor-pressure:
       BODY-SECOND-DERIVATIVE:
         None
   STRUCTURE:
-    COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5,Eq]
-    SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,VaPr]
-    UNIT: [None,None,None,None,1,1,1,1,1,Pa]
+    COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,Tmax,Eq]
+    SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,Tmin,Tmax,VaPr]
+    UNIT: [None,None,None,None,1,1,1,1,1,K,K,Pa]
   VALUES:
-    - [1,'water','H2O','l',73.649,-7258.2,-7.3037,4.1653E-6,2,1]
+    - [1,'water','H2O','l',73.649,-7258.2,-7.3037,4.1653E-6,2,273.16,647.096,1]
 ```
 
 ## Example 3: Equation table with scaled coefficients and derivatives

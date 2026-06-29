@@ -17,9 +17,9 @@ table-name:
       BODY-SECOND-DERIVATIVE:
         None
   STRUCTURE:
-    COLUMNS: [No.,Name,Formula,State,A,B,critical-temperature,Eq]
-    SYMBOL: [None,None,None,None,A,B,Tc,Prop]
-    UNIT: [None,None,None,None,1,1,K,unit]
+    COLUMNS: [No.,Name,Formula,State,A,B,critical-temperature,Tmin,Tmax,Eq]
+    SYMBOL: [None,None,None,None,A,B,Tc,Tmin,Tmax,Prop]
+    UNIT: [None,None,None,None,1,1,K,K,K,unit]
   VALUES:
     # The final Eq value is a numeric selector: 1 -> EQ-1, 2 -> EQ-2, etc.
-    - [1,'component','Formula','g',1,1,500,1]
+    - [1,'component','Formula','g',1,1,500,250,450,1]
