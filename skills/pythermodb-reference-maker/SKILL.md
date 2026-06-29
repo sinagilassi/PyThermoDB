@@ -1,49 +1,53 @@
 ---
 name: pythermodb-reference-maker
-description: Extract thermodynamic tables and correlations from references (CSV, PDF, images, or text) and convert them into the project's structured YAML schema. Supports data tables and equation-based correlations (e.g., Cp, vapor pressure, density, enthalpy of vaporization), including coefficient parsing and transformation into executable project notation (parms, args, res). Trigger when working with thermodynamic tables, coefficients, correlations, or YAML formatting. Ensures unit-consistent, schema-compliant, and solver-ready thermodynamic definitions for downstream modeling tools.
+description: Extract thermodynamic tables and correlations from references (CSV, PDF, images, or text) and convert them into the project's structured pyThermoDB YAML schema. Supports data tables, constants tables, matrix-parameter tables, and equation-based correlations (e.g., Cp, vapor pressure, density, enthalpy of vaporization), including coefficient parsing and transformation into executable project notation (parms, args, res). Trigger when working with thermodynamic tables, coefficients, correlations, constants, matrix parameters, or YAML formatting. Ensures unit-consistent, schema-compliant, and solver-ready thermodynamic definitions for downstream modeling tools.
 ---
 
-# Thermodynamic Table → YAML Extractor
+# Thermodynamic Table to YAML Extractor
 
 ## Purpose
 
-This skill converts thermodynamic tables into a structured YAML format used by the project.
+Convert thermodynamic tables into the structured YAML format used by pyThermoDB references.
 
-It supports:
-- data tables such as general properties
-- equation tables such as Cp, vapor pressure, density, and enthalpy of vaporization
-- multi-equation systems
-- optional integral and derivative expressions
+Support:
+- Data tables such as general component properties.
+- Constants tables such as custom constants or reaction constants.
+- Matrix-parameter tables such as binary NRTL parameters.
+- Equation tables such as Cp, vapor pressure, density, and enthalpy of vaporization.
+- Multi-equation systems.
+- Optional integral and derivative expressions.
 
-## Step 0: Task interpretation
+## Step 0: Interpret the task
 
 Before processing:
 
 1. Identify input type:
-  - CSV
-  - PDF/image
-  - raw text
-
+   - CSV
+   - PDF/image
+   - raw text
+   - existing YAML
 2. Identify table type:
-  - data table → constants only
-  - equation table → coefficients + formula
-
-3. Identify complexity:
-  - single equation
-  - multiple equations
-  - mixed patterns
-
-4. Check for:
-  - scaled coefficients
-  - missing metadata columns
-  - special-case rows
+   - data table: component or mixture scalar properties
+   - constants table: named constants and scalar/list/dict constant values
+   - matrix table: pairwise or matrix-parameter data
+   - equation table: coefficients plus formula
+3. Identify container format:
+   - full reference: `REFERENCES -> reference id -> DATABOOK-ID -> TABLES`
+   - direct table snippet: one or more table names at the top level
+4. Identify complexity:
+   - single equation
+   - multiple equations
+   - mixed table patterns
+5. Check for:
+   - scaled coefficients
+   - missing metadata columns
+   - special-case rows
 
 ## Step 1: Classify table type
 
 ### Data table
-A table is a data table when it contains only constants and no evaluable correlation equation.
 
-Required structure:
+A data table contains component or mixture scalar properties and no evaluable correlation equation.
 
 ```yaml
 table-name:
@@ -61,9 +65,8 @@ table-name:
 ```
 
 ### Equation table
-A table is an equation table when it contains coefficients tied to one or more equations.
 
-Required structure:
+An equation table contains coefficients tied to one or more equations.
 
 ```yaml
 table-name:
@@ -90,7 +93,49 @@ table-name:
 
 Do not include `DATA` or `CONVERSION` for equation tables.
 
-## Step 2: CSV interpretation
+Equation bodies may contain multiple executable steps before assigning to `res[...]`, such as
+`Tr`, `tau`, `expo`, and a final converted result. Keep intermediate variables when the source
+formula is complex or when the project examples use that style.
+
+### Constants table
+
+A constants table contains named constants rather than component rows or evaluable correlations.
+
+```yaml
+table-name:
+  TABLE-ID: <int>
+  DESCRIPTION:
+    <text>
+  CONSTANTS: []
+  STRUCTURE:
+    COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+  VALUES:
+    - [...]
+```
+
+The `Value` column may be a scalar, string, dictionary, list, or `None`.
+
+### Matrix table
+
+A matrix table defines pairwise or matrix symbols, such as NRTL `a`, `b`, `c`, or `alpha`.
+
+```yaml
+table-name:
+  TABLE-ID: <int>
+  DESCRIPTION:
+    <text>
+  MATRIX-SYMBOL:
+    - a
+    - b
+  STRUCTURE:
+    COLUMNS: [...]
+    SYMBOL: [...]
+    UNIT: [...]
+  VALUES:
+    - [...]
+```
+
+## Step 2: Interpret CSV
 
 When the source is a CSV in the project style:
 - row 1 = `COLUMNS`
@@ -100,22 +145,20 @@ When the source is a CSV in the project style:
 
 For data tables, also generate `CONVERSION`.
 
-## Step 3: Equation transformation rule
+## Step 3: Transform equations
 
 Do not copy equations symbolically. Convert them into executable YAML using project notation:
-- coefficients → `parms[...]`
-- variables → `args[...]`
-- result → `res[...]`
+- coefficients -> `parms[...]`
+- variables -> `args[...]`
+- result -> `res[...]`
 
-Example:
-
-Source:
+Example source:
 
 ```text
 ln P = C1 + C2/T + C3 ln T + C4 T^C5
 ```
 
-YAML:
+Executable YAML body:
 
 ```yaml
 EQ-1:
@@ -128,15 +171,9 @@ EQ-1:
     - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
 ```
 
-## Step 4: Scaled coefficient rule
+## Step 4: Preserve coefficient scaling
 
-If a source table shows scaled headers such as:
-- `a1 × 10^3`
-- `a2 × 10^5`
-- `a3 × 10^8`
-- `a4 × 10^11`
-
-Then preserve the scale in `UNIT`, not in `SYMBOL`.
+If a source table shows scaled headers such as `a1 x 10^3`, `a2 x 10^5`, `a3 x 10^8`, or `a4 x 10^11`, preserve the scale in `UNIT`, not in `SYMBOL`.
 
 Correct pattern:
 
@@ -147,12 +184,7 @@ STRUCTURE:
   UNIT: [None,None,None,None,1,1E3,1E5,1E8,1E11,1,J/mol.K]
 ```
 
-That means:
-- `COLUMNS` = plain names
-- `SYMBOL` = plain symbols or project result identifier
-- `UNIT` = physical unit or scale tag
-
-## Step 5: Extended equation support
+## Step 5: Keep extended equation blocks
 
 Equation tables may include:
 - `BODY`
@@ -167,59 +199,73 @@ If the source or project template includes integral or derivative forms, keep al
 - Every row must have exactly the same number of values as the number of columns.
 - Never shift columns.
 - Use `0` for unused coefficients if that is the active project convention.
-- Keep mandatory metadata columns when the project requires them:
-  - `No.`
-  - `Name`
-  - `Formula`
-  - `State`
-- For `State`, use the project default state codes unless the user explicitly requests another format:
+- Keep mandatory metadata columns when the project requires them: `No.`, `Name`, `Formula`, `State`.
+- For `State`, use default project codes unless the user explicitly requests another format:
   - `g` = gas
   - `l` = liquid
   - `s` = solid
   - `aq` = aqueous
-- If the user wants expanded labels, uppercase labels, source-faithful labels, or another state format, they must state that in the prompt.
 
-## Step 7: UNIT and CONVERSION rules
+## Step 7: Unit and conversion rules
 
-### Data tables
-Use `CONVERSION`:
-
-`internal = stored × conversion`
+For data tables, use `CONVERSION` with `internal = stored * conversion`.
 
 Use:
 - `1` for numeric columns already in target internal units
 - `None` for text columns
 
-### Equation tables
-Do not use `CONVERSION`. Handle scaling and unit adjustments inside the equation body.
+For equation tables, do not use `CONVERSION`; handle scaling and unit adjustments inside the equation body.
 
 ## Step 8: Formula style
 
-Use the compact formula style used by the project's main reference file.
+Use the compact formula style used by the project's main reference files.
 
 Prefer:
 - `C2H4`
 - `C7H8`
 - `C3H6O2`
 
-Avoid source-display formulas such as:
-- `CH2=CH2`
-- `C6H5—CH3`
+Avoid source-display formulas such as `CH2=CH2` or `C6H5-CH3` unless the user explicitly asks for source-faithful display formulas.
 
-unless the user explicitly asks for source-faithful display formulas.
+## Step 9: Use bundled resources
 
-## Step 9: Validation checklist
+Read or run these when needed:
+
+- `references/schema_rules.md`: table-type schema rules for data, equation, constants, and matrix tables.
+- `references/equation_patterns.md`: equation transformation patterns and math-module rules.
+- `references/examples.md`: examples for valid data, equation, constants, and matrix tables.
+- `assets/reference_file_template.yaml`: starting template for a full `REFERENCES:` file with mixed table types.
+- `assets/data_table_template.yaml`: starting template for direct data-table snippets.
+- `assets/equation_table_template.yaml`: starting template for direct equation-table snippets.
+- `assets/constants_table_template.yaml`: starting template for direct constants-table snippets.
+- `assets/matrix_table_template.yaml`: starting template for direct matrix-parameter table snippets.
+- `scripts/csv_to_structure.py`: convert project-style CSV headers into YAML arrays.
+- `scripts/validate_yaml.py`: validate YAML shape. It accepts full `REFERENCES:` files and direct table snippets.
+- `scripts/check_reference.py`: validate that YAML can be loaded by pyThermoDB itself.
+
+Prefer `.venv/Scripts/python.exe` on Windows when running pyThermoDB-aware scripts inside this repository.
+
+Example validation flow:
+
+```bash
+.venv/Scripts/python.exe skills/pythermodb-reference-maker/scripts/validate_yaml.py examples/external-ref/source-ref-1.yml
+.venv/Scripts/python.exe skills/pythermodb-reference-maker/scripts/check_reference.py examples/external-ref/source-ref-1.yml CUSTOM-REF-1 Custom-Constants
+```
+
+## Validation checklist
 
 Before finalizing:
 - table type is correct
-- `DATA: []` exists for data tables
+- `DATA` exists for data tables
 - `CONVERSION` exists for data tables
 - `EQUATIONS` exists for equation tables
+- `CONSTANTS` exists for constants tables
+- `MATRIX-SYMBOL` exists for matrix tables
 - row width matches column count
 - symbols, units, and values align exactly
 - scaling is handled correctly
-- formulas are normalized to project style
-- state values use the default project codes (`g`, `l`, `s`, `aq`) unless another format was explicitly requested
+- formulas are normalized to project style unless instructed otherwise
+- state values use `g`, `l`, `s`, or `aq` unless another format was explicitly requested
 - no guessed coefficients are presented as exact
 
 ## Output format
@@ -233,14 +279,14 @@ Return:
 
 - Do not guess coefficients.
 - Do not drop columns required by the project schema.
-- Do not mix data-table and equation-table formats.
+- Do not mix table formats.
 - Do not ignore coefficient scaling shown in the source.
-- Do not expand or change `State` values away from `g`, `l`, `s`, or `aq` unless the user explicitly requests a different state format.
+- Do not expand or change `State` values away from `g`, `l`, `s`, or `aq` unless explicitly requested.
 
 ## Definition of done
 
 The task is complete only when:
 - YAML matches the project schema
-- the equation is executable in the project's notation
+- equations are executable in project notation
 - units and scales are represented in the correct layer
 - data integrity is preserved

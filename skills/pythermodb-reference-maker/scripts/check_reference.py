@@ -1,7 +1,29 @@
+"""Validate generated YAML as a pyThermoDB custom reference.
+
+Usage:
+    python check_reference.py path/to/reference.yml CUSTOM-REF-1 table-1 table-2
+"""
+
 # import libs
+import argparse
 from typing import Any, Dict, List
 import logging
+from pathlib import Path
+import sys
 from rich import print
+
+
+def _ensure_local_project_imports() -> None:
+    for candidate in [Path.cwd(), Path(__file__).resolve().parents[3]]:
+        if (candidate / "pyThermoDB").is_dir():
+            candidate_text = str(candidate)
+            if candidate_text not in sys.path:
+                sys.path.insert(0, candidate_text)
+            return
+
+
+_ensure_local_project_imports()
+
 import pyThermoDB as ptdb
 from pyThermoDB.references import check_custom_reference
 from pyThermoDB.core import TableData, TableEquation
@@ -213,3 +235,41 @@ def check_yaml_reference(
         logger.exception("Failed to validate YAML reference.")
         report["errors"].append(str(e))
         return report
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Validate YAML content as a pyThermoDB custom reference."
+    )
+    parser.add_argument("path", help="Path to a pyThermoDB reference YAML file.")
+    parser.add_argument("databook", help="Databook name, e.g. CUSTOM-REF-1.")
+    parser.add_argument(
+        "tables",
+        nargs="+",
+        help="One or more table names expected in the databook.",
+    )
+    parser.add_argument(
+        "--no-strict-table-type",
+        action="store_true",
+        help="Skip table object type checks after table existence is confirmed.",
+    )
+    return parser
+
+
+def main() -> int:
+    parser = _build_parser()
+    args = parser.parse_args()
+
+    yaml_content = Path(args.path).read_text(encoding="utf-8")
+    report = check_yaml_reference(
+        yaml_content=yaml_content,
+        databook_name=args.databook,
+        table_names=args.tables,
+        strict_table_type=not args.no_strict_table_type,
+    )
+    print(report)
+    return 0 if report["ok"] else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

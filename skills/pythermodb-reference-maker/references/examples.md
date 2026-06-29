@@ -40,11 +40,11 @@ vapor-pressure:
       BODY-SECOND-DERIVATIVE:
         None
   STRUCTURE:
-    COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5]
-    SYMBOL: [None,None,None,None,C1,C2,C3,C4,VaPr]
-    UNIT: [None,None,None,None,1,1,1,1,Pa]
+    COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5,Eq]
+    SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,VaPr]
+    UNIT: [None,None,None,None,1,1,1,1,1,Pa]
   VALUES:
-    - [1,'water','H2O','l',73.649,-7258.2,-7.3037,4.1653E-6,2]
+    - [1,'water','H2O','l',73.649,-7258.2,-7.3037,4.1653E-6,2,1]
 ```
 
 ## Example 3: Equation table with scaled coefficients and derivatives
@@ -82,4 +82,72 @@ ideal-gas-heat-capacity:
     UNIT: [None,None,None,None,1,1E3,1E5,1E8,1E11,1,J/mol.K]
   VALUES:
     - [1,'argon','Ar','g',2.500,0.000,0.000,0.000,0.000,8.314,1]
+```
+
+## Example 4: Constants table
+
+```yaml
+Custom-Constants:
+  TABLE-ID: 4
+  DESCRIPTION:
+    Custom constants used by downstream calculations.
+  CONSTANTS: []
+  STRUCTURE:
+    COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+  VALUES:
+    - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','Universal gas constant.']
+    - [2,'enthalpy of reaction','dH_rxn','g',{"R1": -42, "R2": -50},'kJ/mol','Reaction enthalpy by reaction id.']
+```
+
+## Example 5: Matrix parameter table
+
+```yaml
+NRTL Non-randomness parameters:
+  TABLE-ID: 5
+  DESCRIPTION:
+    Binary NRTL matrix parameters.
+  MATRIX-SYMBOL:
+    - a
+    - b
+    - c
+    - alpha
+  STRUCTURE:
+    COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+    SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
+    UNIT: [None,None,None,None,None,1,1,1,1,1,1,1,1]
+  VALUES:
+    - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+    - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+```
+
+## Example 6: Full reference wrapper with mixed tables
+
+Use this format when creating a loadable reference file or a `REFERENCE_CONTENT` block.
+
+```yaml
+REFERENCES:
+  CUSTOM-REF-1:
+    DATABOOK-ID: 1
+    TABLES:
+      general-data:
+        TABLE-ID: 1
+        DESCRIPTION:
+          General data.
+        DATA: []
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,critical-temperature]
+          SYMBOL: [None,None,None,None,Tc]
+          UNIT: [None,None,None,None,K]
+          CONVERSION: [None,None,None,None,1]
+        VALUES:
+          - [1,'water','H2O','l',647.096]
+      Custom-Constants:
+        TABLE-ID: 2
+        DESCRIPTION:
+          Constants used by equations.
+        CONSTANTS: []
+        STRUCTURE:
+          COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+        VALUES:
+          - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','Scalar constant.']
 ```

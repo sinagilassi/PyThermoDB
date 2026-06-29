@@ -1,9 +1,12 @@
-TABLE-ID:
+table-name:
+  TABLE-ID: 1
   DESCRIPTION:
+    Data table description.
   DATA: []
   STRUCTURE:
-    COLUMNS:
-    SYMBOL:
-    UNIT:
-    CONVERSION:
+    COLUMNS: [No.,Name,Formula,State,Property]
+    SYMBOL: [None,None,None,None,Prop]
+    UNIT: [None,None,None,None,unit]
+    CONVERSION: [None,None,None,None,1]
   VALUES:
+    - [1,'component','Formula','g',0]

@@ -1,0 +1,49 @@
+REFERENCES:
+  CUSTOM-REF-1:
+    DATABOOK-ID: 1
+    TABLES:
+      general-data:
+        TABLE-ID: 1
+        DESCRIPTION:
+          Data table description.
+        DATA: []
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,critical-temperature]
+          SYMBOL: [None,None,None,None,Tc]
+          UNIT: [None,None,None,None,K]
+          CONVERSION: [None,None,None,None,1]
+        VALUES:
+          - [1,'component','Formula','g',500]
+      vapor-pressure:
+        TABLE-ID: 2
+        DESCRIPTION:
+          Equation table description.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - Tr = args['temperature | T | K'] / parms['critical-temperature | Tc | K']
+              - tau = 1 - Tr
+              - expo = parms['A | A | 1'] * tau + parms['B | B | 1'] * math.pow(tau, 1.5)
+              - res['vapor-pressure | VaPr | bar'] = parms['critical-pressure | Pc | bar'] * math.exp(expo)
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,A,B,critical-temperature,critical-pressure,Eq]
+          SYMBOL: [None,None,None,None,A,B,Tc,Pc,VaPr]
+          UNIT: [None,None,None,None,1,1,K,bar,bar]
+        VALUES:
+          - [1,'component','Formula','g',-7.0,1.5,500,40,1]
+      Custom-Constants:
+        TABLE-ID: 3
+        DESCRIPTION:
+          Constants table description.
+        CONSTANTS: []
+        STRUCTURE:
+          COLUMNS: [No.,Name,Symbol,State,Value,Unit,Description]
+        VALUES:
+          - [1,'Universal Gas Constant','R','g',8.314,'J/mol.K','Scalar constant.']
+          - [2,'reaction enthalpy','dH_rxn','g',{"R1": -42, "R2": -50},'kJ/mol','Mapping constant.']
