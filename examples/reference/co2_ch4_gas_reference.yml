@@ -1,0 +1,17 @@
+REFERENCES:
+  CO2-CH4-GAS-REF:
+    DATABOOK-ID: 1
+    DESCRIPTION: Critical properties and gas-phase formation enthalpies for carbon dioxide and methane.
+    TABLES:
+      general-data:
+        TABLE-ID: 1
+        DESCRIPTION: Gas-phase critical temperature, critical pressure, and standard enthalpy of formation for carbon dioxide and methane.
+        DATA: []
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,critical-temperature,critical-pressure,enthalpy-of-formation]
+          SYMBOL: [None,None,None,None,Tc,Pc,EnFo]
+          UNIT: [None,None,None,None,K,MPa,kJ/mol]
+          CONVERSION: [None,None,None,None,1,1,1]
+        VALUES:
+          - [1,'carbon dioxide','CO2','g',304.21,7.383,-393.5]
+          - [2,'methane','CH4','g',190.564,4.599,-74.50]
