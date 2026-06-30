@@ -154,10 +154,20 @@ For data tables, also generate `CONVERSION`.
 
 ## Step 3: Transform equations
 
-Do not copy equations symbolically. Convert them into executable YAML using project notation:
-- coefficients -> `parms[...]`
-- variables -> `args[...]`
-- result -> `res[...]`
+Do not copy equations symbolically. Convert them into executable YAML using the current project
+notation from `examples/reference/str-ref-1.md`:
+- coefficients -> inline typed `parms['name | symbol | unit']` keys
+- variables -> inline typed `args['name | symbol | unit']` keys
+- result -> inline typed `res['name | symbol | unit']` keys
+
+Do not add legacy equation metadata blocks:
+- no `ARGS`
+- no `PARMS`
+- no `RETURNS`
+
+The name, symbol, and unit metadata must live inside each `parms[...]`, `args[...]`, and
+`res[...]` key string, and the table-level `STRUCTURE` must still define the row columns,
+symbols, and units.
 
 Example source:
 

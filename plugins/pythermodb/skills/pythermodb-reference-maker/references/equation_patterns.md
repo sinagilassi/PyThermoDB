@@ -26,13 +26,18 @@ Additional constraints:
 
 ## Core transformation principle
 
-All equations MUST be transformed into executable YAML using:
+All equations MUST be transformed into executable YAML using the current inline metadata key
+format:
 
-- parms[...] → coefficients
-- args[...] → variables
-- res[...] → outputs
+- `parms['name | symbol | unit']` for coefficients
+- `args['name | symbol | unit']` for variables
+- `res['name | symbol | unit']` for outputs
 
 This transformation is mandatory and defines the project’s computational model.
+
+Do not emit legacy equation metadata blocks named `ARGS`, `PARMS`, or `RETURNS`. The name,
+symbol, and unit metadata belongs inside the `parms[...]`, `args[...]`, and `res[...]` key
+strings, with table row metadata still represented by `STRUCTURE`.
 
 ## Ambiguity handling
 
@@ -53,9 +58,9 @@ Source form:
 
 Executable YAML form:
 
-- map coefficients to `parms[...]`
-- map variables to `args[...]`
-- map result to `res[...]`
+- map coefficients to inline typed `parms['name | symbol | unit']` keys
+- map variables to inline typed `args['name | symbol | unit']` keys
+- map result to inline typed `res['name | symbol | unit']` keys
 - use `math.log` and `math.exp`
 - include explicit normalization lines for each coefficient, even if the divisor is `1`
 

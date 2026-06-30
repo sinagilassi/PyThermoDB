@@ -15,3 +15,60 @@ REFERENCES:
         VALUES:
           - [1,'carbon dioxide','CO2','g',304.21,7.383,-393.5]
           - [2,'methane','CH4','g',190.564,4.599,-74.50]
+      ideal-gas-heat-capacity:
+        TABLE-ID: 2
+        DESCRIPTION: Ideal-gas molar heat capacity in J/mol.K as a function of temperature in K for carbon dioxide and methane.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - res['heat capacity of ideal gas | Cp_IG | J/mol.K'] = (parms['a0 | a0 | 1'] + parms['a1 | a1 | 1E3']*args['temperature | T | K'] + parms['a2 | a2 | 1E5']*(args['temperature | T | K']**2) + parms['a3 | a3 | 1E8']*(args['temperature | T | K']**3) + parms['a4 | a4 | 1E11']*(args['temperature | T | K']**4))*parms['Universal-Gas-Constant | R | J/mol.K']
+            BODY-INTEGRAL:
+              - A1 = parms['a0 | a0 | 1']*args['temperature | T1 | K']
+              - B1 = (parms['a1 | a1 | 1E3']/2)*(args['temperature | T1 | K']**2)
+              - C1 = (parms['a2 | a2 | 1E5']/3)*(args['temperature | T1 | K']**3)
+              - D1 = (parms['a3 | a3 | 1E8']/4)*(args['temperature | T1 | K']**4)
+              - E1 = (parms['a4 | a4 | 1E11']/5)*(args['temperature | T1 | K']**5)
+              - res1 = A1 + B1 + C1 + D1 + E1
+              - A2 = parms['a0 | a0 | 1']*args['temperature | T2 | K']
+              - B2 = (parms['a1 | a1 | 1E3']/2)*(args['temperature | T2 | K']**2)
+              - C2 = (parms['a2 | a2 | 1E5']/3)*(args['temperature | T2 | K']**3)
+              - D2 = (parms['a3 | a3 | 1E8']/4)*(args['temperature | T2 | K']**4)
+              - E2 = (parms['a4 | a4 | 1E11']/5)*(args['temperature | T2 | K']**5)
+              - res2 = A2 + B2 + C2 + D2 + E2
+              - res = parms['Universal-Gas-Constant | R | J/mol.K']*(res2 - res1)
+            BODY-FIRST-DERIVATIVE:
+              - res = parms['Universal-Gas-Constant | R | J/mol.K']*(parms['a1 | a1 | 1E3'] + 2*parms['a2 | a2 | 1E5']*args['temperature | T | K'] + 3*parms['a3 | a3 | 1E8']*(args['temperature | T | K']**2) + 4*parms['a4 | a4 | 1E11']*(args['temperature | T | K']**3))
+            BODY-SECOND-DERIVATIVE:
+              - res = parms['Universal-Gas-Constant | R | J/mol.K']*(2*parms['a2 | a2 | 1E5'] + 6*parms['a3 | a3 | 1E8']*args['temperature | T | K'] + 12*parms['a4 | a4 | 1E11']*(args['temperature | T | K']**2))
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,a0,a1,a2,a3,a4,R,Eq]
+          SYMBOL: [None,None,None,None,a0,a1,a2,a3,a4,R,Cp_IG]
+          UNIT: [None,None,None,None,1,1E3,1E5,1E8,1E11,1,J/mol.K]
+        VALUES:
+          - [1,'carbon dioxide','CO2','g',3.259,1.356,1.502,-2.374,1.056,8.314,1]
+          - [2,'methane','CH4','g',4.568,-8.975,3.631,-3.407,1.091,8.314,1]
+      vapor-pressure:
+        TABLE-ID: 3
+        DESCRIPTION: Vapor pressure in Pa as a function of temperature in K for carbon dioxide and methane.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - parms['C1 | C1 | 1'] = parms['C1 | C1 | 1']/1
+              - parms['C2 | C2 | 1'] = parms['C2 | C2 | 1']/1
+              - parms['C3 | C3 | 1'] = parms['C3 | C3 | 1']/1
+              - parms['C4 | C4 | 1'] = parms['C4 | C4 | 1']/1
+              - parms['C5 | C5 | 1'] = parms['C5 | C5 | 1']/1
+              - res['vapor-pressure | VaPr | Pa'] = math.exp(parms['C1 | C1 | 1'] + parms['C2 | C2 | 1']/args['temperature | T | K'] + parms['C3 | C3 | 1']*math.log(args['temperature | T | K']) + parms['C4 | C4 | 1']*(args['temperature | T | K']**parms['C5 | C5 | 1']))
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),Eq]
+          SYMBOL: [None,None,None,None,C1,C2,C3,C4,C5,Tmin,P(Tmin),Tmax,P(Tmax),VaPr]
+          UNIT: [None,None,None,None,1,1,1,1,1,K,Pa,K,Pa,Pa]
+        VALUES:
+          - [1,'carbon dioxide','CO2','g',140.54,-4735,-21.268,4.09E-02,1,216.58,5.19E+05,304.21,7.39E+06,1]
+          - [2,'methane','CH4','g',39.205,-1324.4,-3.4366,3.10E-05,2,90.69,1.17E+04,190.56,4.59E+06,1]
