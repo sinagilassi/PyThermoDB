@@ -130,6 +130,23 @@ Required fields:
 Each row in `VALUES` must exactly match the number of entries in `COLUMNS`.
 Use `0` instead of `None` when the active project convention says to use `0`.
 
+## Component record uniqueness rule
+
+For component-style data and equation tables, `VALUES` must contain only one row per component
+identity and state in the same table. Use the component metadata columns to identify duplicates,
+normally `Name`, `Formula`, and `State` when present.
+
+Different states are valid separate records. For example, `Methane`/`CH4`/`g` and
+`Methane`/`CH4`/`l` may both appear in the same table. Do not create a second row for the same
+`Name`/`Formula`/`State` identity, such as another methane gas row, to hold another property range,
+alternate equation selector, source note, or leftover coefficient group. Merge all columns for that
+component-state identity into the same row. If duplicate source rows for the same component-state
+identity have conflicting values, report the conflict in notes and do not fabricate a merged value.
+
+This rule applies to component data tables and component equation tables. It does not apply to
+matrix tables, pairwise mixture rows, or constants tables, because those table types use different
+row identities.
+
 ## Metadata rule
 
 Keep these when the project requires them:

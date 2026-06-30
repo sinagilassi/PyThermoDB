@@ -42,6 +42,7 @@ Before processing:
 5. Check for:
    - scaled coefficients
    - variable range columns such as `Tmin`/`Tmax`
+   - duplicate component records in `VALUES`
    - missing metadata columns
    - special-case rows
 
@@ -219,6 +220,7 @@ ordinary metadata columns, but they are not temperature range bounds.
 
 - Every row must have exactly the same number of values as the number of columns.
 - Never shift columns.
+- In component-style data and equation tables, define only one `VALUES` row per component record.
 - Use `0` for unused coefficients if that is the active project convention.
 - Keep mandatory metadata columns when the project requires them: `No.`, `Name`, `Formula`, `State`.
 - For `State`, use default project codes unless the user explicitly requests another format:
@@ -226,6 +228,15 @@ ordinary metadata columns, but they are not temperature range bounds.
   - `l` = liquid
   - `s` = solid
   - `aq` = aqueous
+
+Component record uniqueness means one row for each component identity in a table, normally
+`Name` plus `Formula` plus `State` when those columns exist. Different states are different
+component identities, so `Methane`/`CH4`/`g` and `Methane`/`CH4`/`l` are both valid rows in the
+same table. Do not create a second row for the same `Name`/`Formula`/`State` identity, such as
+another methane gas row, to hold extra coefficients, ranges, or alternate metadata. Merge all
+columns for that component-state identity into the same row. If the source gives conflicting
+values for the same component-state identity and table, flag the conflict in notes instead of
+silently adding a duplicate row.
 
 ## Step 7: Unit and conversion rules
 
@@ -283,6 +294,7 @@ Before finalizing:
 - `CONSTANTS` exists for constants tables
 - `MATRIX-SYMBOL` exists for matrix tables
 - row width matches column count
+- component-style `VALUES` contain only one row per component identity and state
 - symbols, units, and values align exactly
 - scaling is handled correctly
 - variable range columns are preserved when present in the source
@@ -302,6 +314,7 @@ Return:
 - Do not guess coefficients.
 - Do not drop columns required by the project schema.
 - Do not mix table formats.
+- Do not duplicate component-state rows in one component-style data or equation table.
 - Do not ignore coefficient scaling shown in the source.
 - Do not expand or change `State` values away from `g`, `l`, `s`, or `aq` unless explicitly requested.
 

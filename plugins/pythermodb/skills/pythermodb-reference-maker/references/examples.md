@@ -47,6 +47,11 @@ vapor-pressure:
     - [1,'water','H2O','l',73.649,-7258.2,-7.3037,4.1653E-6,2,273.16,647.096,1]
 ```
 
+Do not add a second `water`/`H2O`/`l` row in this table for another range, equation selector, or
+source note. Merge component-state-specific values into the same row; if the source values
+conflict, flag the conflict in notes. A separate `water`/`H2O`/`g` row is valid because the state is
+different.
+
 ## Example 3: Equation table with scaled coefficients and derivatives
 
 ```yaml
