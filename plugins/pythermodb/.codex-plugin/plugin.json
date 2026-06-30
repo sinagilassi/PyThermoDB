@@ -1,6 +1,6 @@
 {
   "name": "pythermodb",
-  "version": "0.1.0",
+  "version": "0.1.0+codex.20260630014128",
   "description": "Reusable pyThermoDB workflows for reference creation and ThermoDB builds.",
   "author": {
     "name": "Sina Gilassi",
@@ -17,7 +17,7 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "pyThermoDB",
+    "displayName": "PyThermoDB",
     "shortDescription": "Create references and build pyThermoDB objects.",
     "longDescription": "Reusable Codex workflows for converting thermodynamic tables, constants, matrix parameters, and equation correlations into validated pyThermoDB reference YAML, then building and validating pyThermoDB objects from those references.",
     "developerName": "Sina Gilassi",
