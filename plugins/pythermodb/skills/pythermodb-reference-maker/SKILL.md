@@ -27,6 +27,8 @@ Before processing:
    - PDF/image
    - raw text
    - existing YAML
+   - online source or database page
+   - article, paper, report, or handbook excerpt
 2. Identify table type:
    - data table: component or mixture scalar properties
    - constants table: named constants and scalar/list/dict constant values
@@ -45,6 +47,37 @@ Before processing:
    - duplicate component records in `VALUES`
    - missing metadata columns
    - special-case rows
+
+## Step 0a: Resolve source policy
+
+Before extracting values, determine whether the user supplied or constrained the source.
+
+Source modes:
+
+- user-supplied source: a file, image, pasted text, URL, DOI, article, report, or database page
+- user-constrained source: the user says to use only a specific source, such as NIST, DIPPR,
+  Perry's, a named article, or an attached file
+- open source search: the user asks for thermodynamic data without naming the source
+
+Rules:
+
+- If the user constrains the source, use only that source unless it is incomplete or internally
+  inconsistent. If another source is needed to resolve a missing formula, unit, equation form, or
+  coefficient definition, ask or clearly label the additional source as supplemental.
+- If the user supplies an article, report, PDF, image, or excerpt, extract from that material first.
+  Preserve the article's equation form, coefficient definitions, units, ranges, and stated validity
+  limits before translating into executable pyThermoDB notation.
+- If the user asks for NIST or another online thermodynamic database, retrieve the relevant table
+  or page when browsing is available. Record the database name, page/table title, component names,
+  property, equation form, units, and access date in notes or the table description when useful.
+- If the user does not name a source, prefer authoritative thermodynamic references and databases.
+  Use exact source attribution in notes so coefficients are traceable.
+- Do not blend coefficients from multiple sources into one row unless the output explicitly includes
+  source-disambiguating columns or notes. Report conflicts instead of silently choosing one value.
+- Do not invent missing coefficients, ranges, or equation identifiers. Mark missing values as
+  unresolved in notes and produce only the YAML that can be supported by the source.
+- Respect source terms and access limits. Summarize copyrighted source text and extract only the
+  factual coefficients, equations, units, and metadata needed for the YAML.
 
 ## Step 1: Classify table type
 
