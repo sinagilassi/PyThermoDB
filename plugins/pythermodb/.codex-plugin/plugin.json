@@ -1,6 +1,6 @@
 {
   "name": "pythermodb",
-  "version": "0.1.0+codex.20260630014128",
+  "version": "0.1.0+codex.20260630014251",
   "description": "Reusable pyThermoDB workflows for reference creation and ThermoDB builds.",
   "author": {
     "name": "Sina Gilassi",
