@@ -36,6 +36,10 @@ SYMBOLS:
   enthalpy_of_vaporization: EnVap
   enthalpy_of_fusion: EnFus
   enthalpy_of_sublimation: EnSub
+  gas_viscosity: Vis_GAS
+  liquid_viscosity: Vis_LIQ
+  gas_mixture_viscosity: Vis_GAS_MIX
+  liquid_mixture_viscosity: Vis_LIQ_MIX
   standard_net_enthalpies_of_combustion: EnCo_STD
   constant_binary_interaction_parameter_a_i_j: a
   constant_binary_interaction_parameter_b_i_j: b
