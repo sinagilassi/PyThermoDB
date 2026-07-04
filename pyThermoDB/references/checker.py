@@ -2671,7 +2671,7 @@ class ReferenceChecker:
                     # store result
                     results[mix_id] = mix_result
                 except Exception as e:
-                    logger.error(
+                    logger.warning(
                         f"Error checking mixture [{mix_id}] availability: {e}")
                     continue
 
@@ -4524,7 +4524,7 @@ class ReferenceChecker:
 
                             # >> check if any symbol is invalid
                             if symbol_controller_ is False:
-                                logging.error(
+                                logging.warning(
                                     f"Invalid symbols found in table '{table_name}'.")
                                 continue
 
@@ -4553,7 +4553,7 @@ class ReferenceChecker:
 
                             # >> check if any symbol is invalid
                             if symbol_controller_ is False:
-                                logging.error(
+                                logging.warning(
                                     f"Invalid symbols found in table '{table_name}'.")
                                 continue
 
@@ -4579,7 +4579,7 @@ class ReferenceChecker:
 
                             # >> check if any symbol is invalid
                             if symbol_controller_ is False:
-                                logging.error(
+                                logging.warning(
                                     f"Invalid symbol '{symbol}' found in table '{table_name}'.")
                                 continue
 
@@ -4591,7 +4591,7 @@ class ReferenceChecker:
                             'label': symbol if add_label else None
                         }
                     else:
-                        logging.error(
+                        logging.warning(
                             f"Invalid table type '{table_type}' for table '{table_name}'.")
                         continue
 
@@ -4892,7 +4892,7 @@ class ReferenceChecker:
 
                             # >> if any symbol is invalid, skip this table
                             if not check_symbol_:
-                                logging.error(
+                                logging.warning(
                                     f"One or more symbols in table '{table_name}' are invalid.")
                                 continue
 
@@ -4905,7 +4905,7 @@ class ReferenceChecker:
                         }
 
                     else:
-                        logging.error(
+                        logging.warning(
                             f"Table '{table_name}' is not a matrix DATA table.")
                         continue
 
