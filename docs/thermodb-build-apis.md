@@ -43,3 +43,20 @@ The module exposes pydantic wrappers for build results:
 - `ConstantsThermoDB`
 
 Use these when you need metadata plus the built `CompBuilder` object.
+
+## 🔬 Deep-Dive: Reference Builders
+
+Detailed flow documentation with diagrams is available in the repository diagrams folder.
+
+- `build_component_thermodb_from_reference(...)`: `diagrams/build_component_thermodb_from_reference.md`
+- `build_mixture_thermodb_from_reference(...)`: `diagrams/build_mixture_thermodb_from_reference.md`
+- `build_constants_thermodb_from_reference(...)`: `diagrams/build_constants_thermodb.md`
+
+## 🧩 Helper Functions In Mixture Flow
+
+The mixture reference builder relies on helper functions for ID generation and state-ignore logic:
+
+- `create_mixture_ids(...)`: creates sorted binary mixture IDs from a component list.
+- `ignore_state_in_prop(...)`: checks whether a property/label should ignore component state.
+
+These are used internally by `build_mixture_thermodb_from_reference(...)` and are documented in the mixture deep-dive page above.
