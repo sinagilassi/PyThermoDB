@@ -1,0 +1,52 @@
+REFERENCES:
+  UNDERSTANDING-DISTILLATION-APPENDIX-B:
+    DATABOOK-ID: 1
+    TABLES:
+      NRTL binary interaction parameters:
+        TABLE-ID: 1
+        DESCRIPTION:
+          Directional NRTL binary interaction parameters for the methanol-benzene
+          liquid pair extracted from Appendix B of Understanding Distillation
+          Using Column Profile Maps. The source defines tau_ij = a_ij + b_ij/T
+          with T in K and G_ij = exp(-c_ij*tau_ij). The source prints c_ij as
+          upper-triangular values; the methanol-benzene value is used
+          symmetrically.
+        MATRIX-SYMBOL:
+          - a constant: a
+          - b constant: b
+          - c constant: c
+        STRUCTURE:
+          COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2]
+          SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2]
+          UNIT: [None,None,None,None,None,1,1,K,K,1,1]
+        VALUES:
+          - [1,methanol|benzene,methanol,CH3OH,l,0,-1.709,0,892.2,0,0.4]
+          - [2,methanol|benzene,benzene,C6H6,l,11.580,0,-3282.6,0,0.4,0]
+      Antoine vapor pressure:
+        TABLE-ID: 2
+        DESCRIPTION:
+          Antoine vapor-pressure coefficients for methanol and benzene from
+          Appendix B of Understanding Distillation Using Column Profile Maps.
+          The source gives ln(P_i^VAP) = A_i - B_i/(T + C_i). The appendix
+          transcription does not unambiguously resolve the pressure unit or
+          logarithm base for computational use.
+        EQUATIONS:
+          EQ-1:
+            BODY:
+              - parms['A | A | 1'] = parms['A | A | 1']/1
+              - parms['B | B | 1'] = parms['B | B | 1']/1
+              - parms['C | C | degC'] = parms['C | C | degC']/1
+              - res['vapor-pressure | VaPr | source-pressure-unit'] = math.exp(parms['A | A | 1'] - parms['B | B | 1']/(args['temperature | T | degC'] + parms['C | C | degC']))
+            BODY-INTEGRAL:
+              None
+            BODY-FIRST-DERIVATIVE:
+              None
+            BODY-SECOND-DERIVATIVE:
+              None
+        STRUCTURE:
+          COLUMNS: [No.,Name,Formula,State,A,B,C,Eq]
+          SYMBOL: [None,None,None,None,A,B,C,VaPr]
+          UNIT: [None,None,None,None,1,1,degC,source-pressure-unit]
+        VALUES:
+          - [1,methanol,CH3OH,l,8.07240,1574.990,238.870,1]
+          - [2,benzene,C6H6,l,6.90565,1211.033,220.790,1]
