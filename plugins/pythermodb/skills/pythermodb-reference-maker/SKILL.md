@@ -157,7 +157,9 @@ The `Value` column may be a scalar, string, dictionary, list, or `None`.
 
 ### Matrix table
 
-A matrix table defines pairwise or matrix symbols, such as NRTL `a`, `b`, `c`, or `alpha`.
+A matrix table defines pairwise mixture symbols, such as NRTL `a`, `b`, `c`, `d`,
+`alpha`, `dg`, or `tau`. Use this table type for activity-model binary
+interaction parameters and other directional `i,j` properties.
 
 ```yaml
 table-name:
@@ -165,8 +167,8 @@ table-name:
   DESCRIPTION:
     <text>
   MATRIX-SYMBOL:
-    - a
-    - b
+    - a constant: a
+    - b constant: b
   STRUCTURE:
     COLUMNS: [...]
     SYMBOL: [...]
@@ -174,6 +176,33 @@ table-name:
   VALUES:
     - [...]
 ```
+
+The preferred mixture table shape is item rows with these metadata columns:
+`No.`, `Mixture`, `Name`, `Formula`, and `State`.
+
+Rules:
+- `MATRIX-SYMBOL` must be a list. Each entry may be a plain symbol (`a`) or a
+  one-key mapping (`a constant: a`). Prefer mappings when a clear description is
+  available because the builder stores labels as description-to-symbol pairs.
+- `Mixture` stores the binary pair identity with the configured delimiter,
+  normally `component-1|component-2`. The builder compares mixture IDs
+  case-insensitively and normalizes member order, so `ethanol|methanol` and
+  `methanol|ethanol` match the same binary pair.
+- `Name`, `Formula`, and `State` identify the component represented by that row.
+  The discovery API can match rows by `Name-State` or `Formula-State`.
+- For every base symbol in `MATRIX-SYMBOL`, include one column per component
+  position in the binary pair: `<symbol>_i_1`, `<symbol>_i_2`. For an N-component
+  matrix table, include `<symbol>_i_1` through `<symbol>_i_N`.
+- Each binary mixture must have one row for each component in that pair. A binary
+  item table therefore has two rows per `Mixture` value.
+- Matrix cell direction is row component `i` to column component `j`. In the row
+  for component 1, `a_i_2` stores `a_1_2`; in the row for component 2, `a_i_1`
+  stores `a_2_1`.
+- Populate every matrix cell declared by `STRUCTURE`. Use `0` only when the
+  source or model definition actually defines the diagonal or missing term as
+  zero. Do not assume diagonal cells are zero for every model.
+- `COLUMNS`, `SYMBOL`, `UNIT`, and every `VALUES` row must have identical length.
+- Do not add `DATA` or `CONVERSION` to matrix tables.
 
 ## Step 2: Interpret CSV
 
@@ -281,6 +310,13 @@ columns for that component-state identity into the same row. If the source gives
 values for the same component-state identity and table, flag the conflict in notes instead of
 silently adding a duplicate row.
 
+For matrix tables, row identity is normally `Mixture` plus row component
+identity. With state-aware matching, use `Mixture` plus `Name`/`Formula` plus
+`State`; with state-ignored matching, use `Mixture` plus `Name` or `Formula`.
+Do not collapse the two rows of a binary pair into one row, and do not split a
+single row component's matrix values across duplicate rows for the same
+mixture/component identity.
+
 ## Step 7: Unit and conversion rules
 
 For data tables, use `CONVERSION` with `internal = stored * conversion`.
@@ -317,6 +353,9 @@ Read or run these when needed:
 - `scripts/csv_to_structure.py`: convert project-style CSV headers into YAML arrays.
 - `scripts/validate_yaml.py`: validate YAML shape. It accepts full `REFERENCES:` files and direct table snippets.
 - `scripts/check_reference.py`: validate that YAML can be loaded by pyThermoDB itself.
+- For mixture matrix tables, also compare against `diagrams/reference_mixture_table.md`
+  when available; it is the detailed contract for `MATRIX-SYMBOL`, `Mixture`,
+  row identity, and NRTL/UNIQUAC examples.
 
 Prefer `.venv/Scripts/python.exe` on Windows when running pyThermoDB-aware scripts inside this repository.
 
@@ -336,6 +375,10 @@ Before finalizing:
 - `EQUATIONS` exists for equation tables
 - `CONSTANTS` exists for constants tables
 - `MATRIX-SYMBOL` exists for matrix tables
+- matrix tables use `Mixture`, `Name`, `Formula`, and `State` metadata columns
+  when they are intended for `build_mixture_thermodb_from_reference`
+- matrix-table base symbols expand to complete directional columns such as
+  `a_i_1`, `a_i_2`, and every declared matrix cell has a value
 - row width matches column count
 - component-style `VALUES` contain only one row per component identity and state
 - symbols, units, and values align exactly
