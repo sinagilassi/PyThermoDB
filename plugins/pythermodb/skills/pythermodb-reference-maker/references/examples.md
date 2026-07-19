@@ -148,10 +148,10 @@ NRTL Non-randomness parameters:
   DESCRIPTION:
     Binary NRTL matrix parameters.
   MATRIX-SYMBOL:
-    - a
-    - b
-    - c
-    - alpha
+    - a constant: a
+    - b constant: b
+    - c constant: c
+    - non-randomness parameter: alpha
   STRUCTURE:
     COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
     SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2,c_i_1,c_i_2,alpha_i_1,alpha_i_2]
@@ -159,6 +159,22 @@ NRTL Non-randomness parameters:
   VALUES:
     - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
     - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+```
+
+For this binary pair, the first row stores values from methanol to each column
+component, and the second row stores values from ethanol to each column
+component. For example, `a_i_2` in the methanol row is `a_methanol_ethanol`,
+while `a_i_1` in the ethanol row is `a_ethanol_methanol`.
+
+Additional binary pairs can be stored in the same table by adding another pair
+of rows with a different `Mixture` value:
+
+```yaml
+  VALUES:
+    - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+    - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+    - [1,methane|ethanol,methane,CH4,g,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+    - [2,methane|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 ```
 
 ## Example 7: Full reference wrapper with mixed tables
