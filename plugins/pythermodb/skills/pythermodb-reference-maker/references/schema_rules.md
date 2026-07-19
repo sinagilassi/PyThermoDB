@@ -63,6 +63,40 @@ Required fields:
 - `SYMBOL`
 - `UNIT`
 
+For references intended for `build_mixture_thermodb_from_reference`, prefer the
+item-row matrix format:
+
+```yaml
+MATRIX-SYMBOL:
+  - a constant: a
+  - b constant: b
+STRUCTURE:
+  COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2]
+  SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2]
+  UNIT: [None,None,None,None,None,1,1,1,1]
+VALUES:
+  - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272]
+  - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0]
+```
+
+Matrix-specific rules:
+
+- `MATRIX-SYMBOL` must be a list. Plain string items map to themselves, while
+  one-key mappings map description to base symbol. Use one-key mappings when the
+  symbol meaning is not obvious.
+- `Mixture` stores the binary mixture id using the active delimiter, normally
+  `|`. Matching normalizes case, trims whitespace, and sorts mixture members, so
+  row values such as `ethanol|methanol` still match components
+  `[methanol, ethanol]`.
+- For each base symbol, provide a complete set of directional columns
+  `<symbol>_i_1`, `<symbol>_i_2` for binary pairs. For larger matrix tables,
+  continue through `<symbol>_i_N`.
+- A binary item table has two rows per `Mixture`: one for each row component.
+  The row for component `i` stores values to column components `j`.
+- Every declared matrix cell must be populated. Use `0` only when the source or
+  model definition defines that cell as zero.
+- Do not add `DATA` or `CONVERSION` to matrix tables.
+
 Do not add `DATA` or `CONVERSION` to equation tables.
 
 Equation bodies may be one-line assignments or multiline executable steps. The
@@ -146,6 +180,11 @@ identity have conflicting values, report the conflict in notes and do not fabric
 This rule applies to component data tables and component equation tables. It does not apply to
 matrix tables, pairwise mixture rows, or constants tables, because those table types use different
 row identities.
+
+Matrix table row identity is the `Mixture` id plus the row component identity.
+For state-aware matching, that row component identity is `Name` plus `State` or
+`Formula` plus `State`; for state-ignored matching, it is `Name` or `Formula`.
+Do not merge the two component rows of a binary pair into one row.
 
 ## Metadata rule
 
