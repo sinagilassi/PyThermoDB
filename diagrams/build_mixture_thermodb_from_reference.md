@@ -46,6 +46,8 @@ The method returns `None` when discovery succeeds but no property can be built a
 2. Detect mixture type (`BINARY` or `MULTI-COMPONENT`).
 3. Build sorted mixture IDs using `create_mixture_ids`.
 4. If `mixture_names` is provided, normalize each ID by trimming parts and sorting by delimiter.
+   Entries must use the same basis as `mixture_key`: names for `Name`, formulas
+   for `Formula`.
 5. Create `ReferenceChecker(reference_content)` and load databooks.
 6. Discover reference configs with `get_binary_mixture_reference_configs(...)` for binary mode, or `get_mixtures_reference_configs(...)` for multi-component mode.
 7. Generate mixture rules with `generate_mixture_reference_rules(...)`.
@@ -176,5 +178,12 @@ These methods drive discovery and availability filtering before any thermo prope
 - For multi-component mode, the function checks all candidate binary mixtures and requires each requested mixture to be available for a property.
 - In multi-component mode, config/rule generation uses the first mixture config as representative source (assuming similar source structure).
 - Matrix-only properties are the practical target for this flow.
+- Reference tables must be matrix `DATA` tables marked by `MATRIX-SYMBOL`.
+  The practical table shape uses `Mixture`, `Name`, `Formula`, and `State`
+  metadata columns plus directional columns such as `a_i_1`, `a_i_2`.
+- Discovery may use `Name-State` or `Formula-State`, but after building,
+  `TableMatrixData` lookups use component names in calls such as
+  `matrix.mat("a", ["ethanol", "methanol"])` or
+  `matrix.ij("a | ethanol | methanol")`.
 - The default thermodb name is `mixture` plus component names joined by `-`.
 - The default message is based on discovered config keys, not strictly on successfully built properties.
