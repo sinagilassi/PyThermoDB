@@ -3,8 +3,8 @@ table-name:
   DESCRIPTION:
     Matrix parameter table description.
   MATRIX-SYMBOL:
-    - a
-    - b
+    - a constant: a
+    - b constant: b
   STRUCTURE:
     COLUMNS: [No.,Mixture,Name,Formula,State,a_i_1,a_i_2,b_i_1,b_i_2]
     SYMBOL: [None,None,None,None,None,a_i_1,a_i_2,b_i_1,b_i_2]
