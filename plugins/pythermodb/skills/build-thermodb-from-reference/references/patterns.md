@@ -53,6 +53,8 @@ Build a binary mixture:
 thermodb_mixture: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
     components=mixture,
     reference_content=REFERENCE_CONTENT,
+    component_key="Name-State",
+    mixture_key="Name",
 )
 ```
 
@@ -63,11 +65,20 @@ thermodb_mixture = build_mixture_thermodb_from_reference(
     components=[methanol, ethanol, methane],
     reference_content=REFERENCE_CONTENT,
     mixture_names=["methanol | ethanol", "methane | ethanol"],
+    component_key="Name-State",
+    mixture_key="Name",
     verbose=True,
 )
 ```
 
 For matrix properties whose state should be ignored, pass symbols such as `ignore_state_props=["a"]`.
+
+Mixture references used by this builder should be matrix item tables with
+`MATRIX-SYMBOL`, a `Mixture` column, and row component columns `Name`,
+`Formula`, and `State`. `Mixture` values use the configured delimiter, normally
+`|`; the API normalizes order and whitespace during discovery. `mixture_names`
+must use names when `mixture_key="Name"` and formulas when
+`mixture_key="Formula"`.
 
 ## Constants Builds
 
@@ -180,6 +191,7 @@ Supported matrix lookup patterns from `examples/configs`:
 matrix.mat("a", ["ethanol", "methanol"])
 matrix.ij("a | ethanol | methanol")
 matrix.ijs("a | ethanol | methanol")
+matrix.ij("a_ethanol_methanol", mixture_name="methanol | ethanol")
 
 thermodb.retrieve(
     "CUSTOM-REF-1::NRTL Non-randomness parameters-2 | a_i_j | ethanol | methanol",
@@ -190,6 +202,11 @@ thermodb.retrieve(
     message="NRTL a value ethanol-methanol",
 )
 ```
+
+`TableMatrixData` lookup uses component names, even if discovery used
+`component_key="Formula-State"`. Use formulas for `mixture_key="Formula"` during
+reference discovery, but retrieve matrix values with component names after the
+thermodb is built.
 
 ## Mapper Workflows
 
