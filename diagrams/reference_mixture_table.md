@@ -2,8 +2,8 @@
 
 Use this file as the format contract for custom `REFERENCE_CONTENT` blocks used
 to build `pyThermoDB` sources for activity models. The examples in
-`examples/activity-models` show that activity-model reference data is provided
-as YAML under:
+`examples/configs` and `examples/matrix-1` show that activity-model reference
+data is provided as YAML under:
 
 ```yaml
 REFERENCES:
@@ -28,8 +28,10 @@ REFERENCES:
 - Activity interaction parameters must be encoded as mixture matrix tables.
 - Each row represents one component in the mixture.
 - `Mixture` must contain all component names joined by `|`, for example
-  `ethanol|butyl-methyl-ether`.
+  `ethanol|butyl-methyl-ether`, when `mixture_key='Name'`. If the builder call
+  uses `mixture_key='Formula'`, `Mixture` must contain formulas instead.
 - `Name`, `Formula`, and `State` identify the row component.
+- Discovery can match row components by `Name-State` or `Formula-State`.
 - Matrix entries use the column pattern `<symbol>_i_<j>`, where `j` is the
   one-based component index in the mixture order.
 - For a binary mixture, include two rows and two columns per matrix symbol:
@@ -41,6 +43,9 @@ REFERENCES:
 - `COLUMNS`, `SYMBOL`, `UNIT`, and each `VALUES` row must have the same length.
 - Use `None` in `SYMBOL` and `UNIT` for metadata columns such as `No.`,
   `Mixture`, `Name`, `Formula`, and `State`.
+- Do not include `DATA` or `CONVERSION` in matrix tables.
+- After building, `TableMatrixData` retrieval methods such as `mat`, `ij`, and
+  `ijs` use component names, not formulas.
 
 For a binary mixture with components `component-1` and `component-2`, each
 matrix parameter is represented as:
