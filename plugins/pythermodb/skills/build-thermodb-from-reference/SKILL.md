@@ -46,6 +46,17 @@ Use `ComponentThermoDB`, `MixtureThermoDB`, or `ConstantsThermoDB` annotations a
 Use `ignore_state_props` when a property should match by name/formula even when the reference row state differs from the requested component or mixture member. Use `ignore_component_state=True` only in mapper workflows or when all state checks should be relaxed.
 
 Use `mixture_names` for multi-component mixture references that contain named binary pairs, for example `["methanol | ethanol", "methane | ethanol"]`.
+Each entry is split on `delimiter`, trimmed, sorted, and compared
+case-insensitively, so whitespace and member order do not matter. The names
+must still use the same identity basis as `mixture_key`: component names when
+`mixture_key="Name"` and formulas when `mixture_key="Formula"`.
+
+For mixture builds, the reference table must be a matrix `DATA` table marked by
+`MATRIX-SYMBOL` and should use item rows with `Mixture`, `Name`, `Formula`, and
+`State` columns. Discovery can match row components by `component_key="Name-State"`
+or `component_key="Formula-State"`. After the table is built as `TableMatrixData`,
+matrix value lookup is name-based; pass component names to `mat`, `ij`, and
+`ijs`.
 
 Use `databook_name`, `table_name`, and `constants` to narrow constants builds:
 `databook_name='CUSTOM-REF-1'`, `table_name='Custom-Constants'`, or `constants=['R', 'dH_rxn', 'dG_rxn']`.
@@ -82,7 +93,13 @@ For matrix data, check the selected property type and then use `mat`, `ij`, `ijs
 ```python
 matrix = thermodb.check_property("CUSTOM-REF-1::NRTL Non-randomness parameters-2")
 value = matrix.mat("a", ["ethanol", "methanol"])
+same_value = matrix.ij("a_ethanol_methanol")
+all_values = matrix.ijs("a | ethanol | methanol")
 ```
+
+For item-row matrix tables with a `Mixture` column, `ij`/`ijs` infer
+`mixture_name` from the two component names. Pass `mixture_name="methanol | ethanol"`
+when you need to disambiguate or document the selected binary pair.
 
 ## Mapper-Level Workflows
 
