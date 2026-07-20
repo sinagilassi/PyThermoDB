@@ -191,8 +191,13 @@ Rules:
 - `Name`, `Formula`, and `State` identify the component represented by that row.
   The discovery API can match rows by `Name-State` or `Formula-State`.
 - For every base symbol in `MATRIX-SYMBOL`, include one column per component
-  position in the binary pair: `<symbol>_i_1`, `<symbol>_i_2`. For an N-component
-  matrix table, include `<symbol>_i_1` through `<symbol>_i_N`.
+  position in the binary pair: `<symbol>_i_1`, `<symbol>_i_2`.
+- Multi-component builds for `build_mixture_thermodb_from_reference` are encoded
+  as binary pair rows, not as one N-component matrix. For
+  `[methanol, ethanol, butyl_methyl_ether]`, write separate binary `Mixture`
+  IDs such as `methanol|ethanol`, `methanol|butyl-methyl-ether`, and
+  `ethanol|butyl-methyl-ether`, with two rows for each pair. Do not add
+  `<symbol>_i_3` columns for this workflow.
 - Each binary mixture must have one row for each component in that pair. A binary
   item table therefore has two rows per `Mixture` value.
 - Matrix cell direction is row component `i` to column component `j`. In the row
@@ -316,6 +321,9 @@ identity. With state-aware matching, use `Mixture` plus `Name`/`Formula` plus
 Do not collapse the two rows of a binary pair into one row, and do not split a
 single row component's matrix values across duplicate rows for the same
 mixture/component identity.
+For multi-component mixtures, do not create a row identity containing all
+members, such as `methanol|ethanol|butyl-methyl-ether`. Use one row identity
+per binary pair and row component.
 
 ## Step 7: Unit and conversion rules
 
