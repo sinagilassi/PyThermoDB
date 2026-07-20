@@ -89,8 +89,14 @@ Matrix-specific rules:
   row values such as `ethanol|methanol` still match components
   `[methanol, ethanol]`.
 - For each base symbol, provide a complete set of directional columns
-  `<symbol>_i_1`, `<symbol>_i_2` for binary pairs. For larger matrix tables,
-  continue through `<symbol>_i_N`.
+  `<symbol>_i_1`, `<symbol>_i_2` for binary pairs.
+- Multi-component builds for `build_mixture_thermodb_from_reference` are stored
+  as separate binary pair row groups. For a ternary component list such as
+  `[methanol, ethanol, butyl_methyl_ether]`, provide three binary `Mixture`
+  IDs, each with two rows: `methanol|ethanol`,
+  `methanol|butyl-methyl-ether`, and `ethanol|butyl-methyl-ether`. Do not use
+  one `methanol|ethanol|butyl-methyl-ether` row group, and do not add
+  `<symbol>_i_3` columns for this builder workflow.
 - A binary item table has two rows per `Mixture`: one for each row component.
   The row for component `i` stores values to column components `j`.
 - Every declared matrix cell must be populated. Use `0` only when the source or
@@ -185,6 +191,8 @@ Matrix table row identity is the `Mixture` id plus the row component identity.
 For state-aware matching, that row component identity is `Name` plus `State` or
 `Formula` plus `State`; for state-ignored matching, it is `Name` or `Formula`.
 Do not merge the two component rows of a binary pair into one row.
+For multi-component mixtures, repeat this binary row identity pattern for each
+required binary pair.
 
 ## Metadata rule
 
