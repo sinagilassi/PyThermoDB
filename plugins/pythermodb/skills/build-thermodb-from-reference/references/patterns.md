@@ -58,13 +58,24 @@ thermodb_mixture: MixtureThermoDB | None = build_mixture_thermodb_from_reference
 )
 ```
 
-For multi-component references with pair-specific matrix tables, pass `mixture_names`:
+For multi-component references, the matrix table is still built from binary
+pair rows. If `mixture_names` is omitted, every binary combination in the
+component list must exist in the reference table. For
+`[methanol, ethanol, butyl_methyl_ether]`, the required `Mixture` values are:
+
+```text
+methanol|ethanol
+methanol|butyl-methyl-ether
+ethanol|butyl-methyl-ether
+```
+
+Pass `mixture_names` only when the build should include selected binary pairs:
 
 ```python
 thermodb_mixture = build_mixture_thermodb_from_reference(
-    components=[methanol, ethanol, methane],
+    components=[methanol, ethanol, butyl_methyl_ether],
     reference_content=REFERENCE_CONTENT,
-    mixture_names=["methanol | ethanol", "methane | ethanol"],
+    mixture_names=["methanol | ethanol", "ethanol | butyl-methyl-ether"],
     component_key="Name-State",
     mixture_key="Name",
     verbose=True,
@@ -79,6 +90,11 @@ Mixture references used by this builder should be matrix item tables with
 `|`; the API normalizes order and whitespace during discovery. `mixture_names`
 must use names when `mixture_key="Name"` and formulas when
 `mixture_key="Formula"`.
+
+Do not use one ternary `Mixture` value such as
+`methanol|ethanol|butyl-methyl-ether`, and do not add `<symbol>_i_3` columns for
+this builder workflow. The third component is represented by additional binary
+pair row groups.
 
 ## Constants Builds
 

@@ -45,7 +45,14 @@ Use `ComponentThermoDB`, `MixtureThermoDB`, or `ConstantsThermoDB` annotations a
 
 Use `ignore_state_props` when a property should match by name/formula even when the reference row state differs from the requested component or mixture member. Use `ignore_component_state=True` only in mapper workflows or when all state checks should be relaxed.
 
-Use `mixture_names` for multi-component mixture references that contain named binary pairs, for example `["methanol | ethanol", "methane | ethanol"]`.
+For multi-component mixture references, the builder works with binary pair
+matrix rows. If `mixture_names` is omitted, all binary combinations from the
+component list must be available in the reference table. For
+`[methanol, ethanol, butyl_methyl_ether]`, that means `methanol|ethanol`,
+`methanol|butyl-methyl-ether`, and `ethanol|butyl-methyl-ether`.
+
+Use `mixture_names` when the build should include only selected binary pairs,
+for example `["methanol | ethanol", "ethanol | butyl-methyl-ether"]`.
 Each entry is split on `delimiter`, trimmed, sorted, and compared
 case-insensitively, so whitespace and member order do not matter. The names
 must still use the same identity basis as `mixture_key`: component names when
@@ -57,6 +64,11 @@ For mixture builds, the reference table must be a matrix `DATA` table marked by
 or `component_key="Formula-State"`. After the table is built as `TableMatrixData`,
 matrix value lookup is name-based; pass component names to `mat`, `ij`, and
 `ijs`.
+
+Do not encode a ternary mixture as one `Mixture` value such as
+`methanol|ethanol|butyl-methyl-ether`, and do not add matrix columns such as
+`a_i_3` for this builder workflow. Use additional binary pair row groups
+instead.
 
 Use `databook_name`, `table_name`, and `constants` to narrow constants builds:
 `databook_name='CUSTOM-REF-1'`, `table_name='Custom-Constants'`, or `constants=['R', 'dH_rxn', 'dG_rxn']`.
@@ -128,6 +140,7 @@ Use these repo examples as source-of-truth patterns:
 - `examples/configs/build component thermodb from reference - 1.py`
 - `examples/configs/build constants thermodb from reference - 1.py`
 - `examples/configs/build mixture thermodb from reference - 1.py`
+- `examples/configs/build mixture thermodb from reference - 3.py`
 - `examples/configs/exp-build-thermodb-1.py`
 - `examples/configs/exp-build-thermodb-1 - check eq num.py`
 - `examples/configs/load matrix thermodb - 1.py`
