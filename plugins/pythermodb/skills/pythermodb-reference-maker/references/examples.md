@@ -177,6 +177,28 @@ of rows with a different `Mixture` value:
     - [2,methane|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
 ```
 
+For a ternary build such as:
+
+```python
+multi_component_mixture = [methanol, ethanol, butyl_methyl_ether]
+```
+
+store all required binary pairs unless the build call passes `mixture_names`.
+This ternary case has three binary pairs and therefore six `VALUES` rows:
+
+```yaml
+  VALUES:
+    - [1,methanol|ethanol,methanol,CH3OH,l,0,0.300492719,0,1.564200272,0,35.05450323,0,4.481683583]
+    - [2,methanol|ethanol,ethanol,C2H5OH,l,0.380229054,0,-20.63243601,0,0.059982839,0,4.481683583,0]
+    - [1,methanol|butyl-methyl-ether,methanol,CH3OH,l,0,0.1201,0,2.25,0,18.4,0,0.680715]
+    - [2,methanol|butyl-methyl-ether,butyl-methyl-ether,C5H12O,l,0.2152,0,-8.75,0,0.041,0,0.680715,0]
+    - [1,ethanol|butyl-methyl-ether,ethanol,C2H5OH,l,0,0.1803,0,3.268,0,22.6,0,0.680715]
+    - [2,ethanol|butyl-methyl-ether,butyl-methyl-ether,C5H12O,l,0.2457,0,-12.48,0,0.052,0,0.680715,0]
+```
+
+Do not encode this as `methanol|ethanol|butyl-methyl-ether`, and do not add
+`a_i_3`, `b_i_3`, `c_i_3`, or `alpha_i_3` columns for this builder workflow.
+
 ## Example 7: Full reference wrapper with mixed tables
 
 Use this format when creating a loadable reference file or a `REFERENCE_CONTENT` block.
