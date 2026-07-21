@@ -249,3 +249,23 @@ print(a_ternary_matrix)
 # >> check
 if isinstance(a_ternary_matrix, np.ndarray):
     print(f"a ternary matrix shape: {a_ternary_matrix.shape}")
+
+# SECTION: use Component objects directly with matX()
+alpha_ternary_matrix_x = matrix_table.matX(
+    "alpha",
+    multi_component_mixture,
+    symbol_format='numeric',
+)
+print("alpha ternary matrix using matX:")
+print(alpha_ternary_matrix_x)
+# >> check
+if isinstance(alpha_ternary_matrix_x, np.ndarray):
+    print(f"alpha ternary matrix using matX shape: {alpha_ternary_matrix_x.shape}")
+
+print("alpha ternary matrix using matX as dict by formula-state:")
+print(matrix_table.matX(
+    "alpha",
+    multi_component_mixture,
+    symbol_format='alphabetic',
+    component_key='Formula-State',
+))
