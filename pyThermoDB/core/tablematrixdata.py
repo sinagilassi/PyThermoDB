@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import Optional, Any, Literal, Dict, List
 from warnings import warn
+from pythermodb_settings.models import ComponentKey, Component
 # local
 from ..handlers import (
     TableMatrixDataConversionError,
@@ -811,7 +812,8 @@ class TableMatrixData:
                 if len(_data) == 0:
                     raise TableMatrixDataLookupError(
                         "No data for component: " + component_name_filter,
-                        context=self._context(component_id=component_name_filter),
+                        context=self._context(
+                            component_id=component_name_filter),
                     )
 
                 # get component data
@@ -1290,7 +1292,13 @@ class TableMatrixData:
         elif self.matrix_mode == 'VALUES':
             # SECTION: matrix structure (all data)
             # ! load matrix table
-            matrix_table = self.matrix_table
+            matrix_table_source = self.matrix_table
+            if not isinstance(matrix_table_source, pd.DataFrame):
+                raise TableMatrixDataFrameError(
+                    "Matrix data is not a dataframe",
+                    context=self._context(matrix_mode=self.matrix_mode),
+                )
+            matrix_table = matrix_table_source.copy()
         else:
             raise TableMatrixDataDefinitionError(
                 "Matrix mode is not recognized",
@@ -1406,7 +1414,8 @@ class TableMatrixData:
             if len(_data) == 0:
                 raise TableMatrixDataLookupError(
                     "No data for component: " + component_name_filter,
-                    context=self._context(component_name=component_name_filter),
+                    context=self._context(
+                        component_name=component_name_filter),
                 )
 
             # get component data
@@ -1710,13 +1719,442 @@ class TableMatrixData:
                 context=self._context(property=property),
             ) from e
 
+    @staticmethod
+    def _normalize_mixture_name(mixture_name: str) -> str:
+        '''
+        Normalize a mixture name by trimming and alphabetically sorting parts.
+        '''
+        parts = [str(item).strip() for item in str(mixture_name).split('|')]
+        parts = [item for item in parts if item]
+        parts.sort(key=str.lower)
+        return ' | '.join(parts)
+
+    @staticmethod
+    def _is_component_row(value: Any) -> bool:
+        '''
+        Check if a matrix-table row value represents a component identifier.
+        '''
+        value_set = str(value).strip()
+        return (
+            value_set != "" and
+            value_set != "-" and
+            value_set.lower() != "none" and
+            value_set.lower() != "nan"
+        )
+
+    def get_component_ids(
+        self,
+        component_names: list[str],
+    ) -> Dict[str, int]:
+        '''
+        Assign zero-based ids to a component-name list.
+
+        Parameters
+        ----------
+        component_names : list[str]
+            Component names in the requested matrix order.
+
+        Returns
+        -------
+        Dict[str, int]
+            Component name to zero-based id mapping.
+        '''
+        try:
+            if component_names is None or len(component_names) == 0:
+                raise TableMatrixDataFormatError(
+                    "Component names are empty",
+                    context=self._context(component_names=component_names),
+                )
+
+            components = [str(name).strip() for name in component_names]
+            if any(name == "" for name in components):
+                raise TableMatrixDataFormatError(
+                    "Component names contain an empty value",
+                    context=self._context(component_names=component_names),
+                )
+
+            if len(set(name.lower() for name in components)) != len(components):
+                raise TableMatrixDataFormatError(
+                    "Component names contain duplicates",
+                    context=self._context(component_names=component_names),
+                )
+
+            return {
+                component_name: component_id
+                for component_id, component_name in enumerate(components)
+            }
+        except TableMatrixDataError:
+            raise
+        except Exception as e:
+            raise TableMatrixDataLookupError(
+                "Getting component ids failed",
+                context=self._context(component_names=component_names),
+            ) from e
+
+    def get_matrix_rows(
+        self,
+        component_names: list[str],
+        component_key: Literal['Name'] = 'Name',
+        mixture_column: str = 'Mixture',
+    ) -> pd.DataFrame:
+        '''
+        Get matrix-table data rows matching a component-name list.
+
+        For binary-pair encoded mixture tables, this returns all rows whose
+        mixture is one of the component pairs. For regular square matrix tables,
+        this returns rows whose component key is in `component_names`.
+
+        Parameters
+        ----------
+        component_names : list[str]
+            Component names to include in the matrix.
+        component_key : Literal['Name']
+            Component column name (default: Name).
+        mixture_column : str
+            Mixture column name for binary-pair encoded tables (default:
+            Mixture).
+
+        Returns
+        -------
+        pd.DataFrame
+            Matrix-table data rows for the selected components.
+        '''
+        try:
+            if component_key not in ['Name']:
+                raise TableMatrixDataDefinitionError(
+                    "component_key must be 'Name'!",
+                    context=self._context(component_key=component_key),
+                )
+
+            matrix_table_source = self.matrix_table
+            if not isinstance(matrix_table_source, pd.DataFrame):
+                raise TableMatrixDataFrameError(
+                    "Matrix data is not a dataframe",
+                    context=self._context(),
+                )
+
+            component_ids = self.get_component_ids(component_names)
+            components = list(component_ids.keys())
+            components_lower = {component.lower() for component in components}
+
+            matrix_table = matrix_table_source.copy()
+            matrix_table = matrix_table.drop(
+                columns=[
+                    column
+                    for column in ['normalized_mixture', '_normalized_mixture']
+                    if column in matrix_table.columns
+                ]
+            )
+            matrix_table_columns = list(matrix_table.columns)
+
+            if component_key not in matrix_table_columns:
+                raise TableMatrixDataStructureError(
+                    f"Component column '{component_key}' not found",
+                    context=self._context(component_key=component_key),
+                )
+
+            data_rows = matrix_table[
+                matrix_table[component_key].apply(self._is_component_row)
+            ].copy()
+
+            data_rows = data_rows[
+                data_rows[component_key].astype(str).str.strip().str.lower().isin(
+                    components_lower
+                )
+            ].copy()
+
+            if mixture_column in matrix_table_columns:
+                pair_names = set()
+                for i, component_i in enumerate(components):
+                    for j, component_j in enumerate(components):
+                        if i == j:
+                            continue
+                        pair_names.add(
+                            self._normalize_mixture_name(
+                                f"{component_i} | {component_j}"
+                            )
+                        )
+
+                data_rows['_normalized_mixture'] = data_rows[
+                    mixture_column
+                ].apply(self._normalize_mixture_name)
+                data_rows = data_rows[
+                    data_rows['_normalized_mixture'].isin(pair_names)
+                ].drop(columns=['_normalized_mixture'])
+
+            return data_rows.reset_index(drop=True)
+        except TableMatrixDataError:
+            raise
+        except Exception as e:
+            raise TableMatrixDataLookupError(
+                "Getting matrix rows failed",
+                context=self._context(component_names=component_names),
+            ) from e
+
+    @staticmethod
+    def _matrix_value(value: Any) -> float:
+        '''
+        Convert a matrix-table value to a float.
+        '''
+        if (
+            pd.isna(value) or
+            str(value).lower() == "none"
+        ):
+            return float(-1)
+        return float(value)
+
+    @staticmethod
+    def _matrix_dict(
+        components: list[str],
+    ) -> Dict[str, str | float | int]:
+        '''
+        Initialize a component-wise matrix dictionary.
+        '''
+        return {
+            f"{component_i} | {component_j}": 0
+            for component_i in components
+            for component_j in components
+        }
+
+    @staticmethod
+    def _component_key_columns(
+        component_key: ComponentKey,
+    ) -> list[str]:
+        '''
+        Get matrix-table columns required to build a component label.
+        '''
+        if component_key == 'Name':
+            return ['Name']
+        if component_key == 'Formula':
+            return ['Formula']
+        if component_key == 'Name-State':
+            return ['Name', 'State']
+        if component_key == 'Formula-State':
+            return ['Formula', 'State']
+        if component_key == 'Name-Formula':
+            return ['Name', 'Formula']
+        if component_key == 'Name-Formula-State':
+            return ['Name', 'Formula', 'State']
+        if component_key == 'Formula-Name-State':
+            return ['Formula', 'Name', 'State']
+
+        raise TableMatrixDataFormatError(
+            f"Component key {component_key} not recognized."
+        )
+
+    @classmethod
+    def _component_label(
+        cls,
+        row: dict[str, Any],
+        component_key: ComponentKey,
+    ) -> str:
+        '''
+        Build a component label from a matrix-table row.
+        '''
+        columns = cls._component_key_columns(component_key)
+        values = [str(row[column]).strip() for column in columns]
+        return '-'.join(values)
+
+    def _matrix_component_labels(
+        self,
+        components: list[str],
+        matrix_rows: pd.DataFrame,
+        component_key: ComponentKey,
+    ) -> dict[str, str]:
+        '''
+        Build display labels for component-wise matrix dictionary keys.
+        '''
+        required_columns = self._component_key_columns(component_key)
+        missing_columns = [
+            column
+            for column in required_columns
+            if column not in matrix_rows.columns
+        ]
+        if len(missing_columns) > 0:
+            raise TableMatrixDataStructureError(
+                f"Matrix table is missing columns for component_key "
+                f"{component_key}: {missing_columns}",
+                context=self._context(component_key=component_key),
+            )
+
+        component_rows = {}
+        for _, row in matrix_rows.iterrows():
+            component_name = str(row['Name']).strip()
+            if component_name not in component_rows:
+                component_rows[component_name] = row.to_dict()
+
+        labels = {}
+        for component_name in components:
+            if component_name not in component_rows:
+                raise TableMatrixDataLookupError(
+                    f"Component '{component_name}' row not found",
+                    context=self._context(component_name=component_name),
+                )
+            labels[component_name] = self._component_label(
+                component_rows[component_name],
+                component_key,
+            )
+
+        return labels
+
+    @staticmethod
+    def _matrix_result_dict(
+        components: list[str],
+        component_labels: dict[str, str],
+        mat_ij: np.ndarray,
+    ) -> Dict[str, str | float | int]:
+        '''
+        Build a matrix dictionary from display labels and matrix values.
+        '''
+        return {
+            f"{component_labels[component_i]} | {component_labels[component_j]}": (
+                float(mat_ij[i][j])
+            )
+            for i, component_i in enumerate(components)
+            for j, component_j in enumerate(components)
+        }
+
+    @staticmethod
+    def _matrix_property_columns(
+        property_name: str,
+        matrix_columns: list[str],
+    ) -> list[str]:
+        '''
+        Get matrix columns that belong to a property name.
+        '''
+        return [
+            column
+            for column in matrix_columns
+            if str(column).split('_')[0].lower() == property_name.lower()
+        ]
+
+    def _matrix_table_source(self) -> pd.DataFrame:
+        '''
+        Get the stored matrix table as a DataFrame.
+        '''
+        matrix_table_source = self.matrix_table
+        if not isinstance(matrix_table_source, pd.DataFrame):
+            raise TableMatrixDataFrameError(
+                "Matrix data is not a dataframe",
+                context=self._context(),
+            )
+        return matrix_table_source.copy()
+
+    def _matrix_table_component_order(self) -> list[str]:
+        '''
+        Get component order from a full square matrix table.
+        '''
+        matrix_table = self._matrix_table_source()
+        matrix_table = matrix_table.drop(
+            columns=[
+                column
+                for column in ['normalized_mixture', '_normalized_mixture']
+                if column in matrix_table.columns
+            ]
+        )
+
+        return [
+            str(item).strip()
+            for item in list(matrix_table['Name'])
+            if self._is_component_row(item)
+        ]
+
+    def _fill_pair_matrix(
+        self,
+        mat_ij: np.ndarray,
+        mat_ij_dict: Dict[str, str | float | int],
+        matrix_rows: pd.DataFrame,
+        property_columns: list[str],
+        component_ids: Dict[str, int],
+    ) -> None:
+        '''
+        Fill matrix values from a binary-pair encoded matrix table.
+        '''
+        for _, row in matrix_rows.iterrows():
+            source_component = str(row['Name']).strip()
+            if source_component not in component_ids:
+                continue
+
+            source_id = component_ids[source_component]
+            mixture_components = [
+                item.strip()
+                for item in str(row['Mixture']).split('|')
+            ]
+
+            for property_column in property_columns:
+                try:
+                    target_local_id = int(
+                        str(property_column).split('_')[-1]
+                    ) - 1
+                except ValueError:
+                    continue
+
+                if target_local_id >= len(mixture_components):
+                    continue
+
+                target_component = mixture_components[target_local_id]
+                if target_component not in component_ids:
+                    continue
+
+                target_id = component_ids[target_component]
+                property_value = self._matrix_value(row[property_column])
+
+                mat_ij[source_id][target_id] = property_value
+                mat_ij_dict[
+                    f"{source_component} | {target_component}"
+                ] = property_value
+
+    def _fill_square_matrix(
+        self,
+        mat_ij: np.ndarray,
+        mat_ij_dict: Dict[str, str | float | int],
+        matrix_rows: pd.DataFrame,
+        property_columns: list[str],
+        component_ids: Dict[str, int],
+    ) -> None:
+        '''
+        Fill matrix values from a full square matrix table.
+        '''
+        table_component_order = self._matrix_table_component_order()
+
+        for _, row in matrix_rows.iterrows():
+            source_component = str(row['Name']).strip()
+            if source_component not in component_ids:
+                continue
+
+            source_id = component_ids[source_component]
+
+            for property_column in property_columns:
+                try:
+                    target_id = int(
+                        str(property_column).split('_')[-1]
+                    ) - 1
+                except ValueError:
+                    continue
+
+                if target_id >= len(table_component_order):
+                    continue
+
+                target_component = table_component_order[target_id]
+                if target_component not in component_ids:
+                    continue
+
+                target_output_id = component_ids[target_component]
+                property_value = self._matrix_value(row[property_column])
+
+                mat_ij[source_id][target_output_id] = property_value
+                mat_ij_dict[
+                    f"{source_component} | {target_component}"
+                ] = property_value
+
     def mat(
         self,
         property_name: str,
         component_names: list[str],
         symbol_format: Literal[
             'alphabetic', 'numeric'
-        ] = 'numeric'
+        ] = 'numeric',
+        component_key: ComponentKey = 'Name',
     ) -> Dict[str, str | float | int] | np.ndarray:
         '''
         Get matrix data from matrix data table structure (2x2, 3x3, ...)
@@ -1729,6 +2167,11 @@ class TableMatrixData:
             component names such as ['ethanol', 'methanol']
         symbol_format : str
             symbol format alphabetic or numeric (default: numeric)
+        component_key : ComponentKey
+            Component label format used for alphabetic dictionary keys
+            (default: Name). Supported values include Name, Formula,
+            Name-State, Formula-State, Name-Formula, Name-Formula-State,
+            and Formula-Name-State.
 
         Returns
         -------
@@ -1765,35 +2208,51 @@ class TableMatrixData:
 
             # component strip
             components = [name.strip() for name in component_names]
+            component_ids = self.get_component_ids(components)
 
             # NOTE: matrix data
             mat_ij = np.zeros((component_num, component_num))
 
             # matrix data dict
-            mat_ij_dict: Dict[str, str | float | int] = {}
+            mat_ij_dict = self._matrix_dict(components)
 
-            # NOTE: mixture name
-            mixture_name = f"{components[0]} | {components[1]}"
+            matrix_rows = self.get_matrix_rows(components)
 
-            # SECTION: looping through component names
-            for i in range(component_num):
-                for j in range(component_num):
-                    # key
-                    key = f"{components[i]}_{components[j]}"
-                    prop_ = f"{property_name}_{key}"
-                    # get matrix property
-                    matrix_property = self.ij(
-                        prop_,
-                        mixture_name=mixture_name
-                    )
+            if len(matrix_rows) == 0:
+                raise TableMatrixDataLookupError(
+                    "No matrix rows found for component names",
+                    context=self._context(component_names=component_names),
+                )
 
-                    # set value
-                    mat_ij[i][j] = matrix_property['value']
+            matrix_columns = list(matrix_rows.columns)
+            property_columns = self._matrix_property_columns(
+                property_name,
+                matrix_columns,
+            )
 
-                    # set dict
-                    key_dict = f"{components[i]} | {components[j]}"
-                    # ? return 0 if value is None
-                    mat_ij_dict[key_dict] = matrix_property['value'] or 0
+            if len(property_columns) == 0:
+                logger.warning(
+                    f"Property name '{property_name}' not found in matrix table columns!"
+                )
+                mat_ij[:, :] = -1
+                for key in mat_ij_dict:
+                    mat_ij_dict[key] = -1
+            elif 'Mixture' in matrix_columns:
+                self._fill_pair_matrix(
+                    mat_ij=mat_ij,
+                    mat_ij_dict=mat_ij_dict,
+                    matrix_rows=matrix_rows,
+                    property_columns=property_columns,
+                    component_ids=component_ids,
+                )
+            else:
+                self._fill_square_matrix(
+                    mat_ij=mat_ij,
+                    mat_ij_dict=mat_ij_dict,
+                    matrix_rows=matrix_rows,
+                    property_columns=property_columns,
+                    component_ids=component_ids,
+                )
 
             # NOTE: check
             if (
@@ -1806,6 +2265,16 @@ class TableMatrixData:
 
             # NOTE: return
             if symbol_format == 'alphabetic':
+                component_labels = self._matrix_component_labels(
+                    components,
+                    matrix_rows,
+                    component_key,
+                )
+                mat_ij_dict = self._matrix_result_dict(
+                    components,
+                    component_labels,
+                    mat_ij,
+                )
                 return mat_ij_dict
             elif symbol_format == 'numeric':
                 return mat_ij
