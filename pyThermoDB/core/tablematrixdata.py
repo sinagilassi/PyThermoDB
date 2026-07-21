@@ -2294,6 +2294,71 @@ class TableMatrixData:
                 ),
             ) from e
 
+    def matX(
+        self,
+        property_name: str,
+        components: List[Component],
+        symbol_format: Literal[
+            'alphabetic', 'numeric'
+        ] = 'numeric',
+        component_key: ComponentKey = 'Name',
+    ) -> Dict[str, str | float | int] | np.ndarray:
+        '''
+        Get matrix data using Component objects.
+
+        Parameters
+        ----------
+        property_name : str
+            Property name such as `Alpha` represented `Alpha_ij`.
+        components : List[Component]
+            Components in the requested matrix order.
+        symbol_format : str
+            Result format, alphabetic dictionary or numeric array
+            (default: numeric).
+        component_key : ComponentKey
+            Component label format used for alphabetic dictionary keys
+            (default: Name).
+
+        Returns
+        -------
+        dict | np.ndarray
+            Matrix data.
+        '''
+        try:
+            if components is None or len(components) == 0:
+                raise TableMatrixDataFormatError(
+                    "Components are empty",
+                    context=self._context(components=components),
+                )
+
+            if not all(isinstance(component, Component) for component in components):
+                raise TableMatrixDataFormatError(
+                    "All components must be Component instances",
+                    context=self._context(components=components),
+                )
+
+            component_names = [
+                component.name.strip()
+                for component in components
+            ]
+
+            return self.mat(
+                property_name=property_name,
+                component_names=component_names,
+                symbol_format=symbol_format,
+                component_key=component_key,
+            )
+        except TableMatrixDataError:
+            raise
+        except Exception as e:
+            raise TableMatrixDataLookupError(
+                "Getting matrix data using Component objects failed",
+                context=self._context(
+                    property_name=property_name,
+                    components=components,
+                ),
+            ) from e
+
     def to_dict(self):
         '''
         Convert prop to dict
