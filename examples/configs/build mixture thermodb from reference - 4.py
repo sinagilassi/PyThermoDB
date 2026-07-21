@@ -63,6 +63,20 @@ butyl_methyl_ether = Component(
 # ! multi-component mixture
 multi_component_mixture = [methanol, ethanol, butyl_methyl_ether]
 
+# NOTE:
+# `mat()` receives component names as strings.
+# `matX()` receives Component objects.
+ternary_component_names = [
+    methanol.name,
+    ethanol.name,
+    butyl_methyl_ether.name,
+]
+ternary_component_objects = [
+    methanol,
+    ethanol,
+    butyl_methyl_ether,
+]
+
 # SECTION: build all binary pairs in the ternary mixture
 thermodb_ternary: MixtureThermoDB | None = build_mixture_thermodb_from_reference(
     components=multi_component_mixture,
@@ -137,12 +151,12 @@ print(thermodb_.retrieve(
 
 # SECTION: access binary-pair matrices with mat()
 # NOTE:
-# This ternary reference is encoded as binary pair rows, so use mat() for each
-# binary pair instead of one 3x3 matrix call.
+# This ternary reference is encoded as binary pair rows. mat() accepts component
+# names as strings, so each pair below is a list[str].
 binary_pairs = [
-    ["methanol", "ethanol"],
-    ["methanol", "butyl-methyl-ether"],
-    ["ethanol", "butyl-methyl-ether"],
+    [methanol.name, ethanol.name],
+    [methanol.name, butyl_methyl_ether.name],
+    [ethanol.name, butyl_methyl_ether.name],
 ]
 
 for pair in binary_pairs:
@@ -177,21 +191,19 @@ print(matrix_table.mat(
 ))
 
 # SECTION: access full ternary matrix with mat()
-ternary_components = [
-    "methanol",
-    "ethanol",
-    "butyl-methyl-ether",
-]
+# NOTE: mat() accepts component names as strings.
+print("mat() component names:")
+print(ternary_component_names)
 
 print("ternary component ids:")
-print(matrix_table.get_component_ids(ternary_components))
+print(matrix_table.get_component_ids(ternary_component_names))
 
 print("ternary matrix rows:")
-print(matrix_table.get_matrix_rows(ternary_components))
+print(matrix_table.get_matrix_rows(ternary_component_names))
 
 alpha_ternary_matrix = matrix_table.mat(
     "alpha",
-    ternary_components,
+    ternary_component_names,
     symbol_format='numeric',
 )
 print("alpha ternary matrix:")
@@ -203,14 +215,14 @@ if isinstance(alpha_ternary_matrix, np.ndarray):
 print("alpha ternary matrix as dict:")
 print(matrix_table.mat(
     "alpha",
-    ternary_components,
+    ternary_component_names,
     symbol_format='alphabetic',
 ))
 
 print("alpha ternary matrix as dict by formula:")
 print(matrix_table.mat(
     "alpha",
-    ternary_components,
+    ternary_component_names,
     symbol_format='alphabetic',
     component_key='Formula',
 ))
@@ -218,7 +230,7 @@ print(matrix_table.mat(
 print("alpha ternary matrix as dict by formula-state:")
 print(matrix_table.mat(
     "alpha",
-    ternary_components,
+    ternary_component_names,
     symbol_format='alphabetic',
     component_key='Formula-State',
 ))
@@ -226,7 +238,7 @@ print(matrix_table.mat(
 print("alpha ternary matrix as dict by name-formula:")
 print(matrix_table.mat(
     "alpha",
-    ternary_components,
+    ternary_component_names,
     symbol_format='alphabetic',
     component_key='Name-Formula',
 ))
@@ -234,14 +246,14 @@ print(matrix_table.mat(
 print("alpha ternary matrix as dict by name-formula-state:")
 print(matrix_table.mat(
     "alpha",
-    ternary_components,
+    ternary_component_names,
     symbol_format='alphabetic',
     component_key='Name-Formula-State',
 ))
 
 a_ternary_matrix = matrix_table.mat(
     "a",
-    ternary_components,
+    ternary_component_names,
     symbol_format='numeric',
 )
 print("a ternary matrix:")
@@ -251,9 +263,13 @@ if isinstance(a_ternary_matrix, np.ndarray):
     print(f"a ternary matrix shape: {a_ternary_matrix.shape}")
 
 # SECTION: use Component objects directly with matX()
+# NOTE: matX() accepts Component objects instead of component-name strings.
+print("matX() Component objects:")
+print(ternary_component_objects)
+
 alpha_ternary_matrix_x = matrix_table.matX(
     "alpha",
-    multi_component_mixture,
+    ternary_component_objects,
     symbol_format='numeric',
 )
 print("alpha ternary matrix using matX:")
@@ -265,7 +281,7 @@ if isinstance(alpha_ternary_matrix_x, np.ndarray):
 print("alpha ternary matrix using matX as dict by formula-state:")
 print(matrix_table.matX(
     "alpha",
-    multi_component_mixture,
+    ternary_component_objects,
     symbol_format='alphabetic',
     component_key='Formula-State',
 ))
