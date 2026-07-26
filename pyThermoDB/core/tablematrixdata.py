@@ -1,5 +1,6 @@
 # import libs
 import logging
+import re
 import pandas as pd
 import numpy as np
 from typing import Optional, Any, Literal, Dict, List
@@ -794,10 +795,9 @@ class TableMatrixData:
 
                 # NOTE: get component data
                 _data_get = matrix_table[
-                    matrix_table[component_column_id].str.match(
-                        component_name_filter,
-                        case=False,
-                        na=False
+                    self._series_str_match(
+                        matrix_table[component_column_id],
+                        component_name_filter
                     )
                 ]
 
@@ -1396,10 +1396,9 @@ class TableMatrixData:
 
             # NOTE: get component data
             _data_get = matrix_table[
-                matrix_table[selected_column].str.match(
-                    component_name_filter,
-                    case=False,
-                    na=False
+                self._series_str_match(
+                    matrix_table[selected_column],
+                    component_name_filter
                 )
             ]
 
@@ -1742,6 +1741,29 @@ class TableMatrixData:
             value_set.lower() != "nan"
         )
 
+    @staticmethod
+    def _series_str_match(
+        values: pd.Series,
+        pattern: str,
+    ) -> pd.Series:
+        '''
+        Match string values in a Series without pandas .str typing issues.
+        '''
+        return values.apply(
+            lambda value: (
+                bool(re.match(pattern, value, flags=re.IGNORECASE))
+                if isinstance(value, str)
+                else False
+            )
+        )
+
+    @staticmethod
+    def _normalized_series_values(values: pd.Series) -> pd.Series:
+        '''
+        Normalize Series values to stripped lowercase strings.
+        '''
+        return values.apply(lambda value: str(value).strip().lower())
+
     def get_component_ids(
         self,
         component_names: list[str],
@@ -1858,7 +1880,7 @@ class TableMatrixData:
             ].copy()
 
             data_rows = data_rows[
-                data_rows[component_key].astype(str).str.strip().str.lower().isin(
+                self._normalized_series_values(data_rows[component_key]).isin(
                     components_lower
                 )
             ].copy()
