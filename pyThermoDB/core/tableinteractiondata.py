@@ -1051,8 +1051,9 @@ class TableInteractionData:
                 context=self._context(),
             )
 
-        modes = (component_key,
-                 ) if component_key is not None else self._component_key_modes
+        modes = (
+            component_key,
+        ) if component_key is not None else self._component_key_modes
         matches: set[tuple[str, ...]] = set()
         for mode in modes:
             candidate = tuple(
