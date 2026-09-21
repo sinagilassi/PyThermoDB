@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from itertools import permutations, product
 from typing import Any, Literal, Optional
 
 import pandas as pd
@@ -210,6 +211,112 @@ class TableInteractionData:
             )
 
         return normalized
+
+    @staticmethod
+    def _validate_symmetric_groups(
+        symmetric_groups: Sequence[Sequence[int]] | None,
+        mixture_size: int,
+    ) -> tuple[tuple[int, ...], ...]:
+        """Validate and normalize caller-declared positional symmetry."""
+        if symmetric_groups is None:
+            return ()
+        if isinstance(symmetric_groups, (str, bytes)) or not isinstance(
+            symmetric_groups, Sequence,
+        ):
+            raise TableInteractionDataFormatError(
+                "symmetric_groups must be a sequence of position groups."
+            )
+
+        normalized_groups: list[tuple[int, ...]] = []
+        used_positions: set[int] = set()
+        for group in symmetric_groups:
+            if isinstance(group, (str, bytes)) or not isinstance(
+                group,
+                Sequence,
+            ):
+                raise TableInteractionDataFormatError(
+                    "Each symmetry group must be a sequence of positions."
+                )
+            normalized_group = tuple(group)
+            if len(normalized_group) < 2:
+                raise TableInteractionDataFormatError(
+                    "Each symmetry group must contain at least two positions."
+                )
+            if any(
+                not isinstance(position, int) or isinstance(position, bool)
+                for position in normalized_group
+            ):
+                raise TableInteractionDataFormatError(
+                    "Symmetry positions must be integers."
+                )
+            if any(
+                position < 0 or position >= mixture_size
+                for position in normalized_group
+            ):
+                raise TableInteractionDataFormatError(
+                    "Symmetry positions must be within the mixture."
+                )
+            if len(set(normalized_group)) != len(normalized_group):
+                raise TableInteractionDataFormatError(
+                    "A symmetry group cannot repeat a position."
+                )
+            if used_positions.intersection(normalized_group):
+                raise TableInteractionDataDefinitionError(
+                    "Symmetry groups cannot overlap."
+                )
+            used_positions.update(normalized_group)
+            normalized_groups.append(normalized_group)
+
+        return tuple(normalized_groups)
+
+    @classmethod
+    def _generate_symmetric_keys(
+        cls,
+        mixture_key: tuple[str, ...],
+        symmetric_groups: Sequence[Sequence[int]] | None,
+    ) -> list[tuple[str, ...]]:
+        """Return deterministic, deduplicated positional permutations.
+
+        The requested key is included first. This helper only rearranges the
+        caller-declared positions; it does not modify stored source records.
+        """
+        groups = cls._validate_symmetric_groups(
+            symmetric_groups,
+            len(mixture_key),
+        )
+        if not groups:
+            return [mixture_key]
+
+        permutation_sets = [
+            tuple(
+                dict.fromkeys(
+                    permutations(tuple(mixture_key[index] for index in group))
+                )
+            )
+            for group in groups
+        ]
+        candidates: list[tuple[str, ...]] = []
+        for group_permutations in product(*permutation_sets):
+            candidate = list(mixture_key)
+            for group, values in zip(groups, group_permutations):
+                for index, value in zip(group, values):
+                    candidate[index] = value
+            candidates.append(tuple(candidate))
+        return list(dict.fromkeys(candidates))
+
+    def _find_mixture_key(
+        self,
+        mixture_key: tuple[str, ...],
+        symmetric_groups: Sequence[Sequence[int]] | None = None,
+    ) -> tuple[str, ...] | None:
+        """Find an exact record or an explicitly symmetric alternative."""
+        for candidate in self._generate_symmetric_keys(
+            mixture_key,
+            symmetric_groups,
+        ):
+            if candidate in self._interaction_records:
+                return candidate
+        return None
 
     def _initialize_interaction_symbols(
         self,
@@ -556,9 +663,15 @@ class TableInteractionData:
         property_name: str,
         mixture: str | Sequence[str],
         *,
+        symmetric_groups: Sequence[Sequence[int]] | None = None,
         default: Any = None,
     ) -> Any:
         """Return one scalar interaction value when available.
+
+        ``mixture`` is matched exactly by default. ``symmetric_groups`` may
+        explicitly declare disjoint zero-based positions that can be permuted
+        after the exact record is checked. Symmetry affects lookup only; it
+        never changes stored mixture order or serialized source rows.
 
         Parameters
         ----------
@@ -566,28 +679,21 @@ class TableInteractionData:
             Declared interaction symbol to retrieve.
         mixture : str | Sequence[str]
             Ordered mixture identifier or component-ID sequence.
+        symmetric_groups : Sequence[Sequence[int]], optional
+            Groups of component indices that are symmetric, allowing for
+            interchangeable components within each group.
         default : Any, optional
-            Value returned for invalid mixtures, missing records, or missing
-            properties.
-
-        Returns
-        -------
-        Any
-            Stored scalar value, or ``default`` when unavailable.
-
-        Notes
-        -----
-        Invalid mixture formatting is treated as an unavailable lookup.
+            Value to return if the requested property or mixture is not found.
         """
         try:
             mixture_key = self._normalize_mixture_key(mixture)
         except TableInteractionDataFormatError:
             return default
 
-        record = self._interaction_records.get(mixture_key)
-        if record is None:
+        matched_key = self._find_mixture_key(mixture_key, symmetric_groups)
+        if matched_key is None:
             return default
-        return record.get(property_name, default)
+        return self._interaction_records[matched_key].get(property_name, default)
 
     def require(
         self,
@@ -840,6 +946,7 @@ class TableInteractionData:
         property: str,
         mixture: Optional[str | Sequence[str]] = None,
         *,
+        symmetric_groups: Sequence[Sequence[int]] | None = None,
         default: Any = None,
         message: Optional[str] = None,
     ) -> dict[str, Any]:
@@ -854,6 +961,9 @@ class TableInteractionData:
         mixture : str | Sequence[str], optional
             Ordered source mixture. It is required when ``property`` contains
             only the interaction symbol.
+        symmetric_groups : Sequence[Sequence[int]], optional
+            Groups of component indices that are symmetric, allowing for
+            interchangeable components within each group.
         default : Any, optional
             Value returned when the ordered mixture or its scalar is absent.
         message : str, optional
@@ -900,7 +1010,12 @@ class TableInteractionData:
         column = self._property_column(property_name)
         column_index = self._table_structure["COLUMNS"].index(column)
         unit = self._table_structure["UNIT"][column_index]
-        value = self.get(property_name, mixture_key, default=default)
+        value = self.get(
+            property_name,
+            mixture_key,
+            symmetric_groups=symmetric_groups,
+            default=default,
+        )
         mixture_display = " | ".join(mixture_key)
         result_message = message or (
             f"Get {property_name} interaction value for {mixture_display}."
@@ -920,6 +1035,7 @@ class TableInteractionData:
         property_name: str,
         mixtures: Optional[Sequence[str | Sequence[str]]] = None,
         *,
+        symmetric_groups: Sequence[Sequence[int]] | None = None,
         include_null: bool = False,
         default: Any = None,
     ) -> dict[tuple[str, ...], Any]:
@@ -932,6 +1048,9 @@ class TableInteractionData:
         mixtures : Sequence[str | Sequence[str]], optional
             Ordered mixtures to retrieve. If omitted, every stored mixture is
             considered.
+        symmetric_groups : Sequence[Sequence[int]], optional
+            Groups of component indices that are symmetric, allowing for
+            interchangeable components within each group.
         include_null : bool, default=False
             Include records whose scalar value is ``None``.
         default : Any, optional
@@ -965,7 +1084,12 @@ class TableInteractionData:
         result: dict[tuple[str, ...], Any] = {}
         for mixture in mixtures:
             mixture_key = self._normalize_mixture_key(mixture)
-            value = self.get(property_name, mixture_key, default=default)
+            value = self.get(
+                property_name,
+                mixture_key,
+                symmetric_groups=symmetric_groups,
+                default=default,
+            )
             if include_null or value is not None:
                 result[mixture_key] = value
         return result
@@ -1020,6 +1144,7 @@ class TableInteractionData:
         self,
         components: Sequence[Any],
         component_key: Optional[str] = None,
+        symmetric_groups: Sequence[Sequence[int]] | None = None,
     ) -> tuple[str, ...]:
         """Resolve component-like objects to one stored mixture record.
 
@@ -1030,6 +1155,9 @@ class TableInteractionData:
         component_key : str, optional
             Explicit identifier mode. When omitted, all supported modes are
             attempted.
+        symmetric_groups : Sequence[Sequence[int]], optional
+            Groups of component indices that are symmetric, allowing for
+            interchangeable components within each group.
 
         Returns
         -------
@@ -1060,8 +1188,12 @@ class TableInteractionData:
                 self._component_identifier(component, mode)
                 for component in components
             )
-            if candidate in self._interaction_records:
-                matches.add(candidate)
+            resolved_key = self._find_mixture_key(
+                candidate,
+                symmetric_groups,
+            )
+            if resolved_key is not None:
+                matches.add(resolved_key)
 
         if len(matches) == 1:
             return next(iter(matches))
@@ -1089,6 +1221,7 @@ class TableInteractionData:
         components: Sequence[Any],
         *,
         component_key: Optional[str] = None,
+        symmetric_groups: Sequence[Sequence[int]] | None = None,
         default: Any = None,
     ) -> Any:
         """Return a scalar property for component-like objects.
@@ -1101,6 +1234,9 @@ class TableInteractionData:
             Component-like objects identifying an ordered mixture.
         component_key : str, optional
             Explicit component identifier mode.
+        symmetric_groups : Sequence[Sequence[int]] | None, optional
+            Groups of component indices that are symmetric, allowing for
+            interchangeable components within each group.
         default : Any, optional
             Value returned when no matching mixture or value exists.
 
@@ -1118,11 +1254,17 @@ class TableInteractionData:
             mixture_key = self._resolve_mixture_from_components(
                 components,
                 component_key,
+                symmetric_groups,
             )
         except TableInteractionDataLookupError:
             return default
 
-        return self.get(property_name, mixture_key, default=default)
+        return self.get(
+            property_name,
+            mixture_key,
+            symmetric_groups=symmetric_groups,
+            default=default,
+        )
 
     def get_mixture_from_components(
         self,
