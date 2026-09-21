@@ -23,6 +23,7 @@ from .table_errors import (
     TableError,
     TableLookupError,
     TableMatrixDataError,
+    TableInteractionDataError,
     TableMatrixEquationError,
     TableParameterError,
     TableStructureError,
@@ -52,6 +53,12 @@ from .table_matrix_data_errors import (
     TableMatrixDataLookupError,
     TableMatrixDataStructureError,
 )
+from .table_interaction_data_errors import (
+    TableInteractionDataConversionError, TableInteractionDataDefinitionError,
+    TableInteractionDataFormatError, TableInteractionDataFrameError,
+    TableInteractionDataGenerationError, TableInteractionDataLookupError,
+    TableInteractionDataStructureError,
+)
 
 __all__ = [
     "PyThermoDBError",
@@ -77,6 +84,7 @@ __all__ = [
     "TableDataError",
     "TableEquationError",
     "TableMatrixDataError",
+    "TableInteractionDataError",
     "TableMatrixEquationError",
     "TableConstantsError",
     "TableUtilError",
@@ -100,4 +108,11 @@ __all__ = [
     "TableMatrixDataFrameError",
     "TableMatrixDataGenerationError",
     "TableMatrixDataConversionError",
+    "TableInteractionDataStructureError",
+    "TableInteractionDataDefinitionError",
+    "TableInteractionDataLookupError",
+    "TableInteractionDataFormatError",
+    "TableInteractionDataFrameError",
+    "TableInteractionDataGenerationError",
+    "TableInteractionDataConversionError",
 ]

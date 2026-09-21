@@ -83,6 +83,12 @@ class TableMatrixDataError(TableDataError):
     default_message = "Table matrix data operation failed"
 
 
+class TableInteractionDataError(TableDataError):
+    """TableInteractionData operation failed."""
+
+    default_message = "Table interaction data operation failed"
+
+
 class TableMatrixEquationError(TableEquationError):
     """TableMatrixEquation operation failed."""
 
@@ -130,6 +136,7 @@ __all__ = [
     "TableDataError",
     "TableEquationError",
     "TableMatrixDataError",
+    "TableInteractionDataError",
     "TableMatrixEquationError",
     "TableConstantsError",
     "TableUtilError",
