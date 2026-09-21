@@ -4,6 +4,7 @@ from .core import (
     TableMatrixEquation,
     TableData,
     TableMatrixData,
+    TableInteractionData,
     TableConstants
 )
 from .docs import ThermoDB
@@ -41,6 +42,7 @@ __all__ = [
     'TableData',
     'TableEquation',
     'TableMatrixData',
+    'TableInteractionData',
     'TableMatrixEquation',
     'TableConstants',
     'init',
