@@ -134,7 +134,8 @@ class CustomRef:
             # SECTION: extract files from source files
             # NOTE: check file types
             # ! yml files
-            yml_files = [x for x in self.src_files if str(x).endswith('.yml')]
+            # NOTE: Both conventional YAML filename extensions are valid reference files.
+            yml_files = [x for x in self.src_files if str(x).lower().endswith(('.yml', '.yaml'))]
             # ! md files
             md_files = [x for x in self.src_files if str(x).endswith('.md')]
 
@@ -157,7 +158,7 @@ class CustomRef:
                         raise Exception(f"{yml_file} does not exist.")
                     else:
                         # check file ext
-                        if yml_file.endswith('.yml'):
+                        if yml_file.lower().endswith(('.yml', '.yaml')):
                             # get path
                             self.yml_paths.append(os.path.abspath(yml_file))
 
