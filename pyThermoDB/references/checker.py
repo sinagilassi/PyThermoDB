@@ -280,6 +280,10 @@ class ReferenceChecker:
             if 'EQUATIONS' in table:
                 return 'EQUATIONS'
 
+            # SECTION: interaction data takes precedence over generic data
+            if 'INTERACTION-SYMBOL' in table:
+                return 'INTERACTION-DATA'
+
             # NOTE: based on MATRIX-SYMBOLS
             if 'MATRIX-SYMBOL' in table:
                 return 'DATA'
@@ -295,6 +299,11 @@ class ReferenceChecker:
         except Exception as e:
             logging.error(f"Error getting table type: {e}")
             return None
+
+    def is_interaction_data_table(self, databook_name: str, table_name: str) -> bool:
+        # ! Interaction records are distinct from matrix tables.
+        table = self.get_databook_table(databook_name, table_name)
+        return isinstance(table, dict) and 'INTERACTION-SYMBOL' in table
 
     def is_matrix_table(
         self,
