@@ -2699,6 +2699,22 @@ def check_and_build_constants_thermodb(
     except Exception as e:
         raise Exception(f"Building constants thermodb failed! {e}")
 
+# SECTION: build interaction thermodb
+
+
+@measure_time
+def build_interaction_thermodb():
+    # TODO
+    pass
+
+# ! build interaction thermodb from reference
+
+
+def build_interaction_thermodb_from_reference():
+    # TODO
+    pass
+
+
 # SECTION: build component thermodb from reference
 
 
