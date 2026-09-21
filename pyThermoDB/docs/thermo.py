@@ -1531,6 +1531,54 @@ class ThermoDB(ManageData):
 
         # NOTE: Loading retains every source row; it never sorts stored mixtures.
         return self.interaction_data_load(databook=databook, table=table)
+
+    def build_selected_interaction_data(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        *,
+        component_key: Optional[str] = None,
+        column_name: str = "Mixture",
+        delimiter: str = "|",
+    ) -> TableInteractionData:
+        """Build an interaction table containing only exact component-set rows.
+
+        Source rows match when their complete participant set equals the
+        supplied components. Matching ignores participant order, but every
+        retained row preserves its source order for later runtime lookups.
+        """
+        availability = self.check_interaction_availability(
+            components=components,
+            databook=databook,
+            table=table,
+            component_key=component_key,
+            respect_order=False,
+            column_name=column_name,
+            delimiter=delimiter,
+            res_format="dict",
+        )
+        if not isinstance(availability, dict):
+            raise RuntimeError("Interaction availability did not return a dictionary.")
+        if not bool(availability["availability"]):
+            raise LookupError(
+                "No exact interaction mixture is available for the supplied components."
+            )
+
+        source = self.interaction_data_load(databook=databook, table=table)
+        positions = [
+            match["row_index"] for match in availability["matched_mixtures"]
+        ]
+        selected_frame = source.get_interaction_table(mode="all").iloc[
+            positions
+        ].reset_index(drop=True)
+        return TableInteractionData(
+            databook_name=source.databook_name,
+            table_name=source.table_name,
+            table_data=source.table_data,
+            interaction_table=selected_frame,
+            interaction_symbol=source.interaction_symbol,
+        )
     # NOTE: check component availability
     def check_component(
         self,
