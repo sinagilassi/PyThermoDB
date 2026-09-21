@@ -571,6 +571,28 @@ class ManageData():
                         })
                         # reset
                         _eq = []
+                    # SECTION: interaction-data
+                    # ! Keep one complete Mixture record per reference row.
+                    elif 'INTERACTION-SYMBOL' in table_data_keys:
+                        interaction_data = {
+                            'INTERACTION-SYMBOL': table_data.get('INTERACTION-SYMBOL', []),
+                            'STRUCTURE': table_structure,
+                            'VALUES': table_values,
+                        }
+                        tables.append({
+                            'table_id': table_id,
+                            'table': table,
+                            'description': description,
+                            'equations': None,
+                            'data': None,
+                            'matrix_equations': None,
+                            'matrix_data': None,
+                            'interaction_data': interaction_data,
+                            'table_type': TableTypes.INTERACTION_DATA.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure,
+                            'external_references': external_references,
+                        })
                     # ! check DATA
                     elif 'DATA' in table_data_keys:
                         # data
@@ -837,6 +859,11 @@ class ManageData():
                             f"[{i+1}]"
                         ]
                     )
+                # ! interaction-data
+                elif tb.get('interaction_data') is not None:
+                    tables.append(
+                        [tb['table'], "interaction-data", f"[{i+1}]"])
+
                 # ! data
                 elif tb['data'] is not None:
                     tables.append([tb['table'], "data", f"[{i+1}]"])
@@ -976,6 +1003,9 @@ class ManageData():
                 # check table type
                 if 'equations' in tb and tb['equations'] is not None:
                     return TableTypes.EQUATIONS.value
+                # ! Interaction rows must be recognized before generic data.
+                elif tb.get('interaction_data') is not None:
+                    return TableTypes.INTERACTION_DATA.value
                 elif 'data' in tb and tb['data'] is not None:
                     return TableTypes.DATA.value
                 elif 'matrix_data' in tb and tb['matrix_data'] is not None:
