@@ -33,6 +33,7 @@ from ..core import (
     TableMatrixEquation,
     TableData,
     TableMatrixData,
+    TableInteractionData,
     TableConstants
 )
 from ..data import TableTypes
@@ -73,7 +74,8 @@ ThermoProperty = Union[
     TableEquation,
     TableData,
     TableMatrixEquation,
-    TableMatrixData
+    TableMatrixData,
+    TableInteractionData
 ]
 
 
@@ -91,6 +93,23 @@ class ThermoDB(ManageData):
         custom_ref=None,
         data_source='local'
     ):
+        """Create a database facade from bundled or custom reference data.
+
+        Parameters
+        ----------
+        custom_ref : dict | str, optional
+            Custom reference definition or reference path passed to ``ManageData``.
+        data_source : str, default='local'
+            Label describing the source used by the caller.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Custom-reference parsing and validation are delegated to ``ManageData``.
+        """
         # NOTE: set
         self.data_source = data_source
         self.custom_ref = custom_ref
@@ -100,18 +119,54 @@ class ThermoDB(ManageData):
 
     @property
     def selected_databook(self):
+        """Return the databook currently selected by the caller interface.
+
+        Returns
+        -------
+        str
+            The stored databook name or identifier.
+        """
         return self.__selected_databook
 
     @selected_databook.setter
     def selected_databook(self, value):
+        """Store the databook selection used by the caller interface.
+
+        Parameters
+        ----------
+        value : str
+            Databook name or identifier to retain as the current selection.
+
+        Returns
+        -------
+        None
+        """
         self.__selected_databook = value
 
     @property
     def selected_tb(self):
+        """Return the table currently selected by the caller interface.
+
+        Returns
+        -------
+        str
+            The stored table name or identifier.
+        """
         return self.__selected_tb
 
     @selected_tb.setter
     def selected_tb(self, value):
+        """Store the table selection used by the caller interface.
+
+        Parameters
+        ----------
+        value : str
+            Table name or identifier to retain as the current selection.
+
+        Returns
+        -------
+        None
+        """
         self.__selected_tb = value
 
     def list_symbols(
@@ -539,6 +594,9 @@ class ThermoDB(ManageData):
                 # check data/equations and matrix-data/matrix-equation
                 # tb_type = 'Equation' if tb['equations'] is not None else 'Data'
 
+                # SECTION: interaction-data has precedence over generic data.
+                if tb.get('interaction_data') is not None:
+                    tb_type = 'Interaction-Data'
                 if tb['data'] is not None:
                     tb_type = 'Data'
                 if tb['equations'] is not None:
@@ -557,6 +615,16 @@ class ThermoDB(ManageData):
 
                     # equation no
                     equation_no = len(table_equations)
+
+                # ! check interaction-data
+                interaction_payload = tb.get('interaction_data')
+                if tb_type == 'Interaction-Data':
+                    # NOTE: TypedDict optional fields require a local runtime
+                    # narrowing before they can be treated as iterable payloads.
+                    if interaction_payload is None:
+                        raise ValueError("Interaction-Data table has no payload.")
+                    table_data = list(interaction_payload)
+                    data_no = 1
 
                 # ! check data
                 if tb_type == 'Data' and tb['data'] is not None:
@@ -1160,6 +1228,309 @@ class ThermoDB(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    # SECTION: interaction-data loading and discovery
+    @staticmethod
+    def _canonical_interaction_mixture(
+        mixture: str | list[str] | tuple[str, ...],
+        *,
+        delimiter: str,
+        respect_order: bool,
+    ) -> tuple[str, ...]:
+        """Normalize an interaction mixture for discovery.
+
+        Parameters
+        ----------
+        mixture : str | list[str] | tuple[str, ...]
+            Delimited or tokenized participant identifiers.
+        delimiter : str
+            Separator used when ``mixture`` is a string.
+        respect_order : bool
+            Preserve participant sequence when true; otherwise sort identifiers.
+
+        Returns
+        -------
+        tuple[str, ...]
+            Trimmed, case-normalized participant identifiers.
+
+        Notes
+        -----
+        This helper is search-only; runtime ``TableInteractionData`` keys remain ordered.
+        """
+        # ! This helper is for search only; TableInteractionData remains ordered.
+        if isinstance(mixture, str):
+            tokens = mixture.split(delimiter)
+        elif isinstance(mixture, (list, tuple)):
+            tokens = list(mixture)
+        else:
+            raise ValueError("Mixture must be a string or sequence of strings.")
+
+        normalized = tuple(str(token).strip().casefold() for token in tokens)
+        if len(normalized) < 2 or any(not token for token in normalized):
+            raise ValueError("Mixture must contain at least two non-empty participants.")
+        return normalized if respect_order else tuple(sorted(normalized))
+
+    @staticmethod
+    def _interaction_component_id(component: Component, component_key: str) -> str:
+        """Return a supported Component identifier without chemistry-specific parsing.
+
+        Parameters
+        ----------
+        component : Component
+            Component supplying name, formula, and state identifiers.
+        component_key : str
+            Supported ID mode, such as ``Name`` or ``Formula-State``.
+
+        Returns
+        -------
+        str
+            Identifier generated in the requested mode.
+
+        Raises
+        ------
+        ValueError
+            If ``component_key`` is not a supported identifier mode.
+        """
+        name = component.name.strip()
+        formula = component.formula.strip()
+        state = component.state.strip()
+        identifiers = {
+            "Name": name,
+            "Formula": formula,
+            "Name-State": f"{name}-{state}",
+            "Formula-State": f"{formula}-{state}",
+            "Name-Formula-State": f"{name}-{formula}-{state}",
+            "Formula-Name-State": f"{formula}-{name}-{state}",
+        }
+        if component_key not in identifiers:
+            raise ValueError(f"Unsupported component_key: {component_key}.")
+        return identifiers[component_key]
+
+    def interaction_data_load(
+        self,
+        databook: int | str,
+        table: int | str,
+    ) -> TableInteractionData:
+        """Load a row-oriented interaction-data table without matrix expansion.
+
+        Parameters
+        ----------
+        databook : int | str
+            Databook identifier or name.
+        table : int | str
+            Interaction-table identifier or name.
+
+        Returns
+        -------
+        TableInteractionData
+            Validated runtime interaction table retaining source row order and values.
+
+        Raises
+        ------
+        ValueError
+            If the selected table is absent or is not Interaction-Data.
+        """
+        # SECTION: obtain the distinct manager payload
+        _, databook_name, _ = self.find_databook(databook)
+        table_record = self.select_table(databook, table)
+        if not isinstance(table_record, dict):
+            raise ValueError("Interaction table was not found.")
+
+        interaction_data = table_record.get("interaction_data")
+        if not isinstance(interaction_data, dict):
+            raise ValueError("Selected table is not Interaction-Data.")
+
+        return TableInteractionData(
+            databook_name=databook_name,
+            table_name=table_record["table"],
+            table_data=interaction_data,
+        )
+
+    def check_interaction_availability(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        *,
+        component_key: Optional[str] = None,
+        respect_order: bool = False,
+        column_name: str = "Mixture",
+        delimiter: str = "|",
+        res_format: Literal["dict", "json", "str"] = "dict",
+    ) -> dict[str, Any] | str:
+        """Check whether an exact multi-component interaction record is available.
+
+        Parameters
+        ----------
+        components : list[Component]
+            At least two requested interaction participants.
+        databook : int | str
+            Databook identifier or name.
+        table : int | str
+            Interaction-table identifier or name.
+        component_key : str, optional
+            Explicit Component ID mode. Every supported mode is evaluated if omitted.
+        respect_order : bool, default=False
+            Match source participant order exactly when true.
+        column_name : str, default='Mixture'
+            Source column holding delimited participant IDs.
+        delimiter : str, default='|'
+            Source participant separator.
+        res_format : {'dict', 'json', 'str'}, default='dict'
+            Return representation for availability details.
+
+        Returns
+        -------
+        dict[str, Any] | str
+            Availability, candidate IDs, and all matching source mixtures.
+
+        Notes
+        -----
+        Default discovery ignores order but requires the exact participant set.
+        Matched source mixtures always preserve their original spelling and order.
+        """
+        # SECTION: validate inputs
+        if not isinstance(components, list) or len(components) < 2:
+            raise ValueError("components must be a list of at least two Component objects.")
+        if not all(isinstance(component, Component) for component in components):
+            raise TypeError("All components must be Component objects.")
+        if not isinstance(column_name, str) or not column_name.strip():
+            raise ValueError("column_name must be a non-empty string.")
+        if not isinstance(delimiter, str) or not delimiter:
+            raise ValueError("delimiter must be a non-empty string.")
+
+        # NOTE: A missing key tries every supported Component representation.
+        modes = (
+            (component_key,)
+            if component_key is not None
+            else TableInteractionData._component_key_modes
+        )
+        table_object = self.interaction_data_load(databook, table)
+        source_table = table_object.get_interaction_table(mode="all")
+        if column_name not in source_table.columns:
+            raise ValueError(f"Interaction table has no '{column_name}' column.")
+
+        matches: list[dict[str, Any]] = []
+        candidate_keys: dict[str, tuple[str, ...]] = {}
+        for mode in modes:
+            candidate = [
+                self._interaction_component_id(component, mode)
+                for component in components
+            ]
+            candidate_key = self._canonical_interaction_mixture(
+                candidate,
+                delimiter=delimiter,
+                respect_order=respect_order,
+            )
+            candidate_keys[mode] = candidate_key
+
+            # NOTE: Keep a predictable positional row index; pandas labels may be
+            # any hashable type and are not necessarily integer-convertible.
+            for row_index, source_mixture in enumerate(source_table[column_name].tolist()):
+                source_key = self._canonical_interaction_mixture(
+                    str(source_mixture),
+                    delimiter=delimiter,
+                    respect_order=respect_order,
+                )
+                # ! Equal normalized tuples enforce exact participant membership.
+                if source_key == candidate_key:
+                    matches.append({
+                        "component_key": mode,
+                        "row_index": row_index,
+                        "mixture": str(source_mixture),
+                        "normalized_mixture": source_key,
+                    })
+
+        # REVIEW: The same source row can match only once per component-key mode.
+        unique_matches = {
+            (match["row_index"], match["mixture"]): match
+            for match in matches
+        }
+        matched_mixtures = list(unique_matches.values())
+        _, databook_name, databook_id = self.find_databook(databook)
+        table_id, table_name = self.find_table(databook, table)
+        result = {
+            "databook_id": databook_id + 1,
+            "databook_name": databook_name,
+            "table_id": table_id + 1,
+            "table_name": table_name,
+            "availability": bool(matched_mixtures),
+            "respect_order": respect_order,
+            "candidate_mixtures": candidate_keys,
+            "matched_mixtures": matched_mixtures,
+            "available_count": len(matched_mixtures),
+        }
+        if res_format == "dict":
+            return result
+        if res_format in {"json", "str"}:
+            return json.dumps(result, default=str)
+        raise ValueError("res_format must be 'dict', 'json', or 'str'.")
+
+    def build_interaction_data(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        *,
+        component_key: Optional[str] = None,
+        respect_order: bool = False,
+        column_name: str = "Mixture",
+        delimiter: str = "|",
+    ) -> TableInteractionData:
+        """Validate mixture availability then load the complete interaction table.
+
+        Parameters
+        ----------
+        components : list[Component]
+            At least two components defining the requested participant set.
+        databook : int | str
+            Databook identifier or name.
+        table : int | str
+            Interaction-table identifier or name.
+        component_key : str, optional
+            Explicit Component identifier mode. All supported modes are tried if omitted.
+        respect_order : bool, default=False
+            Require source and requested participant order to match when true.
+        column_name : str, default='Mixture'
+            Source column containing delimited participant identifiers.
+        delimiter : str, default='|'
+            Participant separator in the source mixture column.
+
+        Returns
+        -------
+        TableInteractionData
+            The full validated table, with original source records unchanged.
+
+        Raises
+        ------
+        LookupError
+            If no exact participant set is available.
+
+        Notes
+        -----
+        Unordered discovery is limited to this build path; runtime lookup remains ordered.
+        """
+        # SECTION: availability gate
+        availability = self.check_interaction_availability(
+            components=components,
+            databook=databook,
+            table=table,
+            component_key=component_key,
+            respect_order=respect_order,
+            column_name=column_name,
+            delimiter=delimiter,
+            res_format="dict",
+        )
+        # ! ``res_format="dict"`` is explicit, but retain a runtime guard for
+        # callers and static type checkers because the public helper also returns strings.
+        if not isinstance(availability, dict):
+            raise RuntimeError("Interaction availability did not return a dictionary.")
+        if not bool(availability["availability"]):
+            raise LookupError(
+                "No exact interaction mixture is available for the supplied components."
+            )
+
+        # NOTE: Loading retains every source row; it never sorts stored mixtures.
+        return self.interaction_data_load(databook=databook, table=table)
     # NOTE: check component availability
     def check_component(
         self,
@@ -1637,6 +2008,20 @@ class ThermoDB(ManageData):
                     mixture: str,
                     delimiter: str
             ) -> str:
+                """Canonicalize a binary mixture ID for order-insensitive search.
+
+                Parameters
+                ----------
+                mixture : str
+                    Delimited binary participant identifier.
+                delimiter : str
+                    Participant separator.
+
+                Returns
+                -------
+                str
+                    Lowercase identifier with its two participants sorted.
+                """
                 parts = mixture.lower().strip().split(delimiter)
                 return delimiter.join(sorted(parts))
 
@@ -2521,6 +2906,20 @@ class ThermoDB(ManageData):
                     mixture: str,
                     delimiter: str
             ) -> str:
+                """Canonicalize a binary mixture ID for order-insensitive search.
+
+                Parameters
+                ----------
+                mixture : str
+                    Delimited binary participant identifier.
+                delimiter : str
+                    Participant separator.
+
+                Returns
+                -------
+                str
+                    Lowercase identifier with its two participants sorted.
+                """
                 parts = mixture.lower().strip().split(delimiter)
                 return delimiter.join(sorted(parts))
 
@@ -3002,6 +3401,13 @@ class ThermoDB(ManageData):
                         databook,
                         table
                     )
+                elif tb_info_res_['Type'] == 'Interaction-Data':
+                    # ! Raw string lookups cannot resolve the table's component ID mode.
+                    raise ValueError(
+                        "Interaction-Data requires Component objects; use "
+                        "build_components_thermo_property() or "
+                        "build_interaction_data()."
+                    )
                 elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
                     # LINK: matrix-data
                     # check
@@ -3040,6 +3446,8 @@ class ThermoDB(ManageData):
         ignore_component_state: bool = False,
         column_name: Optional[str] = None,
         mixture_names: Optional[list[str]] = None,
+        interaction_component_key: Optional[str] = None,
+        interaction_respect_order: bool = False,
     ) -> ThermoProperty:
         '''
         Build thermo property for a component including data, equation, matrix-data and matrix-equation.
@@ -3159,6 +3567,18 @@ class ThermoDB(ManageData):
                         table=table,
                         column_name=column_id_,
                         component_state=component_state_,
+                    )
+                elif tb_info_res_['Type'] == 'Interaction-Data':
+                    # SECTION: build scalar multi-component interaction data
+                    # ! Interaction rows are complete records, not matrix rows.
+                    return self.build_interaction_data(
+                        components=components,
+                        databook=databook,
+                        table=table,
+                        component_key=interaction_component_key,
+                        respect_order=interaction_respect_order,
+                        column_name=column_name or 'Mixture',
+                        delimiter=delimiter,
                     )
                 elif tb_info_res_['Type'] == 'Matrix-Data':  # ! matrix-data
                     # check
