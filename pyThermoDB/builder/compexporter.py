@@ -4,6 +4,7 @@ import logging
 from ..core import TableData
 from ..core import TableEquation
 from ..core import TableMatrixData
+from ..core import TableInteractionData
 from ..core import TableMatrixEquation
 from ..core import TableConstants
 
@@ -23,7 +24,7 @@ class CompExporter:
         # allowed types
         # allowed types for properties
         self.allowed_types_properties = (
-            TableData, dict, TableMatrixData, TableConstants
+            TableData, dict, TableMatrixData, TableInteractionData, TableConstants
         )
 
         # allowed types for equations (functions)
@@ -40,7 +41,7 @@ class CompExporter:
     def _add(
         self,
         name: str,
-        value: TableData | TableEquation | TableMatrixData | TableMatrixEquation | TableConstants
+        value: TableData | TableEquation | TableMatrixData | TableInteractionData | TableMatrixEquation | TableConstants
     ):
         '''
         Add a new property/functions
@@ -69,13 +70,13 @@ class CompExporter:
             # allowed types for equations (functions)
             # _allowed_types_equations = (TableEquation, TableMatrixEquation)
 
-            # check TableData | TableEquation
+            # SECTION: route scalar, matrix, interaction, and constants properties
             if isinstance(value, self.allowed_types_properties):
                 self.__properties[name] = value
             elif isinstance(value, self.allowed_types_equations):
                 self.__functions[name] = value
             else:
-                raise Exception("Value must be TableData or TableEquation")
+                raise Exception("Value must be a supported table property or equation")
 
             return True
         except Exception as e:
@@ -114,7 +115,7 @@ class CompExporter:
     def _update(
             self,
             name: str,
-            value: TableData | TableEquation | TableMatrixData | TableMatrixEquation | TableConstants
+            value: TableData | TableEquation | TableMatrixData | TableInteractionData | TableMatrixEquation | TableConstants
     ):
         '''
         Update a property/functions
@@ -151,7 +152,7 @@ class CompExporter:
                     return False
 
             else:
-                logger.error("Value must be TableData or TableEquation")
+                logger.error("Value must be a supported table property or equation")
                 return False
 
         except Exception as e:
