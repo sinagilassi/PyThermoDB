@@ -5400,6 +5400,143 @@ class ReferenceChecker:
             return None
 
     # NOTE: Constants reference configs
+    # SECTION: interaction-data reference configs
+    def get_interaction_reference_configs(
+        self,
+        components: List[Component],
+        add_label: Optional[bool] = True,
+        check_labels: Optional[bool] = True,
+        component_key: Optional[str] = None,
+        column_name: str = 'Mixture',
+        delimiter: str = '|',
+    ) -> Optional[Dict[str, ComponentConfig]]:
+        """Find Interaction-Data tables with an exact unordered component row.
+
+        A source row is selected only when all and only the supplied component
+        identifiers occur in its mixture value. Source order is intentionally
+        ignored during discovery; it is retained by the later table build.
+        """
+        # SECTION: validate discovery inputs
+        if not isinstance(components, list) or len(components) < 2:
+            logging.error(
+                'components must be a list of at least two Component objects.'
+            )
+            return None
+        if not all(isinstance(component, Component) for component in components):
+            logging.error('All components must be Component objects.')
+            return None
+        if not isinstance(column_name, str) or not column_name.strip():
+            logging.error('column_name must be a non-empty string.')
+            return None
+        if not isinstance(delimiter, str) or not delimiter:
+            logging.error('delimiter must be a non-empty string.')
+            return None
+
+        # NOTE: A missing component key checks every supported identifier form.
+        component_modes = (
+            [component_key]
+            if component_key is not None
+            else [
+                'Name',
+                'Formula',
+                'Name-State',
+                'Formula-State',
+                'Name-Formula-State',
+                'Formula-Name-State',
+            ]
+        )
+        component_ids: List[tuple[str, ...]] = []
+        for mode in component_modes:
+            identifiers: List[str] = []
+            for component in components:
+                name = component.name.strip()
+                formula = component.formula.strip()
+                state = component.state.strip()
+                values = {
+                    'Name': name,
+                    'Formula': formula,
+                    'Name-State': f'{name}-{state}',
+                    'Formula-State': f'{formula}-{state}',
+                    'Name-Formula-State': f'{name}-{formula}-{state}',
+                    'Formula-Name-State': f'{formula}-{name}-{state}',
+                }
+                if mode not in values:
+                    logging.error(
+                        f'Unsupported interaction component_key: {mode}')
+                    return None
+                identifiers.append(values[mode])
+            component_ids.append(tuple(sorted(identifiers)))
+
+        # SECTION: discover matching interaction tables
+        result: Dict[str, ComponentConfig] = {}
+        for databook_name in self.get_databook_names():
+            tables = self.get_databook_tables(databook_name)
+            if not isinstance(tables, dict):
+                continue
+            for table_name, table in tables.items():
+                if not self.is_interaction_data_table(databook_name, table_name):
+                    continue
+                if not isinstance(table, dict):
+                    continue
+
+                structure = table.get('STRUCTURE')
+                values = table.get('VALUES')
+                if not isinstance(structure, dict) or not isinstance(values, list):
+                    continue
+                columns = structure.get('COLUMNS')
+                if not isinstance(columns, list) or column_name not in columns:
+                    continue
+                mixture_index = columns.index(column_name)
+
+                # ! Exact tuple equality excludes subset and superset rows.
+                matched = False
+                for row in values:
+                    if not isinstance(row, list) or len(row) <= mixture_index:
+                        continue
+                    mixture = row[mixture_index]
+                    if not isinstance(mixture, str):
+                        continue
+                    participants = tuple(
+                        sorted(
+                            item.strip()
+                            for item in mixture.split(delimiter)
+                            if item.strip()
+                        )
+                    )
+                    if participants in component_ids:
+                        matched = True
+                        break
+                if not matched:
+                    continue
+
+                raw_symbols = table.get('INTERACTION-SYMBOL', [])
+                labels: Dict[str, str] = {}
+                if isinstance(raw_symbols, list):
+                    for item in raw_symbols:
+                        if isinstance(item, str) and item.strip():
+                            labels[item.strip()] = item.strip()
+                        elif isinstance(item, dict) and len(item) == 1:
+                            symbol = next(iter(item.values()))
+                            if isinstance(symbol, str) and symbol.strip():
+                                labels[symbol.strip()] = symbol.strip()
+                if check_labels and not labels:
+                    logging.warning(
+                        f"Interaction table '{table_name}' has no valid symbols."
+                    )
+                    continue
+
+                key = f'{databook_name}::{table_name}'
+                result[key] = {
+                    'databook': databook_name,
+                    'table': table_name,
+                    'mode': 'INTERACTION-DATA',
+                    'labels': labels if add_label else {},
+                }
+
+        # ? Reference rules can later use the Interaction-Data mode explicitly.
+        return result or None
+
+    # SECTION: Constants Reference Configs
     def get_constants_reference_configs(
             self,
             databook_name: Optional[str] = None,
