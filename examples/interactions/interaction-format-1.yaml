@@ -1,0 +1,22 @@
+REFERENCES:
+  PITZER-EXAMPLE:
+    DATABOOK-ID: 1
+    TABLES:
+      Pitzer ternary interaction parameters:
+        TABLE-ID: 1
+        DESCRIPTION:
+          Scalar binary and ternary interaction parameters. Each Mixture row
+          identifies all participants and can contain several scalar values.
+        INTERACTION-SYMBOL:
+          - psi
+          - zeta
+        STRUCTURE:
+          COLUMNS: [No., Mixture, psi, zeta]
+          SYMBOL: [None, None, psi, zeta]
+          UNIT: [None, None, 1, 1]
+        VALUES:
+          # NOTE: Source participant order is intentionally potassium, sodium, chloride.
+          - [1, "potassium-ion|sodium-ion|chloride-ion", -0.0018, 0.25]
+          - [2, "sodium-ion|calcium-ion|chloride-ion", 0.0032, null]
+          - [3, "sodium-ion|chloride-ion|carbon-dioxide", null, 0.0045]
+          - [4, "sodium-ion|chloride-ion", 0.0, 0.015]
