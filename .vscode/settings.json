@@ -18,6 +18,7 @@
         "tablematrixequation",
         "tableref",
         "thermodb",
-        "thermodbs"
+        "thermodbs",
+        "transinteractiondata"
     ]
 }
