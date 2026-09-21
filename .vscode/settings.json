@@ -13,6 +13,7 @@
         "tableconstants",
         "tabledata",
         "tableequation",
+        "tableinteractiondata",
         "tablematrixdata",
         "tablematrixequation",
         "tableref",
