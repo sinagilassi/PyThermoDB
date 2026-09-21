@@ -8,4 +8,5 @@ class TableTypes(Enum):
     DATA = "data"
     MATRIX_EQUATIONS = "matrix_equations"
     MATRIX_DATA = "matrix_data"
+    INTERACTION_DATA = "interaction_data"
     CONSTANTS = "constants"
