@@ -1,4 +1,5 @@
 import unittest
+from itertools import permutations
 
 from pyThermoDB.core import TableInteractionData
 from pyThermoDB.handlers import (
@@ -63,6 +64,83 @@ class TestTableInteractionData(unittest.TestCase):
         components = [DummyComponent("sodium-ion", "Na{+}"), DummyComponent("potassium-ion", "K{+}"), DummyComponent("chloride-ion", "Cl{-}")]
         self.assertEqual(self.data.get_from_components("psi", components), -0.0018)
         self.assertEqual(self.data.get_from_components("psi", components, component_key="Formula"), -0.0018)
+
+
+    def test_positional_symmetry_lookup_and_convenience_apis(self):
+        self.assertIsNone(self.data.get("psi", "K{+}|Na{+}|Cl{-}"))
+        self.assertEqual(
+            self.data.get("psi", "K{+}|Na{+}|Cl{-}", symmetric_groups=[(0, 1)]),
+            -0.0018,
+        )
+        self.assertIsNone(
+            self.data.get("psi", "Cl{-}|Na{+}|K{+}", symmetric_groups=[(0, 1)])
+        )
+        self.assertEqual(
+            self.data.i("psi", "K{+}|Na{+}|Cl{-}", symmetric_groups=[(0, 1)])["value"],
+            -0.0018,
+        )
+        self.assertEqual(
+            self.data.iis("psi", ["K{+}|Na{+}|Cl{-}"], symmetric_groups=[(0, 1)]),
+            {("K{+}", "Na{+}", "Cl{-}"): -0.0018},
+        )
+        components = [
+            DummyComponent("potassium-ion", "K{+}"),
+            DummyComponent("sodium-ion", "Na{+}"),
+            DummyComponent("chloride-ion", "Cl{-}"),
+        ]
+        self.assertEqual(
+            self.data.get_from_components(
+                "psi", components, component_key="Formula", symmetric_groups=[(0, 1)]
+            ),
+            -0.0018,
+        )
+
+    def test_symmetric_lookup_priority_permutations_and_validation(self):
+        symmetry_data = {
+            "INTERACTION-SYMBOL": ["psi"],
+            "STRUCTURE": {
+                "COLUMNS": ["Mixture", "psi"],
+                "SYMBOL": [None, "psi"],
+                "UNIT": [None, 1],
+            },
+            "VALUES": [
+                ["A|B|C", None],
+                ["B|A|C", 2.0],
+                ["A|B|C|D", 3.0],
+            ],
+        }
+        data = TableInteractionData("test", "symmetry", symmetry_data)
+        self.assertIsNone(data.get("psi", "A|B|C", symmetric_groups=[(0, 1)]))
+        self.assertEqual(data.get("psi", "B|A|C", symmetric_groups=[(0, 1)]), 2.0)
+        self.assertEqual(
+            data.get("psi", "B|A|D|C", symmetric_groups=[(0, 1), (2, 3)]),
+            3.0,
+        )
+        all_symmetric = TableInteractionData(
+            "test", "all-symmetric",
+            {
+                "INTERACTION-SYMBOL": ["phi3"],
+                "STRUCTURE": {
+                    "COLUMNS": ["Mixture", "phi3"],
+                    "SYMBOL": [None, "phi3"],
+                    "UNIT": [None, 1],
+                },
+                "VALUES": [["A|B|C", 4.0]],
+            },
+        )
+        for mixture in permutations(("A", "B", "C")):
+            self.assertEqual(
+                all_symmetric.get("phi3", mixture, symmetric_groups=[(0, 1, 2)]),
+                4.0,
+            )
+        with self.assertRaises(TableInteractionDataFormatError):
+            data.get("psi", "A|B|C", symmetric_groups=[(0, 3)])
+        with self.assertRaises(TableInteractionDataFormatError):
+            data.get("psi", "A|B|C", symmetric_groups=[(-1, 0)])
+        with self.assertRaises(TableInteractionDataFormatError):
+            data.get("psi", "A|B|C", symmetric_groups=[(0, 0, 1)])
+        with self.assertRaises(TableInteractionDataDefinitionError):
+            data.get("psi", "A|B|C", symmetric_groups=[(0, 1), (1, 2)])
 
 
 if __name__ == "__main__":
