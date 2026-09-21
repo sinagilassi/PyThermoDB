@@ -6,7 +6,7 @@ import os
 import datetime
 import sys
 import functools
-from typing import Optional, Union, Literal, ClassVar
+from typing import Optional, Union, Literal, ClassVar, Any, Dict
 # local
 from .compexporter import CompExporter
 from .comp_tools import CompTools
@@ -36,7 +36,7 @@ class CompBuilder(CompExporter):
     CompTools_: ClassVar[Optional[CompTools]] = None
 
     # NOTE: init attributes
-    __data = {}
+    __data: Dict[str, Any] = {}
     # thermodb name (optional)
     __thermodb_name: str | None = None
     # message
