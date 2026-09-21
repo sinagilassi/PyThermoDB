@@ -61,7 +61,7 @@ print(
 
 # This variant discovers every Interaction-Data table in the YAML reference
 # and keeps the same exact-set, order-insensitive build-time selection rule.
-built_from_reference = ptdb.build_interaction_thermodb_from_reference(
+built_from_reference = build_interaction_thermodb_from_reference(
     components=components,
     reference_content=REFERENCE_PATH.read_text(encoding="utf-8"),
 )
