@@ -6,10 +6,11 @@ import os
 import datetime
 import sys
 import functools
-from typing import Optional, Union, Literal, ClassVar, Any, Dict
+from typing import Optional, Union, Literal, ClassVar
 # local
 from .compexporter import CompExporter
 from .comp_tools import CompTools
+from .table_types import TableStore, TableValue
 from ..core import (
     TableEquation,
     TableMatrixEquation,
@@ -36,7 +37,7 @@ class CompBuilder(CompExporter):
     CompTools_: ClassVar[Optional[CompTools]] = None
 
     # NOTE: init attributes
-    __data: Dict[str, Any] = {}
+    __data: TableStore = {}
     # thermodb name (optional)
     __thermodb_name: str | None = None
     # message
@@ -183,15 +184,7 @@ class CompBuilder(CompExporter):
     def add_data(
         self,
         name: str,
-        value: Union[
-            TableData,
-            TableEquation,
-            dict,
-            TableMatrixData,
-            TableInteractionData,
-            TableMatrixEquation,
-            TableConstants
-        ]
+        value: TableValue
     ):
         '''
         Add TableData/TableEquation
