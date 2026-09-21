@@ -65,7 +65,32 @@ class TableInteractionData:
         interaction_table: Optional[pd.DataFrame] = None,
         interaction_symbol: Optional[list[str]] = None,
     ) -> None:
-        """Initialize, validate, and index interaction records."""
+        """Initialize, validate, and index scalar interaction records.
+
+        Parameters
+        ----------
+        databook_name : str | int
+            Name or identifier of the source databook.
+        table_name : str | int
+            Name or identifier of the source table.
+        table_data : dict[str, Any]
+            Canonical interaction definition containing symbols, structure,
+            and row values.
+        interaction_table : pandas.DataFrame, optional
+            Validated row-oriented table to use instead of ``VALUES``.
+        interaction_symbol : list[str], optional
+            Explicit interaction symbols that override the source definition.
+
+        Returns
+        -------
+        None
+            The initialized object is available through ``self``.
+
+        Notes
+        -----
+        Construction validates the source schema and creates an indexed,
+        order-preserving mixture lookup.
+        """
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data
@@ -91,7 +116,22 @@ class TableInteractionData:
 
     # SECTION: private normalization and validation helpers
     def _context(self, **context: Any) -> dict[str, Any]:
-        """Return common context included in every public exception."""
+        """Build common exception context for this table.
+
+        Parameters
+        ----------
+        **context : Any
+            Additional operation-specific context values.
+
+        Returns
+        -------
+        dict[str, Any]
+            Databook and table identifiers merged with ``context``.
+
+        Notes
+        -----
+        Values supplied in ``context`` override same-named base keys.
+        """
         base_context = {
             "databook_name": self.databook_name,
             "table_name": self.table_name,
@@ -101,7 +141,23 @@ class TableInteractionData:
 
     @staticmethod
     def _is_null(value: Any) -> bool:
-        """Treat Python ``None`` and DataFrame NaN values as unavailable."""
+        """Determine whether a scalar interaction value is unavailable.
+
+        Parameters
+        ----------
+        value : Any
+            Value to inspect.
+
+        Returns
+        -------
+        bool
+            ``True`` for ``None`` or floating-point ``NaN``; otherwise
+            ``False``.
+
+        Notes
+        -----
+        Numeric zero is a valid value and is not treated as null.
+        """
         return value is None or (
             isinstance(value, float) and math.isnan(value)
         )
@@ -113,8 +169,21 @@ class TableInteractionData:
     ) -> tuple[str, ...]:
         """Normalize a raw mixture string or component-ID sequence.
 
-        Whitespace around participants is removed.  The method does not parse,
-        sort, or otherwise reinterpret component IDs.
+        Parameters
+        ----------
+        mixture : str | Sequence[str]
+            Pipe-delimited mixture identifier or ordered component IDs.
+
+        Returns
+        -------
+        tuple[str, ...]
+            Stripped, order-preserving component IDs.
+
+        Notes
+        -----
+        Whitespace around participants is removed. The method does not parse,
+        sort, or otherwise reinterpret component IDs. Invalid input raises a
+        ``TableInteractionDataFormatError``.
         """
         # ! The `|` delimiter is the only structural syntax in a mixture ID.
         if isinstance(mixture, str):
@@ -146,7 +215,22 @@ class TableInteractionData:
         self,
         supplied_symbols: Optional[list[str]],
     ) -> None:
-        """Read and normalize the ``INTERACTION-SYMBOL`` declaration."""
+        """Read and normalize the interaction-symbol declaration.
+
+        Parameters
+        ----------
+        supplied_symbols : list[str], optional
+            Explicit symbols to use instead of those in ``table_data``.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Symbols may be strings or one-item mappings. The normalized symbols
+        must be non-empty and unique.
+        """
         # NOTE: Existing references may use descriptive one-item mappings.
         source_symbols = (
             supplied_symbols
@@ -191,7 +275,22 @@ class TableInteractionData:
         self,
         table_data: dict[str, Any],
     ) -> dict[str, Any]:
-        """Extract the immutable reference table structure."""
+        """Extract the source table structure.
+
+        Parameters
+        ----------
+        table_data : dict[str, Any]
+            Canonical interaction definition containing ``STRUCTURE``.
+
+        Returns
+        -------
+        dict[str, Any]
+            Shallow copy of the declared structure.
+
+        Notes
+        -----
+        A missing or non-mapping ``STRUCTURE`` raises a structure error.
+        """
         structure = table_data.get("STRUCTURE")
         if not isinstance(structure, dict):
             raise TableInteractionDataStructureError(
@@ -201,7 +300,17 @@ class TableInteractionData:
         return dict(structure)
 
     def _validate_structure(self) -> None:
-        """Validate aligned structural declarations and property mappings."""
+        """Validate aligned columns, symbols, units, and property mappings.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        The method requires aligned lists and a ``Mixture`` column. Every
+        declared interaction symbol must resolve to exactly one source column.
+        """
         columns = self._table_structure.get("COLUMNS")
         symbols = self._table_structure.get("SYMBOL")
         units = self._table_structure.get("UNIT")
@@ -240,7 +349,22 @@ class TableInteractionData:
             self._property_column(property_name)
 
     def _property_column(self, property_name: str) -> str:
-        """Resolve one interaction property to its aligned source column."""
+        """Resolve one interaction property to its source column.
+
+        Parameters
+        ----------
+        property_name : str
+            Declared interaction symbol to resolve.
+
+        Returns
+        -------
+        str
+            Column aligned with the requested interaction symbol.
+
+        Notes
+        -----
+        Missing or ambiguous mappings raise a lookup or definition error.
+        """
         if property_name not in self.__interaction_symbol:
             raise TableInteractionDataLookupError(
                 "Interaction property does not exist.",
@@ -270,7 +394,19 @@ class TableInteractionData:
         return unique_columns[0]
 
     def _source_frame(self) -> pd.DataFrame:
-        """Create a validated copy of the row-oriented source DataFrame."""
+        """Create a validated copy of the row-oriented source table.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Copy of ``interaction_table`` or a DataFrame built from
+            ``VALUES``.
+
+        Notes
+        -----
+        Supplied DataFrame columns and every canonical value row must exactly
+        match ``STRUCTURE.COLUMNS``.
+        """
         columns = self._table_structure["COLUMNS"]
 
         if self.interaction_table is not None:
@@ -307,7 +443,18 @@ class TableInteractionData:
         return pd.DataFrame(values, columns=columns)
 
     def _build_interaction_records(self) -> None:
-        """Build the primary mixture-first lookup mapping."""
+        """Build the primary mixture-first lookup mapping.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Mixture identifiers are normalized in source order. Duplicate
+        normalized mixtures are rejected, while missing scalar values become
+        ``None``.
+        """
         # SECTION: row-to-record transformation
         frame = self._source_frame()
         self.interaction_table = frame.copy()
@@ -337,27 +484,70 @@ class TableInteractionData:
     # SECTION: public structural properties
     @property
     def interaction_symbol(self) -> list[str]:
-        """Return a copy of declared scalar interaction-property symbols."""
+        """Return declared scalar interaction-property symbols.
+
+        Returns
+        -------
+        list[str]
+            Copy of the normalized interaction symbols.
+
+        Notes
+        -----
+        Mutating the returned list does not change the table definition.
+        """
         return self.__interaction_symbol.copy()
 
     @property
     def table_structure(self) -> dict[str, Any]:
-        """Return a shallow copy of the reference structure."""
+        """Return the declared reference-table structure.
+
+        Returns
+        -------
+        dict[str, Any]
+            Shallow copy of the structure metadata.
+
+        Notes
+        -----
+        The returned mapping is detached from the stored top-level mapping.
+        """
         return dict(self._table_structure)
 
     @property
     def mixtures(self) -> list[tuple[str, ...]]:
-        """Return normalized mixture keys in their source order."""
+        """Return normalized mixture keys in source order.
+
+        Returns
+        -------
+        list[tuple[str, ...]]
+            Ordered mixture keys currently indexed by the table.
+
+        Notes
+        -----
+        Component order is preserved and the returned list is independent of
+        the internal lookup mapping.
+        """
         return list(self._interaction_records)
 
     @property
     def mixture_count(self) -> int:
-        """Return the number of distinct normalized mixtures."""
+        """Return the number of distinct normalized mixtures.
+
+        Returns
+        -------
+        int
+            Number of indexed mixture records.
+        """
         return len(self._interaction_records)
 
     @property
     def interaction_orders(self) -> set[int]:
-        """Return the interaction orders represented by loaded records."""
+        """Return the interaction orders represented by loaded records.
+
+        Returns
+        -------
+        set[int]
+            Distinct participant counts found in the indexed mixtures.
+        """
         return {len(mixture_key) for mixture_key in self._interaction_records}
 
     # SECTION: scalar and row lookup APIs
@@ -368,7 +558,27 @@ class TableInteractionData:
         *,
         default: Any = None,
     ) -> Any:
-        """Return an interaction value or ``default`` when it is unavailable."""
+        """Return one scalar interaction value when available.
+
+        Parameters
+        ----------
+        property_name : str
+            Declared interaction symbol to retrieve.
+        mixture : str | Sequence[str]
+            Ordered mixture identifier or component-ID sequence.
+        default : Any, optional
+            Value returned for invalid mixtures, missing records, or missing
+            properties.
+
+        Returns
+        -------
+        Any
+            Stored scalar value, or ``default`` when unavailable.
+
+        Notes
+        -----
+        Invalid mixture formatting is treated as an unavailable lookup.
+        """
         try:
             mixture_key = self._normalize_mixture_key(mixture)
         except TableInteractionDataFormatError:
@@ -384,7 +594,25 @@ class TableInteractionData:
         property_name: str,
         mixture: str | Sequence[str],
     ) -> Any:
-        """Return a defined interaction value or raise a lookup error."""
+        """Return a defined scalar interaction value.
+
+        Parameters
+        ----------
+        property_name : str
+            Declared interaction symbol to retrieve.
+        mixture : str | Sequence[str]
+            Ordered mixture identifier or component-ID sequence.
+
+        Returns
+        -------
+        Any
+            Stored non-null scalar value.
+
+        Notes
+        -----
+        Missing properties, mixtures, or values raise a lookup error rather
+        than returning a default.
+        """
         mixture_key = self._normalize_mixture_key(mixture)
         if property_name not in self.__interaction_symbol:
             raise TableInteractionDataLookupError(
@@ -417,7 +645,27 @@ class TableInteractionData:
         *,
         require_value: bool = True,
     ) -> bool:
-        """Return whether a property exists for a mixture, optionally with a value."""
+        """Check whether a property exists for a mixture.
+
+        Parameters
+        ----------
+        property_name : str
+            Interaction symbol to check.
+        mixture : str | Sequence[str]
+            Ordered mixture identifier or component-ID sequence.
+        require_value : bool, default=True
+            Require the matching scalar to be non-null when true.
+
+        Returns
+        -------
+        bool
+            ``True`` when the property and mixture match the requested
+            availability rule.
+
+        Notes
+        -----
+        Invalid mixture formatting returns ``False``.
+        """
         try:
             mixture_key = self._normalize_mixture_key(mixture)
         except TableInteractionDataFormatError:
@@ -434,7 +682,25 @@ class TableInteractionData:
         *,
         include_null: bool = True,
     ) -> dict[str, Any]:
-        """Return scalar values for one mixture without exposing internal state."""
+        """Return scalar values for one mixture.
+
+        Parameters
+        ----------
+        mixture : str | Sequence[str]
+            Ordered mixture identifier or component-ID sequence.
+        include_null : bool, default=True
+            Include properties whose values are unavailable.
+
+        Returns
+        -------
+        dict[str, Any]
+            Copy of the matching scalar record, or an empty mapping when the
+            mixture is not indexed.
+
+        Notes
+        -----
+        The returned mapping does not expose internal record state.
+        """
         mixture_key = self._normalize_mixture_key(mixture)
         record = self._interaction_records.get(mixture_key)
         if record is None:
@@ -452,7 +718,24 @@ class TableInteractionData:
         *,
         include_null: bool = False,
     ) -> dict[tuple[str, ...], Any]:
-        """Return one scalar property indexed by normalized mixture keys."""
+        """Return one scalar property indexed by mixture keys.
+
+        Parameters
+        ----------
+        property_name : str
+            Declared interaction symbol to retrieve.
+        include_null : bool, default=False
+            Include mixtures whose value is unavailable.
+
+        Returns
+        -------
+        dict[tuple[str, ...], Any]
+            Values keyed by normalized, order-preserving mixture tuples.
+
+        Notes
+        -----
+        An unknown property raises a lookup error.
+        """
         if property_name not in self.__interaction_symbol:
             raise TableInteractionDataLookupError(
                 "Interaction property does not exist.",
@@ -473,7 +756,29 @@ class TableInteractionData:
         order: Optional[int] = None,
         include_null: bool = False,
     ) -> dict:
-        """Select records by exact component IDs, interaction order, or property."""
+        """Select records by component IDs, order, or property.
+
+        Parameters
+        ----------
+        property_name : str, optional
+            Return only this declared scalar property.
+        contains : Sequence[str], optional
+            Component IDs that must all occur in each ordered mixture.
+        order : int, optional
+            Exact number of participants required in each mixture.
+        include_null : bool, default=False
+            Include unavailable scalar values and records.
+
+        Returns
+        -------
+        dict
+            Matching scalar values or mixture-to-record mappings.
+
+        Notes
+        -----
+        Component order is preserved in result keys, but ``contains`` checks
+        membership rather than position.
+        """
         if property_name is not None and property_name not in self.__interaction_symbol:
             raise TableInteractionDataLookupError(
                 "Interaction property does not exist.",
@@ -511,7 +816,22 @@ class TableInteractionData:
         return result
 
     def interaction_order(self, mixture: str | Sequence[str]) -> int:
-        """Return the number of ordered participants in a mixture."""
+        """Return the number of ordered participants in a mixture.
+
+        Parameters
+        ----------
+        mixture : str | Sequence[str]
+            Mixture identifier or ordered component-ID sequence.
+
+        Returns
+        -------
+        int
+            Number of normalized participants.
+
+        Notes
+        -----
+        Invalid mixture input raises a format error.
+        """
         return len(self._normalize_mixture_key(mixture))
 
     # SECTION: compact interaction convenience accessors
@@ -650,9 +970,28 @@ class TableInteractionData:
                 result[mixture_key] = value
         return result
     # SECTION: Component-object lookup APIs
+
     @staticmethod
     def _component_identifier(component: Any, component_key: str) -> str:
-        """Build one supported component identifier from a Component-like object."""
+        """Build one supported identifier from a Component-like object.
+
+        Parameters
+        ----------
+        component : Any
+            Object exposing ``name``, ``formula``, and ``state`` attributes.
+        component_key : str
+            Identifier mode, such as ``Name`` or ``Formula-State``.
+
+        Returns
+        -------
+        str
+            Identifier formatted according to ``component_key``.
+
+        Notes
+        -----
+        This method formats attributes only; it does not infer chemical
+        meaning or reorder components.
+        """
         # NOTE: This method formats IDs only; it never infers chemical meaning.
         try:
             name = str(getattr(component, "name")).strip()
@@ -682,7 +1021,26 @@ class TableInteractionData:
         components: Sequence[Any],
         component_key: Optional[str] = None,
     ) -> tuple[str, ...]:
-        """Resolve Component objects to exactly one stored mixture record."""
+        """Resolve component-like objects to one stored mixture record.
+
+        Parameters
+        ----------
+        components : Sequence[Any]
+            At least two objects exposing component identity attributes.
+        component_key : str, optional
+            Explicit identifier mode. When omitted, all supported modes are
+            attempted.
+
+        Returns
+        -------
+        tuple[str, ...]
+            Matching normalized mixture key.
+
+        Notes
+        -----
+        No match raises a lookup error. Multiple automatic matches raise a
+        definition error instead of choosing implicitly.
+        """
         if (
             not isinstance(components, Sequence)
             or isinstance(components, (str, bytes))
@@ -693,7 +1051,8 @@ class TableInteractionData:
                 context=self._context(),
             )
 
-        modes = (component_key,) if component_key is not None else self._component_key_modes
+        modes = (component_key,
+                 ) if component_key is not None else self._component_key_modes
         matches: set[tuple[str, ...]] = set()
         for mode in modes:
             candidate = tuple(
@@ -731,7 +1090,29 @@ class TableInteractionData:
         component_key: Optional[str] = None,
         default: Any = None,
     ) -> Any:
-        """Return a property for Component objects or the supplied default."""
+        """Return a scalar property for component-like objects.
+
+        Parameters
+        ----------
+        property_name : str
+            Declared interaction symbol to retrieve.
+        components : Sequence[Any]
+            Component-like objects identifying an ordered mixture.
+        component_key : str, optional
+            Explicit component identifier mode.
+        default : Any, optional
+            Value returned when no matching mixture or value exists.
+
+        Returns
+        -------
+        Any
+            Stored scalar value, or ``default`` when the mixture cannot be
+            resolved or the value is unavailable.
+
+        Notes
+        -----
+        Ambiguous component-key matches remain errors and are not suppressed.
+        """
         try:
             mixture_key = self._resolve_mixture_from_components(
                 components,
@@ -749,7 +1130,26 @@ class TableInteractionData:
         component_key: Optional[str] = None,
         include_null: bool = True,
     ) -> dict[str, Any]:
-        """Return the complete row for Component objects."""
+        """Return the complete scalar record for component-like objects.
+
+        Parameters
+        ----------
+        components : Sequence[Any]
+            Component-like objects identifying an ordered mixture.
+        component_key : str, optional
+            Explicit component identifier mode.
+        include_null : bool, default=True
+            Include unavailable scalar properties.
+
+        Returns
+        -------
+        dict[str, Any]
+            Scalar values for the matching mixture.
+
+        Notes
+        -----
+        Failure to resolve a mixture raises a lookup or definition error.
+        """
         mixture_key = self._resolve_mixture_from_components(
             components,
             component_key,
@@ -761,7 +1161,24 @@ class TableInteractionData:
         self,
         mode: Literal["all", "available"] = "all",
     ) -> pd.DataFrame:
-        """Return a copy of all rows or only rows with available values."""
+        """Return a copy of all rows or rows with available values.
+
+        Parameters
+        ----------
+        mode : {"all", "available"}, default="all"
+            Whether to return every source row or only rows with at least one
+            non-null interaction value.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Copy of the selected interaction rows.
+
+        Notes
+        -----
+        The returned DataFrame can be modified without changing the stored
+        interaction table.
+        """
         if mode not in {"all", "available"}:
             raise TableInteractionDataFormatError(
                 "mode must be 'all' or 'available'.",
@@ -787,20 +1204,52 @@ class TableInteractionData:
         return table
 
     def interaction_data_structure(self) -> pd.DataFrame:
-        """Return the reference structure in a display-friendly DataFrame."""
+        """Return the reference structure as a display DataFrame.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Structure metadata with a one-based ``ID`` column.
+
+        Notes
+        -----
+        The DataFrame is generated from the stored structure mapping.
+        """
         structure = pd.DataFrame(self._table_structure)
         structure.insert(0, "ID", range(1, len(structure) + 1))
         return structure
 
     def get_interaction_data_info(self) -> dict[str, Any]:
-        """Return table structure plus its declared interaction symbols."""
+        """Return structure metadata and declared interaction symbols.
+
+        Returns
+        -------
+        dict[str, Any]
+            Table structure plus the normalized ``INTERACTION-SYMBOL`` list.
+
+        Notes
+        -----
+        The structure is returned through the public shallow-copy property.
+        """
         return {
             **self.table_structure,
             "INTERACTION-SYMBOL": self.interaction_symbol,
         }
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to canonical reference-compatible scalar interaction data."""
+        """Convert to canonical reference-compatible interaction data.
+
+        Returns
+        -------
+        dict[str, Any]
+            Mapping containing ``INTERACTION-SYMBOL``, ``STRUCTURE``, and
+            ``VALUES``.
+
+        Notes
+        -----
+        Missing DataFrame values are serialized as ``None``. Conversion
+        failures are wrapped in ``TableInteractionDataConversionError``.
+        """
         # REVIEW: Retain rows rather than serializing derived lookup dictionaries.
         try:
             table_source = self.interaction_table
