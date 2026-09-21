@@ -15,6 +15,7 @@ from ..core import (
     TableMatrixEquation,
     TableData,
     TableMatrixData,
+    TableInteractionData,
     TableConstants
 )
 from ..config import __version__
@@ -187,6 +188,7 @@ class CompBuilder(CompExporter):
             TableEquation,
             dict,
             TableMatrixData,
+            TableInteractionData,
             TableMatrixEquation,
             TableConstants
         ]
@@ -221,6 +223,7 @@ class CompBuilder(CompExporter):
                 TableEquation,
                 dict,
                 TableMatrixData,
+                TableInteractionData,
                 TableMatrixEquation,
                 TableConstants
             )
@@ -368,6 +371,7 @@ class CompBuilder(CompExporter):
                 'DATA': {},
                 'EQUATIONS': {},
                 'MATRIX-DATA': {},
+                'INTERACTION-DATA': {},
                 'MATRIX-EQUATIONS': {},
                 'CONSTANTS': {}
             }
@@ -384,6 +388,11 @@ class CompBuilder(CompExporter):
                     _yml = value.to_dict()
                     # add chunk
                     _data_yml['MATRIX-DATA'][str(name)] = _yml
+
+            # SECTION: get interaction data
+            for name, value in self.properties.items():
+                if isinstance(value, TableInteractionData):
+                    _data_yml['INTERACTION-DATA'][str(name)] = value.to_dict()
 
             # get TableConstants
             for i, (name, value) in enumerate(self.properties.items()):
@@ -784,6 +793,7 @@ class CompBuilder(CompExporter):
     ) -> Union[
         TableData,
         TableMatrixData,
+        TableInteractionData,
         TableConstants,
         TableEquation,
         TableMatrixEquation
@@ -1587,6 +1597,11 @@ class CompBuilder(CompExporter):
                 isinstance(value, TableMatrixData)
                 for value in properties.values()
             )
+            # SECTION: count row-oriented scalar interaction tables separately.
+            interaction_data_count = sum(
+                isinstance(value, TableInteractionData)
+                for value in properties.values()
+            )
             equations_count = sum(
                 isinstance(value, TableEquation)
                 for value in functions.values()
@@ -1612,6 +1627,7 @@ class CompBuilder(CompExporter):
                 "constants_count": constants_count,
                 "data_count": data_count,
                 "matrix_data_count": matrix_data_count,
+                "interaction_data_count": interaction_data_count,
                 "equations_count": equations_count,
                 "matrix_equations_count": matrix_equations_count
             }
