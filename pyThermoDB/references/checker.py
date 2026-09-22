@@ -5415,6 +5415,26 @@ class ReferenceChecker:
         A source row is selected only when all and only the supplied component
         identifiers occur in its mixture value. Source order is intentionally
         ignored during discovery; it is retained by the later table build.
+
+        Parameters
+        ----------
+        components : List[Component]
+            List of components involved in the interaction.
+        add_label : Optional[bool], optional
+            Whether to add labels to the reference data, by default True.
+        check_labels : Optional[bool], optional
+            Whether to check labels in the reference data, by default True.
+        component_key : Optional[str], optional
+            Key to identify components, by default None.
+        column_name : str, optional
+            Name of the column containing mixture information, by default 'Mixture'.
+        delimiter : str, optional
+            Delimiter used in the mixture column, by default '|'.
+
+        Returns
+        -------
+        Optional[Dict[str, ComponentConfig]]
+            Dictionary mapping mixture names to their corresponding component configurations, or None if no matching configurations are found.
         """
         # SECTION: validate discovery inputs
         if not isinstance(components, list) or len(components) < 2:
