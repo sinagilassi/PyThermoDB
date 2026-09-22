@@ -217,6 +217,17 @@ class TableReference(ManageData):
                         file_data.append(unit)
                         file_data.extend(values)
 
+                    elif tb_type == TableTypes.INTERACTION_DATA.value:
+                        # ! scalar interaction-data
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}."
+                            )
+
+                        # Match the external CSV convention: the first two
+                        # rows carry symbols and units, followed by records.
+                        file_data = [symbol, unit]
+                        file_data.extend(values)
                     elif tb_type == TableTypes.CONSTANTS.value:
                         # ! constants
 
@@ -367,6 +378,57 @@ class TableReference(ManageData):
         except Exception as e:
             raise Exception(f"Table loading error {e}")
 
+    def _load_interaction_table(
+        self,
+        databook_id: int,
+        table_id: int,
+    ) -> pd.DataFrame:
+        """Load and normalize records for an interaction-data table."""
+        table = self.get_table(databook_id - 1, table_id - 1)
+        if table["table_type"] != TableTypes.INTERACTION_DATA.value:
+            raise ValueError("Selected table is not Interaction-Data.")
+
+        frame = self.load_table(databook_id, table_id)
+        if not isinstance(frame, pd.DataFrame):
+            raise ValueError("Interaction table data is not a DataFrame.")
+
+        interaction_data = table.get("interaction_data")
+        structure = table.get("table_structure")
+        if (
+            not isinstance(interaction_data, dict)
+            or not isinstance(structure, dict)
+        ):
+            raise ValueError("Interaction table definition is invalid.")
+
+        columns = structure.get("COLUMNS")
+        symbols = structure.get("SYMBOL")
+        if not isinstance(columns, list) or not isinstance(symbols, list):
+            raise ValueError("Interaction table structure is invalid.")
+        if list(frame.columns) != columns:
+            raise ValueError(
+                "Interaction table columns do not match STRUCTURE.COLUMNS."
+            )
+
+        # Every standard table CSV begins with symbols and units after its header.
+        frame = frame.iloc[2:].reset_index(drop=True).replace("-", None)
+        for property_name in interaction_data.get("INTERACTION-SYMBOL", []):
+            matching_columns = [
+                columns[index]
+                for index, symbol in enumerate(symbols)
+                if symbol == property_name
+            ]
+            if property_name in columns:
+                matching_columns.append(property_name)
+            matching_columns = list(dict.fromkeys(matching_columns))
+            if len(matching_columns) != 1:
+                raise ValueError(
+                    f"Interaction property {property_name!r} has no unique "
+                    "column."
+                )
+            column = matching_columns[0]
+            frame[column] = pd.to_numeric(frame[column], errors="coerce")
+
+        return frame
     # NOTE: search tables
     def search_tables(
             self,
@@ -1166,6 +1228,9 @@ class TableReference(ManageData):
             elif table_type == TableTypes.MATRIX_EQUATIONS.value:
                 # data
                 data = table_data['matrix_equations']
+            elif table_type == TableTypes.INTERACTION_DATA.value:
+                # scalar interaction rows
+                data = table_data['interaction_data']
             elif table_type == TableTypes.CONSTANTS.value:
                 # data
                 data = table_data['constants']
