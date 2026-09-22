@@ -1002,17 +1002,22 @@ class ManageData():
             def set_table_type(tb):
                 # check table type
                 if 'equations' in tb and tb['equations'] is not None:
+                    # *** equations
                     return TableTypes.EQUATIONS.value
-                # ! Interaction rows must be recognized before generic data.
-                elif tb.get('interaction_data') is not None:
+                elif 'interaction_data' in tb and tb['interaction_data'] is not None:
+                    # *** interaction data
                     return TableTypes.INTERACTION_DATA.value
                 elif 'data' in tb and tb['data'] is not None:
+                    # *** generic data
                     return TableTypes.DATA.value
                 elif 'matrix_data' in tb and tb['matrix_data'] is not None:
+                    # *** matrix data
                     return TableTypes.MATRIX_DATA.value
                 elif 'matrix_equations' in tb and tb['matrix_equations'] is not None:
+                    # *** matrix equations
                     return TableTypes.MATRIX_EQUATIONS.value
                 elif 'constants' in tb and tb['constants'] is not None:
+                    # *** constants
                     return TableTypes.CONSTANTS.value
                 else:
                     raise Exception("table type unknown!")
