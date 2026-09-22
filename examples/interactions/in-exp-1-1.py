@@ -1,6 +1,11 @@
 """Build and query a scalar multi-component interaction-data table."""
 
 from __future__ import annotations
+from typing import Any, Dict
+from rich import print
+import pyThermoDB as ptdb
+from pyThermoDB.core import TableInteractionData
+from pythermodb_settings.models import Component
 
 from pathlib import Path
 import sys
@@ -13,12 +18,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from pythermodb_settings.models import Component
-from pyThermoDB.core import TableInteractionData
-import pyThermoDB as ptdb
-from rich import print
-from typing import Any, Dict
-
 
 # SECTION: initialize the example reference
 EXAMPLE_DIR = Path(__file__).resolve().parent
@@ -26,7 +25,7 @@ EXAMPLE_DIR = Path(__file__).resolve().parent
 # ! yaml
 YAML_PATH = EXAMPLE_DIR / "interaction-format-source-1.yaml"
 # ! csv
-CSV_PATH = EXAMPLE_DIR / "interaction-format-1.csv"
+CSV_PATH = EXAMPLE_DIR / "Pitzer ternary interaction parameters.csv"
 
 # custom reference
 REFERENCE: Dict[str, Any] = {
@@ -35,12 +34,29 @@ REFERENCE: Dict[str, Any] = {
 }
 
 thermo_db = ptdb.init(custom_reference=REFERENCE)
+
+# NOTE: table information
 print(thermo_db.table_info(
     "PITZER-EXAMPLE",
     "Pitzer ternary interaction parameters",
     res_format="dict",
 ))
 
+# NOTE: table data
+interaction_data_frame = thermo_db.table_data(
+    databook="PITZER-EXAMPLE",
+    table="Pitzer ternary interaction parameters",
+)
+print("Table data:")
+print(interaction_data_frame)
+
+# NOTE: table load
+interaction_data_frame = thermo_db.interaction_data_load(
+    databook="PITZER-EXAMPLE",
+    table="Pitzer ternary interaction parameters",
+)
+print("Loaded interaction-data table:")
+print(interaction_data_frame)
 
 # SECTION: declare the mixture components
 sodium = Component(name="sodium-ion", formula="Na{+}", state="aq")
