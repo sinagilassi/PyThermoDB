@@ -2893,118 +2893,6 @@ def build_interaction_thermodb(
     return thermodb_comp
 
 
-@measure_time
-def build_interaction_thermodb_from_reference(
-    components: List[Component],
-    reference_content: str,
-    component_key: Optional[str] = None,
-    column_name: str = 'Mixture',
-    delimiter: str = '|',
-    add_label: Optional[bool] = True,
-    check_labels: Optional[bool] = True,
-    thermodb_name: Optional[str] = None,
-    message: Optional[str] = None,
-    thermodb_save: Optional[bool] = False,
-    thermodb_save_path: Optional[str] = None,
-    verbose: bool = False,
-    **kwargs,
-) -> Optional[MixtureThermoDB]:
-    """Build selected interaction data from every matching YAML table.
-
-    add_label and check_labels are accepted for API consistency with existing
-    reference builders. Interaction symbols are declared by their own tables.
-
-    Parameters
-    ----------
-    components : List[Component]
-        List of components involved in the interaction.
-    reference_content : str
-        YAML string containing the reference data.
-    component_key : Optional[str], optional
-        Key to identify components, by default None.
-    column_name : str, optional
-        Name of the column containing mixture information, by default 'Mixture'.
-    delimiter : str, optional
-        Delimiter used in the mixture column, by default '|'.
-    add_label : Optional[bool], optional
-        Whether to add labels to the reference data, by default True.
-    check_labels : Optional[bool], optional
-        Whether to check labels in the reference data, by default True.
-    thermodb_name : Optional[str], optional
-        Name of the thermodynamic database, by default None.
-    message : Optional[str], optional
-        Message to include in the build process, by default None.
-    thermodb_save : Optional[bool], optional
-        Whether to save the thermodynamic database, by default False.
-    thermodb_save_path : Optional[str], optional
-        Path to save the thermodynamic database, by default None.
-    verbose : bool, optional
-        Whether to enable verbose logging, by default False.
-    **kwargs
-        Additional keyword arguments passed to the build function.
-
-    Returns
-    -------
-    Optional[MixtureThermoDB]
-        The built mixture thermodynamic database, or None if the build failed.
-    """
-    # SECTION: validate reference content
-    if not isinstance(reference_content, str) or not reference_content.strip():
-        raise TypeError('reference_content must be a non-empty YAML string.')
-
-    # SECTION: obtain interaction reference config through ReferenceChecker
-    reference: CustomReference = {'reference': [reference_content]}
-    reference_checker = ReferenceChecker(reference_content)
-
-    # SECTION: obtain interaction reference configuration
-    reference_config: Dict[str, ComponentConfig] | None = \
-        reference_checker.get_interaction_reference_configs(
-        components=components,
-        add_label=add_label,
-        check_labels=check_labels,
-        component_key=component_key,
-        column_name=column_name,
-        delimiter=delimiter,
-    )
-    if not reference_config:
-        logger.warning(
-            'No matching Interaction-Data reference config was found.'
-        )
-        return None
-
-    # SECTION: build the selected records, then attach reference provenance
-    thermodb_comp = build_interaction_thermodb(
-        components=components,
-        reference_config=reference_config,
-        custom_reference=reference,
-        component_key=component_key,
-        column_name=column_name,
-        delimiter=delimiter,
-        thermodb_name=thermodb_name,
-        message=message,
-        thermodb_save=thermodb_save,
-        thermodb_save_path=thermodb_save_path,
-        verbose=verbose,
-        **kwargs,
-    )
-    if thermodb_comp is None:
-        return None
-
-    reference_thermodb = ReferenceThermoDB(
-        reference=reference,
-        contents=[reference_content],
-        configs=reference_config,
-        rules={},
-        labels=[],
-        ignore_labels=[],
-        ignore_props=[],
-    )
-    return MixtureThermoDB(
-        components=components,
-        thermodb=thermodb_comp,
-        reference_thermodb=reference_thermodb,
-    )
-
 # SECTION: build component thermodb from reference
 
 
@@ -4307,3 +4195,116 @@ def build_constants_thermodb_from_reference(
         return constants_thermodb
     except Exception as e:
         raise Exception(f"Building constants thermodb failed! {e}")
+
+
+@measure_time
+def build_interaction_thermodb_from_reference(
+    components: List[Component],
+    reference_content: str,
+    component_key: Optional[str] = None,
+    column_name: str = 'Mixture',
+    delimiter: str = '|',
+    add_label: Optional[bool] = True,
+    check_labels: Optional[bool] = True,
+    thermodb_name: Optional[str] = None,
+    message: Optional[str] = None,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
+    verbose: bool = False,
+    **kwargs,
+) -> Optional[MixtureThermoDB]:
+    """Build selected interaction data from every matching YAML table.
+
+    add_label and check_labels are accepted for API consistency with existing
+    reference builders. Interaction symbols are declared by their own tables.
+
+    Parameters
+    ----------
+    components : List[Component]
+        List of components involved in the interaction.
+    reference_content : str
+        YAML string containing the reference data.
+    component_key : Optional[str], optional
+        Key to identify components, by default None.
+    column_name : str, optional
+        Name of the column containing mixture information, by default 'Mixture'.
+    delimiter : str, optional
+        Delimiter used in the mixture column, by default '|'.
+    add_label : Optional[bool], optional
+        Whether to add labels to the reference data, by default True.
+    check_labels : Optional[bool], optional
+        Whether to check labels in the reference data, by default True.
+    thermodb_name : Optional[str], optional
+        Name of the thermodynamic database, by default None.
+    message : Optional[str], optional
+        Message to include in the build process, by default None.
+    thermodb_save : Optional[bool], optional
+        Whether to save the thermodynamic database, by default False.
+    thermodb_save_path : Optional[str], optional
+        Path to save the thermodynamic database, by default None.
+    verbose : bool, optional
+        Whether to enable verbose logging, by default False.
+    **kwargs
+        Additional keyword arguments passed to the build function.
+
+    Returns
+    -------
+    Optional[MixtureThermoDB]
+        The built mixture thermodynamic database, or None if the build failed.
+    """
+    # SECTION: validate reference content
+    if not isinstance(reference_content, str) or not reference_content.strip():
+        raise TypeError('reference_content must be a non-empty YAML string.')
+
+    # SECTION: obtain interaction reference config through ReferenceChecker
+    reference: CustomReference = {'reference': [reference_content]}
+    reference_checker = ReferenceChecker(reference_content)
+
+    # SECTION: obtain interaction reference configuration
+    reference_config: Dict[str, ComponentConfig] | None = \
+        reference_checker.get_interaction_reference_configs(
+        components=components,
+        add_label=add_label,
+        check_labels=check_labels,
+        component_key=component_key,
+        column_name=column_name,
+        delimiter=delimiter,
+    )
+    if not reference_config:
+        logger.warning(
+            'No matching Interaction-Data reference config was found.'
+        )
+        return None
+
+    # SECTION: build the selected records, then attach reference provenance
+    thermodb_comp = build_interaction_thermodb(
+        components=components,
+        reference_config=reference_config,
+        custom_reference=reference,
+        component_key=component_key,
+        column_name=column_name,
+        delimiter=delimiter,
+        thermodb_name=thermodb_name,
+        message=message,
+        thermodb_save=thermodb_save,
+        thermodb_save_path=thermodb_save_path,
+        verbose=verbose,
+        **kwargs,
+    )
+    if thermodb_comp is None:
+        return None
+
+    reference_thermodb = ReferenceThermoDB(
+        reference=reference,
+        contents=[reference_content],
+        configs=reference_config,
+        rules={},
+        labels=[],
+        ignore_labels=[],
+        ignore_props=[],
+    )
+    return MixtureThermoDB(
+        components=components,
+        thermodb=thermodb_comp,
+        reference_thermodb=reference_thermodb,
+    )
