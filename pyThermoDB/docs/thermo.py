@@ -1342,6 +1342,19 @@ class ThermoDB(ManageData):
         if not isinstance(interaction_data, dict):
             raise ValueError("Selected table is not Interaction-Data.")
 
+        values = interaction_data.get("VALUES")
+        if values is None:
+            _, _, databook_id = self.find_databook(databook)
+            table_id, _ = self.find_table(databook, table)
+            interaction_table = TableReference(
+                custom_ref=self.custom_ref
+            )._load_interaction_table(databook_id + 1, table_id + 1)
+            return TableInteractionData(
+                databook_name=databook_name,
+                table_name=table_record["table"],
+                table_data=interaction_data,
+                interaction_table=interaction_table,
+            )
         return TableInteractionData(
             databook_name=databook_name,
             table_name=table_record["table"],
@@ -1470,142 +1483,6 @@ class ThermoDB(ManageData):
             return json.dumps(result, default=str)
         raise ValueError("res_format must be 'dict', 'json', or 'str'.")
 
-    def build_interaction_data(
-        self,
-        components: List[Component],
-        databook: int | str,
-        table: int | str,
-        *,
-        component_key: Optional[str] = None,
-        respect_order: bool = False,
-        column_name: str = "Mixture",
-        delimiter: str = "|",
-    ) -> TableInteractionData:
-        """Validate mixture availability then load the complete interaction table.
-
-        Parameters
-        ----------
-        components : list[Component]
-            At least two components defining the requested participant set.
-        databook : int | str
-            Databook identifier or name.
-        table : int | str
-            Interaction-table identifier or name.
-        component_key : str, optional
-            Explicit Component identifier mode. All supported modes are tried if omitted.
-        respect_order : bool, default=False
-            Require source and requested participant order to match when true.
-        column_name : str, default='Mixture'
-            Source column containing delimited participant identifiers.
-        delimiter : str, default='|'
-            Participant separator in the source mixture column.
-
-        Returns
-        -------
-        TableInteractionData
-            The full validated table, with original source records unchanged.
-
-        Raises
-        ------
-        LookupError
-            If no exact participant set is available.
-
-        Notes
-        -----
-        Unordered discovery is limited to this build path; runtime lookup remains ordered.
-        """
-        # SECTION: availability gate
-        availability = self.check_interaction_availability(
-            components=components,
-            databook=databook,
-            table=table,
-            component_key=component_key,
-            respect_order=respect_order,
-            column_name=column_name,
-            delimiter=delimiter,
-            res_format="dict",
-        )
-        # ! ``res_format="dict"`` is explicit, but retain a runtime guard for
-        # callers and static type checkers because the public helper also returns strings.
-        if not isinstance(availability, dict):
-            raise RuntimeError(
-                "Interaction availability did not return a dictionary.")
-        if not bool(availability["availability"]):
-            raise LookupError(
-                "No exact interaction mixture is available for the supplied components."
-            )
-
-        # NOTE: Loading retains every source row; it never sorts stored mixtures.
-        return self.interaction_data_load(databook=databook, table=table)
-
-    def build_selected_interaction_data(
-        self,
-        components: List[Component],
-        databook: int | str,
-        table: int | str,
-        *,
-        component_key: Optional[str] = None,
-        column_name: str = "Mixture",
-        delimiter: str = "|",
-    ) -> TableInteractionData:
-        """Build an interaction table containing only exact component-set rows.
-
-        Source rows match when their complete participant set equals the
-        supplied components. Matching ignores participant order, but every
-        retained row preserves its source order for later runtime lookups.
-
-        Parameters
-        ----------
-        components : List[Component]
-            The list of components to match in the interaction table.
-        databook : int | str
-            The identifier of the databook containing the interaction table.
-        table : int | str
-            The identifier of the interaction table.
-        component_key : Optional[str], optional
-            The key used to identify components, by default None.
-        column_name : str, optional
-            The name of the column containing the mixture information, by default "Mixture".
-        delimiter : str, optional
-            The delimiter used to separate components in the mixture column, by default "|".
-
-        Returns
-        -------
-        TableInteractionData
-            The interaction table containing only the exact component-set rows.
-        """
-        availability = self.check_interaction_availability(
-            components=components,
-            databook=databook,
-            table=table,
-            component_key=component_key,
-            respect_order=False,
-            column_name=column_name,
-            delimiter=delimiter,
-            res_format="dict",
-        )
-        if not isinstance(availability, dict):
-            raise RuntimeError(
-                "Interaction availability did not return a dictionary.")
-        if not bool(availability["availability"]):
-            raise LookupError(
-                "No exact interaction mixture is available for the supplied components."
-            )
-
-        source = self.interaction_data_load(databook=databook, table=table)
-        positions = [
-            match["row_index"] for match in availability["matched_mixtures"]
-        ]
-        selected_frame = source.get_interaction_table(mode="all").iloc[
-            positions
-        ].reset_index(drop=True)
-        return TableInteractionData(
-            databook_name=source.databook_name,
-            table_name=source.table_name,
-            table_data=source.table_data,
-            interaction_table=selected_frame,
-            interaction_symbol=source.interaction_symbol,
-        )
     # NOTE: check component availability
 
     def check_component(
@@ -4560,6 +4437,143 @@ class ThermoDB(ManageData):
             A constants table object containing all constants from the specified databook and table.
         """
         return self.constants_load(databook, table)
+
+    def build_interaction_data(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        *,
+        component_key: Optional[str] = None,
+        respect_order: bool = False,
+        column_name: str = "Mixture",
+        delimiter: str = "|",
+    ) -> TableInteractionData:
+        """Validate mixture availability then load the complete interaction table.
+
+        Parameters
+        ----------
+        components : list[Component]
+            At least two components defining the requested participant set.
+        databook : int | str
+            Databook identifier or name.
+        table : int | str
+            Interaction-table identifier or name.
+        component_key : str, optional
+            Explicit Component identifier mode. All supported modes are tried if omitted.
+        respect_order : bool, default=False
+            Require source and requested participant order to match when true.
+        column_name : str, default='Mixture'
+            Source column containing delimited participant identifiers.
+        delimiter : str, default='|'
+            Participant separator in the source mixture column.
+
+        Returns
+        -------
+        TableInteractionData
+            The full validated table, with original source records unchanged.
+
+        Raises
+        ------
+        LookupError
+            If no exact participant set is available.
+
+        Notes
+        -----
+        Unordered discovery is limited to this build path; runtime lookup remains ordered.
+        """
+        # SECTION: availability gate
+        availability = self.check_interaction_availability(
+            components=components,
+            databook=databook,
+            table=table,
+            component_key=component_key,
+            respect_order=respect_order,
+            column_name=column_name,
+            delimiter=delimiter,
+            res_format="dict",
+        )
+        # ! ``res_format="dict"`` is explicit, but retain a runtime guard for
+        # callers and static type checkers because the public helper also returns strings.
+        if not isinstance(availability, dict):
+            raise RuntimeError(
+                "Interaction availability did not return a dictionary.")
+        if not bool(availability["availability"]):
+            raise LookupError(
+                "No exact interaction mixture is available for the supplied components."
+            )
+
+        # NOTE: Loading retains every source row; it never sorts stored mixtures.
+        return self.interaction_data_load(databook=databook, table=table)
+
+    def build_selected_interaction_data(
+        self,
+        components: List[Component],
+        databook: int | str,
+        table: int | str,
+        *,
+        component_key: Optional[str] = None,
+        column_name: str = "Mixture",
+        delimiter: str = "|",
+    ) -> TableInteractionData:
+        """Build an interaction table containing only exact component-set rows.
+
+        Source rows match when their complete participant set equals the
+        supplied components. Matching ignores participant order, but every
+        retained row preserves its source order for later runtime lookups.
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components to match in the interaction table.
+        databook : int | str
+            The identifier of the databook containing the interaction table.
+        table : int | str
+            The identifier of the interaction table.
+        component_key : Optional[str], optional
+            The key used to identify components, by default None.
+        column_name : str, optional
+            The name of the column containing the mixture information, by default "Mixture".
+        delimiter : str, optional
+            The delimiter used to separate components in the mixture column, by default "|".
+
+        Returns
+        -------
+        TableInteractionData
+            The interaction table containing only the exact component-set rows.
+        """
+        availability = self.check_interaction_availability(
+            components=components,
+            databook=databook,
+            table=table,
+            component_key=component_key,
+            respect_order=False,
+            column_name=column_name,
+            delimiter=delimiter,
+            res_format="dict",
+        )
+        if not isinstance(availability, dict):
+            raise RuntimeError(
+                "Interaction availability did not return a dictionary.")
+        if not bool(availability["availability"]):
+            raise LookupError(
+                "No exact interaction mixture is available for the supplied components."
+            )
+
+        source = self.interaction_data_load(databook=databook, table=table)
+        positions = [
+            match["row_index"] for match in availability["matched_mixtures"]
+        ]
+        selected_frame = source.get_interaction_table(mode="all").iloc[
+            positions
+        ].reset_index(drop=True)
+        return TableInteractionData(
+            databook_name=source.databook_name,
+            table_name=source.table_name,
+            table_data=source.table_data,
+            interaction_table=selected_frame,
+            interaction_symbol=source.interaction_symbol,
+        )
 
     # NOTE: search databook
 
