@@ -158,7 +158,7 @@ class CustomRef:
                         raise Exception(f"{yml_file} does not exist.")
                     else:
                         # check file ext
-                        if yml_file.lower().endswith(('.yml', '.yaml')):
+                        if str(yml_file).lower().endswith(('.yml', '.yaml')):
                             # get path
                             self.yml_paths.append(os.path.abspath(yml_file))
 
@@ -169,7 +169,7 @@ class CustomRef:
                         raise Exception(f"{md_file} does not exist.")
                     else:
                         # check file ext
-                        if md_file.endswith('.md'):
+                        if str(md_file).endswith('.md'):
                             # get path
                             self.md_paths.append(os.path.abspath(md_file))
 
