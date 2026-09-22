@@ -622,7 +622,8 @@ class ThermoDB(ManageData):
                     # NOTE: TypedDict optional fields require a local runtime
                     # narrowing before they can be treated as iterable payloads.
                     if interaction_payload is None:
-                        raise ValueError("Interaction-Data table has no payload.")
+                        raise ValueError(
+                            "Interaction-Data table has no payload.")
                     table_data = list(interaction_payload)
                     data_no = 1
 
@@ -1262,11 +1263,13 @@ class ThermoDB(ManageData):
         elif isinstance(mixture, (list, tuple)):
             tokens = list(mixture)
         else:
-            raise ValueError("Mixture must be a string or sequence of strings.")
+            raise ValueError(
+                "Mixture must be a string or sequence of strings.")
 
         normalized = tuple(str(token).strip().casefold() for token in tokens)
         if len(normalized) < 2 or any(not token for token in normalized):
-            raise ValueError("Mixture must contain at least two non-empty participants.")
+            raise ValueError(
+                "Mixture must contain at least two non-empty participants.")
         return normalized if respect_order else tuple(sorted(normalized))
 
     @staticmethod
@@ -1390,7 +1393,8 @@ class ThermoDB(ManageData):
         """
         # SECTION: validate inputs
         if not isinstance(components, list) or len(components) < 2:
-            raise ValueError("components must be a list of at least two Component objects.")
+            raise ValueError(
+                "components must be a list of at least two Component objects.")
         if not all(isinstance(component, Component) for component in components):
             raise TypeError("All components must be Component objects.")
         if not isinstance(column_name, str) or not column_name.strip():
@@ -1407,7 +1411,8 @@ class ThermoDB(ManageData):
         table_object = self.interaction_data_load(databook, table)
         source_table = table_object.get_interaction_table(mode="all")
         if column_name not in source_table.columns:
-            raise ValueError(f"Interaction table has no '{column_name}' column.")
+            raise ValueError(
+                f"Interaction table has no '{column_name}' column.")
 
         matches: list[dict[str, Any]] = []
         candidate_keys: dict[str, tuple[str, ...]] = {}
@@ -1523,7 +1528,8 @@ class ThermoDB(ManageData):
         # ! ``res_format="dict"`` is explicit, but retain a runtime guard for
         # callers and static type checkers because the public helper also returns strings.
         if not isinstance(availability, dict):
-            raise RuntimeError("Interaction availability did not return a dictionary.")
+            raise RuntimeError(
+                "Interaction availability did not return a dictionary.")
         if not bool(availability["availability"]):
             raise LookupError(
                 "No exact interaction mixture is available for the supplied components."
@@ -1547,6 +1553,26 @@ class ThermoDB(ManageData):
         Source rows match when their complete participant set equals the
         supplied components. Matching ignores participant order, but every
         retained row preserves its source order for later runtime lookups.
+
+        Parameters
+        ----------
+        components : List[Component]
+            The list of components to match in the interaction table.
+        databook : int | str
+            The identifier of the databook containing the interaction table.
+        table : int | str
+            The identifier of the interaction table.
+        component_key : Optional[str], optional
+            The key used to identify components, by default None.
+        column_name : str, optional
+            The name of the column containing the mixture information, by default "Mixture".
+        delimiter : str, optional
+            The delimiter used to separate components in the mixture column, by default "|".
+
+        Returns
+        -------
+        TableInteractionData
+            The interaction table containing only the exact component-set rows.
         """
         availability = self.check_interaction_availability(
             components=components,
@@ -1559,7 +1585,8 @@ class ThermoDB(ManageData):
             res_format="dict",
         )
         if not isinstance(availability, dict):
-            raise RuntimeError("Interaction availability did not return a dictionary.")
+            raise RuntimeError(
+                "Interaction availability did not return a dictionary.")
         if not bool(availability["availability"]):
             raise LookupError(
                 "No exact interaction mixture is available for the supplied components."
@@ -1580,6 +1607,7 @@ class ThermoDB(ManageData):
             interaction_symbol=source.interaction_symbol,
         )
     # NOTE: check component availability
+
     def check_component(
         self,
         component_name: str | list[str],
@@ -3352,7 +3380,11 @@ class ThermoDB(ManageData):
             raise ValueError("The selected table is not a constants table.")
 
         # res
-        return self.table_data(databook, table, res_format=res_format)
+        return self.table_data(
+            databook=databook,
+            table=table,
+            res_format=res_format
+        )
 
     # SECTION: build thermo property for a component including data, equation, matrix-data and matrix-equation
 
@@ -3389,6 +3421,7 @@ class ThermoDB(ManageData):
             - TableData
             - TableMatrixEquation
             - TableMatrixData
+            - TableInteractionData
         """
         try:
             # SECTION: extract kwargs
@@ -3531,6 +3564,7 @@ class ThermoDB(ManageData):
             - TableData
             - TableMatrixEquation
             - TableMatrixData
+            - TableInteractionData
 
         Notes
         -----
