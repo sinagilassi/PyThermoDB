@@ -430,6 +430,7 @@ class TableReference(ManageData):
 
         return frame
     # NOTE: search tables
+
     def search_tables(
             self,
             databook_id: int,
@@ -1208,6 +1209,7 @@ class TableReference(ManageData):
                 - matrix-data
                 - matrix-equations
                 - constants
+                - interaction data
 
         Returns
         -------
