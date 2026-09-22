@@ -33,6 +33,62 @@ class TestInteractionThermoDBBuilders(unittest.TestCase):
             }
         }
 
+    def test_inline_values_do_not_use_external_interaction_loader(self):
+        database = ptdb.init(
+            custom_reference={"reference": [str(FIXTURE_PATH)]}
+        )
+        with patch(
+            "pyThermoDB.docs.thermo.TableReference._load_interaction_table"
+        ) as load_external:
+            selected = database.interaction_data_load(
+                "PITZER-EXAMPLE",
+                "Pitzer ternary interaction parameters",
+            )
+
+        load_external.assert_not_called()
+        self.assertEqual(
+            selected.get("psi", "potassium-ion|sodium-ion|chloride-ion"),
+            -0.0018,
+        )
+
+    def test_csv_backed_interaction_table_uses_table_reference_loader(self):
+        reference = """
+REFERENCES:
+  TEST:
+    DATABOOK-ID: 1
+    TABLES:
+      Interactions:
+        TABLE-ID: 1
+        INTERACTION-SYMBOL: [psi, zeta]
+        STRUCTURE:
+          COLUMNS: [Mixture, psi, zeta]
+          SYMBOL: [None, psi, zeta]
+          UNIT: [None, 1, 1]
+"""
+        csv = """Mixture,psi,zeta
+-,psi,zeta
+-,1,1
+A|B|C,1.25,-
+A|B,0.0,2.5
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reference_path = root / "reference.yml"
+            table_path = root / "Interactions.csv"
+            reference_path.write_text(reference, encoding="utf-8")
+            table_path.write_text(csv, encoding="utf-8")
+            database = ptdb.init(
+                custom_reference={
+                    "reference": [str(reference_path)],
+                    "tables": [str(table_path)],
+                }
+            )
+            selected = database.interaction_data_load("TEST", "Interactions")
+
+        self.assertEqual(selected.get("psi", "A|B|C"), 1.25)
+        self.assertIsNone(selected.get("zeta", "A|B|C"))
+        self.assertEqual(selected.get("psi", "A|B"), 0.0)
+        self.assertEqual(selected.get("zeta", "A|B"), 2.5)
     def test_build_interaction_thermodb_selects_exact_unordered_set(self):
         result = ptdb.build_interaction_thermodb(
             components=self.components,
