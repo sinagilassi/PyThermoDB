@@ -2615,6 +2615,8 @@ def check_and_build_constants_thermodb(
             reference_config
         )
         thermodb = init(custom_reference=custom_reference)
+
+        # SECTION: Build constant sources
         res = _build_constant_sources(
             thermodb=thermodb,
             reference_config=reference_config_,
@@ -2794,6 +2796,8 @@ def build_interaction_thermodb(
     # SECTION: load and select interaction records
     thermodb = init(custom_reference=custom_reference)
     results: Dict[str, Any] = {}
+
+    # SECTION: Iterate over reference configuration and build interaction data
     for property_name, property_config in reference_config.items():
         if not isinstance(property_name, str) or not property_name.strip():
             raise ValueError(
@@ -2812,6 +2816,8 @@ def build_interaction_thermodb(
         table_info = thermodb.table_info(databook, table, res_format='dict')
         if not isinstance(table_info, dict):
             raise TypeError('Table info must be a dictionary.')
+
+        # >> check table type
         if table_info.get('Type') != 'Interaction-Data':
             logger.error(
                 "Table '%s' for property '%s' is not Interaction-Data.",
@@ -2852,8 +2858,13 @@ def build_interaction_thermodb(
             + ', '.join(component_names)
         )
 
+    # NOTE: build the interaction thermodb with the collected interaction data.
     thermodb_comp = build_thermodb(
-        thermodb_name=thermodb_name, message=message)
+        thermodb_name=thermodb_name,
+        message=message
+    )
+
+    # iterate over the collected interaction data and add them to the thermodb component
     for property_name, interaction_data in results.items():
         if not thermodb_comp.add_data(property_name, interaction_data):
             raise RuntimeError(
@@ -2902,7 +2913,42 @@ def build_interaction_thermodb_from_reference(
 
     add_label and check_labels are accepted for API consistency with existing
     reference builders. Interaction symbols are declared by their own tables.
+
+    Parameters
+    ----------
+    components : List[Component]
+        List of components involved in the interaction.
+    reference_content : str
+        YAML string containing the reference data.
+    component_key : Optional[str], optional
+        Key to identify components, by default None.
+    column_name : str, optional
+        Name of the column containing mixture information, by default 'Mixture'.
+    delimiter : str, optional
+        Delimiter used in the mixture column, by default '|'.
+    add_label : Optional[bool], optional
+        Whether to add labels to the reference data, by default True.
+    check_labels : Optional[bool], optional
+        Whether to check labels in the reference data, by default True.
+    thermodb_name : Optional[str], optional
+        Name of the thermodynamic database, by default None.
+    message : Optional[str], optional
+        Message to include in the build process, by default None.
+    thermodb_save : Optional[bool], optional
+        Whether to save the thermodynamic database, by default False.
+    thermodb_save_path : Optional[str], optional
+        Path to save the thermodynamic database, by default None.
+    verbose : bool, optional
+        Whether to enable verbose logging, by default False.
+    **kwargs
+        Additional keyword arguments passed to the build function.
+
+    Returns
+    -------
+    Optional[MixtureThermoDB]
+        The built mixture thermodynamic database, or None if the build failed.
     """
+    # SECTION: validate reference content
     if not isinstance(reference_content, str) or not reference_content.strip():
         raise TypeError('reference_content must be a non-empty YAML string.')
 
