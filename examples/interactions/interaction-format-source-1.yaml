@@ -1,0 +1,16 @@
+REFERENCES:
+  PITZER-EXAMPLE:
+    DATABOOK-ID: 1
+    TABLES:
+      Pitzer ternary interaction parameters:
+        TABLE-ID: 1
+        DESCRIPTION:
+          Scalar binary and ternary interaction parameters. Each Mixture row
+          identifies all participants and can contain several scalar values.
+        INTERACTION-SYMBOL:
+          - psi
+          - zeta
+        STRUCTURE:
+          COLUMNS: [No., Mixture, psi, zeta]
+          SYMBOL: [None, None, psi, zeta]
+          UNIT: [None, None, 1, 1]
