@@ -5,7 +5,8 @@ from .core import (
     TableData,
     TableMatrixData,
     TableInteractionData,
-    TableConstants
+    TableConstants,
+    TableDataset
 )
 from .docs import ThermoDB
 from .builder import CompBuilder
@@ -47,6 +48,7 @@ __all__ = [
     'TableInteractionData',
     'TableMatrixEquation',
     'TableConstants',
+    'TableDataset',
     'init',
     'ref',
     'build_thermodb',

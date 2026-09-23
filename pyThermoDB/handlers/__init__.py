@@ -19,6 +19,7 @@ from .table_errors import (
     TableConstantsError,
     TableConversionError,
     TableDataError,
+    TableDatasetError,
     TableEquationError,
     TableError,
     TableLookupError,
@@ -59,6 +60,14 @@ from .table_interaction_data_errors import (
     TableInteractionDataGenerationError, TableInteractionDataLookupError,
     TableInteractionDataStructureError,
 )
+from .table_dataset_errors import (
+    TableDatasetConversionError,
+    TableDatasetDefinitionError,
+    TableDatasetFormatError,
+    TableDatasetFrameError,
+    TableDatasetLookupError,
+    TableDatasetStructureError,
+)
 
 __all__ = [
     "PyThermoDBError",
@@ -82,6 +91,7 @@ __all__ = [
     "TableValidationError",
     "TableLookupError",
     "TableDataError",
+    "TableDatasetError",
     "TableEquationError",
     "TableMatrixDataError",
     "TableInteractionDataError",
@@ -115,4 +125,10 @@ __all__ = [
     "TableInteractionDataFrameError",
     "TableInteractionDataGenerationError",
     "TableInteractionDataConversionError",
+    "TableDatasetStructureError",
+    "TableDatasetDefinitionError",
+    "TableDatasetFormatError",
+    "TableDatasetLookupError",
+    "TableDatasetConversionError",
+    "TableDatasetFrameError",
 ]

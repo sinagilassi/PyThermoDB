@@ -5,6 +5,7 @@ from .tablematrixdata import TableMatrixData
 from .tableinteractiondata import TableInteractionData
 from .tablematrixequation import TableMatrixEquation
 from .tableconstants import TableConstants
+from .tabledataset import TableDataset
 from .table_util import TableUtil
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     'TableInteractionData',
     'TableMatrixEquation',
     'TableConstants',
+    'TableDataset',
     'TableUtil',
 ]
