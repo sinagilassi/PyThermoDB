@@ -1,0 +1,102 @@
+REFERENCES:
+  DATASET-EXAMPLE:
+    DATABOOK-ID: 1
+    TABLES:
+      # SECTION: vapor-liquid equilibrium observations
+      VLE-DATASET:
+        TABLE-ID: 1
+        DESCRIPTION:
+          Vapor-liquid equilibrium dataset containing binary and ternary systems.
+        DATASET-IDS:
+          - methanol|water: 1|2
+          - ethanol|benzene: 1|2
+          - ethanol|methanol|water: 1|2|3
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Pressure, Liquid-Mole-Fraction-1, Liquid-Mole-Fraction-2, Vapor-Mole-Fraction-1, Vapor-Mole-Fraction-2]
+          SYMBOL: [null, null, T, P, x_1, x_2, y_1, y_2]
+          UNIT: [null, null, K, Pa, null, null, null, null]
+          ROLE: [null, null, input, input, input, input, output, output]
+        VALUES:
+          # NOTE: Binary rows leave the second composition positions unavailable.
+          - [1, "methanol|water", 298.15, 101325, 0.5, null, 0.5, null]
+          - [2, "methanol|water", 308.15, 101325, 0.4, null, 0.6, null]
+          - [1, "ethanol|benzene", 298.15, 101325, 0.5, null, 0.5, null]
+          - [2, "ethanol|benzene", 308.15, 101325, 0.4, null, 0.6, null]
+          # NOTE: Ternary rows use every declared composition position.
+          - [1, "ethanol|methanol|water", 298.15, 101325, 0.30, 0.20, 0.40, 0.25]
+          - [2, "ethanol|methanol|water", 308.15, 101325, 0.25, 0.30, 0.35, 0.40]
+
+      # SECTION: pure-fluid density observations
+      DENSITY-DATASET:
+        TABLE-ID: 2
+        DESCRIPTION:
+          Experimental liquid density data.
+        DATASET-IDS:
+          - water: 1
+          - ethanol: 1
+          - methanol: 1
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Pressure, Density]
+          SYMBOL: [null, null, T, P, rho]
+          UNIT: [null, null, K, Pa, kg/m^3]
+          ROLE: [null, null, input, input, output]
+        VALUES:
+          - [1, "water", 298.15, 101325, 997.05]
+          - [2, "water", 313.15, 101325, 992.05]
+          - [1, "ethanol", 298.15, 101325, 785.0]
+          - [2, "ethanol", 313.15, 101325, 780.0]
+          - [1, "methanol", 298.15, 101325, 792.0]
+          - [2, "methanol", 313.15, 101325, 787.0]
+
+      # SECTION: reaction-kinetics observations
+      KINETIC-DATASET:
+        TABLE-ID: 3
+        DESCRIPTION:
+          Experimental reaction-rate measurements.
+        DATASET-IDS:
+          - Reaction-1: 1
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Concentration-A, Concentration-B, Reaction-Rate]
+          SYMBOL: [null, null, T, C_A, C_B, r]
+          UNIT: [null, null, K, mol/m^3, mol/m^3, mol/(m^3.s)]
+          ROLE: [null, null, input, input, input, output]
+        VALUES:
+          - [1, "Reaction-1", 300, 100, 200, 0.012]
+          - [2, "Reaction-1", 320, 100, 200, 0.021]
+          - [3, "Reaction-1", 340, 100, 200, 0.036]
+
+      # SECTION: adsorption observations
+      ADSORPTION-DATASET:
+        TABLE-ID: 4
+        DESCRIPTION:
+          Gas adsorption equilibrium measurements.
+        DATASET-IDS:
+          - CO2|Zeolite-13X: 1|2
+          - CH4|Zeolite-13X: 1|2
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Pressure, Loading]
+          SYMBOL: [null, null, T, P, q]
+          UNIT: [null, null, K, bar, mol/kg]
+          ROLE: [null, null, input, input, output]
+        VALUES:
+          - [1, "CO2|Zeolite-13X", 298.15, 1.0, 2.53]
+          - [2, "CO2|Zeolite-13X", 298.15, 5.0, 4.82]
+          - [1, "CH4|Zeolite-13X", 298.15, 1.0, 0.63]
+
+      # SECTION: membrane-performance observations
+      MEMBRANE-DATASET:
+        TABLE-ID: 5
+        DESCRIPTION:
+          Gas membrane permeation measurements.
+        DATASET-IDS:
+          - CO2|CH4|Membrane-A: 1|2|3
+          - CO2|CH4|Membrane-B: 1|2|3
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Feed-Pressure, Permeate-Pressure, Feed-Mole-Fraction-1, Permeability-1, Permeability-2]
+          SYMBOL: [null, null, T, P_f, P_p, x_1, Per_1, Per_2]
+          UNIT: [null, null, K, kPa, kPa, null, Barrer, Barrer]
+          ROLE: [null, null, input, input, input, input, output, output]
+        VALUES:
+          - [1, "CO2|CH4|Membrane-A", 303.15, 1570, 101, 0.50, 120.5, 4.8]
+          - [2, "CO2|CH4|Membrane-A", 303.15, 2000, 101, 0.50, 115.2, 4.5]
+          - [1, "CO2|CH4|Membrane-B", 303.15, 1570, 101, 0.50, 98.0, 5.1]
