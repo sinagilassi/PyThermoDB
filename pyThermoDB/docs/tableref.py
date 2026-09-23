@@ -228,6 +228,15 @@ class TableReference(ManageData):
                         # rows carry symbols and units, followed by records.
                         file_data = [symbol, unit]
                         file_data.extend(values)
+                    elif tb_type == TableTypes.DATASET.value:
+                        # NOTE: Dataset CSVs use symbol/unit metadata rows
+                        # followed by observation records.
+                        if values is None:
+                            raise Exception(
+                                f"Table data is None for {file_name}."
+                            )
+                        file_data = [symbol, unit]
+                        file_data.extend(values)
                     elif tb_type == TableTypes.CONSTANTS.value:
                         # ! constants
 
@@ -429,6 +438,46 @@ class TableReference(ManageData):
             frame[column] = pd.to_numeric(frame[column], errors="coerce")
 
         return frame
+
+    def _load_dataset_table(
+        self,
+        databook_id: int,
+        table_id: int,
+    ) -> pd.DataFrame:
+        """Load record rows for a CSV-backed dataset table."""
+        # SECTION: dataset source validation
+        table = self.get_table(databook_id - 1, table_id - 1)
+        if table["table_type"] != TableTypes.DATASET.value:
+            raise ValueError("Selected table is not a Dataset.")
+
+        frame = self.load_table(databook_id, table_id)
+        if not isinstance(frame, pd.DataFrame):
+            raise ValueError("Dataset table data is not a DataFrame.")
+        structure = table.get("table_structure")
+        if not isinstance(structure, dict):
+            raise ValueError("Dataset table structure is invalid.")
+        columns = structure.get("COLUMNS")
+        roles = structure.get("ROLE")
+        if not isinstance(columns, list) or not isinstance(roles, list):
+            raise ValueError("Dataset table structure is invalid.")
+        if list(frame.columns) != columns:
+            raise ValueError(
+                "Dataset table columns do not match STRUCTURE.COLUMNS."
+            )
+
+        # SECTION: metadata removal and conservative numeric conversion
+        frame = frame.iloc[2:].reset_index(drop=True).replace(
+            {"-": None, "None": None}
+        )
+        for column, role in zip(columns, roles):
+            # ? Structural columns remain untouched because they may be IDs.
+            if role not in {"input", "output"}:
+                continue
+            present = frame[column].notna()
+            converted = pd.to_numeric(frame[column], errors="coerce")
+            if converted.loc[present].notna().all():
+                frame[column] = converted
+        return frame
     # NOTE: search tables
 
     def search_tables(
@@ -474,7 +523,8 @@ class TableReference(ManageData):
             # check tb_type
             if (
                 tb_type == TableTypes.DATA.value or
-                tb_type == TableTypes.EQUATIONS.value
+                tb_type == TableTypes.EQUATIONS.value or
+                tb_type == TableTypes.DATASET.value
             ):
                 # ! search table
                 df = self.search_table(
@@ -1233,6 +1283,8 @@ class TableReference(ManageData):
             elif table_type == TableTypes.INTERACTION_DATA.value:
                 # scalar interaction rows
                 data = table_data['interaction_data']
+            elif table_type == TableTypes.DATASET.value:
+                data = table_data['dataset']
             elif table_type == TableTypes.CONSTANTS.value:
                 # data
                 data = table_data['constants']
