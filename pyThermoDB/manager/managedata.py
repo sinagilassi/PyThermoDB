@@ -508,6 +508,8 @@ class ManageData():
 
                     # NOTE: table structure
                     table_structure = table_data.get('STRUCTURE', None)
+                    # NOTE: ROLE is meaningful only for observational datasets.
+                    role = None
 
                     # NOTE: table reference
                     external_references = table_data.get(
@@ -543,6 +545,7 @@ class ManageData():
                             'table_type': TableTypes.EQUATIONS.value,
                             'table_values': table_values,
                             'table_structure': table_structure,
+                            'role': role,
                             'external_references': external_references
                         })
                         # reset
@@ -567,6 +570,7 @@ class ManageData():
                             'table_type': TableTypes.MATRIX_EQUATIONS.value,
                             'table_values': table_values,
                             'table_structure': table_structure,
+                            'role': role,
                             'external_references': external_references
                         })
                         # reset
@@ -591,6 +595,40 @@ class ManageData():
                             'table_type': TableTypes.INTERACTION_DATA.value,
                             'table_values': table_values,
                             'table_structure': table_structure,
+                            'role': role,
+                            'external_references': external_references,
+                        })
+                    # SECTION: observational dataset
+                    # ! DATASET-IDS explicitly distinguishes datasets from
+                    # ! ordinary tables; TableDataset validates ROLE later.
+                    elif 'DATASET-IDS' in table_data_keys:
+                        role = (
+                            table_structure.get('ROLE')
+                            if isinstance(table_structure, dict)
+                            else None
+                        )
+                        dataset = {
+                            'TABLE-ID': table_id,
+                            'DESCRIPTION': description,
+                            'DATASET-IDS': table_data.get('DATASET-IDS'),
+                            'STRUCTURE': table_structure,
+                            'VALUES': table_values,
+                        }
+                        tables.append({
+                            'table_id': table_id,
+                            'table': table,
+                            'description': description,
+                            'equations': None,
+                            'data': None,
+                            'matrix_equations': None,
+                            'matrix_data': None,
+                            'interaction_data': None,
+                            'constants': None,
+                            'dataset': dataset,
+                            'table_type': TableTypes.DATASET.value,
+                            'table_values': table_values,
+                            'table_structure': table_structure,
+                            'role': role,
                             'external_references': external_references,
                         })
                     # ! check DATA
@@ -618,6 +656,7 @@ class ManageData():
                             'table_type': TableTypes.DATA.value,
                             'table_values': table_values,
                             'table_structure': table_structure,
+                            'role': role,
                             'external_references': external_references
                         })
                     # ! check MATRIX-DATA
@@ -663,6 +702,7 @@ class ManageData():
                             'table_type': TableTypes.MATRIX_DATA.value,
                             'table_values': table_values,
                             'table_structure': table_structure,
+                            'role': role,
                             'table_items': table_items,
                             'external_references': external_references
                         })
@@ -691,6 +731,7 @@ class ManageData():
                             'table_type': TableTypes.CONSTANTS.value,
                             'table_values': table_values,
                             'table_structure': table_structure,
+                            'role': role,
                             'external_references': external_references
                         })
 
@@ -864,6 +905,10 @@ class ManageData():
                     tables.append(
                         [tb['table'], "interaction-data", f"[{i+1}]"])
 
+                # ! dataset
+                elif tb.get('dataset') is not None:
+                    tables.append([tb['table'], "dataset", f"[{i+1}]"])
+
                 # ! data
                 elif tb['data'] is not None:
                     tables.append([tb['table'], "data", f"[{i+1}]"])
@@ -1007,6 +1052,9 @@ class ManageData():
                 elif 'interaction_data' in tb and tb['interaction_data'] is not None:
                     # *** interaction data
                     return TableTypes.INTERACTION_DATA.value
+                elif 'dataset' in tb and tb['dataset'] is not None:
+                    # *** observational dataset
+                    return TableTypes.DATASET.value
                 elif 'data' in tb and tb['data'] is not None:
                     # *** generic data
                     return TableTypes.DATA.value
