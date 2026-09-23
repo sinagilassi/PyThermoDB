@@ -15,9 +15,11 @@ class DataBookTableTypes(TypedDict):
     matrix_data: Optional[List[str] | Dict[str, Any]]
     interaction_data: Optional[List[str] | Dict[str, Any]]
     constants: Optional[List[str] | Dict[str, Any]]
+    dataset: Optional[Dict[str, Any]]
     table_type: Optional[str]
     table_values: Optional[List[Any] | Dict[str, Any]]
     table_structure: Optional[Dict[str, Any]]
+    role: Optional[List[Optional[str]]]
     table_items: Optional[List[Dict[str, Any]]]
     external_references: Optional[List[str]]
 
