@@ -34,7 +34,8 @@ from ..core import (
     TableData,
     TableMatrixData,
     TableInteractionData,
-    TableConstants
+    TableConstants,
+    TableDataset
 )
 from ..data import TableTypes
 from ..models import DataBookTableTypes, PayLoadType
@@ -75,7 +76,8 @@ ThermoProperty = Union[
     TableData,
     TableMatrixEquation,
     TableMatrixData,
-    TableInteractionData
+    TableInteractionData,
+    TableDataset,
 ]
 
 
@@ -580,6 +582,7 @@ class ThermoDB(ManageData):
             data_no = 0
             matrix_data_no = 0
             constants_no = 0
+            dataset_no = 0
             # get the tb
             tb = self.select_table(databook, table)
 
@@ -597,6 +600,8 @@ class ThermoDB(ManageData):
                 # SECTION: interaction-data has precedence over generic data.
                 if tb.get('interaction_data') is not None:
                     tb_type = 'Interaction-Data'
+                if tb.get('dataset') is not None:
+                    tb_type = 'Dataset'
                 if tb['data'] is not None:
                     tb_type = 'Data'
                 if tb['equations'] is not None:
@@ -626,6 +631,13 @@ class ThermoDB(ManageData):
                             "Interaction-Data table has no payload.")
                     table_data = list(interaction_payload)
                     data_no = 1
+
+                dataset_payload = tb.get('dataset')
+                if tb_type == 'Dataset':
+                    if dataset_payload is None:
+                        raise ValueError("Dataset table has no payload.")
+                    table_data = list(dataset_payload)
+                    dataset_no = 1
 
                 # ! check data
                 if tb_type == 'Data' and tb['data'] is not None:
@@ -661,7 +673,8 @@ class ThermoDB(ManageData):
                     "Data": data_no,
                     "Matrix-Equations": matrix_equation_no,
                     "Matrix-Data": matrix_data_no,
-                    "Constants": constants_no
+                    "Constants": constants_no,
+                    "Dataset": dataset_no
                 }
 
                 # json
@@ -679,7 +692,8 @@ class ThermoDB(ManageData):
                     'Data',
                     'Matrix-Equations',
                     'Matrix-Data',
-                    'Constants'
+                    'Constants',
+                    'Dataset'
                 ]
                 # dataframe
                 df = pd.DataFrame([tb_summary], columns=column_names)
@@ -1359,6 +1373,41 @@ class ThermoDB(ManageData):
             databook_name=databook_name,
             table_name=table_record["table"],
             table_data=interaction_data,
+        )
+
+    def dataset_load(
+        self,
+        databook: int | str,
+        table: int | str,
+    ) -> TableDataset:
+        """Load and validate an observational dataset table."""
+        # SECTION: resolve and validate the managed dataset payload
+        _, databook_name, databook_index = self.find_databook(databook)
+        table_record = self.select_table(databook, table)
+        if not isinstance(table_record, dict):
+            raise ValueError("Dataset table was not found.")
+
+        dataset_data = table_record.get("dataset")
+        if not isinstance(dataset_data, dict):
+            raise ValueError("Selected table is not a Dataset.")
+
+        values = dataset_data.get("VALUES")
+        if values is None:
+            # NOTE: CSV-backed datasets are normalized by TableReference.
+            table_index, _ = self.find_table(databook, table)
+            dataset_table = TableReference(
+                custom_ref=self.custom_ref
+            )._load_dataset_table(databook_index + 1, table_index + 1)
+            return TableDataset(
+                databook_name=databook_name,
+                table_name=table_record["table"],
+                table_data=dataset_data,
+                dataset_table=dataset_table,
+            )
+        return TableDataset(
+            databook_name=databook_name,
+            table_name=table_record["table"],
+            table_data=dataset_data,
         )
 
     def check_interaction_availability(
@@ -4437,6 +4486,14 @@ class ThermoDB(ManageData):
             A constants table object containing all constants from the specified databook and table.
         """
         return self.constants_load(databook, table)
+
+    def build_dataset(
+        self,
+        databook: int | str,
+        table: int | str,
+    ) -> TableDataset:
+        """Build a complete observational dataset table."""
+        return self.dataset_load(databook, table)
 
     def build_interaction_data(
         self,
