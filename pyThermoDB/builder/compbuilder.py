@@ -10,14 +10,15 @@ from typing import Optional, Union, Literal, ClassVar
 # local
 from .compexporter import CompExporter
 from .comp_tools import CompTools
-from .table_types import TableStore, TableValue
+from .table_types import TablePropertyValue, TableStore, TableValue
 from ..core import (
     TableEquation,
     TableMatrixEquation,
     TableData,
     TableMatrixData,
     TableInteractionData,
-    TableConstants
+    TableConstants,
+    TableDataset
 )
 from ..config import __version__
 from ..models.configs import BuildType
@@ -218,7 +219,8 @@ class CompBuilder(CompExporter):
                 TableMatrixData,
                 TableInteractionData,
                 TableMatrixEquation,
-                TableConstants
+                TableConstants,
+                TableDataset
             )
 
             # check allowed types
@@ -472,7 +474,7 @@ class CompBuilder(CompExporter):
             return {}
 
     # NOTE: check properties
-    def check_properties(self) -> dict[str, TableData | TableMatrixData | TableConstants]:
+    def check_properties(self) -> dict[str, TablePropertyValue]:
         '''
         Check properties
 
@@ -515,7 +517,7 @@ class CompBuilder(CompExporter):
     def check_property(
         self,
         thermo_name: str
-    ) -> TableData | TableMatrixData | TableConstants:
+    ) -> TablePropertyValue:
         '''
         Check properties
 
@@ -526,7 +528,8 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData | TableConstants
+        TableMatrixData | TableData | TableInteractionData | TableConstants |
+        TableDataset | dict
             property registered
         '''
         try:
@@ -539,7 +542,7 @@ class CompBuilder(CompExporter):
     def select_property(
         self,
         thermo_name: str
-    ) -> TableData | TableMatrixData | TableConstants:
+    ) -> TablePropertyValue:
         '''
         Select a thermodynamic property registered in the thermodb, case-sensitive.
 
@@ -550,7 +553,8 @@ class CompBuilder(CompExporter):
 
         Returns
         -------
-        TableMatrixData | TableData | TableConstants
+        TableMatrixData | TableData | TableInteractionData | TableConstants |
+        TableDataset | dict
             property registered in the thermodb
         '''
         try:
@@ -783,14 +787,7 @@ class CompBuilder(CompExporter):
     def select(
         self,
         thermo_name: str
-    ) -> Union[
-        TableData,
-        TableMatrixData,
-        TableInteractionData,
-        TableConstants,
-        TableEquation,
-        TableMatrixEquation
-    ]:
+    ) -> TableValue:
         '''
         Select a thermodynamic property or function registered in the thermodb (case-sensitive).
 
@@ -1595,6 +1592,10 @@ class CompBuilder(CompExporter):
                 isinstance(value, TableInteractionData)
                 for value in properties.values()
             )
+            dataset_count = sum(
+                isinstance(value, TableDataset)
+                for value in properties.values()
+            )
             equations_count = sum(
                 isinstance(value, TableEquation)
                 for value in functions.values()
@@ -1621,6 +1622,7 @@ class CompBuilder(CompExporter):
                 "data_count": data_count,
                 "matrix_data_count": matrix_data_count,
                 "interaction_data_count": interaction_data_count,
+                "dataset_count": dataset_count,
                 "equations_count": equations_count,
                 "matrix_equations_count": matrix_equations_count
             }
