@@ -1,0 +1,7 @@
+﻿No.,Id,Temperature,Pressure,Loading
+-,-,T,P,q
+-,-,K,bar,mol/kg
+-,-,input,input,output
+1,CO2|Zeolite-13X,298.15,1.0,2.53
+2,CO2|Zeolite-13X,298.15,5.0,4.82
+1,CH4|Zeolite-13X,298.15,1.0,0.63

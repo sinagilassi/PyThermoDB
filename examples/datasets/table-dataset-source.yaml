@@ -1,0 +1,74 @@
+REFERENCES:
+  DATASET-EXAMPLE:
+    DATABOOK-ID: 1
+    TABLES:
+      # SECTION: vapor-liquid equilibrium observations
+      VLE-DATASET:
+        TABLE-ID: 1
+        DESCRIPTION:
+          Vapor-liquid equilibrium dataset containing binary and ternary systems.
+        DATASET-IDS:
+          - methanol|water: 1|2
+          - ethanol|benzene: 1|2
+          - ethanol|methanol|water: 1|2|3
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Pressure, Liquid-Mole-Fraction-1, Liquid-Mole-Fraction-2, Vapor-Mole-Fraction-1, Vapor-Mole-Fraction-2]
+          SYMBOL: [null, null, T, P, x_1, x_2, y_1, y_2]
+          UNIT: [null, null, K, Pa, null, null, null, null]
+          ROLE: [null, null, input, input, input, input, output, output]
+
+      # SECTION: pure-fluid density observations
+      DENSITY-DATASET:
+        TABLE-ID: 2
+        DESCRIPTION:
+          Experimental liquid density data.
+        DATASET-IDS:
+          - water: 1
+          - ethanol: 1
+          - methanol: 1
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Pressure, Density]
+          SYMBOL: [null, null, T, P, rho]
+          UNIT: [null, null, K, Pa, kg/m^3]
+          ROLE: [null, null, input, input, output]
+
+      # SECTION: reaction-kinetics observations
+      KINETIC-DATASET:
+        TABLE-ID: 3
+        DESCRIPTION:
+          Experimental reaction-rate measurements.
+        DATASET-IDS:
+          - Reaction-1: 1
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Concentration-A, Concentration-B, Reaction-Rate]
+          SYMBOL: [null, null, T, C_A, C_B, r]
+          UNIT: [null, null, K, mol/m^3, mol/m^3, mol/(m^3.s)]
+          ROLE: [null, null, input, input, input, output]
+
+      # SECTION: adsorption observations
+      ADSORPTION-DATASET:
+        TABLE-ID: 4
+        DESCRIPTION:
+          Gas adsorption equilibrium measurements.
+        DATASET-IDS:
+          - CO2|Zeolite-13X: 1|2
+          - CH4|Zeolite-13X: 1|2
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Pressure, Loading]
+          SYMBOL: [null, null, T, P, q]
+          UNIT: [null, null, K, bar, mol/kg]
+          ROLE: [null, null, input, input, output]
+
+      # SECTION: membrane-performance observations
+      MEMBRANE-DATASET:
+        TABLE-ID: 5
+        DESCRIPTION:
+          Gas membrane permeation measurements.
+        DATASET-IDS:
+          - CO2|CH4|Membrane-A: 1|2|3
+          - CO2|CH4|Membrane-B: 1|2|3
+        STRUCTURE:
+          COLUMNS: [No., Id, Temperature, Feed-Pressure, Permeate-Pressure, Feed-Mole-Fraction-1, Permeability-1, Permeability-2]
+          SYMBOL: [null, null, T, P_f, P_p, x_1, Per_1, Per_2]
+          UNIT: [null, null, K, kPa, kPa, null, Barrer, Barrer]
+          ROLE: [null, null, input, input, input, input, output, output]
