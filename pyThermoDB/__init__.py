@@ -29,11 +29,14 @@ from .thermodb import (
     build_constants_thermodb,
     check_and_build_constants_thermodb,
     build_constants_thermodb_from_reference,
+    build_dataset_thermodb,
+    build_dataset_thermodb_from_reference,
     build_interaction_thermodb,
     build_interaction_thermodb_from_reference,
     ComponentThermoDB,
     MixtureThermoDB,
-    ConstantsThermoDB
+    ConstantsThermoDB,
+    DatasetThermoDB
 )
 
 __all__ = [
@@ -65,9 +68,12 @@ __all__ = [
     'build_constants_thermodb',
     'check_and_build_constants_thermodb',
     'build_constants_thermodb_from_reference',
+    'build_dataset_thermodb',
+    'build_dataset_thermodb_from_reference',
     'build_interaction_thermodb',
     'build_interaction_thermodb_from_reference',
     'ComponentThermoDB',
     'MixtureThermoDB',
-    'ConstantsThermoDB'
+    'ConstantsThermoDB',
+    'DatasetThermoDB'
 ]
