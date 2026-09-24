@@ -1,7 +1,6 @@
 ﻿No.,Id,Temperature,Pressure,Density
 -,-,T,P,rho
 -,-,K,Pa,kg/m^3
--,-,input,input,output
 1,water,298.15,101325,997.05
 2,water,313.15,101325,992.05
 1,ethanol,298.15,101325,785.0

@@ -1,7 +1,6 @@
 ﻿No.,Id,Temperature,Concentration-A,Concentration-B,Reaction-Rate
 -,-,T,C_A,C_B,r
 -,-,K,mol/m^3,mol/m^3,mol/(m^3.s)
--,-,input,input,input,output
 1,Reaction-1,300,100,200,0.012
 2,Reaction-1,320,100,200,0.021
 3,Reaction-1,340,100,200,0.036

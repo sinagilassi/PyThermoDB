@@ -1,7 +1,6 @@
 ﻿No.,Id,Temperature,Feed-Pressure,Permeate-Pressure,Feed-Mole-Fraction-1,Permeability-1,Permeability-2
 -,-,T,P_f,P_p,x_1,Per_1,Per_2
 -,-,K,kPa,kPa,-,Barrer,Barrer
--,-,input,input,input,input,output,output
 1,CO2|CH4|Membrane-A,303.15,1570,101,0.5,120.5,4.8
 2,CO2|CH4|Membrane-A,303.15,2000,101,0.5,115.2,4.5
 1,CO2|CH4|Membrane-B,303.15,1570,101,0.5,98.0,5.1
