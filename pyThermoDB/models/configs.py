@@ -25,4 +25,4 @@ class ConstantsConfig(TypedDict, total=False):
 
 
 # SECTION: App config configuration
-BuildType = Literal['single', 'mixture', 'constants']
+BuildType = Literal['single', 'mixture', 'constants', 'dataset']
