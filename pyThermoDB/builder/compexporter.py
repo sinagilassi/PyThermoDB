@@ -7,6 +7,7 @@ from ..core import TableMatrixData
 from ..core import TableInteractionData
 from ..core import TableMatrixEquation
 from ..core import TableConstants
+from ..core import TableDataset
 from .table_types import TableValue
 
 # logger
@@ -25,7 +26,8 @@ class CompExporter:
         # allowed types
         # allowed types for properties
         self.allowed_types_properties = (
-            TableData, dict, TableMatrixData, TableInteractionData, TableConstants
+            TableData, dict, TableMatrixData, TableInteractionData,
+            TableConstants, TableDataset
         )
 
         # allowed types for equations (functions)
