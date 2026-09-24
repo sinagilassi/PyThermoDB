@@ -5,6 +5,7 @@ from typing import Any, TypeAlias
 from ..core import (
     TableConstants,
     TableData,
+    TableDataset,
     TableEquation,
     TableInteractionData,
     TableMatrixData,
@@ -12,15 +13,20 @@ from ..core import (
 )
 
 
-TableValue: TypeAlias = (
+TablePropertyValue: TypeAlias = (
     TableData
-    | TableEquation
     | dict[Any, Any]
     | TableMatrixData
     | TableInteractionData
-    | TableMatrixEquation
     | TableConstants
+    | TableDataset
 )
+"""A supported non-equation property value."""
+
+TableEquationValue: TypeAlias = TableEquation | TableMatrixEquation
+"""A supported equation/function value."""
+
+TableValue: TypeAlias = TablePropertyValue | TableEquationValue
 """A supported value in a component table store."""
 
 TableStore: TypeAlias = dict[str, TableValue]
