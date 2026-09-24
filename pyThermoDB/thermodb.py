@@ -29,8 +29,8 @@ from .app import init, build_thermodb
 from .docs.thermo import ThermoProperty
 from .core import (
     TableConstants,
-    TableData,
     TableDataset,
+    TableData,
     TableEquation,
     TableMatrixData,
     TableMatrixEquation
@@ -170,7 +170,7 @@ class DatasetThermoDB(BaseModel):
         extra='allow'
     )
 
-# SECTION: build thermodb for single component
+# ! ::: build thermodb for single component
 
 
 @measure_time
@@ -495,7 +495,7 @@ def build_component_thermodb(
     except Exception as e:
         raise Exception(f"Building {component_name} thermodb failed! {e}")
 
-# SECTION: check and build thermodb for single component
+# ! ::: check and build thermodb for single component
 
 
 @measure_time
@@ -1012,6 +1012,8 @@ def check_and_build_component_thermodb(
     except Exception as e:
         raise Exception(f"Building {component_id} thermodb failed! {e}")
 
+# ! ::: Build components thermodynamic databook
+
 
 @measure_time
 def build_components_thermodb(
@@ -1299,6 +1301,8 @@ def build_components_thermodb(
         return thermodb_comp
     except Exception as e:
         raise Exception(f"Building {component_names} thermodb failed! {e}")
+
+# ! ::: Check and Build Components Thermodb
 
 
 @measure_time
@@ -1748,6 +1752,8 @@ def check_and_build_components_thermodb(
         return thermodb_comp
     except Exception as e:
         raise Exception(f"Building {component_names} thermodb failed! {e}")
+
+# ! ::: check and build mixture thermodb
 
 
 @measure_time
@@ -2345,7 +2351,7 @@ def check_and_build_mixture_thermodb(
     except Exception as e:
         raise Exception(f"Building {component_names} thermodb failed! {e}")
 
-# SECTION: build constant thermodb
+# ! ::: build constant thermodb
 
 
 @measure_time
@@ -2540,7 +2546,7 @@ def build_constants_thermodb(
     except Exception as e:
         raise Exception(f"Building constants thermodb failed! {e}")
 
-# SECTION: check and build constant thermodb
+# ! ::: check and build constant thermodb
 
 
 @measure_time
@@ -2721,7 +2727,7 @@ def check_and_build_constants_thermodb(
         raise Exception(f"Building constants thermodb failed! {e}")
 
 
-# SECTION: build dataset thermodb
+# ! ::: build dataset thermodb
 
 
 def _normalize_dataset_reference_config(
@@ -2733,7 +2739,8 @@ def _normalize_dataset_reference_config(
             reference_config
         )
     if not isinstance(reference_config, Mapping):
-        raise TypeError("reference_config must be a mapping or YAML/JSON string.")
+        raise TypeError(
+            "reference_config must be a mapping or YAML/JSON string.")
 
     config: Mapping[str, Any] = reference_config
     for wrapper in ("DATASETS", "datasets", "dataset"):
@@ -2769,8 +2776,11 @@ def _normalize_dataset_reference_config(
             )
         normalized[source_name.strip()] = dict(source_config)
     if not normalized:
-        raise ValueError("reference_config must contain at least one dataset source.")
+        raise ValueError(
+            "reference_config must contain at least one dataset source.")
     return normalized
+
+# ! ::: build dataset thermodb
 
 
 @measure_time
@@ -2790,13 +2800,44 @@ def build_dataset_thermodb(
     selectors. Non-dataset tables are skipped. Both inline ``VALUES`` datasets
     and CSV-backed datasets available through ``custom_reference`` are
     supported.
+
+    Parameters
+    ----------
+    reference_config : Union[Mapping[str, Any], str]
+        Configuration mapping source names to databook and table selectors.
+    custom_reference : Optional[CustomReference], optional
+        Custom reference for CSV-backed datasets, by default None.
+    thermodb_name : Optional[str], optional
+        Name of the ThermoDB to be built, by default None.
+    message : Optional[str], optional
+        Message describing the ThermoDB, by default None.
+    thermodb_save : Optional[bool], optional
+        Whether to save the ThermoDB after building, by default False.
+    thermodb_save_path : Optional[str], optional
+        Path to save the ThermoDB, by default None.
+    verbose : bool, optional
+        Whether to print verbose logging information, by default False.
+
+    Returns
+    -------
+    Optional[CompBuilder]
+        The built ThermoDB object if successful, otherwise None.
     """
     _ = kwargs
+
+    # SECTION: normalize dataset reference config and initialize source
     configs = _normalize_dataset_reference_config(reference_config)
+
+    # SECTION: set configuration and initialize source
     set_config(AppConfig(include_data=True, build_type="dataset"))
+
+    # SECTION: initialize source and datasets container
     source = init(custom_reference=custom_reference)
+
+    # dataset container
     datasets: Dict[str, TableDataset] = {}
 
+    # SECTION: build datasets from reference config
     for source_name, source_config in configs.items():
         databook = source_config["databook"]
         table = source_config["table"]
@@ -2815,11 +2856,13 @@ def build_dataset_thermodb(
     if not datasets:
         return None
 
+    # SECTION: handle empty datasets
     if thermodb_name is None:
         thermodb_name = "datasets"
     if message is None:
         message = "Thermodb including dataset sources: " + ", ".join(datasets)
 
+    # SECTION: build thermodb with datasets
     result = build_thermodb(thermodb_name=thermodb_name, message=message)
     for source_name, dataset in datasets.items():
         if not result.add_data(source_name, dataset):
@@ -2827,6 +2870,7 @@ def build_dataset_thermodb(
                 f"Adding dataset source '{source_name}' to thermodb failed."
             )
 
+    # SECTION: save or build thermodb
     if thermodb_save:
         save_path = check_file_path(
             file_path=thermodb_save_path,
@@ -2834,9 +2878,11 @@ def build_dataset_thermodb(
             create_dir=True,
         )
         if not result.save(filename=thermodb_name, file_path=save_path):
-            raise RuntimeError(f"Saving dataset thermodb '{thermodb_name}' failed.")
+            raise RuntimeError(
+                f"Saving dataset thermodb '{thermodb_name}' failed.")
     elif not result.build():
-        raise RuntimeError(f"Building dataset thermodb '{thermodb_name}' failed.")
+        raise RuntimeError(
+            f"Building dataset thermodb '{thermodb_name}' failed.")
 
     if verbose:
         logger.info(
@@ -2847,90 +2893,7 @@ def build_dataset_thermodb(
     return result
 
 
-@measure_time
-def build_dataset_thermodb_from_reference(
-    reference_content: str,
-    databook_name: Optional[str] = None,
-    table_name: Optional[str] = None,
-    custom_reference: Optional[CustomReference] = None,
-    thermodb_name: Optional[str] = None,
-    message: Optional[str] = None,
-    thermodb_save: Optional[bool] = False,
-    thermodb_save_path: Optional[str] = None,
-    verbose: bool = False,
-    **kwargs,
-) -> Optional[DatasetThermoDB]:
-    """Discover and build dataset tables from YAML reference content or a path.
-
-    ``databook_name`` and ``table_name`` optionally restrict discovery. For
-    CSV-backed references, pass their table paths in ``custom_reference``;
-    this function supplies ``reference_content`` as the reference source.
-    """
-    if not isinstance(reference_content, str) or not reference_content.strip():
-        raise TypeError("reference_content must be a non-empty string.")
-    if databook_name is not None and not isinstance(databook_name, str):
-        raise TypeError("databook_name must be a string or None.")
-    if table_name is not None and not isinstance(table_name, str):
-        raise TypeError("table_name must be a string or None.")
-
-    reference: CustomReference = dict(custom_reference or {})
-    reference["reference"] = [reference_content]
-    checker = ReferenceChecker(reference)
-    databooks = (
-        [databook_name]
-        if databook_name is not None
-        else checker.get_databook_names()
-    )
-    configs: Dict[str, ComponentConfig] = {}
-    for db_name in databooks:
-        tables = checker.get_databook_tables(db_name)
-        if not isinstance(tables, Mapping):
-            continue
-        for tb_name, table_data in tables.items():
-            if table_name is not None and tb_name != table_name:
-                continue
-            if not isinstance(table_data, Mapping) or "DATASET-IDS" not in table_data:
-                continue
-            source_name = f"{db_name}::{tb_name}"
-            configs[source_name] = {
-                "databook": db_name,
-                "table": tb_name,
-                "mode": "DATASET",
-            }
-
-    if not configs:
-        logger.warning("No matching Dataset tables were found in the reference.")
-        return None
-
-    result = build_dataset_thermodb(
-        reference_config=configs,
-        custom_reference=reference,
-        thermodb_name=thermodb_name,
-        message=message,
-        thermodb_save=thermodb_save,
-        thermodb_save_path=thermodb_save_path,
-        verbose=verbose,
-        **kwargs,
-    )
-    if result is None:
-        return None
-
-    reference_thermodb = ReferenceThermoDB(
-        reference=reference,
-        contents=[reference_content],
-        configs=configs,
-        rules={},
-        labels=[],
-        ignore_labels=[],
-        ignore_props=[],
-    )
-    return DatasetThermoDB(
-        thermodb=result,
-        reference_thermodb=reference_thermodb,
-    )
-
-
-# SECTION: build interaction thermodb
+# ! ::: build interaction thermodb
 
 
 @measure_time
@@ -3121,7 +3084,7 @@ def build_interaction_thermodb(
     return thermodb_comp
 
 
-# SECTION: build component thermodb from reference
+# ! ::: build component thermodb from reference
 
 
 @measure_time
@@ -4424,6 +4387,8 @@ def build_constants_thermodb_from_reference(
     except Exception as e:
         raise Exception(f"Building constants thermodb failed! {e}")
 
+# ! ::: build interaction ThermoDB from reference content
+
 
 @measure_time
 def build_interaction_thermodb_from_reference(
@@ -4534,5 +4499,119 @@ def build_interaction_thermodb_from_reference(
     return MixtureThermoDB(
         components=components,
         thermodb=thermodb_comp,
+        reference_thermodb=reference_thermodb,
+    )
+
+# ! ::: build dataset ThermoDB from reference content
+
+
+@measure_time
+def build_dataset_thermodb_from_reference(
+    reference_content: str,
+    custom_reference: Optional[CustomReference] = None,
+    databook_name: Optional[str] = None,
+    table_name: Optional[str] = None,
+    thermodb_name: Optional[str] = None,
+    message: Optional[str] = None,
+    thermodb_save: Optional[bool] = False,
+    thermodb_save_path: Optional[str] = None,
+    verbose: bool = False,
+    **kwargs,
+) -> Optional[DatasetThermoDB]:
+    """Discover and build dataset tables from YAML reference content or a path.
+
+    ``databook_name`` and ``table_name`` optionally restrict discovery. For
+    CSV-backed references, pass their table paths in ``custom_reference``;
+    this function supplies ``reference_content`` as the reference source.
+
+    Parameters
+    ----------
+    reference_content : str
+        The YAML reference content as a string.
+    custom_reference : Optional[CustomReference], optional
+        Custom reference mapping for CSV-backed references, by default None.
+    databook_name : Optional[str], optional
+        Name of the databook to restrict discovery, by default None.
+    table_name : Optional[str], optional
+        Name of the table to restrict discovery, by default None.
+    thermodb_name : Optional[str], optional
+        Name of the ThermoDB instance, by default None.
+    message : Optional[str], optional
+        Message to include in the ThermoDB build, by default None.
+    thermodb_save : Optional[bool], optional
+        Whether to save the ThermoDB instance, by default False.
+    thermodb_save_path : Optional[str], optional
+        Path to save the ThermoDB instance, by default None.
+    verbose : bool, optional
+        Whether to enable verbose logging, by default False.
+    **kwargs
+        Additional keyword arguments passed to the ThermoDB build function.
+
+    Returns
+    -------
+    Optional[DatasetThermoDB]
+        The built DatasetThermoDB instance, or None if no matching tables were found.
+    """
+    if not isinstance(reference_content, str) or not reference_content.strip():
+        raise TypeError("reference_content must be a non-empty string.")
+    if databook_name is not None and not isinstance(databook_name, str):
+        raise TypeError("databook_name must be a string or None.")
+    if table_name is not None and not isinstance(table_name, str):
+        raise TypeError("table_name must be a string or None.")
+
+    reference: CustomReference = dict(custom_reference or {})
+    reference["reference"] = [reference_content]
+    checker = ReferenceChecker(reference)
+    databooks = (
+        [databook_name]
+        if databook_name is not None
+        else checker.get_databook_names()
+    )
+    configs: Dict[str, ComponentConfig] = {}
+    for db_name in databooks:
+        tables = checker.get_databook_tables(db_name)
+        if not isinstance(tables, Mapping):
+            continue
+        for tb_name, table_data in tables.items():
+            if table_name is not None and tb_name != table_name:
+                continue
+            if not isinstance(table_data, Mapping) or "DATASET-IDS" not in table_data:
+                continue
+            source_name = f"{db_name}::{tb_name}"
+            configs[source_name] = {
+                "databook": db_name,
+                "table": tb_name,
+                "mode": "DATASET",
+            }
+
+    if not configs:
+        logger.warning(
+            "No matching Dataset tables were found in the reference.")
+        return None
+
+    result = build_dataset_thermodb(
+        reference_config=configs,
+        custom_reference=reference,
+        thermodb_name=thermodb_name,
+        message=message,
+        thermodb_save=thermodb_save,
+        thermodb_save_path=thermodb_save_path,
+        verbose=verbose,
+        **kwargs,
+    )
+    if result is None:
+        return None
+
+    reference_thermodb = ReferenceThermoDB(
+        reference=reference,
+        contents=[reference_content],
+        configs=configs,
+        rules={},
+        labels=[],
+        ignore_labels=[],
+        ignore_props=[],
+    )
+    return DatasetThermoDB(
+        thermodb=result,
         reference_thermodb=reference_thermodb,
     )
