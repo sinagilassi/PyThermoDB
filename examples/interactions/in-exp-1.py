@@ -20,7 +20,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 # SECTION: initialize the example reference
 EXAMPLE_DIR = Path(__file__).resolve().parent
-REFERENCE_PATH = EXAMPLE_DIR / "interaction-format-1.yaml"
+REFERENCE_PATH = EXAMPLE_DIR / "interaction-format-2.yaml"
 REFERENCE = {"reference": [str(REFERENCE_PATH)]}
 
 thermo_db = ptdb.init(custom_reference=REFERENCE)
