@@ -30,6 +30,62 @@ logger = logging.getLogger(__name__)
 
 
 class TableEquation:
+    """Store, inspect, and evaluate table-defined equations.
+
+    Equation definitions contain a body, arguments, parameters, return
+    metadata, and optional integral or derivative bodies. Call :meth:`eqSet`
+    after loading transformed table data to select the equation used by the
+    calculation methods.
+
+    Parameters
+    ----------
+    databook_name : str | int
+        Name or identifier of the source databook.
+    table_name : str | int
+        Name or identifier of the equation table.
+    equations : list
+        Equation definitions loaded from the source reference.
+    table_values : list | dict, optional
+        Transformed table values, when available.
+    table_structure : dict, optional
+        Table structure metadata, when available.
+
+    Notes
+    -----
+    The runtime configuration controls whether table values are retained.
+    Equation and property identifiers preserve the source table's naming and
+    symbol conventions. Equation bodies are executed with ``args``, ``parms``,
+    and ``math`` available in their execution namespace and must assign the
+    calculated value to ``res``.
+
+    Methods
+    -------
+    eq_structure(id=1)
+        Return one equation definition and its optional calculation bodies.
+    eqs_structure(res_format='dict')
+        Return all equation definitions as a dictionary or JSON string.
+    eqSet()
+        Select and load the equation referenced by transformed table data.
+    cal(message='', decimal_accuracy=4, **args)
+        Evaluate the selected equation.
+    cal_range(variable_id, variable_range_values, **args)
+        Evaluate the selected equation over a variable range.
+    cal_integral(**args)
+        Evaluate the selected equation's integral body.
+    cal_custom_integral(equation_name, **args)
+        Evaluate a named custom integral body.
+    cal_first_derivative(**args)
+        Evaluate the first derivative body.
+    cal_second_derivative(**args)
+        Evaluate the second derivative body.
+    normalized_fn_body(eq_id)
+        Return one equation with parameter-unit normalization applied.
+    normalized_fns()
+        Return normalized bodies for all equations.
+    to_dict()
+        Return the selected equation definition as a dictionary.
+    """
+
     # vars
     body = ''
     parms = {}
@@ -57,22 +113,26 @@ class TableEquation:
         table_values: Optional[List | Dict] = None,
         table_structure: Optional[Dict[str, Any]] = None
     ):
-        '''
-        Initialize the TableEquation class.
+        """Initialize an equation table and its optional transformed values.
 
         Parameters
         ----------
-        databook_name : str
-            Name of the databook.
-        table_name : str
-            Name of the table.
+        databook_name : str | int
+            Name or identifier of the source databook.
+        table_name : str | int
+            Name or identifier of the equation table.
         equations : list
-            List of equations.
-        table_values : list, optional
-            Values for the table (default is None), if provided in yml file.
+            Equation definitions loaded from the source reference.
+        table_values : list | dict, optional
+            Transformed table values, when available.
         table_structure : dict, optional
-            Structure of the table (default is None), if provided in yml file.
-        '''
+            Table structure metadata, when available.
+
+        Notes
+        -----
+        When ``include_data`` is false in the runtime configuration, supplied
+        table values are discarded.
+        """
         # NOTE: get config
         config = get_config()
         # ! include data tables based on config
@@ -107,6 +167,7 @@ class TableEquation:
             self.__table_values = None
 
     def _context(self, **context):
+        """Build common exception context for this equation table."""
         base_context = {
             "databook_name": self.databook_name,
             "table_name": self.table_name,
@@ -116,27 +177,33 @@ class TableEquation:
 
     @property
     def trans_data(self):
+        """Return transformed table data used by equation operations."""
         return self.__trans_data
 
     @trans_data.setter
     def trans_data(self, value):
+        """Replace transformed table data used by equation operations."""
         self.__trans_data = {}
         self.__trans_data = value
 
     @property
     def prop_equation(self):
+        """Return the currently selected equation definition."""
         return self.__prop_equation
 
     @property
     def parms_values(self):
+        """Return calculated values for the selected equation parameters."""
         return self.__parms_values
 
     @property
     def custom_integral(self):
+        """Return the custom integral bodies for the selected equation."""
         return self._custom_integral
 
     @property
     def summary(self):
+        """Return a summary of the selected equation and its metadata."""
         return {
             'databook_name': self.databook_name,
             'table_name': self.table_name,
@@ -155,7 +222,11 @@ class TableEquation:
 
     @property
     def table_values(self):
-        '''Get table values from yml file (if exists)'''
+        """Return stored table values, or print a notice and return ``None``.
+
+        Empty or otherwise falsey values are treated as unavailable by the
+        current legacy accessor.
+        """
         if self.__table_values:
             return self.__table_values
         else:
@@ -168,7 +239,11 @@ class TableEquation:
 
     @property
     def table_structure(self):
-        '''Get table structure from yml file (if exists)'''
+        """Return stored table structure, or print a notice and return ``None``.
+
+        Empty or otherwise falsey values are treated as unavailable by the
+        current legacy accessor.
+        """
         if self.__table_structure:
             return self.__table_structure
         else:
@@ -180,19 +255,24 @@ class TableEquation:
             return None
 
     def eq_structure(self, id=1):
-        '''
-        Display equation details
+        """Return one equation definition using a one-based equation ID.
 
         Parameters
         ----------
         id : int
-            equation id (from 1 to ...), default is 1
+            Equation ID from ``1`` through the number of equations.
 
         Returns
         -------
-        eq_summary : dict
-            equation summary
-        '''
+        dict
+            Equation details, including optional integral, derivative, and
+            custom-integral bodies. The returned ``id`` field is zero-based.
+
+        Raises
+        ------
+        TableEquationDefinitionError
+            If the ID or equation definition is invalid.
+        """
         try:
             # set id
             id = int(id)-1
@@ -240,18 +320,24 @@ class TableEquation:
             self,
             res_format: Literal['dict', 'json'] = 'dict'
     ):
-        '''
-        Display all equations details
+        """Return all equation definitions in the requested format.
 
         Parameters
         ----------
-        None
+        res_format : {'dict', 'json'}, default='dict'
+            Return a dictionary or an indented JSON string.
 
         Returns
         -------
-        eq_summary : dict
-            equation summary
-        '''
+        dict or str
+            Equation summaries keyed as ``equation-1``, ``equation-2``, and
+            so on, or their JSON representation.
+
+        Raises
+        ------
+        TableEquationDefinitionError
+            If the requested format or equation definitions are invalid.
+        """
         try:
             # equation list
             eq_num = self.eq_num
@@ -316,20 +402,18 @@ class TableEquation:
         self,
         column_name: str = 'COLUMNS',
     ) -> List[str]:
-        '''
-        Display table columns defined in `yml file`
+        """Return table columns from the stored structure.
 
         Parameters
         ----------
         column_name : str, optional
-            column name (default is 'COLUMNS')
+            Structure key. Defaults to ``'COLUMNS'``.
 
         Returns
         -------
         columns : list
-            table columns
-
-        '''
+            Declared table columns, or ``[]`` when the structure/key is absent.
+        """
         try:
             # table structure
             table_structure = self.table_structure
@@ -359,19 +443,18 @@ class TableEquation:
 
     @property
     def table_units(self, unit_name: str = 'UNIT'):
-        '''
-        Display table units defined in `yml file`
+        """Return table units from the stored structure.
 
         Parameters
         ----------
         unit_name : str, optional
-            unit name (default is 'UNIT')
+            Structure key. Defaults to ``'UNIT'``.
 
         Returns
         -------
         units : list
-            table units
-        '''
+            Declared units, or ``[]`` when the structure/key is absent.
+        """
         try:
             # table structure
             table_structure = self.table_structure
@@ -401,19 +484,18 @@ class TableEquation:
 
     @property
     def table_symbols(self, symbol_name: str = 'SYMBOL'):
-        '''
-        Display table symbols defined in `yml file`
+        """Return table symbols from the stored structure.
 
         Parameters
         ----------
         symbol_name : str, optional
-            symbol name (default is 'SYMBOL')
+            Structure key. Defaults to ``'SYMBOL'``.
 
         Returns
         -------
         symbols : list
-            table symbols
-        '''
+            Declared symbols, or ``[]`` when the structure/key is absent.
+        """
         try:
             # table structure
             table_structure = self.table_structure
@@ -503,7 +585,7 @@ class TableEquation:
             ) from e
 
     def get_return_items(self) -> Optional[List[Dict[str, str]]]:
-        '''Get return items.'''
+        """Return validated return metadata items, or ``None`` if unavailable."""
         try:
             # get return symbols
             _returns = self.returns
@@ -559,9 +641,7 @@ class TableEquation:
             ) from e
 
     def get_records(self) -> Optional[Dict[str, Any]]:
-        '''
-        Get record from trans data.
-        '''
+        """Return ``value`` entries from the transformed data mapping."""
         try:
             # NOTE: columns and symbols
             columns = [k for k in self.trans_data.keys()]
@@ -597,7 +677,7 @@ class TableEquation:
             return None
 
     def eq_info(self):
-        '''Get equation information.'''
+        """Return metadata for the selected equation's first return item."""
         try:
             # get return
             _return = self.returns
@@ -627,30 +707,15 @@ class TableEquation:
     def get_variable_range_values(
             self,
     ):
-        '''
-        Get variable range values for given variable names.
-
-        Parameters
-        ----------
-        None
+        """Collect transformed minimum and maximum values for argument ranges.
 
         Returns
         -------
-        Dict[str, List[float]]
-            A dictionary with variable names as keys and their range values as lists.
-
-        Examples
-        --------
-        >>> res = get_variable_range_values(variable_names=['T', 'P'])
-        >>> print(res)
-
-        ```python
-            {
-            'T': [100.0, 500.0],
-            'P': [1.0, 10.0]
-            }
-        ```
-        '''
+        dict
+            A mapping from argument names to ``min``/``max`` entries found in
+            ``trans_data``. Missing structure, symbols, or range data produce
+            an empty mapping or omit the unavailable entry.
+        """
         try:
             def parse_min_max(var_name: str) -> dict:
                 if var_name.endswith("min"):
@@ -737,28 +802,31 @@ class TableEquation:
         decimal_accuracy: int = 4,
         **args
     ) -> EquationResult:
-        '''
-        Execute a function
+        """Evaluate the selected equation and format its result.
 
         Parameters
         ----------
         message : str
-            message to be printed
+            Message stored in the returned result.
         decimal_accuracy : int
-            decimal accuracy (default is 4)
+            Number of decimal places used to round numeric results.
         args : dict
-            a dictionary contains variable names and values as
+            Variable names and values supplied to the equation body.
 
         Returns
         -------
-        eq_data : dict
-            calculation result
+        Returns
+        -------
+        EquationResult
+            Formatted calculation result and equation metadata.
 
-        Examples
-        --------
-        >>> res = cal(message=f'{comp1} Vapor Pressure', T=120,P=1)
-        >>> print(res)
-        '''
+        Raises
+        ------
+        TableEquationBodyError
+            If the selected equation has no body.
+        TableEquationCalculationError
+            If parameter loading or equation execution fails.
+        """
         try:
             # equation info
             eq_info = self.eq_info()
@@ -806,19 +874,19 @@ class TableEquation:
             ) from e
 
     def cal_result_type(self, result: EquationResult) -> str:
-        '''
-        Get the type of the calculation result.
+        """Return the type-name of the result's ``value`` field.
 
         Parameters
         ----------
         result : EquationResult
-            The calculation result for which to determine the type.
+            Calculation result containing a ``value`` field.
 
         Returns
         -------
         str
-            The type of the calculation result (e.g., 'float', 'int', 'str', 'dict', 'ndarray').
-        '''
+            A type name such as ``'float'``, ``'int'``, ``'str'``, or
+            ``'ndarray'``.
+        """
         value = result.get('value', None)
 
         if isinstance(value, float):
@@ -856,7 +924,7 @@ class TableEquation:
         variable_range_values : List[float]
             A list containing the range values for the variable.
         message : str
-            A message to be printed.
+            A message stored in each calculation result.
         decimal_accuracy : int
             Decimal accuracy (default is 4).
         args : dict
@@ -966,25 +1034,25 @@ class TableEquation:
             ) from e
 
     def cal_integral(self, **args):
-        '''
-        Calculate integral
+        """Execute the selected equation's integral body.
 
         Parameters
         ----------
         args : dict
-            a dictionary contains variable names and values
+            Variable names and values passed to the equation body.
 
         Returns
         -------
-        res : float
-            calculation result
+        Returns
+        -------
+        Any
+            The value assigned to ``res`` by the integral body.
 
-        Examples
-        --------
-        >>> # heat capacity integral
-        >>> res = cal_integral(T1=120,T2=150)
-        >>> print(res)
-        '''
+        Raises
+        ------
+        TableEquationIntegralError
+            If parameter loading or integral execution fails.
+        """
         try:
             # build parms dict
             _parms = self.load_parms_v2()
@@ -1003,26 +1071,29 @@ class TableEquation:
             ) from e
 
     def cal_custom_integral(self, equation_name: str, **args):
-        '''
-        Calculate custom integral
+        """Execute a named custom integral body.
 
         Parameters
         ----------
         equation_name : str
-            equation name
+            Name of a body in :attr:`custom_integral`.
         args : dict
-            a dictionary contains variable names and values
+            Variable names and values passed to the integral body.
 
         Returns
         -------
-        res : float
-            calculation result
+        Returns
+        -------
+        Any
+            The value assigned to ``res`` by the custom integral body.
 
-        Examples
-        --------
-        >>> res = cal_custom_integral('Cp/RT',T1=120,T2=150)
-        >>> print(res)
-        '''
+        Raises
+        ------
+        TableEquationIntegralError
+            If the body is missing or execution fails.
+        TableEquationLookupError
+            If ``equation_name`` is not present.
+        """
         try:
             # check
             if equation_name is None:
@@ -1061,24 +1132,21 @@ class TableEquation:
             ) from e
 
     def cal_first_derivative(self, **args):
-        '''
-        Calculate first derivative
+        """Execute the selected equation's first-derivative body.
 
         Parameters
         ----------
         args : dict
-            a dictionary contains variable names and values
+            Variable names and values passed to the derivative body.
 
         Returns
         -------
-        res : float
-            calculation result
-
-        Examples
-        --------
-        >>> res = cal_first_derivative(T=120,P=1)
-        >>> print(res)
-        '''
+        Returns
+        -------
+        Any or None
+            The value assigned to ``res``; ``None`` is returned when
+            derivative execution fails.
+        """
         try:
             # check
             if (
@@ -1104,24 +1172,25 @@ class TableEquation:
             return None
 
     def cal_second_derivative(self, **args):
-        '''
-        Calculate second derivative
+        """Execute the selected equation's second-derivative body.
 
         Parameters
         ----------
         args : dict
-            a dictionary contains variable names and values
+            Variable names and values passed to the derivative body.
 
         Returns
         -------
-        res : float
-            calculation result
+        Returns
+        -------
+        Any
+            The value assigned to ``res`` by the derivative body.
 
-        Examples
-        --------
-        >>> res = cal_second_derivative(T=120,P=1)
-        >>> print(res)
-        '''
+        Raises
+        ------
+        TableEquationDerivativeError
+            If derivative execution fails.
+        """
         try:
             # check
             if (self.body_second_derivative is None or
@@ -1140,10 +1209,18 @@ class TableEquation:
             ) from e
 
     def load_parms(self):
-        '''
-        Load parms values and store in a dict,
-        These parameters are constant values defined in an equation.
-        '''
+        """Load parameter values from transformed data using legacy scaling.
+
+        Returns
+        -------
+        dict
+            Parameter values keyed by symbol, scaled by transformed units.
+
+        Raises
+        ------
+        TableEquationParameterError
+            If transformed parameter data cannot be loaded.
+        """
         try:
             # trans data (taken from csv)
             trans_data = self.trans_data
@@ -1174,9 +1251,18 @@ class TableEquation:
             ) from e
 
     def load_parms_v2(self):
-        """
-        Load parameter values and store in a dict.
-        These parameters are constant values defined in an equation.
+        """Load parameter values using safe unit parsing.
+
+        Returns
+        -------
+        dict
+            Parameter values keyed by symbol. Non-numeric units default to
+            ``1.0`` during scaling.
+
+        Raises
+        ------
+        TableEquationParameterError
+            If transformed parameter data cannot be loaded.
         """
         try:
             trans_data = self.trans_data
@@ -1232,7 +1318,8 @@ class TableEquation:
         Parameters
         ----------
         dataframe : bool, optional
-            whether to return as dataframe or dict (default is True)
+            Whether to return a DataFrame instead of the source dictionary.
+            Defaults to ``False``.
 
         Returns
         -------
@@ -1351,7 +1438,8 @@ class TableEquation:
         Parameters
         ----------
         dataframe : bool, optional
-            whether to return as dataframe or dict (default is True)
+            Whether to return a DataFrame instead of the source dictionary.
+            Defaults to ``False``.
 
         Returns
         -------
@@ -1432,7 +1520,8 @@ class TableEquation:
         Parameters
         ----------
         dataframe : bool, optional
-            whether to return as dataframe or dict (default is True)
+            Whether to return a DataFrame instead of the source dictionary.
+            Defaults to ``False``.
 
         Returns
         -------
@@ -1507,18 +1596,23 @@ class TableEquation:
             return {}
 
     def eqSet(self):
-        '''
-        Set the equation used for calculation
+        """Select and load the equation referenced by ``trans_data['Eq']``.
 
         Parameters
         ----------
-        transform_api_data : dict
-            transform api data
+        None
 
         Returns
         -------
-        None.
-        '''
+        None
+            The selected equation is stored on the instance.
+
+        Notes
+        -----
+        The referenced equation ID is one-based. This method also prepares
+        argument and return symbol mappings and optional integral, derivative,
+        and custom-integral bodies.
+        """
         # set
         transform_api_data = self.trans_data
 
@@ -1602,23 +1696,28 @@ class TableEquation:
             self.__parms_values = self.load_parms_v2()
 
     def eqExe(self, body, parms, args):
-        '''
-        Execute the function having args, parameters and body
+        """Execute an equation body with arguments and parameter values.
 
         Parameters
         ----------
         body : str
-            function body
+            Python statements that assign the result to ``res``.
         parms : dict
-            parameters
+            Parameter values exposed as ``parms``.
         args : dict
-            args
+            Argument values exposed as ``args``.
 
         Returns
         -------
-        res : float
-            calculation result
-        '''
+            Any
+            The value assigned to ``res`` by the body, or ``None`` when the
+            body is ``None``.
+
+        Notes
+        -----
+        The body executes with ``args``, ``parms``, and the standard ``math``
+        module in its namespace.
+        """
         # check body
         if body is None:
             print('Function body not defined!')
@@ -1634,18 +1733,18 @@ class TableEquation:
         return namespace['res']
 
     def to_dict(self):
-        '''
-        Convert equation to dict
+        """Return the currently selected equation definition as a dictionary.
 
         Parameters
         ----------
-        None.
+        None
 
         Returns
         -------
-        res : str
-            equation in dict
-        '''
+        dict
+            Selected equation data, including body, arguments, parameters,
+            returns, and optional calculation bodies.
+        """
         # create dict
         res = self.__prop_equation
         # yml
@@ -1656,8 +1755,7 @@ class TableEquation:
         return res
 
     def check_custom_integral_equation_body(self, equation_name) -> str:
-        '''
-        Displays the equation body of custom integral by equation name
+        """Return the body lines for a named custom integral.
 
         Parameters
         ----------
@@ -1669,10 +1767,13 @@ class TableEquation:
         body : str
             equation body
 
-        Examples
-        --------
-        >>> body = custom_integral_equation_body('Cp/RT')
-        '''
+        Raises
+        ------
+        TableEquationIntegralError
+            If custom-integral data or the name is missing.
+        TableEquationLookupError
+            If ``equation_name`` is not present.
+        """
         try:
             # check
             if self._custom_integral is None:
@@ -1704,18 +1805,18 @@ class TableEquation:
             ) from e
 
     def make_arg_symbols(self, args) -> dict:
-        '''
-        Make argument symbols
+        """Build a symbol-keyed mapping from argument metadata.
 
         Parameters
         ----------
         args : dict
-            arguments
+            Argument metadata, normally a dictionary.
 
         Returns
         -------
-        None.
-        '''
+            dict
+                Mapping from argument symbol to name, symbol, and unit.
+        """
         try:
             # reset
             arg_symbols = {}
@@ -1744,18 +1845,18 @@ class TableEquation:
             ) from e
 
     def make_return_symbols(self, returns) -> dict:
-        '''
-        Make return symbols
+        """Build a symbol-keyed mapping from return metadata.
 
         Parameters
         ----------
         returns : dict
-            returns
+            Return metadata, normally a dictionary.
 
         Returns
         -------
-        None.
-        '''
+            dict
+                Mapping from return symbol to name, symbol, and unit.
+        """
         try:
             # reset
             return_symbols = {}
@@ -1788,14 +1889,21 @@ class TableEquation:
             param_id: Literal['arg', 'return'],
             mode: Literal['name', 'symbol'] = 'symbol'
     ) -> List[str]:
-        '''
-        Get return identifiers.
+        """Return argument or return names/symbols in source order.
+
+        Parameters
+        ----------
+        param_id : {'arg', 'return'}
+            Select argument or return metadata.
+        mode : {'name', 'symbol'}, default='symbol'
+            Select which identifier field to return.
 
         Returns
         -------
         List[str]
-            List of return symbols.
-        '''
+            Matching names or symbols. Invalid selections return an empty
+            list and are logged.
+        """
         try:
             # SECTION: get symbols source
             if param_id == 'arg':
@@ -1849,8 +1957,7 @@ class TableEquation:
             ) from e
 
     def is_symbol_available(self, symbol: str):
-        '''
-        Check if a symbol is available in the table data. This method is case-insensitive.
+        """Check whether a symbol is available in the table structure.
 
         Parameters
         ----------
@@ -1859,9 +1966,10 @@ class TableEquation:
 
         Returns
         -------
-        bool
-            True if the symbol is available, False otherwise.
-        '''
+        PropertyMatch
+            Availability result using ``SYMBOL`` search mode. Lookup
+            comparison follows :class:`TableUtil` behavior.
+        """
         try:
             # NOTE: get symbols
             symbols = self.table_symbols
@@ -1877,8 +1985,7 @@ class TableEquation:
             )
 
     def is_column_name_available(self, column_name: str):
-        '''
-        Check if a column name is available in the table data.
+        """Check whether a column name is available in the table structure.
 
         Parameters
         ----------
@@ -1887,9 +1994,9 @@ class TableEquation:
 
         Returns
         -------
-        bool
-            True if the column name is available, False otherwise.
-        '''
+        PropertyMatch
+            Availability result using ``COLUMN`` search mode.
+        """
         try:
             # NOTE: get column names
             column_names = self.table_columns
@@ -1909,21 +2016,21 @@ class TableEquation:
             prop_id: str,
             search_mode: Literal['SYMBOL', 'COLUMN', 'BOTH'] = 'BOTH'
     ) -> PropertyMatch:
-        '''
-        Check if a property is available in the table data.
+        """Check a property by symbol, column name, or both.
 
         Parameters
         ----------
         prop_id : str
             Property ID to check.
         search_mode : Literal['SYMBOL', 'COLUMN', 'BOTH'], optional
-            Search mode (default: 'BOTH'). Can be 'SYMBOL', 'COLUMN', or 'BOTH'.
+            Search mode. Can be ``'SYMBOL'``, ``'COLUMN'``, or ``'BOTH'``.
 
         Returns
         -------
-        bool
-            True if the property is available, False otherwise.
-        '''
+        PropertyMatch or bool
+            Availability result. Invalid non-string IDs and invalid search
+            modes retain the legacy ``False`` return behavior.
+        """
         try:
             # NOTE: check inputs
             if not isinstance(prop_id, str):
@@ -1977,24 +2084,23 @@ class TableEquation:
             self,
             eq_id: int
     ) -> Optional[TableEquationBlock]:
-        '''
-        Get normalized function body with appropriate parameter units.
+        """Return one equation body with numeric parameter-unit normalization.
 
         Parameters
         ----------
         eq_id : int
-            Equation ID for which to normalize the function body (non-zero Id).
+            One-based equation ID for which to normalize the function body.
 
         Returns
         -------
         Optional[TableEquationBlock]
-            Normalized function body with parameter units, or None if table structure is not defined.
+            Normalized equation block, or ``None`` if normalization fails.
 
         Notes
         -----
-        This method retrieves the equation structure for the specified equation ID,
-        extracts the parameter units, and constructs a normalized function body, finally returning all equation data including the normalized body, parameters, arguments, and returns.
-        '''
+        Numeric parameter units are prepended to the body as assignments that
+        divide the corresponding ``parms`` values before execution.
+        """
         try:
             # SECTION: retrieve equation structure
             # NOTE: equations
