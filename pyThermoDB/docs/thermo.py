@@ -82,9 +82,85 @@ ThermoProperty = Union[
 
 
 class ThermoDB(ManageData):
-    '''
-    Setting class
-    '''
+    """Facade for discovering, loading, and building thermodynamic tables.
+
+    ``ThermoDB`` coordinates reference-data access through ``ManageData`` and
+    ``TableReference`` and converts selected tables into the runtime classes
+    used by the package. It supports component data, equations, matrix data,
+    scalar interaction data, constants, and observational datasets.
+
+    Parameters
+    ----------
+    custom_ref : dict | str, optional
+        Custom reference definition or path passed to ``ManageData``.
+    data_source : {'local', 'api'}, default='local'
+        Source label used by component-data loading methods.
+
+    Notes
+    -----
+    Databook and table identifiers accepted by public methods may be names or
+    one-based integer IDs. Runtime table objects are returned by the
+    ``*_load`` and ``build_*`` methods. Result-format arguments generally
+    return dictionaries, lists, DataFrames, or JSON strings as documented by
+    each method.
+
+    Methods
+    -------
+    list_symbols(res_format='dataframe')
+        List symbols in the requested representation.
+    list_descriptions(res_format='dataframe')
+        List databook and table descriptions.
+    list_databooks(res_format='dataframe')
+        List available databooks.
+    list_tables(databook, res_format='dataframe')
+        List tables in a databook.
+    select_table(databook, table)
+        Select a table definition by name or one-based ID.
+    table_info(databook, table, res_format='dataframe')
+        Summarize a table's type and contained record counts.
+    equation_load(databook, table)
+        Load a :class:`TableEquation`.
+    data_load(databook, table)
+        Load a :class:`TableData`.
+    constants_load(databook, table)
+        Load a :class:`TableConstants`.
+    matrix_equation_load(databook, table)
+        Load a :class:`TableMatrixEquation`.
+    matrix_data_load(databook, table)
+        Load a :class:`TableMatrixData`.
+    interaction_data_load(databook, table)
+        Load a :class:`TableInteractionData`.
+    dataset_load(databook, table)
+        Load a :class:`TableDataset`.
+    build_thermo_property(component_names, databook, table, **kwargs)
+        Build a runtime property object based on table type.
+    build_components_thermo_property(components, databook, table, ...)
+        Build a runtime property using ``Component`` objects.
+    build_equation(component_name, databook, table, ...)
+        Build and initialize a component equation.
+    build_data(component_name, databook, table, ...)
+        Build and populate component data.
+    build_matrix_equation(component_names, databook, table, ...)
+        Build and initialize a matrix equation.
+    build_matrix_data(component_names, databook, table, ...)
+        Build component matrix data.
+    build_matrices_data(component_names, databook, table, ...)
+        Build matrix data for multiple mixtures.
+    build_constants(databook, table)
+        Build a table-wide constants object.
+    build_dataset(databook, table)
+        Build an observational dataset object.
+    build_interaction_data(components, databook, table, ...)
+        Validate availability and load scalar interaction data.
+    search_databook(search_terms, ...)
+        Search component records across databooks.
+    list_components(res_format='dict')
+        List component identifiers.
+    list_components_info(res_format='dict')
+        List component metadata.
+    search_constants(search_terms, ...)
+        Search constants across reference tables.
+    """
     # selected databook
     __selected_databook = ''
     # selected table
@@ -257,7 +333,7 @@ class ThermoDB(ManageData):
         databook : int | str
             databook id or name
         res_format : Literal['dict', 'json']
-            Format of the returned data. Defaults to 'dict'.
+            Format of the returned data. Defaults to ``'json'``.
 
         Returns
         -------
@@ -341,7 +417,7 @@ class ThermoDB(ManageData):
         ----------
         databook : int | str
             databook id or name
-        res_format : Literal['list', 'dataframe', 'json']
+        res_format : Literal['list', 'dataframe', 'json', 'dict']
             Format of the returned data. Defaults to 'dataframe'.
 
         Returns
@@ -475,7 +551,7 @@ class ThermoDB(ManageData):
         ] = 'str'
     ) -> str | dict:
         '''
-        Get information about a databook.
+        Get the description of a table.
 
         Parameters
         ----------
@@ -538,7 +614,7 @@ class ThermoDB(ManageData):
         ] = 'dataframe'
     ) -> dict[str, int | str] | pd.DataFrame | str:
         '''
-        Gives table contents as:
+        Return a summary of table contents as:
 
             * Table type
             * Data and equations numbers
@@ -559,12 +635,15 @@ class ThermoDB(ManageData):
 
         Notes
         -----
-        1. The default value of dataframe is True, the return value (tb_summary) is Pandas Dataframe
-        2. The table type can be one of the following:
+        1. The default ``res_format`` is ``'dataframe'``.
+        2. The table type can include:
             - 'Equation': if the table contains equations
             - 'Data': if the table contains data
             - 'Matrix-Equation': if the table contains matrix equations
             - 'Matrix-Data': if the table contains matrix data
+            - 'Interaction-Data': if the table contains scalar interactions
+            - 'Dataset': if the table contains observational data
+            - 'Constants': if the table contains table-wide constants
         '''
         try:
             # table type
@@ -1033,8 +1112,8 @@ class ThermoDB(ManageData):
 
         Returns
         -------
-        object : TableData
-            table object with data loaded
+        TableConstants
+            Constants table object with data loaded.
         '''
         try:
             # table type
@@ -1558,7 +1637,7 @@ class ThermoDB(ManageData):
             table id or name
         column_name : str | list
             column name (e.g. 'Name') | list as ['Name','state']
-        query : str
+        query : bool
             query to search a dataframe
 
         Returns
@@ -1680,7 +1759,7 @@ class ThermoDB(ManageData):
         query : bool, optional
             query to search a dataframe, by default False
         res_format : Literal['dict', 'json', 'str'], optional
-            Format of the returned data, by default 'json'
+            Format of the returned data, by default ``'dict'``.
 
         Returns
         -------
@@ -1790,7 +1869,7 @@ class ThermoDB(ManageData):
         component_key : Literal['Name-State', 'Formula-State'], optional
             The key to use for identifying the component, by default 'Name-State'.
         res_format : Literal['dict', 'json', 'str'], optional
-            The format of the returned result, by default 'json'.
+            The format of the returned result, by default ``'dict'``.
 
         Returns
         -------
@@ -3191,13 +3270,11 @@ class ThermoDB(ManageData):
             The delimiter used in the mixture identifiers, by default '|'.
         ignore_component_state : bool, optional
             Whether to ignore the state of the components when checking availability, by default False.
-        res_format : Literal['dict', 'json', 'str'], optional
-            The format of the returned result, by default 'dict'.
-
         Returns
         -------
-        str | Dict
-            Summary of the mixtures availability as a string or dictionary in the specified format.
+        Dict[str, Dict]
+            Mixture IDs mapped to binary-mixture availability and component
+            data results.
 
             - 'databook_id': databook id,
             - 'databook_name': 'Thermodynamic Properties of Pure Compounds',
