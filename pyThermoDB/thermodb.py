@@ -201,18 +201,14 @@ def build_component_thermodb(
         Name of the component to build thermodynamic databook for.
     reference_config : Dict[str, Dict[str, Any]] | str
         Dictionary containing properties of the component to be included in the thermodynamic databook.
-    thermodb_name : Optional[str], optional
-        Name of the thermodynamic databook to be built, by default None
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     component_key : Literal['Name', 'Formula'], optional
-        Key to identify the component in the reference content, by default 'Formula'
-    thermodb_name : Optional[str], optional
-        Name of the thermodynamic databook to be built, by default None
+        Key to identify the component in the reference content, by default 'Name'
     message : Optional[str], optional
         A short description of the component thermodynamic databook, by default None
     reference_config_default_check : Optional[bool], optional
-        Whether to perform default checks on the reference configuration, by default None
+        Whether to perform default checks on the reference configuration, by default True
     thermodb_save : Optional[bool], optional
         Whether to save the built thermodb to a file, by default False
     thermodb_save_path : Optional[str], optional
@@ -251,7 +247,9 @@ def build_component_thermodb(
     }
     ```
 
-    2- This method only checks component by `name`. If you want to check by formula/name and state such as `CO2-g`, `carbon dioxide-g`, use `check_and_build_component_thermodb` method.
+    2- This method checks a component by either `Name` or `Formula`, as selected
+       by `component_key`. To also check its state (for example, `CO2-g` or
+       `carbon dioxide-g`), use `check_and_build_component_thermodb`.
 
     Examples
     --------
@@ -527,15 +525,14 @@ def check_and_build_component_thermodb(
     Parameters
     ----------
     component : Component
-        Component object to build thermodynamic databook for Which includes name, formula, and state.
+        Component object to build the thermodynamic databook for, including its
+        name, formula, and state.
     reference_config : Dict[str, Dict[str, Any]] | str | Dict[str, ComponentConfig]
         Dictionary containing properties of the component to be included in the thermodynamic databook.
     custom_reference : Optional[CustomReference], optional
         Custom reference dictionary for external references, by default None
     component_key : Literal['Name-State', 'Formula-State'], optional
         Key to identify the component in the reference content, by default 'Formula-State'
-    thermodb_name : Optional[str], optional
-        Name of the thermodynamic databook to be built, by default None
     thermodb_name : Optional[str], optional
         Name of the thermodynamic databook to be built, by default None
     message : Optional[str], optional
@@ -591,6 +588,7 @@ def check_and_build_component_thermodb(
                 'critical-temperature': 'Tc',
                 'critical-pressure': 'Pc',
                 'acentric-factor': 'AcFa',
+            },
         },
     }
 
@@ -606,7 +604,8 @@ def check_and_build_component_thermodb(
     """
     ```
 
-    - Table should contain columns including `Name`, `Formula`, and `State` to identify the component. Otherwise during the check, it will raise an error.
+    - The table must contain the columns required by `component_key`: `Name` and
+      `State`, or `Formula` and `State`.
     - ignore_state_props: List of property names to ignore state during the build. For example, if you want to ignore state for a thermo property such as vapor pressure and use only component name and formula, set `ignore_state_props=['VaPr']`.
     - ignore_state_all_props: Whether to ignore state for all properties during the build. If set to True, it will ignore state for all properties in the reference config and only use component name and formula for the check. Note that if `ignore_state_props` is provided, it will override `ignore_state_all_props` and only ignore state for the specified properties.
     '''
@@ -1092,7 +1091,7 @@ def build_components_thermodb(
     2- This method should be used for binary systems only to build matrix-data thermodb. Such tables are usually used to store binary parameters for activity coefficient models (e.g., NRTL, UNIQUAC).
 
     3- The table should contain columns including `Name` and `Formula` to identify the components. Otherwise during the check, it will raise an error.
-    4- The `state` is ignored in this method when checking for component availability in the table. Use `check_and_build_component_thermodb` method if you want to check by state such as `CO2-g`, `carbon dioxide-g`.
+    4- The `state` is ignored in this method when checking component availability. To also check component states, use `check_and_build_components_thermodb` with `Component` objects.
     '''
     try:
         # NOTE: check inputs
@@ -3152,7 +3151,7 @@ def build_component_thermodb_from_reference(
             component object including name, formula, and state
         - `thermodb`: CompBuilder
             CompBuilder object including the built thermodynamic databook
-        - `reference_reference`: ReferenceThermoDB
+        - `reference_thermodb`: ReferenceThermoDB
             ReferenceThermoDB object including the reference content, configs, rules, labels, and ignore settings.
 
     Notes
@@ -3550,7 +3549,7 @@ def build_mixture_thermodb_from_reference(
     Parameters
     ----------
     components : List[Component]
-        List of two Component objects to build thermodynamic databook for. Each Component includes name, formula, and state.
+        List of two or more Component objects used to build the thermodynamic databook. Each Component includes a name, formula, and state.
     reference_content : str
         String content of the reference (YAML format) containing databook and tables.
     component_key : Literal['Name-State', 'Formula-State'], optional
@@ -3593,7 +3592,7 @@ def build_mixture_thermodb_from_reference(
     Returns
     -------
     MixtureThermoDB : object | None
-        MixtureThermoDB object used for building binary mixture thermodynamic databook as:
+        MixtureThermoDB object used for building a mixture thermodynamic databook as:
         - `components`: List[Component]
             List of Component objects used for building the mixture thermodynamic databook.
         - `thermodb`: CompBuilder
@@ -3605,9 +3604,9 @@ def build_mixture_thermodb_from_reference(
     -----
     - The `reference_content` should be a valid YAML string containing the necessary databook and table information.
     - The function utilizes the `ReferenceChecker` class to parse and validate the reference content.
-    - The built `ComponentThermoDB` object includes the component details, the thermodynamic databook, and the reference configuration used.
-    - The `add_label` and `check_labels` parameters help in managing the reference configuration for the component. In this context, labels defined in the reference are compared with the PyThermoDB labels (symbols) to ensure consistency.
-    - ignore_component_state is always False, instead use ignore_state_props to ignore state in specific properties.
+    - The built `MixtureThermoDB` object includes the components, thermodynamic databook, and reference configuration used.
+    - The `add_label` and `check_labels` parameters control label handling while the reference configuration is generated.
+    - Component state is considered by default; use `ignore_state_props` to ignore it for selected properties.
 
     Example
     -------
@@ -4196,7 +4195,7 @@ def build_constants_thermodb_from_reference(
 
     Notes
     -----
-    - ConstantsThermoDB is a ComponentThermoDB with specific settings for constants tables, including:
+    - ConstantsThermoDB stores constants-table sources and their reference metadata:
         - `thermodb`: CompBuilder object containing the constants tables as sources.
         - `reference_thermodb`: ReferenceThermoDB object containing the reference content, configs, rules, labels, and ignore settings for the constants tables.
     """
