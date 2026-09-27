@@ -22,6 +22,47 @@ logger = logging.getLogger(__name__)
 
 
 class TableData:
+    """Store and query component property table data.
+
+    The class wraps a table definition loaded from a reference file and
+    provides access to its columns, symbols, units, values, and property
+    records. Property values can be retrieved by column name, symbol, or
+    one-based column number.
+
+    Parameters
+    ----------
+    databook_name : str | int
+        Name or identifier of the source databook.
+    table_name : str | int
+        Name or identifier of the data table.
+    table_data : dict
+        Table structure and metadata loaded from the source reference.
+    table_values : list | dict, optional
+        Table values loaded from the source reference.
+    table_structure : dict, optional
+        Explicit table structure retained for compatibility with the table
+        loading API.
+
+    Notes
+    -----
+    The global configuration controls whether table values are retained. If
+    ``include_data`` is false, property values are unavailable even when
+    ``table_values`` is supplied. Integer property lookups are one-based.
+
+    Methods
+    -------
+    data_structure()
+        Return the table definition as a pandas DataFrame.
+    get_property(property, message=None)
+        Retrieve a property by name, symbol, or one-based column number.
+    insert(property, message=None)
+        Retrieve a property using the legacy insertion lookup behavior.
+    is_property_available(prop_id, search_mode='BOTH')
+        Check a property by symbol, column name, or both.
+    to_dict()
+        Return the stored property-data mapping as a dictionary.
+    """
+
     # vars
     __trans_data = {}
     __prop_data = {}
@@ -34,22 +75,26 @@ class TableData:
         table_values: Optional[List | Dict] = None,
         table_structure: Optional[Dict[str, Any]] = None
     ):
-        '''
-        Initialize TableData class
+        """Initialize a component property table.
 
         Parameters
         ----------
-        databook_name : str
-            databook name
-        table_name : str
-            table name
+        databook_name : str | int
+            Name or identifier of the source databook.
+        table_name : str | int
+            Name or identifier of the data table.
         table_data : dict
-            table data (dict), taken directly from yml file
+            Table data loaded from the source reference.
         table_values : list | dict, optional
-            table values (default: None), taken directly from yml file if exists
+            Property values loaded from the source reference.
         table_structure : dict, optional
-            table structure (default: None), taken directly from yml file if exists
-        '''
+            Explicit table structure, when provided.
+
+        Notes
+        -----
+        The current configuration is read during initialization. When its
+        ``include_data`` setting is false, supplied table values are discarded.
+        """
         # NOTE: get config
         config = get_config()
         # ! include data tables based on config
@@ -83,19 +128,23 @@ class TableData:
 
     @property
     def trans_data(self):
+        """Return the stored transport-data payload."""
         return self.__trans_data
 
     @trans_data.setter
     def trans_data(self, value):
+        """Replace the stored transport-data payload."""
         self.__trans_data = {}
         self.__trans_data = value
 
     @property
     def prop_data(self):
+        """Return the property-data mapping used for lookups."""
         return self.__prop_data
 
     @prop_data.setter
     def prop_data(self, value):
+        """Store property data while excluding the nested ``data`` entry."""
         self.__prop_data = {}
         exclude_key = 'data'
         self.__prop_data = {
@@ -104,7 +153,7 @@ class TableData:
 
     @property
     def table_values(self):
-        '''Get table values from yml file (if exists)'''
+        """Return table values, or print a notice and return ``None`` if absent."""
         if self.__table_values:
             return self.__table_values
         else:
@@ -117,7 +166,7 @@ class TableData:
 
     @property
     def table_structure(self):
-        '''Get table structure from yml file (if exists)'''
+        """Return the explicit table structure, or ``None`` if absent."""
         if self.__table_structure:
             return self.__table_structure
         else:
@@ -130,19 +179,25 @@ class TableData:
 
     @property
     def table_columns(self, column_name: str = 'COLUMNS') -> List[str]:
-        '''
-        Get table columns from data-table structure
+        """Return column names from the table structure.
 
         Parameters
         ----------
         column_name : str
-            column name (default: 'COLUMNS')
+            Structure key to read. Defaults to ``'COLUMNS'``.
 
         Returns
         -------
-        columns : list
-            list of columns
-        '''
+        list[str]
+            Declared table columns.
+
+        Raises
+        ------
+        TableColumnError
+            If the requested key is missing.
+        TableDataError
+            If the structure cannot be read.
+        """
         try:
             return self.table_data[column_name]
         except KeyError as exc:
@@ -161,19 +216,25 @@ class TableData:
 
     @property
     def table_symbols(self, symbol_name: str = 'SYMBOL') -> List[str]:
-        '''
-        Get table symbols from data-table structure
+        """Return unique, usable property symbols from the table structure.
 
         Parameters
         ----------
         symbol_name : str
-            symbol name (default: 'SYMBOL')
+            Structure key to read. Defaults to ``'SYMBOL'``.
 
         Returns
         -------
-        symbols : list
-            list of symbols
-        '''
+        list[str]
+            Symbols with null-like, placeholder, and duplicate values removed.
+
+        Raises
+        ------
+        TableSymbolError
+            If the requested key is missing.
+        TableDataError
+            If the symbols cannot be read.
+        """
         try:
             # get all symbols
             symbols_ = self.table_data[symbol_name]
@@ -209,19 +270,25 @@ class TableData:
         self,
         unit_name: str = 'UNIT'
     ) -> List[str]:
-        '''
-        Get table units from data-table structure
+        """Return property units from the table structure.
 
         Parameters
         ----------
         unit_name : str
-            unit name (default: 'UNIT')
+            Structure key to read. Defaults to ``'UNIT'``.
 
         Returns
         -------
-        units : list
-            list of units
-        '''
+        list[str]
+            Declared property units.
+
+        Raises
+        ------
+        TableUnitError
+            If the requested key is missing.
+        TableDataError
+            If the units cannot be read.
+        """
         try:
             return self.table_data[unit_name]
         except KeyError as exc:
@@ -240,14 +307,19 @@ class TableData:
 
     @property
     def property_names(self) -> List[str]:
-        '''
-        Get all property names from data-table structure
+        """Return property columns excluding component identity columns.
 
         Returns
         -------
-        property_names : list
-            list of property names
-        '''
+        list[str]
+            Columns other than ``id``, ``no``, ``name``, ``formula``, and
+            ``state`` (case-insensitive).
+
+        Raises
+        ------
+        TableDataError
+            If property names cannot be read.
+        """
         try:
             # NOTE: column names
             prop_names = self.table_columns
@@ -268,9 +340,11 @@ class TableData:
             ) from e
 
     def data_structure(self):
-        '''
-        Display data-table structure including `column names`, `symbol`, `units` and `values`
-        '''
+        """Return the table definition as a DataFrame with an ``ID`` column.
+
+        The generated one-based ``ID`` column is placed at the end of the
+        returned DataFrame.
+        """
         # dataframe
         df = pd.DataFrame(self.table_data)
         # add ID column
@@ -288,21 +362,27 @@ class TableData:
             property: str | int,
             message: Optional[str] = None
     ) -> DataResult:
-        '''
-        Get a component property from data table structure
+        """Retrieve a component property from the property-data mapping.
 
         Parameters
         ----------
         property : str | int
-            property name or id
-        message : str
-            message to display when property is found or not found
+            Property name, symbol, or one-based column number.
+        message : str, optional
+            Message to include in the result.
 
         Returns
         -------
-        data_dict : DataResult
-            property result dict
-        '''
+        DataResult
+            The selected property and its metadata.
+
+        Raises
+        ------
+        TableLookupError
+            If a string property name or symbol is not found.
+        TableValidationError
+            If ``property`` is neither a string nor an integer.
+        """
         # ! get data for a selected component
         # dataframe
         df = pd.DataFrame(self.prop_data)
@@ -397,21 +477,27 @@ class TableData:
             property: str | int,
             message: Optional[str] = None
     ) -> DataResult:
-        '''
-        Get a component property from data table structure
+        """Retrieve a property using the legacy insertion lookup behavior.
 
         Parameters
         ----------
         property : str | int
-            property name, symbol or id
-        message : str
-            message to display when property is found or not found
+            Property name, symbol, or one-based column number.
+        message : str, optional
+            Message to include in the result.
 
         Returns
         -------
-        data_dict : DataResult
-            property result dict
-        '''
+        DataResult
+            The selected property and its metadata.
+
+        Raises
+        ------
+        TableLookupError
+            If a string property name or symbol is not found.
+        TableValidationError
+            If ``property`` is neither a string nor an integer.
+        """
         # ! get data for a selected component
         # dataframe
         df = pd.DataFrame(self.prop_data)
@@ -482,19 +568,18 @@ class TableData:
         return data_dict
 
     def to_dict(self):
-        '''
-        Convert prop to dict
-
-        Parameters
-        ----------
-        component_name : str
-            component name
+        """Return the property-data mapping as a dictionary.
 
         Returns
         -------
-        res : dict
-            dict
-        '''
+        dict
+            Stored property data, excluding any nested ``data`` entry.
+
+        Raises
+        ------
+        TableConversionError
+            If the property data cannot be converted.
+        """
         try:
             # comp data
             res = self.prop_data
@@ -508,8 +593,7 @@ class TableData:
             ) from e
 
     def is_symbol_available(self, symbol: str):
-        '''
-        Check if a symbol is available in the table data. This method is case-insensitive.
+        """Return whether a symbol is available in the table.
 
         Parameters
         ----------
@@ -518,9 +602,9 @@ class TableData:
 
         Returns
         -------
-        bool
-            True if the symbol is available, False otherwise.
-        '''
+        PropertyMatch
+            Availability result using ``SYMBOL`` search mode.
+        """
         try:
             # NOTE: get symbols
             symbols = self.table_symbols
@@ -536,8 +620,7 @@ class TableData:
             )
 
     def is_column_name_available(self, column_name: str):
-        '''
-        Check if a column name is available in the table data.
+        """Return whether a column name is available in the table.
 
         Parameters
         ----------
@@ -546,9 +629,9 @@ class TableData:
 
         Returns
         -------
-        bool
-            True if the column name is available, False otherwise.
-        '''
+        PropertyMatch
+            Availability result using ``COLUMN`` search mode.
+        """
         try:
             # NOTE: get column names
             column_names = self.table_columns
@@ -570,21 +653,21 @@ class TableData:
                 'SYMBOL', 'COLUMN', 'BOTH'
             ] = 'BOTH'
     ) -> PropertyMatch:
-        '''
-        Check if a property is available in the table data.
+        """Check whether a property is available by symbol, column, or both.
 
         Parameters
         ----------
         prop_id : str
             Property ID to check.
         search_mode : Literal['SYMBOL', 'COLUMN', 'BOTH'], optional
-            Search mode (default: 'BOTH'). Can be 'SYMBOL', 'COLUMN', or 'BOTH'.
+            Search mode. Defaults to ``'BOTH'``.
 
         Returns
         -------
-        bool
-            True if the property is available, False otherwise.
-        '''
+        PropertyMatch
+            Availability result. Invalid inputs and internal lookup errors
+            produce an unavailable result.
+        """
         try:
             # NOTE: check inputs
             if not isinstance(prop_id, str):
@@ -635,9 +718,7 @@ class TableData:
             )
 
     def _build_data_result(self, sr: pd.Series) -> DataResult:
-        """
-        Build a typed DataResult payload from a pandas Series.
-        """
+        """Build a typed :class:`DataResult` from a pandas Series."""
         sr_dict = cast(Dict[str, Any], sr.to_dict())
         return DataResult(
             property_name=cast(Optional[str], sr_dict.get('property_name')),

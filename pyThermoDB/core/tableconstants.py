@@ -44,6 +44,21 @@ class TableConstants:
     surrounding whitespace. Values loaded as strings are converted to common
     JSON or Python literal types when possible; non-string values are kept
     unchanged.
+
+    Methods
+    -------
+    data_structure()
+        Return constant records as a pandas DataFrame.
+    get_constant(constant, message=None, strict=True)
+        Retrieve a constant by name, symbol, or integer ``No.`` identifier.
+    is_name_available(name)
+        Check whether a constant name is present.
+    is_symbol_available(symbol)
+        Check whether a constant symbol is present.
+    is_constant_available(constant, search_mode='BOTH')
+        Check a constant by name, symbol, or both.
+    to_dict()
+        Serialize the constants table structure and values.
     """
 
     def __init__(
