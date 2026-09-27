@@ -13,6 +13,7 @@
         "representer",
         "tableconstants",
         "tabledata",
+        "tabledataset",
         "tableequation",
         "tableinteractiondata",
         "tablematrixdata",
