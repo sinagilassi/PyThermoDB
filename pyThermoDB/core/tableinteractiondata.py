@@ -46,6 +46,37 @@ class TableInteractionData:
     A mixture is an ordered tuple of opaque component IDs.  Therefore
     ``A|B|C`` and ``B|A|C`` are distinct records unless a future model adds
     explicit symmetry metadata.
+
+    Methods
+    -------
+    get(property_name, mixture, ...)
+        Return one scalar interaction value, optionally using declared symmetry.
+    require(property_name, mixture)
+        Return a non-null scalar value or raise a lookup error.
+    has(property_name, mixture, ...)
+        Check whether a property and mixture are available.
+    get_mixture(mixture, ...)
+        Return all scalar values for one ordered mixture.
+    get_property(property_name, ...)
+        Return one property indexed by normalized mixture keys.
+    select(...)
+        Filter records by property, component membership, order, or null state.
+    i(property, mixture, ...)
+        Return one scalar interaction as a DataResult-compatible mapping.
+    iis(property_name, mixtures, ...)
+        Return one property for multiple ordered mixtures.
+    get_from_components(property_name, components, ...)
+        Look up a scalar value using component-like objects.
+    get_mixture_from_components(components, ...)
+        Return a complete scalar record using component-like objects.
+    get_interaction_table(mode='all')
+        Return all source rows or only rows with available values.
+    interaction_data_structure()
+        Return the reference structure as a display DataFrame.
+    get_interaction_data_info()
+        Return structure metadata and interaction symbols.
+    to_dict()
+        Serialize the interaction table to canonical reference data.
     """
 
     # ? A later schema may provide explicit interaction-symmetry metadata.
