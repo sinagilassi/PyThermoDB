@@ -25,6 +25,57 @@ logger = logging.getLogger(__name__)
 
 
 class TableMatrixData:
+    """Store, query, and generate component interaction matrices.
+
+    The class supports matrix data stored as a full square table and selected
+    binary-mixture rows. It exposes component properties, matrix elements,
+    matrix dictionaries, and NumPy matrix representations.
+
+    Parameters
+    ----------
+    databook_name : str | int
+        Name or identifier of the source databook.
+    table_name : str | int
+        Name or identifier of the matrix table.
+    table_data : dict[str, Any]
+        Table definition containing matrix symbols and structure metadata.
+    matrix_table : pandas.DataFrame, optional
+        Matrix values used by ``VALUES`` mode.
+    matrix_symbol : list[str], optional
+        Explicit matrix-symbol values. When omitted, symbols are read from
+        ``table_data['MATRIX-SYMBOL']``.
+
+    Notes
+    -----
+    Matrix operation results use either component-labelled dictionaries or
+    NumPy arrays, depending on the selected format. Component identifiers are
+    normalized for mixture matching, while matrix property names retain the
+    source table's naming convention. ``ITEMS`` mode is recognized for source
+    item metadata, but several retrieval methods require ``VALUES`` mode and
+    a pandas DataFrame.
+
+    Methods
+    -------
+    get_property(property, component_name, ...)
+        Return one component property by name, symbol, or one-based column.
+    get_matrix_property(property, component_names, ...)
+        Return one matrix property for a component pair.
+    ij(property, ...)
+        Parse a pair property identifier and return its value.
+    ijs(property, ...)
+        Return pairwise values as a dictionary or NumPy array.
+    mat(property_name, component_names, ...)
+        Build a matrix from selected component names.
+    matX(property_name, components, ...)
+        Build a matrix from ``Component`` objects.
+    get_matrix_rows(component_names, ...)
+        Return matrix-table rows matching selected components.
+    get_matrix_table(mode='all')
+        Return all or selected matrix-table data.
+    to_dict()
+        Return the stored property-data mapping.
+    """
+
     # vars
     __trans_data = {}
     __prop_data = {}
@@ -54,6 +105,28 @@ class TableMatrixData:
         matrix_table=None,
         matrix_symbol: Optional[List[str]] = None
     ):
+        """Initialize matrix metadata, source data, and table structure.
+
+        Parameters
+        ----------
+        databook_name : str | int
+            Name or identifier of the source databook.
+        table_name : str | int
+            Name or identifier of the matrix table.
+        table_data : dict
+            Matrix table definition and structure metadata.
+        matrix_table : pandas.DataFrame, optional
+            Matrix values for ``VALUES`` mode.
+        matrix_symbol : list[str], optional
+            Explicit matrix symbols overriding the source definition.
+
+        Raises
+        ------
+        TableMatrixDataFormatError
+            If matrix-item keys use an invalid format.
+        TableMatrixDataStructureError
+            If the table structure cannot be generated.
+        """
         # set values
         self.databook_name = databook_name
         self.table_name = table_name
@@ -88,6 +161,7 @@ class TableMatrixData:
         self._table_structure = self._generate_table_structure(self.table_data)
 
     def _context(self, **context):
+        """Build common exception context for this matrix table."""
         base_context = {
             "databook_name": self.databook_name,
             "table_name": self.table_name,
@@ -97,38 +171,46 @@ class TableMatrixData:
 
     @property
     def trans_data_pack(self):
+        """Return packed transformed component data."""
         return self.__trans_data_pack
 
     @trans_data_pack.setter
     def trans_data_pack(self, value):
+        """Replace packed transformed component data."""
 
         self.__trans_data_pack = {}
         self.__trans_data_pack = value
 
     @property
     def prop_data_pack(self):
+        """Return packed component property data."""
         return self.__prop_data_pack
 
     @prop_data_pack.setter
     def prop_data_pack(self, value):
+        """Replace packed component property data."""
         self.__prop_data_pack = {}
         self.__prop_data_pack = value
 
     @property
     def trans_data(self):
+        """Return transformed table data."""
         return self.__trans_data
 
     @trans_data.setter
     def trans_data(self, value):
+        """Replace transformed table data."""
         self.__trans_data = {}
         self.__trans_data = value
 
     @property
     def prop_data(self):
+        """Return component property data excluding ``matrix-data``."""
         return self.__prop_data
 
     @prop_data.setter
     def prop_data(self, value):
+        """Store component property data excluding ``matrix-data``."""
         self.__prop_data = {}
         exclude_key = 'matrix-data'
         self.__prop_data = {key: value for key,
@@ -136,14 +218,17 @@ class TableMatrixData:
 
     @property
     def matrix_symbol(self):
+        """Return the configured matrix-symbol list."""
         return self.__matrix_symbol
 
     @property
     def matrix_elements(self):
+        """Return the selected matrix elements."""
         return self.__matrix_elements
 
     @matrix_elements.setter
     def matrix_elements(self, value):
+        """Replace the selected matrix elements."""
         self.__matrix_elements = {}
         self.__matrix_elements = value
 
@@ -156,16 +241,16 @@ class TableMatrixData:
 
     @property
     def matrix_item_keys(self):
-        """Get matrix item keys"""
+        """Return normalized keys generated from matrix-item definitions."""
         return self.__matrix_item_keys
 
     @property
     def table_structure(self):
-        """Get table structure"""
+        """Return the generated matrix table structure."""
         return self._table_structure
 
     def __set_matrix_items(self, matrix_items):
-        """Set matrix items"""
+        """Normalize matrix-item keys and switch the table to ``ITEMS`` mode."""
         # init
         self.__matrix_item_keys = []
         self.__matrix_items = []
@@ -382,14 +467,18 @@ class TableMatrixData:
             ) from e
 
     def _generate_table_structure(self, table_data: dict[str, Any]):
-        '''
-        Generate table structure from data table
+        """Build structure metadata by excluding matrix symbols and items.
 
         Parameters
         ----------
         table_data : dict[str, Any]
-            data table
-        '''
+            Source matrix table definition.
+
+        Returns
+        -------
+        dict
+            Table structure used to build matrix DataFrames.
+        """
         try:
             # init
             table_structure = {}
