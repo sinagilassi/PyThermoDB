@@ -15,6 +15,22 @@ logger = logging.getLogger(__name__)
 
 
 class CompExporter:
+    """
+    Class for exporting computational properties and functions.
+
+    This class manages the addition, removal, and updating of computational
+    properties and functions, ensuring that only allowed types are handled.
+
+    Methods
+    -------
+    _add(name: str, value: TableValue) -> bool
+        Add a new property or function.
+    _remove(name: str) -> bool
+        Remove an existing property or function.
+    _update(name: str, value: TableValue) -> bool
+        Update an existing property or function.
+
+    """
 
     # vars
     __properties = {}
@@ -79,7 +95,8 @@ class CompExporter:
             elif isinstance(value, self.allowed_types_equations):
                 self.__functions[name] = value
             else:
-                raise Exception("Value must be a supported table property or equation")
+                raise Exception(
+                    "Value must be a supported table property or equation")
 
             return True
         except Exception as e:
@@ -155,7 +172,8 @@ class CompExporter:
                     return False
 
             else:
-                logger.error("Value must be a supported table property or equation")
+                logger.error(
+                    "Value must be a supported table property or equation")
                 return False
 
         except Exception as e:
