@@ -1,0 +1,13 @@
+table-name:
+  TABLE-ID: 1
+  DESCRIPTION:
+    Observational dataset table description.
+  DATASET-IDS:
+    - component-1|component-2: 1|2
+  STRUCTURE:
+    COLUMNS: [No.,Id,Temperature,Pressure,Measured-Property]
+    SYMBOL: [null,null,T,P,Y]
+    UNIT: [null,null,K,Pa,unit]
+    ROLE: [null,null,input,input,output]
+  VALUES:
+    - [1,component-1|component-2,298.15,101325,0]

@@ -24,6 +24,8 @@ Full reference files can mix table types under one `TABLES` mapping:
 - equation tables marked by `EQUATIONS`
 - constants tables marked by `CONSTANTS`
 - matrix tables marked by `MATRIX-SYMBOL`
+- interaction-data tables marked by `INTERACTION-SYMBOL`
+- dataset tables marked by `DATASET-IDS`
 
 ## Data table
 
@@ -165,6 +167,50 @@ Required fields:
 - `SYMBOL`
 - `UNIT`
 
+## Interaction-data table
+
+Required fields:
+
+- `TABLE-ID`
+- `DESCRIPTION`
+- non-empty `INTERACTION-SYMBOL`
+- `STRUCTURE`
+- `VALUES`
+
+`STRUCTURE` must contain aligned `COLUMNS`, `SYMBOL`, and `UNIT` lists and must include a
+`Mixture` column. Each `INTERACTION-SYMBOL` item may be a plain symbol or a one-key mapping whose
+value is the symbol. Symbols must be unique, and each must resolve to exactly one column through
+either the column name or its aligned `SYMBOL` entry.
+
+Each `VALUES` row is one complete ordered mixture record. A mixture contains at least two
+non-empty `|`-delimited identifiers. Order is significant: `A|B|C` and `C|B|A` are different
+records. Reject duplicate normalized ordered mixtures; do not sort members or expand scalar
+properties into matrix cells. YAML `null` means unavailable and numeric zero remains a valid value.
+
+Do not add `DATA`, `CONVERSION`, or `MATRIX-SYMBOL`.
+
+## Dataset table
+
+Required fields:
+
+- `TABLE-ID`
+- `DESCRIPTION`
+- `DATASET-IDS`
+- `STRUCTURE`
+- `VALUES`
+
+`DATASET-IDS` is a list of one-key mappings. Each key is a unique, non-empty dataset identifier;
+each value is one positive integer or a pipe-delimited sequence of unique positive integers such
+as `1|2|3`.
+
+`STRUCTURE` must contain aligned `COLUMNS`, `SYMBOL`, `UNIT`, and `ROLE` lists. Column names must
+be unique, non-null symbols must be non-empty and unique, units must be strings or `None`, and
+roles must be `input`, `output`, or `None`. When `COLUMNS` contains `Id`, every non-missing row ID
+must match a declared `DATASET-IDS` key. Repeated `Id` values are normal because one dataset may
+contain many observations. Preserve missing observations as `None` rather than zero.
+
+Do not add `DATA`, `CONVERSION`, `EQUATIONS`, `MATRIX-SYMBOL`, or `INTERACTION-SYMBOL`.
+
 ## Fixed width rule
 
 Each row in `VALUES` must exactly match the number of entries in `COLUMNS`.
@@ -184,8 +230,8 @@ component-state identity into the same row. If duplicate source rows for the sam
 identity have conflicting values, report the conflict in notes and do not fabricate a merged value.
 
 This rule applies to component data tables and component equation tables. It does not apply to
-matrix tables, pairwise mixture rows, or constants tables, because those table types use different
-row identities.
+matrix tables, pairwise mixture rows, interaction-data tables, dataset tables, or constants tables,
+because those table types use different row identities.
 
 Matrix table row identity is the `Mixture` id plus the row component identity.
 For state-aware matching, that row component identity is `Name` plus `State` or
@@ -193,6 +239,10 @@ For state-aware matching, that row component identity is `Name` plus `State` or
 Do not merge the two component rows of a binary pair into one row.
 For multi-component mixtures, repeat this binary row identity pattern for each
 required binary pair.
+
+Interaction-data row identity is the ordered `Mixture` tuple, so all scalar properties for one
+ordered mixture belong in one row. Dataset rows are observations; repeated declared `Id` values
+are valid.
 
 ## Metadata rule
 

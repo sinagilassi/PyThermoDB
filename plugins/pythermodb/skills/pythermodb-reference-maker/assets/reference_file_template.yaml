@@ -43,8 +43,34 @@ REFERENCES:
           UNIT: [None,None,None,None,1,1,1,1,K,bar,bar]
         VALUES:
           - [1,'component','Formula','g',-7.0,1.5,-2.0,-2.0,500,40,1]
-      Custom-Constants:
+      scalar-interactions:
         TABLE-ID: 3
+        DESCRIPTION:
+          Ordered scalar interaction-data table description.
+        INTERACTION-SYMBOL:
+          - first interaction property: psi
+          - second interaction property: zeta
+        STRUCTURE:
+          COLUMNS: [No.,Mixture,psi,zeta]
+          SYMBOL: [null,null,psi,zeta]
+          UNIT: [null,null,1,1]
+        VALUES:
+          - [1,component-1|component-2|component-3,0,0]
+      observational-dataset:
+        TABLE-ID: 4
+        DESCRIPTION:
+          Observational dataset table description.
+        DATASET-IDS:
+          - component-1|component-2: 1|2
+        STRUCTURE:
+          COLUMNS: [No.,Id,Temperature,Pressure,Measured-Property]
+          SYMBOL: [null,null,T,P,Y]
+          UNIT: [null,null,K,Pa,unit]
+          ROLE: [null,null,input,input,output]
+        VALUES:
+          - [1,component-1|component-2,298.15,101325,0]
+      Custom-Constants:
+        TABLE-ID: 5
         DESCRIPTION:
           Constants table description.
         CONSTANTS: []

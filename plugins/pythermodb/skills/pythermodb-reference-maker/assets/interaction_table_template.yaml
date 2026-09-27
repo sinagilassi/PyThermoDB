@@ -1,0 +1,13 @@
+table-name:
+  TABLE-ID: 1
+  DESCRIPTION:
+    Ordered scalar interaction-data table description.
+  INTERACTION-SYMBOL:
+    - first interaction property: psi
+    - second interaction property: zeta
+  STRUCTURE:
+    COLUMNS: [No.,Mixture,psi,zeta]
+    SYMBOL: [null,null,psi,zeta]
+    UNIT: [null,null,1,1]
+  VALUES:
+    - [1,component-1|component-2|component-3,0,0]

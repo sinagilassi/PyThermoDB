@@ -1,6 +1,6 @@
 ---
 name: pythermodb-reference-maker
-description: Extract thermodynamic tables and correlations from references (CSV, PDF, images, or text) and convert them into the project's structured pyThermoDB YAML schema. Supports data tables, constants tables, matrix-parameter tables, and equation-based correlations (e.g., Cp, vapor pressure, density, enthalpy of vaporization), including coefficient parsing and transformation into executable project notation (parms, args, res). Trigger when working with thermodynamic tables, coefficients, correlations, constants, matrix parameters, or YAML formatting. Ensures unit-consistent, schema-compliant, and solver-ready thermodynamic definitions for downstream modeling tools.
+description: Extract thermodynamic tables, observational datasets, scalar interaction records, and correlations from CSV, PDF, images, text, or online sources and convert them into pyThermoDB reference YAML. Supports data, constants, matrix-parameter, interaction-data, dataset, and equation tables, including executable correlation notation. Trigger when creating or validating pyThermoDB reference tables, coefficients, datasets, mixture interactions, constants, or YAML schemas.
 ---
 
 # Thermodynamic Table to YAML Extractor
@@ -13,6 +13,8 @@ Support:
 - Data tables such as general component properties.
 - Constants tables such as custom constants or reaction constants.
 - Matrix-parameter tables such as binary NRTL parameters.
+- Scalar interaction-data tables such as ordered binary or ternary Pitzer parameters.
+- Observational datasets such as VLE, density, kinetics, adsorption, or membrane data.
 - Equation tables such as Cp, vapor pressure, density, and enthalpy of vaporization.
 - Multi-equation systems.
 - Optional integral and derivative expressions.
@@ -33,6 +35,8 @@ Before processing:
    - data table: component or mixture scalar properties
    - constants table: named constants and scalar/list/dict constant values
    - matrix table: pairwise or matrix-parameter data
+   - interaction-data table: one scalar-property record per ordered mixture
+   - dataset table: observational rows with declared input/output roles
    - equation table: coefficients plus formula
 3. Identify container format:
    - full reference: `REFERENCES -> reference id -> DATABOOK-ID -> TABLES`
@@ -209,6 +213,79 @@ Rules:
 - `COLUMNS`, `SYMBOL`, `UNIT`, and every `VALUES` row must have identical length.
 - Do not add `DATA` or `CONVERSION` to matrix tables.
 
+### Interaction-data table
+
+An interaction-data table stores one or more independent scalar properties for an ordered mixture.
+Use it for binary, ternary, or higher-order interaction records that are not row/column matrices.
+
+```yaml
+table-name:
+  TABLE-ID: <int>
+  DESCRIPTION:
+    <text>
+  INTERACTION-SYMBOL:
+    - psi
+    - zeta
+  STRUCTURE:
+    COLUMNS: [No.,Mixture,psi,zeta]
+    SYMBOL: [null,null,psi,zeta]
+    UNIT: [null,null,1,1]
+  VALUES:
+    - [1,component-a|component-b|component-c,-0.0018,0.25]
+```
+
+Rules:
+- `INTERACTION-SYMBOL` must be a non-empty list. Items may be plain symbols or one-key
+  description-to-symbol mappings. Symbols must be non-empty and unique.
+- `STRUCTURE.COLUMNS`, `STRUCTURE.SYMBOL`, `STRUCTURE.UNIT`, and every `VALUES` row must
+  have identical length.
+- `Mixture` is required. It contains at least two non-empty component identifiers separated by
+  `|`.
+- Mixture order is significant. `A|B|C` and `C|B|A` are distinct interaction records. Preserve
+  the source order and do not sort the members.
+- Each normalized ordered mixture may appear only once. Put all declared scalar interaction
+  properties for that mixture in the same row.
+- Every declared interaction symbol must resolve to exactly one column, either by matching the
+  column name or its aligned `STRUCTURE.SYMBOL` entry.
+- YAML `null` means unavailable; numeric `0` is a real interaction value.
+- Do not create directional `<symbol>_i_1` columns or component rows. Those belong to matrix
+  tables, not interaction-data tables.
+- Do not add `DATA`, `CONVERSION`, or `MATRIX-SYMBOL`.
+
+### Dataset table
+
+A dataset table stores observational or experimental rows whose columns have input/output roles.
+
+```yaml
+table-name:
+  TABLE-ID: <int>
+  DESCRIPTION:
+    <text>
+  DATASET-IDS:
+    - component-a|component-b: 1|2
+  STRUCTURE:
+    COLUMNS: [No.,Id,Temperature,Pressure,Measured-Property]
+    SYMBOL: [null,null,T,P,Y]
+    UNIT: [null,null,K,Pa,unit]
+    ROLE: [null,null,input,input,output]
+  VALUES:
+    - [1,component-a|component-b,298.15,101325,0.5]
+```
+
+Rules:
+- `DATASET-IDS` marks the table as a dataset in a reference file. It must be a list of one-key
+  mappings from a unique, non-empty dataset identifier to component positions.
+- Positions may be a positive integer or a pipe-delimited sequence of unique positive integers,
+  such as `1` or `1|2|3`.
+- `STRUCTURE` must contain aligned `COLUMNS`, `SYMBOL`, `UNIT`, and `ROLE` lists.
+- Every role must be `input`, `output`, or `None`. Use `None` for identifiers and metadata.
+- Column names must be unique. Non-null symbols must be non-empty and unique.
+- When an `Id` column is present, every non-missing `VALUES` identifier must be declared in
+  `DATASET-IDS` exactly as written.
+- Preserve unavailable observations as YAML `null`/`None`; do not replace missing measurements
+  with zero.
+- Do not add `DATA`, `CONVERSION`, `EQUATIONS`, or matrix/interaction markers.
+
 ## Step 2: Interpret CSV
 
 When the source is a CSV in the project style:
@@ -217,7 +294,9 @@ When the source is a CSV in the project style:
 - row 3 = `UNIT`
 - rows 4+ = `VALUES`
 
-For data tables, also generate `CONVERSION`.
+For data tables, also generate `CONVERSION`. Dataset roles are reference metadata, so keep
+`STRUCTURE.ROLE` in YAML even when dataset values come from a project-style CSV whose first three
+rows contain only columns, symbols, and units.
 
 ## Step 3: Transform equations
 
@@ -325,6 +404,11 @@ For multi-component mixtures, do not create a row identity containing all
 members, such as `methanol|ethanol|butyl-methyl-ether`. Use one row identity
 per binary pair and row component.
 
+For interaction-data tables, row identity is the normalized ordered `Mixture` tuple. Preserve
+member order, reject duplicate ordered mixtures, and keep all scalar interaction properties in one
+row. For dataset tables, repeated `Id` values are expected because one dataset contains multiple
+observations; row width and declared identifiers matter, not component-record uniqueness.
+
 ## Step 7: Unit and conversion rules
 
 For data tables, use `CONVERSION` with `internal = stored * conversion`.
@@ -334,6 +418,7 @@ Use:
 - `None` for text columns
 
 For equation tables, do not use `CONVERSION`; handle scaling and unit adjustments inside the equation body.
+Interaction-data and dataset tables also do not use `CONVERSION`.
 
 ## Step 8: Formula style
 
@@ -358,6 +443,8 @@ Read or run these when needed:
 - `assets/equation_table_template.yaml`: starting template for direct equation-table snippets.
 - `assets/constants_table_template.yaml`: starting template for direct constants-table snippets.
 - `assets/matrix_table_template.yaml`: starting template for direct matrix-parameter table snippets.
+- `assets/interaction_table_template.yaml`: starting template for ordered scalar interaction data.
+- `assets/dataset_table_template.yaml`: starting template for observational datasets with roles.
 - `scripts/csv_to_structure.py`: convert project-style CSV headers into YAML arrays.
 - `scripts/validate_yaml.py`: validate YAML shape. It accepts full `REFERENCES:` files and direct table snippets.
 - `scripts/check_reference.py`: validate that YAML can be loaded by pyThermoDB itself.
@@ -383,6 +470,13 @@ Before finalizing:
 - `EQUATIONS` exists for equation tables
 - `CONSTANTS` exists for constants tables
 - `MATRIX-SYMBOL` exists for matrix tables
+- `INTERACTION-SYMBOL` exists and is non-empty for interaction-data tables
+- interaction-data tables preserve mixture order and contain one row per ordered mixture
+- every interaction symbol resolves to exactly one column
+- `DATASET-IDS` exists for dataset tables and contains valid unique identifier mappings
+- dataset tables contain aligned `COLUMNS`, `SYMBOL`, `UNIT`, and `ROLE` lists
+- dataset roles are only `input`, `output`, or `None`
+- dataset `Id` values are declared by `DATASET-IDS`
 - matrix tables use `Mixture`, `Name`, `Formula`, and `State` metadata columns
   when they are intended for `build_mixture_thermodb_from_reference`
 - matrix-table base symbols expand to complete directional columns such as
@@ -408,6 +502,8 @@ Return:
 - Do not guess coefficients.
 - Do not drop columns required by the project schema.
 - Do not mix table formats.
+- Do not treat scalar interaction records as matrix tables or reorder their mixture members.
+- Do not treat observational datasets as ordinary data tables or omit their `ROLE` metadata.
 - Do not duplicate component-state rows in one component-style data or equation table.
 - Do not ignore coefficient scaling shown in the source.
 - Do not expand or change `State` values away from `g`, `l`, `s`, or `aq` unless explicitly requested.

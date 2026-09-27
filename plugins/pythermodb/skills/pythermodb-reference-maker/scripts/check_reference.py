@@ -10,7 +10,6 @@ from typing import Any, Dict, List
 import logging
 from pathlib import Path
 import sys
-from rich import print
 
 
 def _ensure_local_project_imports() -> None:
@@ -26,7 +25,14 @@ _ensure_local_project_imports()
 
 import pyThermoDB as ptdb
 from pyThermoDB.references import check_custom_reference
-from pyThermoDB.core import TableData, TableEquation
+from pyThermoDB.core import (
+    TableConstants,
+    TableData,
+    TableDataset,
+    TableEquation,
+    TableInteractionData,
+    TableMatrixData,
+)
 
 
 # NOTE: logging
@@ -194,6 +200,14 @@ def check_yaml_reference(
                     report["table_types"][table_name] = "data"
                 elif isinstance(table_obj, TableEquation):
                     report["table_types"][table_name] = "equation"
+                elif isinstance(table_obj, TableMatrixData):
+                    report['table_types'][table_name] = 'matrix-data'
+                elif isinstance(table_obj, TableConstants):
+                    report['table_types'][table_name] = 'constants'
+                elif isinstance(table_obj, TableInteractionData):
+                    report['table_types'][table_name] = 'interaction-data'
+                elif isinstance(table_obj, TableDataset):
+                    report['table_types'][table_name] = 'dataset'
                 elif isinstance(table_obj, dict):
                     table_type = table_obj.get("table_type")
                     if table_type == "data":

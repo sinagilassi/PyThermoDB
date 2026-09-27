@@ -199,7 +199,57 @@ This ternary case has three binary pairs and therefore six `VALUES` rows:
 Do not encode this as `methanol|ethanol|butyl-methyl-ether`, and do not add
 `a_i_3`, `b_i_3`, `c_i_3`, or `alpha_i_3` columns for this builder workflow.
 
-## Example 7: Full reference wrapper with mixed tables
+## Example 7: Ordered scalar interaction-data table
+
+```yaml
+Pitzer interaction parameters:
+  TABLE-ID: 6
+  DESCRIPTION:
+    Scalar binary and ternary interaction parameters.
+  INTERACTION-SYMBOL:
+    - ternary interaction parameter: psi
+    - neutral-ion interaction parameter: zeta
+  STRUCTURE:
+    COLUMNS: [No.,Mixture,psi,zeta]
+    SYMBOL: [null,null,psi,zeta]
+    UNIT: [null,null,1,1]
+  VALUES:
+    - [1,potassium-ion|sodium-ion|chloride-ion,-0.0018,0.25]
+    - [2,sodium-ion|calcium-ion|chloride-ion,0.0032,null]
+    - [3,sodium-ion|chloride-ion,0.0,0.015]
+```
+
+Each row is one complete scalar interaction record. Preserve participant order:
+`potassium-ion|sodium-ion|chloride-ion` and `sodium-ion|potassium-ion|chloride-ion`
+are different keys. Do not convert these rows into matrix component rows, and do not
+interpret `0.0` as a missing value.
+
+## Example 8: Observational dataset table
+
+```yaml
+VLE-DATASET:
+  TABLE-ID: 7
+  DESCRIPTION:
+    Vapor-liquid equilibrium observations.
+  DATASET-IDS:
+    - methanol|water: 1|2
+    - ethanol|methanol|water: 1|2|3
+  STRUCTURE:
+    COLUMNS: [No.,Id,Temperature,Pressure,Liquid-Mole-Fraction-1,Vapor-Mole-Fraction-1]
+    SYMBOL: [null,null,T,P,x_1,y_1]
+    UNIT: [null,null,K,Pa,null,null]
+    ROLE: [null,null,input,input,input,output]
+  VALUES:
+    - [1,methanol|water,298.15,101325,0.5,0.5]
+    - [2,methanol|water,308.15,101325,0.4,0.6]
+    - [1,ethanol|methanol|water,298.15,101325,0.3,0.4]
+```
+
+Repeated `Id` values represent multiple observations in the same dataset and are valid.
+The `DATASET-IDS` position metadata describes the participants; `ROLE` identifies model inputs
+and outputs and must align with every other structure list.
+
+## Example 9: Full reference wrapper with mixed tables
 
 Use this format when creating a loadable reference file or a `REFERENCE_CONTENT` block.
 
