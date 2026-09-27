@@ -11,11 +11,60 @@ logger = logging.getLogger(__name__)
 
 
 class CustomRef:
-    '''
-    Manage new custom references
-    '''
+    """Manage custom reference files and in-memory reference content.
+
+    The class classifies a reference as ``NORMAL`` when it uses separate
+    source and table files, or ``VALUES`` when a single YAML/reference source
+    supplies inline values. It validates configured paths, loads YAML and
+    Markdown references, and exposes the merged reference and symbol data.
+
+    Parameters
+    ----------
+    ref : dict
+        Reference configuration containing keys such as ``reference`` or
+        ``references``, optional ``csv``/``tables``, and optional ``symbols``.
+
+    Notes
+    -----
+    Call :meth:`init_ref` before loading files. Deprecated ``yml`` and ``md``
+    keys are still recognized by the implementation, but ``reference`` is the
+    preferred key. File paths are stored both as configured filenames and as
+    absolute paths for later processing.
+
+    Methods
+    -------
+    set_data_mode()
+        Determine whether the reference uses ``NORMAL`` or ``VALUES`` mode.
+    init_ref()
+        Validate configured sources and populate file/path collections.
+    load_ref()
+        Load and merge YAML, Markdown, or inline reference content.
+    load_symbols()
+        Load and merge symbol definitions from configured YAML files.
+    parse_markdown(content)
+        Parse a Markdown reference into the canonical reference mapping.
+    parse_markdown_table(content)
+        Parse table metadata and values from a Markdown table section.
+    content_manager(content)
+        Validate and return a list of inline reference contents.
+    check_content_format(content)
+        Identify inline content as a dictionary, Markdown, or YAML.
+    """
 
     def __init__(self, ref):
+        """Initialize a custom-reference manager.
+
+        Parameters
+        ----------
+        ref : dict
+            Reference configuration to classify and later initialize.
+
+        Notes
+        -----
+        Initialization stores the reference and prepares empty file, path,
+        content, and symbol collections. The initial data mode is determined
+        immediately from the reference keys.
+        """
         # NOTE: set external reference
         self.ref = ref
 
@@ -43,14 +92,19 @@ class CustomRef:
     def set_data_mode(
         self
     ):
-        '''
-        Set data mode
+        """Determine the data mode from the reference configuration.
 
         Returns
         -------
         data_mode : str
-            data mode, 'NORMAL' or 'VALUES'
-        '''
+            ``'VALUES'`` for a single ``yml``/``reference`` key; otherwise
+            ``'NORMAL'``.
+
+        Raises
+        ------
+        RuntimeError
+            If the reference has no keys or mode detection fails.
+        """
         try:
             # ref keys
             ref_keys = list(self.ref.keys())
@@ -75,26 +129,25 @@ class CustomRef:
             raise RuntimeError(f"Setting data mode failed! {e}")
 
     def init_ref(self) -> bool:
-        '''
-        Update reference through updating yml
-
-        Parameters
-        ----------
-        data_mode : str, optional
-            data mode, by default 'NORMAL'
+        """Validate configured reference sources and populate file paths.
 
         Notes
         ----------
         yml_files : list
-            yml files
+            YAML reference filenames.
         csv_files : list
-            csv files
+            CSV table filenames used in ``NORMAL`` mode.
 
         Returns
         -------
         bool
-            True if reference is updated, False otherwise
-        '''
+            ``True`` when initialization succeeds; otherwise ``False``.
+
+        Notes
+        -----
+        YAML, YAML-compatible ``.yaml``, Markdown, CSV, and symbol paths are
+        checked for existence. Errors are logged and converted to ``False``.
+        """
         try:
             # REVIEW: deprecated reference keys
             if 'yml' in self.ref.keys() or 'md' in self.ref.keys():
@@ -135,7 +188,8 @@ class CustomRef:
             # NOTE: check file types
             # ! yml files
             # NOTE: Both conventional YAML filename extensions are valid reference files.
-            yml_files = [x for x in self.src_files if str(x).lower().endswith(('.yml', '.yaml'))]
+            yml_files = [x for x in self.src_files if str(
+                x).lower().endswith(('.yml', '.yaml'))]
             # ! md files
             md_files = [x for x in self.src_files if str(x).endswith('.md')]
 
@@ -211,14 +265,18 @@ class CustomRef:
             return False
 
     def load_ref(self) -> dict:
-        '''
-        Load reference
+        """Load and merge configured YAML, Markdown, and inline references.
 
         Returns
         -------
         ref : dict
-            reference
-        '''
+            Mapping of databook names to merged reference definitions.
+
+        Raises
+        ------
+        Exception
+            If a source cannot be read or parsed.
+        """
         try:
             # data
             data = {}
@@ -306,14 +364,18 @@ class CustomRef:
             raise Exception(f"loading reference failed! {e}")
 
     def load_symbols(self) -> dict:
-        '''
-        Load symbols
+        """Load and merge symbol definitions from configured YAML files.
 
         Returns
         -------
         symbols : dict
-            symbols
-        '''
+            Mapping of symbol definitions.
+
+        Raises
+        ------
+        Exception
+            If a symbol file cannot be read or does not contain ``SYMBOLS``.
+        """
         try:
             # data
             data = {}
@@ -643,17 +705,17 @@ class CustomRef:
             content: str | dict
     ) -> str:
         """
-        Check the format of the content and return markdown or yml.
+        Identify the format of inline reference content.
 
         Parameters
         ----------
-        content : str
+        content : str | dict
             The content to check.
 
         Returns
         -------
         str
-            'markdown' if the content is in markdown format, 'yml' otherwise.
+            ``'dict'``, ``'markdown'``, or ``'yml'``.
         """
         try:
             # NOTE: If content is a dictionary, convert it to a string
