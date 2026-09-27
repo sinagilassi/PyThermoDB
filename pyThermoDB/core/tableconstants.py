@@ -18,7 +18,33 @@ logger = logging.getLogger(__name__)
 
 
 class TableConstants:
-    """Table-wide constants that are not associated with a component."""
+    """Store and query table-wide constants.
+
+    Constants are represented as rows whose columns are declared by the
+    source table structure. A constant can be looked up by its name, symbol,
+    or integer ``No.`` identifier, and availability can be checked without
+    retrieving the complete record.
+
+    Parameters
+    ----------
+    databook_name : str | int
+        Name or identifier of the source databook.
+    table_name : str | int
+        Name or identifier of the constants table.
+    table_data : dict[str, Any]
+        Table structure containing the ``COLUMNS`` declaration.
+    table_values : list | dict, optional
+        Constant rows from the source reference. Defaults to an empty list.
+    table_structure : dict[str, Any], optional
+        Explicit table structure. Defaults to ``table_data``.
+
+    Notes
+    -----
+    String lookups for names and symbols are case-insensitive and ignore
+    surrounding whitespace. Values loaded as strings are converted to common
+    JSON or Python literal types when possible; non-string values are kept
+    unchanged.
+    """
 
     def __init__(
         self,
@@ -28,6 +54,21 @@ class TableConstants:
         table_values: Optional[List | Dict] = None,
         table_structure: Optional[Dict[str, Any]] = None
     ):
+        """Initialize a constants table from its structure and rows.
+
+        Parameters
+        ----------
+        databook_name : str | int
+            Name or identifier of the source databook.
+        table_name : str | int
+            Name or identifier of the constants table.
+        table_data : dict[str, Any]
+            Table data containing the ``COLUMNS`` declaration.
+        table_values : list | dict, optional
+            Constant rows to expose through :meth:`data_structure`.
+        table_structure : dict[str, Any], optional
+            Explicit structure metadata, or ``table_data`` when omitted.
+        """
         self.databook_name = databook_name
         self.table_name = table_name
         self.table_data = table_data
@@ -36,6 +77,13 @@ class TableConstants:
 
     @property
     def table_columns(self) -> List[str]:
+        """Return the declared constants-table column names.
+
+        Raises
+        ------
+        TableColumnError
+            If the table structure does not contain ``COLUMNS``.
+        """
         try:
             return self.table_data['COLUMNS']
         except KeyError as exc:
@@ -47,7 +95,13 @@ class TableConstants:
             ) from exc
 
     def data_structure(self) -> pd.DataFrame:
-        """Return the constants records using their declared columns."""
+        """Return constant records as a DataFrame using declared columns.
+
+        Raises
+        ------
+        TableConstantsError
+            If the rows cannot be combined with the declared columns.
+        """
         try:
             return pd.DataFrame(self.table_values, columns=self.table_columns)
         except Exception as exc:
@@ -65,7 +119,29 @@ class TableConstants:
     ) -> Optional[ConstantResult]:
         """Retrieve a constant by name, symbol, or its ``No.`` identifier.
 
-        When ``strict`` is ``False``, returns ``None`` if the constant is not found.
+        Parameters
+        ----------
+        constant : str | int
+            Name, symbol, or integer ``No.`` value to find.
+        message : str, optional
+            Message to include in the returned result.
+        strict : bool, default=True
+            Raise :class:`TableLookupError` for a missing constant when true;
+            return ``None`` when false.
+
+        Returns
+        -------
+        ConstantResult or None
+            The matching constant, or ``None`` for a non-strict miss.
+
+        Raises
+        ------
+        TableColumnError
+            If an integer lookup is requested without a ``No.`` column.
+        TableLookupError
+            If no matching constant exists and ``strict`` is true.
+        TableValidationError
+            If ``constant`` is neither a string nor an integer.
         """
         data = self.data_structure()
         row = None
@@ -168,6 +244,7 @@ class TableConstants:
         column: Literal['Name', 'Symbol'],
         search_mode: str
     ) -> PropertyMatch:
+        """Check a normalized name or symbol against the constants table."""
         if not isinstance(value, str):
             return PropertyMatch(
                 prop_id=str(value), availability=False, search_mode=search_mode
@@ -186,9 +263,11 @@ class TableConstants:
         )
 
     def is_name_available(self, name: str) -> PropertyMatch:
+        """Report whether a constant name is present."""
         return self._is_value_available(name, 'Name', 'NAME')
 
     def is_symbol_available(self, symbol: str) -> PropertyMatch:
+        """Report whether a constant symbol is present."""
         return self._is_value_available(symbol, 'Symbol', 'SYMBOL')
 
     def is_constant_available(
@@ -196,6 +275,20 @@ class TableConstants:
         constant: str,
         search_mode: Literal['NAME', 'SYMBOL', 'BOTH'] = 'BOTH'
     ) -> PropertyMatch:
+        """Check a constant by name, symbol, or both.
+
+        Parameters
+        ----------
+        constant : str
+            Name or symbol to check.
+        search_mode : {'NAME', 'SYMBOL', 'BOTH'}, default='BOTH'
+            Restrict the lookup to one identifier type or check both types.
+
+        Raises
+        ------
+        TableValidationError
+            If ``search_mode`` is not one of the supported values.
+        """
         if search_mode == 'NAME':
             return self.is_name_available(constant)
         if search_mode == 'SYMBOL':
@@ -216,6 +309,7 @@ class TableConstants:
         )
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the constants table structure and values to a dictionary."""
         return {
             'COLUMNS': list(self.table_columns),
             'VALUES': self.table_values,
