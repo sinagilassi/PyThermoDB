@@ -21,7 +21,46 @@ from ..handlers import (
 
 
 class TableDataset:
-    """Store and query a structured observational dataset."""
+    """Store and query a validated observational dataset.
+
+    The dataset schema is read from ``STRUCTURE`` and may contain column
+    names, symbols, units, and input/output roles. Values can be supplied
+    inline through ``VALUES`` or as a pandas DataFrame matching the declared
+    columns.
+
+    Parameters
+    ----------
+    databook_name : str | int
+        Name or identifier of the source databook.
+    table_name : str | int
+        Name or identifier of the dataset table.
+    table_data : dict[str, Any]
+        Dataset definition containing ``STRUCTURE`` and, when no DataFrame is
+        supplied, ``VALUES``.
+    dataset_table : pandas.DataFrame, optional
+        Existing dataset values. Its columns must exactly match
+        ``STRUCTURE.COLUMNS``.
+
+    Notes
+    -----
+    Missing values represented by ``None``, ``-``, ``None`` strings, or
+    pandas-compatible missing values are normalized to ``None``. Column and
+    symbol lookups require exact matches. Dataset identifiers remain opaque
+    unless ``DATASET-IDS`` metadata is provided.
+
+    Methods
+    -------
+    get(column)
+        Return a column resolved by its exact name or symbol.
+    get_dataset(dataset_id)
+        Return all rows for one dataset identifier.
+    get_dataset_positions(dataset_id)
+        Return positional metadata for a dataset identifier.
+    filter(**conditions)
+        Return rows matching every exact column-or-symbol condition.
+    to_numpy(columns=None)
+        Convert all or selected columns to a detached NumPy array.
+    """
 
     # NOTE: Keep allowed roles immutable across instances.
     _allowed_roles = frozenset({"input", "output", None})
@@ -33,6 +72,30 @@ class TableDataset:
         table_data: dict[str, Any],
         dataset_table: Optional[pd.DataFrame] = None,
     ) -> None:
+        """Initialize, validate, normalize, and index dataset values.
+
+        Parameters
+        ----------
+        databook_name : str | int
+            Name or identifier of the source databook.
+        table_name : str | int
+            Name or identifier of the dataset table.
+        table_data : dict[str, Any]
+            Dataset definition containing the table structure and inline
+            values when ``dataset_table`` is not supplied.
+        dataset_table : pandas.DataFrame, optional
+            Existing DataFrame whose columns exactly match the declared
+            schema.
+
+        Raises
+        ------
+        TableDatasetStructureError
+            If the source structure or inline values are invalid.
+        TableDatasetDefinitionError
+            If dataset metadata and values are inconsistent.
+        TableDatasetFrameError
+            If the supplied DataFrame does not match the schema.
+        """
         self.databook_name = databook_name
         self.table_name = table_name
 
@@ -66,6 +129,7 @@ class TableDataset:
 
     # SECTION: validation and normalization helpers
     def _context(self, **context: Any) -> dict[str, Any]:
+        """Build exception context containing databook and table identifiers."""
         result = {
             "databook_name": self.databook_name,
             "table_name": self.table_name,
@@ -75,6 +139,7 @@ class TableDataset:
 
     @staticmethod
     def _is_missing(value: Any) -> bool:
+        """Return whether a value uses one of the supported missing markers."""
         if value is None:
             return True
         if isinstance(value, str):
@@ -89,9 +154,11 @@ class TableDataset:
 
     @classmethod
     def _normalize_missing_value(cls, value: Any) -> Any:
+        """Convert supported missing markers to ``None``."""
         return None if cls._is_missing(value) else value
 
     def _validate_structure(self) -> None:
+        """Validate and cache the dataset schema from ``STRUCTURE``."""
         structure = self.table_data.get("STRUCTURE")
         if not isinstance(structure, Mapping):
             raise TableDatasetStructureError(
@@ -141,7 +208,8 @@ class TableDataset:
             raise TableDatasetDefinitionError(
                 "Units must be strings or None.", context=self._context()
             )
-        invalid_roles = [role for role in roles if role not in self._allowed_roles]
+        invalid_roles = [
+            role for role in roles if role not in self._allowed_roles]
         if invalid_roles:
             raise TableDatasetDefinitionError(
                 "Roles must be 'input', 'output', or None.",
@@ -157,6 +225,7 @@ class TableDataset:
     def _normalize_dataset_ids(
         self, source: Any
     ) -> dict[str, tuple[int, ...]] | None:
+        """Validate and normalize optional dataset-position metadata."""
         # NOTE: DATASET-IDS remains optional at the runtime class level.
         if source is None:
             return None
@@ -190,11 +259,13 @@ class TableDataset:
             elif isinstance(raw_positions, int):
                 raw_values = [raw_positions]
             elif isinstance(raw_positions, str):
-                raw_values = [part.strip() for part in raw_positions.split("|")]
+                raw_values = [part.strip()
+                              for part in raw_positions.split("|")]
             else:
                 raw_values = []
             try:
-                positions = tuple(int(value) for value in raw_values if value != "")
+                positions = tuple(int(value)
+                                  for value in raw_values if value != "")
             except (TypeError, ValueError) as exc:
                 raise TableDatasetFormatError(
                     "Dataset positions must be pipe-separated positive integers.",
@@ -221,6 +292,7 @@ class TableDataset:
     def _build_dataframe(
         self, dataset_table: Optional[pd.DataFrame]
     ) -> pd.DataFrame:
+        """Build a detached, normalized DataFrame matching the table schema."""
         if dataset_table is not None:
             # ! A supplied frame must follow the declared schema exactly.
             if not isinstance(dataset_table, pd.DataFrame):
@@ -262,6 +334,7 @@ class TableDataset:
         )
 
     def _validate_dataset_references(self) -> None:
+        """Validate row identifiers against declared dataset metadata."""
         # ? Without DATASET-IDS, Id values remain valid opaque identifiers.
         if self._dataset_ids is None or "Id" not in self._table_columns:
             return
@@ -269,10 +342,12 @@ class TableDataset:
             if self._is_missing(dataset_id) or dataset_id not in self._dataset_ids:
                 raise TableDatasetDefinitionError(
                     "VALUES contains an unknown dataset identifier.",
-                    context=self._context(row=row_index, dataset_id=dataset_id),
+                    context=self._context(
+                        row=row_index, dataset_id=dataset_id),
                 )
 
     def _resolve_column(self, column: str) -> str:
+        """Resolve an exact column name or symbol to a column name."""
         if not isinstance(column, str):
             raise TableDatasetFormatError(
                 "Column lookup must be a string.",
@@ -290,51 +365,63 @@ class TableDataset:
     # SECTION: public structural metadata
     @property
     def table_columns(self) -> list[str]:
+        """Return a copy of the declared dataset column names."""
         return self._table_columns.copy()
 
     @property
     def table_symbols(self) -> list[str | None]:
+        """Return a copy of the declared column symbols."""
         return self._table_symbols.copy()
 
     @property
     def table_units(self) -> list[str | None]:
+        """Return a copy of the declared column units."""
         return self._table_units.copy()
 
     @property
     def table_roles(self) -> list[str | None]:
+        """Return a copy of the declared input/output roles."""
         return self._table_roles.copy()
 
     @property
     def columns(self) -> list[str]:
+        """Return the declared column names through the short alias."""
         return self.table_columns
 
     @property
     def symbols(self) -> list[str | None]:
+        """Return the declared symbols through the short alias."""
         return self.table_symbols
 
     @property
     def units(self) -> list[str | None]:
+        """Return the declared units through the short alias."""
         return self.table_units
 
     @property
     def roles(self) -> list[str | None]:
+        """Return the declared roles through the short alias."""
         return self.table_roles
 
     @property
     def dataset_ids(self) -> dict[str, tuple[int, ...]] | None:
+        """Return a copy of dataset-position metadata, when available."""
         return None if self._dataset_ids is None else dict(self._dataset_ids)
 
     @property
     def dataframe(self) -> pd.DataFrame:
+        """Return a deep copy of the normalized dataset DataFrame."""
         return self.dataset_table.copy(deep=True)
 
     @property
     def shape(self) -> tuple[int, int]:
+        """Return the dataset shape as ``(rows, columns)``."""
         return self.dataset_table.shape
 
     # SECTION: role-based views
     @property
     def input_columns(self) -> list[str]:
+        """Return columns whose declared role is ``input``."""
         return [
             column
             for column, role in zip(self._table_columns, self._table_roles)
@@ -343,6 +430,7 @@ class TableDataset:
 
     @property
     def output_columns(self) -> list[str]:
+        """Return columns whose declared role is ``output``."""
         return [
             column
             for column, role in zip(self._table_columns, self._table_roles)
@@ -351,10 +439,12 @@ class TableDataset:
 
     @property
     def inputs(self) -> pd.DataFrame:
+        """Return a copy containing only input-role columns."""
         return self.dataset_table.loc[:, self.input_columns].copy()
 
     @property
     def outputs(self) -> pd.DataFrame:
+        """Return a copy containing only output-role columns."""
         return self.dataset_table.loc[:, self.output_columns].copy()
 
     # SECTION: lookup, filtering, and conversion APIs
