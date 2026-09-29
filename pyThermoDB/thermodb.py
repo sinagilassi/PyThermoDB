@@ -23,7 +23,7 @@ from pythermodb_settings.models import (
     ComponentConfig,
     CustomReference
 )
-from pythermodb_settings.utils import measure_time
+from pythermodb_settings.utils import measure_time, create_component_ids, create_mixture_ids
 # local
 from .app import init, build_thermodb
 from .docs.thermo import ThermoProperty
