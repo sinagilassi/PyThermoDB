@@ -7,7 +7,6 @@ from typing import (
     List,
     Union,
     Literal,
-    cast
 )
 from pythermodb_settings.models import (
     Component,
@@ -26,13 +25,8 @@ from .utils import (
     is_table_available,
     is_databook_available,
     check_file_path,
-    look_up_binary_mixture_reference_config,
-    look_up_mixture_reference_config,
-    create_mixture_ids
 )
-from .builder import CompBuilder
-from .config import DEFAULT_COMPONENT_STATES
-from .thermodb import ComponentThermoDB, MixtureThermoDB
+from .thermodb import ComponentThermoDB
 # ! deps
 from .config.deps import set_config, AppConfig
 
