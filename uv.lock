@@ -399,7 +399,7 @@ requires-dist = [
 
 [[package]]
 name = "pythermodb-settings"
-version = "0.30.0"
+version = "0.30.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -407,9 +407,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/48/ee/88107393ee354c0e9f0c39d1fbdc3d3f0053633bc5d551e391a69adc031a/pythermodb_settings-0.30.0.tar.gz", hash = "sha256:d6cccefbd09a8fa23381d10ae9af8c54ae62ffe923e93f22103a4b216492ea54", size = 59247, upload-time = "2026-09-29T23:47:34.133Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ca/d5/fb542dc0e7977c55a85376c256254579fd4a9df04f7ffae0bd6c4bce32b1/pythermodb_settings-0.30.1.tar.gz", hash = "sha256:2d61f17618aa6504f39f3d134c3f5830b5f2a5044237780eb8bc7efb990b988d", size = 59252, upload-time = "2026-09-30T22:03:35.888Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/00/388df8cd579f050bcac83fda44548ad4d5270fd90b14f26979bf03a8a73e/pythermodb_settings-0.30.0-py3-none-any.whl", hash = "sha256:d0ff7b0b1de17dde470027ec0066ca8246cc7915904ec7bfd1faab909190ee67", size = 67691, upload-time = "2026-09-29T23:47:32.983Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/75/0a02e358db3eb733bf4070f824327714f43155dbac8b9673aba2996cbd67/pythermodb_settings-0.30.1-py3-none-any.whl", hash = "sha256:900010657f9b979a81ff47175fee7877658c27c86c46ecc8d17ea0559b20fb02", size = 67715, upload-time = "2026-09-30T22:03:34.817Z" },
 ]
 
 [[package]]
