@@ -211,6 +211,7 @@ thermodb_components_: MixtureThermoDB | None = build_mixture_thermodb_from_refer
     reference_content=REFERENCE_CONTENT,
 )
 print(f"thermodb_components_: {type(thermodb_components_)}")
+print(thermodb_components_)
 
 # >> thermodb
 if thermodb_components_ is not None:

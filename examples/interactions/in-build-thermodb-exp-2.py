@@ -3,7 +3,7 @@
 from rich import print
 from pythermodb_settings.models import Component
 from pyThermoDB.core import TableInteractionData
-from pyThermoDB import CompBuilder, build_interaction_thermodb, build_interaction_thermodb_from_reference
+from pyThermoDB import CompBuilder, build_interaction_thermodb, build_interaction_thermodb_from_reference, MixtureThermoDB
 import pyThermoDB as ptdb
 from pathlib import Path
 import sys
@@ -61,7 +61,7 @@ print(
 
 # This variant discovers every Interaction-Data table in the YAML reference
 # and keeps the same exact-set, order-insensitive build-time selection rule.
-built_from_reference = build_interaction_thermodb_from_reference(
+built_from_reference: MixtureThermoDB | None = build_interaction_thermodb_from_reference(
     components=components,
     reference_content=REFERENCE_PATH.read_text(encoding="utf-8"),
 )
@@ -71,3 +71,6 @@ print(
     "Auto-discovered interaction properties:",
     list(built_from_reference.thermodb.list_data()),
 )
+
+print("Built from reference:")
+print(built_from_reference)
