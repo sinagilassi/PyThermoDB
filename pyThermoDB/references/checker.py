@@ -5812,6 +5812,7 @@ class ReferenceChecker:
                 'EQUATIONS': {}
             }
 
+    # ! ::: Generate Component Reference Rules
     def generate_component_reference_rules(
         self,
         reference_configs: Dict[str, ComponentConfig]
@@ -5924,6 +5925,7 @@ class ReferenceChecker:
                 'EQUATIONS': {}
             }
 
+    # ! ::: Generate Mixture Reference Rules
     def generate_mixture_reference_rules(
         self,
         reference_configs: Dict[str, ComponentConfig]
@@ -6043,6 +6045,7 @@ class ReferenceChecker:
                 'EQUATIONS': {}
             }
 
+    # ! ::: Generate Constants Reference Rules
     def generate_constants_reference_rules(
         self,
         reference_configs: Dict[str, ConstantsConfig]
@@ -6146,3 +6149,10 @@ class ReferenceChecker:
             return {
                 'CONSTANTS': {}
             }
+
+    # ! ::: Generate Interaction Reference Rules
+    def generate_interaction_reference_rules(
+            self,
+            reference_configs: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, Dict[str, str]]:
+        return {}
