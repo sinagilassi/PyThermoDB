@@ -5549,11 +5549,10 @@ class ReferenceChecker:
                 result[key] = {
                     'databook': databook_name,
                     'table': table_name,
-                    'mode': 'INTERACTION-DATA',
+                    'mode': 'DATA',
                     'labels': labels if add_label else {},
                 }
 
-        # ? Reference rules can later use the Interaction-Data mode explicitly.
         return result or None
 
     # SECTION: Constants Reference Configs
@@ -6153,6 +6152,56 @@ class ReferenceChecker:
     # ! ::: Generate Interaction Reference Rules
     def generate_interaction_reference_rules(
             self,
-            reference_configs: Dict[str, Dict[str, Any]]
+            reference_configs: Dict[str, ComponentConfig]
     ) -> Dict[str, Dict[str, str]]:
-        return {}
+        """Generate DATA rules for interaction-table reference configs.
+
+        Interaction tables are a specialized source-table format, but their
+        reference configs and property-to-symbol mappings use ``DATA`` mode.
+        """
+        reference_rules: Dict[str, Dict[str, str]] = {
+            'DATA': {}
+        }
+
+        try:
+            for ref_key, ref_config in reference_configs.items():
+                if not isinstance(ref_config, dict):
+                    logging.error(
+                        f"Reference config for '{ref_key}' is not a dictionary."
+                    )
+                    continue
+
+                mode = ref_config.get('mode')
+                if mode != 'DATA':
+                    logging.error(
+                        f"Invalid mode '{mode}' in reference config for "
+                        f"'{ref_key}'. Only 'DATA' mode is supported for "
+                        "interaction data."
+                    )
+                    continue
+
+                labels = ref_config.get('labels')
+                if not isinstance(labels, dict):
+                    logging.error(
+                        f"Labels not found or invalid in reference config "
+                        f"for '{ref_key}'."
+                    )
+                    continue
+
+                for prop, label in labels.items():
+                    if prop is None or label is None or label in ('None', ''):
+                        logging.error(
+                            f"Property or label not found or invalid in "
+                            f"reference config for '{ref_key}'."
+                        )
+                        continue
+
+                    if prop not in reference_rules['DATA']:
+                        reference_rules['DATA'][prop] = label
+
+            return reference_rules
+        except Exception as e:
+            logging.error(f"Error building interaction reference rules: {e}")
+            return {
+                'DATA': {}
+            }

@@ -4468,6 +4468,12 @@ def build_interaction_thermodb_from_reference(
         )
         return None
 
+    # SECTION: generate interaction reference rules
+    reference_rules = reference_checker.generate_interaction_reference_rules(
+        reference_configs=reference_config
+    )
+    labels = list(dict.fromkeys(reference_rules.get('DATA', {}).values()))
+
     # SECTION: build the selected records, then attach reference provenance
     thermodb_comp = build_interaction_thermodb(
         components=components,
@@ -4490,8 +4496,8 @@ def build_interaction_thermodb_from_reference(
         reference=reference,
         contents=[reference_content],
         configs=reference_config,
-        rules={},
-        labels=[],
+        rules=reference_rules,
+        labels=labels,
         ignore_labels=[],
         ignore_props=[],
     )
