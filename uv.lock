@@ -377,7 +377,7 @@ wheels = [
 
 [[package]]
 name = "pythermodb"
-version = "1.18.0"
+version = "1.18.1"
 source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -399,7 +399,7 @@ requires-dist = [
 
 [[package]]
 name = "pythermodb-settings"
-version = "0.30.1"
+version = "0.30.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -407,9 +407,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ca/d5/fb542dc0e7977c55a85376c256254579fd4a9df04f7ffae0bd6c4bce32b1/pythermodb_settings-0.30.1.tar.gz", hash = "sha256:2d61f17618aa6504f39f3d134c3f5830b5f2a5044237780eb8bc7efb990b988d", size = 59252, upload-time = "2026-09-30T22:03:35.888Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/79/82/198dd19d4dfc0e6125c1c1615301cc9c0750e881929970cca80f1ff642e7/pythermodb_settings-0.30.2.tar.gz", hash = "sha256:826b0901ea28ab33ca34c99613e4ad13e328d06607faa478a01be6071930826e", size = 59272, upload-time = "2026-09-30T23:17:24.157Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7c/75/0a02e358db3eb733bf4070f824327714f43155dbac8b9673aba2996cbd67/pythermodb_settings-0.30.1-py3-none-any.whl", hash = "sha256:900010657f9b979a81ff47175fee7877658c27c86c46ecc8d17ea0559b20fb02", size = 67715, upload-time = "2026-09-30T22:03:34.817Z" },
+    { url = "https://files.pythonhosted.org/packages/c9/58/eb28b6acfc6ce3dec01a5b31e3d1a52885ea6703350a8d328faaef4e00f4/pythermodb_settings-0.30.2-py3-none-any.whl", hash = "sha256:a45c8800d1f95745a42372893e293223f2e7767055f742d741128ca35e3fa95f", size = 67719, upload-time = "2026-09-30T23:17:23.022Z" },
 ]
 
 [[package]]
@@ -511,9 +511,9 @@ wheels = [
 
 [[package]]
 name = "tzdata"
-version = "2026.4"
+version = "2026.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e4/31/3d74fa778a63b98b7374323befcc0be5ab3bd94afd4096a0124e7379152c/tzdata-2026.4.tar.gz", hash = "sha256:f1b8bd365d8d210c55353f4d7f8d6d8561c0ba50d704b700d195a9424bba0d79", size = 199350, upload-time = "2026-09-12T12:56:03.251Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/68/f1b440335057bfce71b6e50a9d09445aa2ecbd08359a337976627b8409e7/tzdata-2026.5.tar.gz", hash = "sha256:8cc73c0a0bfca7dbfa59235d60b2eff82231dee33f53d206db1acd9173cfc0a7", size = 200404, upload-time = "2026-10-03T09:23:14.143Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f9/bc/8737e8d54cf51106118039b83f485a4783112fab49ea9d044b234978a46e/tzdata-2026.4-py2.py3-none-any.whl", hash = "sha256:c2169a8b0a7a5e9674da5a135ccdfb2b3e671b333ed9fed17b41f73c34476e81", size = 347494, upload-time = "2026-09-12T12:56:01.67Z" },
+    { url = "https://files.pythonhosted.org/packages/94/21/1e5995a1c920cce14e4bffae20c665ec10e7ed03ab25e006cd741092b718/tzdata-2026.5-py2.py3-none-any.whl", hash = "sha256:b683bd1b6659ddcd810ff02ad09ba821d4bf1065072805063eb35c49617905ac", size = 347996, upload-time = "2026-10-03T09:23:12.535Z" },
 ]
