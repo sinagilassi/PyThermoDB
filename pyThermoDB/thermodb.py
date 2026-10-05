@@ -3185,13 +3185,13 @@ def build_component_thermodb_from_reference(
             raise TypeError("component_state must be a string")
 
         # NOTE: check component_state
-        component_state = cast(DEFAULT_COMPONENT_STATES, component_state)
+        component_state_ = cast(DEFAULT_COMPONENT_STATES, component_state)
 
         # init component
         component_ = Component(
             name=component_name,
             formula=component_formula,
-            state=component_state,
+            state=component_state_,
         )
 
         # LINK: set include_data in config
