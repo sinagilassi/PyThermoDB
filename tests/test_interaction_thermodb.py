@@ -163,8 +163,30 @@ REFERENCES:
             "PITZER-EXAMPLE::Pitzer ternary interaction parameters"
         ]
         self.assertEqual(entry["databook"], "PITZER-EXAMPLE")
-        self.assertEqual(entry["mode"], "INTERACTION-DATA")
+        self.assertEqual(entry["mode"], "DATA")
         self.assertEqual(entry["labels"], {"psi": "psi", "zeta": "zeta"})
+
+    def test_checker_builds_interaction_reference_rules_as_data(self):
+        checker = ReferenceChecker(FIXTURE_PATH.read_text(encoding="utf-8"))
+        rules = checker.generate_interaction_reference_rules({
+            "interaction": {
+                "mode": "DATA",
+                "labels": {"Pitzer psi": "psi", "Pitzer zeta": "zeta"},
+            },
+            "second interaction": {
+                "mode": "DATA",
+                "labels": {"Pitzer psi": "ignored", "theta": "theta"},
+            },
+        })
+
+        self.assertEqual(rules, {
+            "DATA": {
+                "Pitzer psi": "psi",
+                "Pitzer zeta": "zeta",
+                "theta": "theta",
+            }
+        })
+
     def test_build_from_reference(self):
         result = ptdb.build_interaction_thermodb_from_reference(
             components=self.components,
@@ -174,6 +196,11 @@ REFERENCES:
         self.assertIsNotNone(result)
         self.assertIsNotNone(result.reference_thermodb)
         self.assertEqual(len(result.thermodb.list_data()), 1)
+        self.assertEqual(
+            result.reference_thermodb.rules,
+            {"DATA": {"psi": "psi", "zeta": "zeta"}},
+        )
+        self.assertEqual(result.reference_thermodb.labels, ["psi", "zeta"])
 
     def test_non_interaction_and_unavailable_tables_are_rejected(self):
         source = MagicMock()
