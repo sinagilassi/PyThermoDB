@@ -1,6 +1,11 @@
 from pyThermoDB.builder import CompBuilder
 from pyThermoDB.config.deps import AppConfig, set_config
-from pyThermoDB.core import TableConstants, TableMatrixData, TableMatrixEquation
+from pyThermoDB.core import (
+    TableConstants,
+    TableInteractionData,
+    TableMatrixData,
+    TableMatrixEquation,
+)
 
 
 def _constants() -> TableConstants:
@@ -21,6 +26,22 @@ def _constants() -> TableConstants:
         table_values=[
             [1, 'Universal Gas Constant', 'R', 'g', 8.314, 'J/mol.K', ''],
         ],
+    )
+
+
+def _interaction_data() -> TableInteractionData:
+    return TableInteractionData(
+        databook_name='reference',
+        table_name='interactions',
+        table_data={
+            'INTERACTION-SYMBOL': ['alpha'],
+            'STRUCTURE': {
+                'COLUMNS': ['Mixture', 'alpha'],
+                'SYMBOL': [None, 'alpha'],
+                'UNIT': [None, '1'],
+            },
+            'VALUES': [['water|ethanol', 0.3]],
+        },
     )
 
 
@@ -149,6 +170,39 @@ def test_matrix_helpers_return_explicit_matrix_metadata():
     ]
     assert builder.all_matrix_function_identifiers() == [
         {matrix_function_id: ['alpha']}
+    ]
+
+
+def test_interaction_data_accessors_and_helpers():
+    builder = CompBuilder()
+    interaction_data = _interaction_data()
+
+    assert builder.add_data('NRTL Interactions', interaction_data)
+    assert builder.add_data('plain-property', {})
+    assert builder.build()
+
+    assert builder.check_interaction_data() == {
+        'NRTL Interactions': interaction_data
+    }
+    assert builder.is_interaction_data_available('NRTL Interactions')
+    assert not builder.is_interaction_data_available('plain-property')
+    assert builder.check_interaction('NRTL Interactions') is interaction_data
+    assert builder.select_interaction('  nrtl interactions ') is interaction_data
+
+    interaction_id = 'reference::interactions'
+    assert builder.all_interaction_data_details() == {
+        interaction_id: {
+            'COLUMNS': ['Mixture', 'alpha'],
+            'SYMBOL': [None, 'alpha'],
+            'UNIT': [None, '1'],
+            'INTERACTION-SYMBOL': ['alpha'],
+        }
+    }
+    assert builder.all_interaction_data_identifiers() == [
+        {interaction_id: ['alpha']}
+    ]
+    assert builder.all_interaction_data_id_labels() == [
+        {'alpha': 'non_randomness_parameter_alpha_i_j'}
     ]
 
 
