@@ -1,16 +1,18 @@
 """Build ThermoDB objects from scalar interaction-data tables."""
 
-from rich import print
-from pythermodb_settings.models import Component
-from pyThermoDB.core import TableInteractionData
-from pyThermoDB import CompBuilder, build_interaction_thermodb, build_interaction_thermodb_from_reference
-import pyThermoDB as ptdb
 from pathlib import Path
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+from rich import print
+from pythermodb_settings.models import Component
+
+import pyThermoDB as ptdb
+from pyThermoDB import CompBuilder, build_interaction_thermodb
+from pyThermoDB.core import TableInteractionData
 
 # ----------------------------------------------
 # SECTION: Load reference and define components
@@ -46,9 +48,28 @@ built: CompBuilder | None = build_interaction_thermodb(
 if built is None:
     raise RuntimeError("No interaction records were selected.")
 
-selected = built.list_data()["pitzer-interactions"]
+# Register the staged data so the CompBuilder discovery helpers can inspect it.
+if not built.build():
+    raise RuntimeError("The interaction ThermoDB could not be built.")
+
+print("Interaction sources:", list(built.check_interaction_data()))
+print(
+    "Pitzer interaction source available:",
+    built.is_interaction_data_available("pitzer-interactions"),
+)
+
+# Exact-name lookup and case-insensitive selection both return the original
+# TableInteractionData object.
+selected = built.check_interaction("pitzer-interactions")
 if not isinstance(selected, TableInteractionData):
     raise TypeError("Expected selected interaction data.")
+selected_case_insensitive = built.select_interaction(
+    "  PITZER-INTERACTIONS  "
+)
+print(
+    "Case-insensitive selection found the same source:",
+    selected_case_insensitive is selected,
+)
 
 source_mixture = "potassium-ion|sodium-ion|chloride-ion"
 print("Selected ordered mixtures:", selected.mixtures)
