@@ -6,6 +6,7 @@ from pyThermoDB.core import (
     TableConstants,
     TableData,
     TableEquation,
+    TableInteractionData,
     TableMatrixData,
     TableMatrixEquation
 )
@@ -337,6 +338,61 @@ class CompTools:
             return res
         except Exception as e:
             logger.error(f"Error listing matrix data properties: {e}")
+            return []
+
+    def get_interaction_data_structure(
+            self,
+            data: List[TableInteractionData]
+    ):
+        """Return structure metadata for interaction-data tables."""
+        try:
+            return {
+                f"{dt.databook_name}::{dt.table_name}":
+                dt.get_interaction_data_info()
+                for dt in data
+            }
+        except Exception as e:
+            logger.error(f"Error in getting interaction data structure: {e}")
+            return None
+
+    def get_interaction_data_identifier(
+            self,
+            data: List[TableInteractionData]
+    ) -> Optional[List[Dict[str, List[str]]]]:
+        """Return declared interaction symbols keyed by source table."""
+        try:
+            return [
+                {
+                    f"{dt.databook_name}::{dt.table_name}":
+                    dt.interaction_symbol
+                }
+                for dt in data
+            ]
+        except Exception as e:
+            logger.error(
+                f"Error in getting interaction data identifiers: {e}")
+            return None
+
+    def get_interaction_data_id_labels(
+            self,
+            data: List[TableInteractionData]
+    ) -> List[Dict[str, str]]:
+        """Return human-readable labels for declared interaction symbols."""
+        try:
+            identifiers = self.get_interaction_data_identifier(data)
+            if not identifiers:
+                return []
+
+            res: List[Dict[str, str]] = []
+            for identifier in identifiers:
+                for symbols in identifier.values():
+                    for symbol in symbols:
+                        label = self.symbol_controller.map_symbol_to_property_name(
+                            symbol)
+                        res.append({symbol: label})
+            return res
+        except Exception as e:
+            logger.error(f"Error listing interaction data properties: {e}")
             return []
 
     def get_matrix_fn_structure(
