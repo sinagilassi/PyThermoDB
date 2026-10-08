@@ -1,16 +1,22 @@
 """Build ThermoDB objects from scalar interaction-data tables."""
 
-from rich import print
-from pythermodb_settings.models import Component
-from pyThermoDB.core import TableInteractionData
-from pyThermoDB import CompBuilder, build_interaction_thermodb, build_interaction_thermodb_from_reference, MixtureThermoDB
-import pyThermoDB as ptdb
 from pathlib import Path
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+from rich import print
+from pythermodb_settings.models import Component
+
+from pyThermoDB import (
+    CompBuilder,
+    MixtureThermoDB,
+    build_interaction_thermodb,
+    build_interaction_thermodb_from_reference,
+)
+from pyThermoDB.core import TableInteractionData
 
 # ----------------------------------------------
 # SECTION: Load reference and define components
@@ -67,9 +73,26 @@ built_from_reference: MixtureThermoDB | None = build_interaction_thermodb_from_r
 )
 if built_from_reference is None:
     raise RuntimeError("No interaction table was selected from the reference.")
+
+interaction_builder = built_from_reference.thermodb
+if not interaction_builder.build():
+    raise RuntimeError("The discovered interaction ThermoDB could not be built.")
+
 print(
-    "Auto-discovered interaction properties:",
-    list(built_from_reference.thermodb.list_data()),
+    "Auto-discovered interaction sources:",
+    list(interaction_builder.check_interaction_data()),
+)
+print(
+    "Interaction source details:",
+    interaction_builder.all_interaction_data_details(),
+)
+print(
+    "Interaction symbols:",
+    interaction_builder.all_interaction_data_identifiers(),
+)
+print(
+    "Interaction symbol labels:",
+    interaction_builder.all_interaction_data_id_labels(),
 )
 
 print("Built from reference:")
