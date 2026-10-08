@@ -674,6 +674,66 @@ class CompBuilder(CompExporter):
         except Exception as e:
             raise Exception('Selecting constants failed!, ', e)
 
+    # NOTE: check interaction data
+    def check_interaction_data(self) -> dict[str, TableInteractionData]:
+        '''
+        Check all interaction-data sources.
+
+        Returns
+        -------
+        dict
+            all TableInteractionData sources registered in the thermodb
+        '''
+        try:
+            return {
+                name: value for name, value in self.properties.items()
+                if isinstance(value, TableInteractionData)
+            }
+        except Exception as e:
+            raise Exception('Checking interaction data failed!, ', e)
+
+    # NOTE: check interaction-data source availability by name
+    def is_interaction_data_available(
+        self,
+        interaction_name: str
+    ) -> bool:
+        '''Check whether an interaction-data source is registered.'''
+        try:
+            return interaction_name in self.check_interaction_data()
+        except Exception as e:
+            raise Exception(
+                'Checking interaction data availability failed!, ', e)
+
+    # NOTE: check interaction-data source by name
+    def check_interaction(
+        self,
+        interaction_name: str
+    ) -> TableInteractionData:
+        '''Return an interaction-data source by its exact registered name.'''
+        try:
+            return self.check_interaction_data()[interaction_name]
+        except Exception as e:
+            raise Exception('Checking interaction data failed!, ', e)
+
+    # NOTE: select interaction-data source (case-insensitive)
+    def select_interaction(
+        self,
+        interaction_name: str
+    ) -> TableInteractionData:
+        '''Return an interaction-data source using a case-insensitive name.'''
+        try:
+            interaction_name = interaction_name.strip().lower()
+            interactions = self.check_interaction_data()
+
+            for name, value in interactions.items():
+                if name.lower().strip() == interaction_name:
+                    return value
+
+            raise Exception(
+                'Interaction-data source not found in the thermodb!')
+        except Exception as e:
+            raise Exception('Selecting interaction data failed!, ', e)
+
     # NOTE: check functions
     def check_functions(self) -> dict[str, TableEquation | TableMatrixEquation]:
         '''
@@ -1493,6 +1553,69 @@ class CompBuilder(CompExporter):
             return tools.get_matrix_data_id_labels(data)
         except Exception as e:
             logger.error(f'Getting matrix data symbol labels failed!, {e}')
+            return None
+
+    # NOTE: get all interaction data structures
+    def all_interaction_data_details(self):
+        '''Retrieve all interaction-data structures in the thermodb.'''
+        try:
+            data = list(self.check_interaction_data().values())
+            if not data:
+                logger.warning(
+                    'No TableInteractionData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get interaction data structure')
+                return None
+
+            return tools.get_interaction_data_structure(data)
+        except Exception as e:
+            logger.error(f'Getting interaction data structure failed!, {e}')
+            return None
+
+    # NOTE: get all interaction data identifiers
+    def all_interaction_data_identifiers(self):
+        '''Retrieve all interaction symbols in the thermodb.'''
+        try:
+            data = list(self.check_interaction_data().values())
+            if not data:
+                logger.warning(
+                    'No TableInteractionData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get interaction data identifiers')
+                return None
+
+            return tools.get_interaction_data_identifier(data)
+        except Exception as e:
+            logger.error(f'Getting interaction data identifiers failed!, {e}')
+            return None
+
+    # NOTE: get all interaction data symbol labels
+    def all_interaction_data_id_labels(self):
+        '''Retrieve labels for all interaction symbols in the thermodb.'''
+        try:
+            data = list(self.check_interaction_data().values())
+            if not data:
+                logger.warning(
+                    'No TableInteractionData found in the thermodb!')
+                return None
+
+            tools = self.comp_tools
+            if tools is None:
+                logger.error(
+                    'CompTools not available to get interaction data labels')
+                return None
+
+            return tools.get_interaction_data_id_labels(data)
+        except Exception as e:
+            logger.error(f'Getting interaction data symbol labels failed!, {e}')
             return None
 
     # NOTE: get all matrix functions' structures
